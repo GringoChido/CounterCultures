@@ -32,6 +32,7 @@ const footerNav = {
     { label: { en: "Insights", es: "Insights" }, href: "/insights" },
     { label: { en: "Resources", es: "Recursos" }, href: "/resources" },
     { label: { en: "Trade Program", es: "Programa Trade" }, href: "/trade" },
+    { label: { en: "Counter Portal", es: "Counter Portal" }, href: "/dashboard" },
   ],
   contact: [
     { label: { en: "Showroom", es: "Showroom" }, href: "/showroom" },

@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Brand Colors */
+  --color-brand-charcoal: #1A1A1A;
+  --color-brand-terracotta: #C4725A;
+  --color-brand-terracotta-dark: #A85D48;
+  --color-brand-copper: #B87333;
+  --color-brand-sage: #7A8B6F;
+  --color-brand-stone: #A89F91;
+  --color-brand-linen: #F5F0EB;
+  --color-brand-sand: #D4C5A9;
+
+  /* Dashboard-specific colors */
+  --color-dash-bg: #F8F9FA;
+  --color-dash-surface: #FFFFFF;
+  --color-dash-border: #E5E7EB;
+  --color-dash-text: #111827;
+  --color-dash-text-secondary: #6B7280;
+  --color-dash-sidebar: #1A1A1A;
+  --color-dash-sidebar-hover: #2D2D2D;
+  --color-dash-sidebar-active: #B87333;
+
+  /* Status colors */
+  --color-status-new: #3B82F6;
+  --color-status-contacted: #F59E0B;
+  --color-status-qualified: #8B5CF6;
+  --color-status-proposal: #EC4899;
+  --color-status-won: #10B981;
+  --color-status-lost: #EF4444;
+
+  /* Chart palette */
+  --color-chart-1: #B87333;
+  --color-chart-2: #C4725A;
+  --color-chart-3: #7A8B6F;
+  --color-chart-4: #A89F91;
+  --color-chart-5: #D4C5A9;
+  --color-chart-6: #1A1A1A;
+
+  /* Typography */
+  --font-display: "Cormorant Garamond", serif;
+  --font-body: "DM Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+body {
+  background-color: var(--color-dash-bg);
+  color: var(--color-dash-text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: #B87333;
+  color: white;
+}

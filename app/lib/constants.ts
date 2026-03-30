@@ -20,58 +20,25 @@ export const SITE_CONFIG = {
 
 export const NAV_LINKS = [
   {
-    label: { en: "Bathroom", es: "Baño" },
-    href: "/shop/bathroom",
+    label: { en: "Shop", es: "Tienda" },
+    href: "/shop",
     children: [
-      { label: { en: "Sinks & Basins", es: "Lavabos" }, href: "/shop/bathroom/sinks" },
-      { label: { en: "Faucets", es: "Grifos" }, href: "/shop/bathroom/faucets" },
-      { label: { en: "Bathtubs", es: "Bañeras" }, href: "/shop/bathroom/bathtubs" },
-      { label: { en: "Tub Fillers", es: "Llenadores de Bañera" }, href: "/shop/bathroom/tub-fillers" },
-      { label: { en: "Toilets", es: "Sanitarios" }, href: "/shop/bathroom/toilets" },
-      { label: { en: "Showers", es: "Regaderas y Duchas" }, href: "/shop/bathroom/showers" },
-      { label: { en: "Accessories", es: "Accesorios" }, href: "/shop/bathroom/accessories" },
-      { label: { en: "Drains", es: "Drenajes" }, href: "/shop/bathroom/drains" },
-    ],
-  },
-  {
-    label: { en: "Kitchen", es: "Cocina" },
-    href: "/shop/kitchen",
-    children: [
-      { label: { en: "Sinks", es: "Tarjas y Fregaderos" }, href: "/shop/kitchen/sinks" },
-      { label: { en: "Faucets", es: "Mezcladoras" }, href: "/shop/kitchen/faucets" },
-      { label: { en: "Appliances", es: "Electrodomésticos" }, href: "/shop/kitchen/appliances" },
-      { label: { en: "Range Hoods", es: "Campanas" }, href: "/shop/kitchen/range-hoods" },
-    ],
-  },
-  {
-    label: { en: "Door Hardware", es: "Chapas y Herrajes" },
-    href: "/shop/hardware",
-    children: [
-      { label: { en: "Entry Lock Sets", es: "Chapas de Entrada" }, href: "/shop/hardware/entry-locks" },
-      { label: { en: "Interior Lock Sets", es: "Chapas Interiores" }, href: "/shop/hardware/interior-locks" },
-      { label: { en: "Sliding Door Hardware", es: "Puertas Corredizas" }, href: "/shop/hardware/sliding-door" },
-      { label: { en: "Pulls & Hooks", es: "Jaladeras y Ganchos" }, href: "/shop/hardware/pulls-hooks" },
-      { label: { en: "Door Knobs", es: "Perillas" }, href: "/shop/hardware/knobs" },
+      { label: { en: "Bathroom", es: "Baño" }, href: "/shop/bathroom" },
+      { label: { en: "Kitchen", es: "Cocina" }, href: "/shop/kitchen" },
+      { label: { en: "Door Hardware", es: "Chapas y Herrajes" }, href: "/shop/hardware" },
     ],
   },
   {
     label: { en: "Brands", es: "Marcas" },
     href: "/brands",
-    children: [
-      { label: { en: "Kohler", es: "Kohler" }, href: "/brands/kohler" },
-      { label: { en: "TOTO", es: "TOTO" }, href: "/brands/toto" },
-      { label: { en: "Brizo", es: "Brizo" }, href: "/brands/brizo" },
-      { label: { en: "BLANCO", es: "BLANCO" }, href: "/brands/blanco" },
-      { label: { en: "California Faucets", es: "California Faucets" }, href: "/brands/california-faucets" },
-      { label: { en: "Sun Valley Bronze", es: "Sun Valley Bronze" }, href: "/brands/sun-valley-bronze" },
-      { label: { en: "Emtek", es: "Emtek" }, href: "/brands/emtek" },
-      { label: { en: "Badeloft", es: "Badeloft" }, href: "/brands/badeloft" },
-      { label: { en: "Villeroy & Boch", es: "Villeroy & Boch" }, href: "/brands/villeroy-boch" },
-    ],
   },
   {
     label: { en: "Artisanal", es: "Artesanal" },
     href: "/artisanal",
+  },
+  {
+    label: { en: "Our Story", es: "Nuestra Historia" },
+    href: "/our-story",
   },
   {
     label: { en: "Insights", es: "Insights" },
@@ -80,10 +47,6 @@ export const NAV_LINKS = [
   {
     label: { en: "Resources", es: "Recursos" },
     href: "/resources",
-  },
-  {
-    label: { en: "Our Story", es: "Nuestra Historia" },
-    href: "/our-story",
   },
 ] as const;
 

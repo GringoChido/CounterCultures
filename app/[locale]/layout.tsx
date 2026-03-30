@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Cormorant_Garamond, DM_Sans, JetBrains_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { routing } from "@/app/i18n/routing";
@@ -8,27 +7,6 @@ import { ChatWidget } from "@/app/components/ui/chat-widget";
 import "../globals.css";
 
 const BASE_URL = "https://countercultures.mx";
-
-const cormorantGaramond = Cormorant_Garamond({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  display: "swap",
-});
-
-const dmSans = DM_Sans({
-  variable: "--font-body",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
-
-const jetBrainsMono = JetBrains_Mono({
-  variable: "--font-mono",
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
@@ -206,29 +184,27 @@ const LocaleLayout = async ({ children, params }: LocaleLayoutProps) => {
   const messages = await getMessages();
 
   return (
-    <html
+    <div
       lang={locale}
-      className={`${cormorantGaramond.variable} ${dmSans.variable} ${jetBrainsMono.variable}`}
+      className="min-h-screen flex flex-col antialiased"
     >
-      <body className="min-h-screen flex flex-col antialiased">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(organizationJsonLd),
-          }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(websiteJsonLd),
-          }}
-        />
-        <NextIntlClientProvider messages={messages}>
-          {children}
-          <ChatWidget locale={locale} />
-        </NextIntlClientProvider>
-      </body>
-    </html>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(organizationJsonLd),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(websiteJsonLd),
+        }}
+      />
+      <NextIntlClientProvider messages={messages}>
+        {children}
+        <ChatWidget locale={locale} />
+      </NextIntlClientProvider>
+    </div>
   );
 };
 

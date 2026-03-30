@@ -40,7 +40,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
           </Link>
 
           {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-6">
             {NAV_LINKS.map((link) => (
               <div
                 key={link.href}
@@ -131,6 +131,12 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               className="hidden md:inline-flex font-body text-sm font-medium px-5 py-2.5 bg-brand-terracotta text-white hover:bg-brand-copper transition-colors duration-300"
             >
               {lang === "en" ? "Visit Showroom" : "Visitar Showroom"}
+            </Link>
+            <Link
+              href="/dashboard"
+              className="hidden md:inline-flex font-body text-xs font-medium px-3 py-2 border border-brand-stone/20 text-brand-stone hover:text-brand-charcoal hover:border-brand-copper transition-colors duration-300 rounded"
+            >
+              Portal
             </Link>
 
             <button
