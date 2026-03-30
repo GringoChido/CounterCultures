@@ -1,24 +1,95 @@
+import type { Metadata } from "next";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { Button } from "@/app/components/ui/button";
 import Link from "next/link";
 
+const BASE_URL = "https://countercultures.mx";
+
 interface BlogPostPageProps {
   params: Promise<{ slug: string; locale: string }>;
 }
 
-const BlogPostPage = async ({ params }: BlogPostPageProps) => {
-  const { slug, locale } = await params;
-
-  const formatSlug = slug
+const formatSlug = (slug: string) =>
+  slug
     .split("-")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
+
+export const generateMetadata = async ({
+  params,
+}: BlogPostPageProps): Promise<Metadata> => {
+  const { slug, locale } = await params;
+  const isEs = locale === "es";
+  const title = formatSlug(slug);
+
+  return {
+    title,
+    alternates: {
+      canonical: `${BASE_URL}/${locale}/blog/${slug}`,
+      languages: {
+        en: `${BASE_URL}/en/blog/${slug}`,
+        es: `${BASE_URL}/es/blog/${slug}`,
+        "x-default": `${BASE_URL}/en/blog/${slug}`,
+      },
+    },
+    openGraph: {
+      title,
+      url: `${BASE_URL}/${locale}/blog/${slug}`,
+      locale: isEs ? "es_MX" : "en_US",
+      type: "article",
+      images: [
+        {
+          url: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=80",
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      images: ["https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=80"],
+    },
+  };
+};
+
+const BlogPostPage = async ({ params }: BlogPostPageProps) => {
+  const { slug, locale } = await params;
+  const title = formatSlug(slug);
+
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: title,
+    author: {
+      "@type": "Organization",
+      name: "Counter Cultures",
+      url: BASE_URL,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Counter Cultures",
+      url: BASE_URL,
+      logo: {
+        "@type": "ImageObject",
+        url: `${BASE_URL}/logo.png`,
+      },
+    },
+    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=80",
+    url: `${BASE_URL}/${locale}/blog/${slug}`,
+    inLanguage: locale,
+  };
 
   return (
     <>
       <Header locale={locale} />
       <main>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+        />
         <article className="pt-32 pb-20 md:pt-40 md:pb-28">
           <div className="mx-auto max-w-3xl px-6 lg:px-8">
             <Link
@@ -29,7 +100,7 @@ const BlogPostPage = async ({ params }: BlogPostPageProps) => {
             </Link>
 
             <h1 className="mt-8 font-display text-4xl md:text-5xl font-light tracking-wide text-brand-charcoal leading-tight">
-              {formatSlug}
+              {title}
             </h1>
 
             <div className="mt-4 flex items-center gap-3 font-mono text-xs text-brand-stone uppercase tracking-wider">

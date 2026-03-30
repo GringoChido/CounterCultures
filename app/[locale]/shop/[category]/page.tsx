@@ -1,4 +1,4 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
@@ -57,13 +57,67 @@ const categoryMeta: Record<
   },
 };
 
+const BASE_URL = "https://countercultures.mx";
+
+const categoryMetaEs: Record<
+  string,
+  { title: string; description: string }
+> = {
+  bathroom: {
+    title: "Accesorios de Baño — Lavabos, Grifos, Bañeras y Más",
+    description:
+      "Accesorios de baño de lujo de Kohler, TOTO, Badeloft, California Faucets y lavabos artesanales de cobre y piedra hechos por artesanos mexicanos.",
+  },
+  kitchen: {
+    title: "Accesorios de Cocina — Tarjas, Mezcladoras, Campanas",
+    description:
+      "Tarjas de cocina BLANCO y Kohler, mezcladoras Brizo y California Faucets, campanas y electrodomésticos de grado profesional.",
+  },
+  hardware: {
+    title: "Herrajes para Puertas — Chapas, Manijas, Perillas y Jaladeras",
+    description:
+      "Cerraduras de bronce fundido a mano de Sun Valley Bronze y herrajes de precisión Emtek. Cada pieza acabada individualmente.",
+  },
+};
+
 export const generateMetadata = async ({
   params,
 }: CategoryPageProps): Promise<Metadata> => {
-  const { category } = await params;
-  const meta = categoryMeta[category];
-  if (!meta) return { title: "Shop" };
-  return { title: meta.title, description: meta.description };
+  const { category, locale } = await params;
+  const isEs = locale === "es";
+  const metaEn = categoryMeta[category];
+  const metaEs = categoryMetaEs[category];
+  if (!metaEn) return { title: "Shop" };
+
+  const title = isEs && metaEs ? metaEs.title : metaEn.title;
+  const description = isEs && metaEs ? metaEs.description : metaEn.description;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${BASE_URL}/${locale}/shop/${category}`,
+      languages: {
+        en: `${BASE_URL}/en/shop/${category}`,
+        es: `${BASE_URL}/es/shop/${category}`,
+        "x-default": `${BASE_URL}/en/shop/${category}`,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${BASE_URL}/${locale}/shop/${category}`,
+      locale: isEs ? "es_MX" : "en_US",
+      images: [
+        {
+          url: metaEn.heroImage,
+          width: 1920,
+          height: 1080,
+          alt: title,
+        },
+      ],
+    },
+  };
 };
 
 const CategoryPage = async ({ params }: CategoryPageProps) => {

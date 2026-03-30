@@ -1,15 +1,11 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { getProducts } from "@/app/lib/sheets";
 import { ArtisanalGallery } from "./artisanal-gallery";
 
-export const metadata: Metadata = {
-  title: "Artisanal Collection — Handcrafted in Mexico",
-  description:
-    "Copper basins, Mistoa ceramic sinks, stone vessels, and hand-forged bronze hardware — designed by Roger Williams and crafted by Mexican artisans.",
-};
+const BASE_URL = "https://countercultures.mx";
 
 const artisans = [
   {
@@ -38,6 +34,49 @@ const artisans = [
 interface ArtisanalPageProps {
   params: Promise<{ locale: string }>;
 }
+
+export const generateMetadata = async ({
+  params,
+}: ArtisanalPageProps): Promise<Metadata> => {
+  const { locale } = await params;
+  const isEs = locale === "es";
+
+  const title = isEs
+    ? "Colección Artesanal — Hecho a Mano en México"
+    : "Artisanal Collection — Handcrafted in Mexico";
+  const description = isEs
+    ? "Lavabos de cobre, cerámicas Mistoa, vasijas de piedra y herrajes de bronce forjado a mano — diseñados por Roger Williams y creados por artesanos mexicanos."
+    : "Copper basins, Mistoa ceramic sinks, stone vessels, and hand-forged bronze hardware — designed by Roger Williams and crafted by Mexican artisans.";
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${BASE_URL}/${locale}/artisanal`,
+      languages: {
+        en: `${BASE_URL}/en/artisanal`,
+        es: `${BASE_URL}/es/artisanal`,
+        "x-default": `${BASE_URL}/en/artisanal`,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${BASE_URL}/${locale}/artisanal`,
+      locale: isEs ? "es_MX" : "en_US",
+      images: [
+        {
+          url: "https://images.unsplash.com/photo-1615529328331-f8917597711f?w=1200&q=80",
+          width: 1200,
+          height: 630,
+          alt: isEs
+            ? "Artesano mexicano trabajando en lavabo de cobre"
+            : "Mexican artisan working on a copper basin",
+        },
+      ],
+    },
+  };
+};
 
 const ArtisanalPage = async ({ params }: ArtisanalPageProps) => {
   const { locale } = await params;

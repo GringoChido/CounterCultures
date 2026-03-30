@@ -102,16 +102,45 @@ const brandHeroData: Record<
   },
 };
 
+const BASE_URL = "https://countercultures.mx";
+
 export const generateMetadata = async ({
   params,
 }: BrandPageProps): Promise<Metadata> => {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const brand = BRANDS.find((b) => b.slug === slug);
   if (!brand) return { title: "Brand Not Found" };
 
+  const isEs = locale === "es";
+  const heroData = brandHeroData[slug];
+
+  const title = isEs
+    ? `${brand.name} — Distribuidor Autorizado en San Miguel de Allende`
+    : `${brand.name} — Authorized Dealer in San Miguel de Allende`;
+  const description = isEs
+    ? `Compra accesorios ${brand.name} para baño, cocina y herrajes en Counter Cultures. Distribuidor autorizado en San Miguel de Allende, México.`
+    : `Shop ${brand.name} bath, kitchen, and hardware fixtures at Counter Cultures. Authorized dealer in San Miguel de Allende, Mexico.`;
+
   return {
-    title: `${brand.name} — Authorized Dealer in San Miguel de Allende`,
-    description: `Shop ${brand.name} bath, kitchen, and hardware fixtures at Counter Cultures. Authorized dealer in San Miguel de Allende, Mexico.`,
+    title,
+    description,
+    alternates: {
+      canonical: `${BASE_URL}/${locale}/brands/${slug}`,
+      languages: {
+        en: `${BASE_URL}/en/brands/${slug}`,
+        es: `${BASE_URL}/es/brands/${slug}`,
+        "x-default": `${BASE_URL}/en/brands/${slug}`,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${BASE_URL}/${locale}/brands/${slug}`,
+      locale: isEs ? "es_MX" : "en_US",
+      images: heroData
+        ? [{ url: heroData.heroImage, width: 1920, height: 1080, alt: brand.name }]
+        : [],
+    },
   };
 };
 

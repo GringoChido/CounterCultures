@@ -1,13 +1,46 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { BRANDS } from "@/app/lib/constants";
 
-export const metadata: Metadata = {
-  title: "Our Brands — Authorized Dealer",
-  description:
-    "Counter Cultures is an authorized dealer for Kohler, TOTO, Brizo, BLANCO, California Faucets, Sun Valley Bronze, Emtek, Badeloft, and more.",
+const BASE_URL = "https://countercultures.mx";
+
+interface BrandsPagePropsForMeta {
+  params: Promise<{ locale: string }>;
+}
+
+export const generateMetadata = async ({
+  params,
+}: BrandsPagePropsForMeta): Promise<Metadata> => {
+  const { locale } = await params;
+  const isEs = locale === "es";
+
+  const title = isEs
+    ? "Nuestras Marcas — Distribuidor Autorizado"
+    : "Our Brands — Authorized Dealer";
+  const description = isEs
+    ? "Counter Cultures es distribuidor autorizado de Kohler, TOTO, Brizo, BLANCO, California Faucets, Sun Valley Bronze, Emtek, Badeloft y más en San Miguel de Allende."
+    : "Counter Cultures is an authorized dealer for Kohler, TOTO, Brizo, BLANCO, California Faucets, Sun Valley Bronze, Emtek, Badeloft, and more in San Miguel de Allende.";
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${BASE_URL}/${locale}/brands`,
+      languages: {
+        en: `${BASE_URL}/en/brands`,
+        es: `${BASE_URL}/es/brands`,
+        "x-default": `${BASE_URL}/en/brands`,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${BASE_URL}/${locale}/brands`,
+      locale: isEs ? "es_MX" : "en_US",
+    },
+  };
 };
 
 const brandDescriptions: Record<string, { tagline: string; description: string }> = {
@@ -61,11 +94,7 @@ const brandDescriptions: Record<string, { tagline: string; description: string }
   },
 };
 
-interface BrandsPageProps {
-  params: Promise<{ locale: string }>;
-}
-
-const BrandsPage = async ({ params }: BrandsPageProps) => {
+const BrandsPage = async ({ params }: BrandsPagePropsForMeta) => {
   const { locale } = await params;
 
   return (

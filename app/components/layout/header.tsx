@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ChevronDown, MessageCircle } from "lucide-react";
 import { NAV_LINKS, SITE_CONFIG } from "@/app/lib/constants";
@@ -11,6 +12,18 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const lang = locale as "en" | "es";
+  const pathname = usePathname();
+
+  // Build locale-switched path: /en/shop → /es/shop
+  const getLocalePath = (targetLocale: "en" | "es") => {
+    const segments = pathname.split("/");
+    if (segments[1] === "en" || segments[1] === "es") {
+      segments[1] = targetLocale;
+    } else {
+      segments.splice(1, 0, targetLocale);
+    }
+    return segments.join("/") || `/${targetLocale}`;
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-brand-linen/95 backdrop-blur-sm border-b border-brand-stone/10">
@@ -89,12 +102,29 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
             </a>
 
             {/* Language toggle */}
-            <Link
-              href="/"
-              className="font-mono text-[10px] tracking-wider text-brand-stone hover:text-brand-terracotta transition-colors uppercase"
-            >
-              {lang === "en" ? "ES" : "EN"}
-            </Link>
+            <div className="flex items-center font-mono text-xs tracking-wider">
+              <Link
+                href={getLocalePath("en")}
+                className={`px-1.5 py-1 transition-colors ${
+                  lang === "en"
+                    ? "text-brand-terracotta font-bold"
+                    : "text-brand-stone hover:text-brand-charcoal"
+                }`}
+              >
+                EN
+              </Link>
+              <span className="text-brand-stone/40">|</span>
+              <Link
+                href={getLocalePath("es")}
+                className={`px-1.5 py-1 transition-colors ${
+                  lang === "es"
+                    ? "text-brand-terracotta font-bold"
+                    : "text-brand-stone hover:text-brand-charcoal"
+                }`}
+              >
+                ES
+              </Link>
+            </div>
 
             <Link
               href="/showroom"

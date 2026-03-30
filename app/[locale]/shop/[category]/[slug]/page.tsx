@@ -1,4 +1,4 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
@@ -9,16 +9,47 @@ interface PDPProps {
   params: Promise<{ category: string; slug: string; locale: string }>;
 }
 
+const BASE_URL = "https://countercultures.mx";
+
 export const generateMetadata = async ({ params }: PDPProps): Promise<Metadata> => {
-  const { slug } = await params;
+  const { slug, locale, category } = await params;
   const product = await getProductBySlug(slug);
   if (!product) return { title: "Product Not Found" };
 
+  const isEs = locale === "es";
+  const productName = isEs && product.name ? product.name : product.nameEn;
+  const productDescription = isEs
+    ? product.description
+    : product.descriptionEn;
+
+  const title = `${productName} — ${product.brand}`;
+  const description = productDescription;
+
   return {
-    title: `${product.nameEn} — ${product.brand}`,
-    description: product.descriptionEn,
+    title,
+    description,
+    alternates: {
+      canonical: `${BASE_URL}/${locale}/shop/${category}/${slug}`,
+      languages: {
+        en: `${BASE_URL}/en/shop/${category}/${slug}`,
+        es: `${BASE_URL}/es/shop/${category}/${slug}`,
+        "x-default": `${BASE_URL}/en/shop/${category}/${slug}`,
+      },
+    },
     openGraph: {
-      images: product.images[0] ? [{ url: product.images[0] }] : [],
+      title,
+      description,
+      url: `${BASE_URL}/${locale}/shop/${category}/${slug}`,
+      locale: isEs ? "es_MX" : "en_US",
+      images: product.images[0]
+        ? [{ url: product.images[0], alt: productName }]
+        : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: product.images[0] ? [product.images[0]] : [],
     },
   };
 };

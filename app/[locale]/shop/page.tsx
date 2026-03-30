@@ -1,18 +1,47 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { ShopCatalog } from "./shop-catalog";
 import { getProducts } from "@/app/lib/sheets";
 
-export const metadata: Metadata = {
-  title: "Shop — Bath, Kitchen & Hardware Fixtures",
-  description:
-    "Browse our curated collection of luxury bath, kitchen, and door hardware fixtures from Kohler, TOTO, Brizo, BLANCO, Sun Valley Bronze, and Mexican artisans.",
-};
+const BASE_URL = "https://countercultures.mx";
 
 interface ShopPageProps {
   params: Promise<{ locale: string }>;
 }
+
+export const generateMetadata = async ({
+  params,
+}: ShopPageProps): Promise<Metadata> => {
+  const { locale } = await params;
+  const isEs = locale === "es";
+
+  const title = isEs
+    ? "Tienda — Accesorios de Baño, Cocina y Herrajes"
+    : "Shop — Bath, Kitchen & Hardware Fixtures";
+  const description = isEs
+    ? "Explora nuestra colección de accesorios de lujo para baño, cocina y herrajes de Kohler, TOTO, Brizo, BLANCO, Sun Valley Bronze y artesanos mexicanos."
+    : "Browse our curated collection of luxury bath, kitchen, and door hardware fixtures from Kohler, TOTO, Brizo, BLANCO, Sun Valley Bronze, and Mexican artisans.";
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `${BASE_URL}/${locale}/shop`,
+      languages: {
+        en: `${BASE_URL}/en/shop`,
+        es: `${BASE_URL}/es/shop`,
+        "x-default": `${BASE_URL}/en/shop`,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      url: `${BASE_URL}/${locale}/shop`,
+      locale: isEs ? "es_MX" : "en_US",
+    },
+  };
+};
 
 const ShopPage = async ({ params }: ShopPageProps) => {
   const { locale } = await params;
