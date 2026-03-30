@@ -74,6 +74,14 @@ export const NAV_LINKS = [
     href: "/artisanal",
   },
   {
+    label: { en: "Insights", es: "Insights" },
+    href: "/insights",
+  },
+  {
+    label: { en: "Resources", es: "Recursos" },
+    href: "/resources",
+  },
+  {
     label: { en: "Our Story", es: "Nuestra Historia" },
     href: "/our-story",
   },
