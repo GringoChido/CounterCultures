@@ -10,7 +10,10 @@ interface ProjectPageProps {
 const BASE_URL = "https://countercultures.mx";
 
 export const generateStaticParams = () =>
-  PROJECTS.map((p) => ({ slug: p.slug }));
+  PROJECTS.flatMap((p) => [
+    { locale: "en", slug: p.slug },
+    { locale: "es", slug: p.slug },
+  ]);
 
 export const generateMetadata = async ({
   params,

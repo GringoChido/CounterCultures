@@ -14,7 +14,10 @@ interface ArticlePageProps {
 }
 
 export const generateStaticParams = () =>
-  articles.map((a) => ({ slug: a.slug }));
+  articles.flatMap((a) => [
+    { locale: "en", slug: a.slug },
+    { locale: "es", slug: a.slug },
+  ]);
 
 export const generateMetadata = async ({
   params,
