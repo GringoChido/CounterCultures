@@ -122,7 +122,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
             </Link>
             <Link
               href="/dashboard"
-              className="hidden md:inline-flex font-body text-xs font-medium px-3 py-2 border border-brand-stone/20 text-brand-stone hover:text-brand-charcoal hover:border-brand-copper transition-colors duration-300 rounded"
+              className="hidden md:inline-flex font-body text-sm font-medium px-5 py-2.5 bg-brand-copper text-white hover:bg-brand-terracotta transition-colors duration-300"
             >
               Portal
             </Link>
@@ -324,7 +324,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                 <Link
                   href="/dashboard"
                   onClick={() => setMobileOpen(false)}
-                  className="block text-center py-3 border border-brand-stone/20 text-brand-stone font-body text-xs font-medium hover:text-brand-charcoal hover:border-brand-copper transition-colors rounded"
+                  className="block text-center py-3.5 bg-brand-copper text-white font-body font-medium text-sm hover:bg-brand-terracotta transition-colors"
                 >
                   Counter Portal
                 </Link>

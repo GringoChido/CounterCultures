@@ -175,18 +175,30 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
             &copy; {new Date().getFullYear()} Counter Cultures.{" "}
             {t.curated[lang]}
           </p>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <Link
-              href="/privacy"
+              href={`/${lang}/privacy`}
               className="font-body text-xs text-brand-stone hover:text-brand-terracotta transition-colors"
             >
-              Privacy
+              {lang === "es" ? "Privacidad" : "Privacy"}
             </Link>
             <Link
-              href="/terms"
+              href={`/${lang}/payment-methods`}
               className="font-body text-xs text-brand-stone hover:text-brand-terracotta transition-colors"
             >
-              Terms
+              {lang === "es" ? "Métodos de Pago" : "Payment Methods"}
+            </Link>
+            <Link
+              href={`/${lang}/sales-delivery`}
+              className="font-body text-xs text-brand-stone hover:text-brand-terracotta transition-colors"
+            >
+              {lang === "es" ? "Venta y Entrega" : "Sales & Delivery"}
+            </Link>
+            <Link
+              href={`/${lang}/returns-warranty`}
+              className="font-body text-xs text-brand-stone hover:text-brand-terracotta transition-colors"
+            >
+              {lang === "es" ? "Devoluciones" : "Returns & Warranty"}
             </Link>
           </div>
         </div>
