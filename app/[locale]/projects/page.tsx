@@ -5,6 +5,7 @@ import { Footer } from "@/app/components/layout/footer";
 import { CategoryHero } from "@/app/components/sections/category-hero";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { Button } from "@/app/components/ui/button";
+import { useLocale } from "next-intl";
 
 const projects = [
   {
@@ -75,9 +76,12 @@ const projects = [
   },
 ];
 
-const ProjectsPage = () => (
+const ProjectsPage = () => {
+  const locale = useLocale() as "en" | "es";
+
+  return (
   <>
-    <Header />
+    <Header locale={locale} />
     <main>
       <CategoryHero
         eyebrow="Our Work"
@@ -173,8 +177,9 @@ const ProjectsPage = () => (
         </div>
       </section>
     </main>
-    <Footer />
+    <Footer locale={locale} />
   </>
-);
+  );
+};
 
 export default ProjectsPage;

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { submitLead } from "@/app/lib/sheets";
+import { sendContactConfirmation, notifyRoger, notifyWhatsApp } from "@/app/lib/email";
 
 export const POST = async (request: Request) => {
   try {
@@ -21,13 +22,25 @@ export const POST = async (request: Request) => {
       );
     }
 
+    const name = `${firstName} ${lastName}`.trim();
+
     await submitLead({
-      name: `${firstName} ${lastName}`.trim(),
+      name,
       email,
       phone: phone || "",
       source: `contact-form:${type || "general"}`,
       message: message || "",
     });
+
+    // Fire-and-forget: confirmation email + internal notifications
+    Promise.all([
+      sendContactConfirmation(email, firstName).catch(() => {}),
+      notifyRoger(
+        `New Contact: ${name}`,
+        `Name: ${name}\nEmail: ${email}\nPhone: ${phone || "—"}\nType: ${type || "general"}\nMessage: ${message || "—"}`
+      ).catch(() => {}),
+      notifyWhatsApp(`🔔 New contact form: ${name} (${email}) — ${type || "general"}`).catch(() => {}),
+    ]);
 
     return NextResponse.json({ success: true });
   } catch {

@@ -4,11 +4,11 @@ import { Button } from "@/app/components/ui/button";
 import Link from "next/link";
 
 interface BlogPostPageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 }
 
 const BlogPostPage = async ({ params }: BlogPostPageProps) => {
-  const { slug } = await params;
+  const { slug, locale } = await params;
 
   const formatSlug = slug
     .split("-")
@@ -17,7 +17,7 @@ const BlogPostPage = async ({ params }: BlogPostPageProps) => {
 
   return (
     <>
-      <Header />
+      <Header locale={locale} />
       <main>
         <article className="pt-32 pb-20 md:pt-40 md:pb-28">
           <div className="mx-auto max-w-3xl px-6 lg:px-8">
@@ -82,7 +82,7 @@ const BlogPostPage = async ({ params }: BlogPostPageProps) => {
           </div>
         </article>
       </main>
-      <Footer />
+      <Footer locale={locale} />
     </>
   );
 };

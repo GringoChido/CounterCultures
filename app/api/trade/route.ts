@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { submitTradeApplication } from "@/app/lib/sheets";
+import { sendTradeConfirmation, notifyRoger, notifyWhatsApp } from "@/app/lib/email";
 
 export const POST = async (request: Request) => {
   try {
@@ -25,8 +26,10 @@ export const POST = async (request: Request) => {
       );
     }
 
+    const name = `${firstName} ${lastName}`.trim();
+
     await submitTradeApplication({
-      name: `${firstName} ${lastName}`.trim(),
+      name,
       email,
       phone: phone || "",
       company,
@@ -35,6 +38,15 @@ export const POST = async (request: Request) => {
       website: website || "",
       message: message || "",
     });
+
+    Promise.all([
+      sendTradeConfirmation(email, firstName, company).catch(() => {}),
+      notifyRoger(
+        `New Trade Application: ${company}`,
+        `Name: ${name}\nCompany: ${company}\nProfession: ${profession || "—"}\nEmail: ${email}\nPhone: ${phone || "—"}\nWebsite: ${website || "—"}\nLicense: ${license || "—"}\nMessage: ${message || "—"}`
+      ).catch(() => {}),
+      notifyWhatsApp(`🏗️ New trade application: ${name} from ${company} (${email})`).catch(() => {}),
+    ]);
 
     return NextResponse.json({ success: true });
   } catch {

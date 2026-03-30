@@ -1,0 +1,199 @@
+import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { Header } from "@/app/components/layout/header";
+import { Footer } from "@/app/components/layout/footer";
+import { CategoryHero } from "@/app/components/sections/category-hero";
+import { ShopCatalog } from "@/app/shop/shop-catalog";
+import { getProductsByBrand } from "@/app/lib/sheets";
+import { BRANDS } from "@/app/lib/constants";
+import { Shield, Wrench, HeadphonesIcon } from "lucide-react";
+
+interface BrandPageProps {
+  params: Promise<{ slug: string; locale: string }>;
+}
+
+const brandHeroData: Record<
+  string,
+  { tagline: string; description: string; heroImage: string }
+> = {
+  kohler: {
+    tagline: "Gracious Living, Since 1873",
+    description:
+      "From kitchen sinks to freestanding tubs, Kohler combines 150 years of American engineering with designs that define modern luxury.",
+    heroImage:
+      "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1920&q=80",
+  },
+  toto: {
+    tagline: "People-First Innovation",
+    description:
+      "Japanese precision meets bathroom perfection. TOTO's CEFIONTECT glaze and Washlet technology set the global standard for hygiene and comfort.",
+    heroImage:
+      "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=1920&q=80",
+  },
+  brizo: {
+    tagline: "Fashion-Forward Fixtures",
+    description:
+      "Brizo brings fashion sensibility to the kitchen and bath. The Litze collection's industrial aesthetic and SmartTouch technology redefine what a faucet can be.",
+    heroImage:
+      "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=1920&q=80",
+  },
+  blanco: {
+    tagline: "The Kitchen Sink Perfected",
+    description:
+      "German-engineered Silgranit sinks that resist heat, scratches, and stains. BLANCO's Ikon apron front has become the centerpiece of Mexico's finest kitchens.",
+    heroImage:
+      "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1920&q=80",
+  },
+  "california-faucets": {
+    tagline: "Handcrafted in Huntington Beach",
+    description:
+      "Over 30 artisan finishes, made to order in California. Bridge-style kitchen faucets and custom bath hardware that no factory can replicate.",
+    heroImage:
+      "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=1920&q=80",
+  },
+  "sun-valley-bronze": {
+    tagline: "Hand-Cast, One at a Time",
+    description:
+      "Each Sun Valley Bronze piece is individually sand-cast in silicon bronze and hand-finished in Idaho. Entry sets that are as much sculpture as hardware.",
+    heroImage:
+      "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1920&q=80",
+  },
+  emtek: {
+    tagline: "Precision Door Hardware",
+    description:
+      "Solid brass construction meets contemporary and classic design. Emtek door knobs, levers, and deadbolts engineered to last generations.",
+    heroImage:
+      "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1920&q=80",
+  },
+  badeloft: {
+    tagline: "Pure Form, Pure Material",
+    description:
+      "Badeloft freestanding tubs and basins in seamless mineral casting — organic shapes with an easy-clean surface that stays pristine.",
+    heroImage:
+      "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=1920&q=80",
+  },
+  bante: {
+    tagline: "Mexican Artisanal Craft",
+    description:
+      "Hand-finished bathroom accessories and fixtures that bring the spirit of Mexican craft into contemporary spaces.",
+    heroImage:
+      "https://images.unsplash.com/photo-1615529328331-f8917597711f?w=1920&q=80",
+  },
+  mistoa: {
+    tagline: "Color Inspired by the Landscape",
+    description:
+      "Artisanal basins in 10 curated colorways — from Rosa Crudo to Azul Profundo — each hand-shaped and finished by master artisans.",
+    heroImage:
+      "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1920&q=80",
+  },
+  "villeroy-boch": {
+    tagline: "European Elegance Since 1748",
+    description:
+      "Nearly three centuries of ceramic mastery. Villeroy & Boch brings timeless European design to bathrooms worldwide.",
+    heroImage:
+      "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=1920&q=80",
+  },
+  aquaspa: {
+    tagline: "Professional Spa Solutions",
+    description:
+      "Commercial and residential spa fixtures designed for the Mexican climate — durable, beautiful, and built for daily use.",
+    heroImage:
+      "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=1920&q=80",
+  },
+};
+
+export const generateMetadata = async ({
+  params,
+}: BrandPageProps): Promise<Metadata> => {
+  const { slug } = await params;
+  const brand = BRANDS.find((b) => b.slug === slug);
+  if (!brand) return { title: "Brand Not Found" };
+
+  return {
+    title: `${brand.name} — Authorized Dealer in San Miguel de Allende`,
+    description: `Shop ${brand.name} bath, kitchen, and hardware fixtures at Counter Cultures. Authorized dealer in San Miguel de Allende, Mexico.`,
+  };
+};
+
+const BrandPage = async ({ params }: BrandPageProps) => {
+  const { slug, locale } = await params;
+  const brand = BRANDS.find((b) => b.slug === slug);
+
+  if (!brand) notFound();
+
+  const products = await getProductsByBrand(brand.name);
+  const heroData = brandHeroData[slug] ?? {
+    tagline: "Authorized Dealer",
+    description: `Shop the complete ${brand.name} collection at Counter Cultures.`,
+    heroImage:
+      "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1920&q=80",
+  };
+
+  return (
+    <>
+      <Header locale={locale} />
+      <main>
+        <CategoryHero
+          eyebrow="Authorized Dealer"
+          title={brand.name}
+          description={heroData.description}
+          productCount={products.length}
+          ctaLabel={`Shop ${brand.name}`}
+          ctaHref="#products"
+          imageSrc={heroData.heroImage}
+        />
+
+        {/* Value props */}
+        <section className="py-12 bg-brand-sand/20 border-b border-brand-stone/10">
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="flex items-start gap-4">
+                <Shield className="w-5 h-5 text-brand-terracotta mt-0.5 shrink-0" />
+                <div>
+                  <h3 className="font-body text-sm font-semibold text-brand-charcoal">
+                    Authorized Dealer
+                  </h3>
+                  <p className="mt-2 font-body text-sm text-brand-stone">
+                    Full manufacturer warranty, genuine products, and
+                    factory-direct support.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <Wrench className="w-5 h-5 text-brand-terracotta mt-0.5 shrink-0" />
+                <div>
+                  <h3 className="font-body text-sm font-semibold text-brand-charcoal">
+                    Local Expertise
+                  </h3>
+                  <p className="mt-2 font-body text-sm text-brand-stone">
+                    20 years specifying {brand.name} for Mexican homes, hotels,
+                    and commercial projects.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <HeadphonesIcon className="w-5 h-5 text-brand-terracotta mt-0.5 shrink-0" />
+                <div>
+                  <h3 className="font-body text-sm font-semibold text-brand-charcoal">
+                    Installation Support
+                  </h3>
+                  <p className="mt-2 font-body text-sm text-brand-stone">
+                    Specification guidance, plumber coordination, and post-install
+                    support — all in San Miguel de Allende.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div id="products">
+          <ShopCatalog initialProducts={products} />
+        </div>
+      </main>
+      <Footer locale={locale} />
+    </>
+  );
+};
+
+export default BrandPage;

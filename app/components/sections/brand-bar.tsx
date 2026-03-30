@@ -10,12 +10,12 @@ const brands = [
   { name: "California Faucets", slug: "california-faucets" },
 ];
 
-const BrandBar = () => (
+const BrandBar = ({ locale = "en" }: { locale?: string }) => (
   <section className="bg-brand-charcoal py-16">
     <div className="mx-auto max-w-7xl px-6 lg:px-8">
       <AnimatedSection>
         <p className="text-center font-mono text-xs tracking-[0.25em] text-brand-copper uppercase mb-8">
-          Authorized Dealer
+          {locale === "en" ? "Authorized Dealer" : "Distribuidor Autorizado"}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-0">
           {brands.map((brand, i) => (
@@ -31,7 +31,9 @@ const BrandBar = () => (
           ))}
         </div>
         <p className="text-center font-body text-sm text-white/60 mt-8">
-          Factory-authorized sales, service, and installation support for Mexico&apos;s most discerning projects.
+          {locale === "en"
+            ? "Factory-authorized sales, service, and installation support for Mexico\u2019s most discerning projects."
+            : "Ventas autorizadas de fábrica, servicio y soporte de instalación para los proyectos más exigentes de México."}
         </p>
       </AnimatedSection>
     </div>

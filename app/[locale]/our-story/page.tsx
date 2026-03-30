@@ -6,6 +6,7 @@ import { CategoryHero } from "@/app/components/sections/category-hero";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { Button } from "@/app/components/ui/button";
 import { MessageCircle } from "lucide-react";
+import { useLocale } from "next-intl";
 import { SITE_CONFIG } from "@/app/lib/constants";
 
 const timeline = [
@@ -47,9 +48,12 @@ const timeline = [
   },
 ];
 
-const OurStoryPage = () => (
+const OurStoryPage = () => {
+  const locale = useLocale() as "en" | "es";
+
+  return (
   <>
-    <Header />
+    <Header locale={locale} />
     <main>
       <CategoryHero
         eyebrow="Our Story"
@@ -252,8 +256,9 @@ const OurStoryPage = () => (
         </div>
       </section>
     </main>
-    <Footer />
+    <Footer locale={locale} />
   </>
-);
+  );
+};
 
 export default OurStoryPage;

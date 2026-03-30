@@ -3,12 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown } from "lucide-react";
-import { NAV_LINKS } from "@/app/lib/constants";
+import { Menu, X, ChevronDown, MessageCircle } from "lucide-react";
+import { NAV_LINKS, SITE_CONFIG } from "@/app/lib/constants";
 
-const Header = () => {
+const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
+  const locale = localeProp as "en" | "es";
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const lang = locale as "en" | "es";
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-brand-linen/95 backdrop-blur-sm border-b border-brand-stone/10">
@@ -39,7 +41,7 @@ const Header = () => {
                   href={link.href}
                   className="font-body text-sm font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors duration-300 flex items-center gap-1 py-2"
                 >
-                  {link.label.en}
+                  {link.label[lang]}
                   {"children" in link && (
                     <ChevronDown className="w-3 h-3" />
                   )}
@@ -62,7 +64,7 @@ const Header = () => {
                             href={child.href}
                             className="block px-5 py-2.5 text-sm text-brand-charcoal hover:text-brand-terracotta hover:bg-brand-linen/50 transition-colors duration-200"
                           >
-                            {child.label.en}
+                            {child.label[lang]}
                           </Link>
                         ))}
                       </motion.div>
@@ -73,18 +75,37 @@ const Header = () => {
             ))}
           </div>
 
-          {/* Right side — CTA + Mobile toggle */}
-          <div className="flex items-center gap-4">
+          {/* Right side — WhatsApp + CTA + Mobile toggle */}
+          <div className="flex items-center gap-3">
+            {/* WhatsApp */}
+            <a
+              href={`https://wa.me/${SITE_CONFIG.showroom.whatsapp.replace(/\s+/g, "")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 text-[#25D366] hover:text-[#20BD5A] transition-colors"
+              aria-label="WhatsApp"
+            >
+              <MessageCircle className="w-5 h-5" />
+            </a>
+
+            {/* Language toggle */}
+            <Link
+              href="/"
+              className="font-mono text-[10px] tracking-wider text-brand-stone hover:text-brand-terracotta transition-colors uppercase"
+            >
+              {lang === "en" ? "ES" : "EN"}
+            </Link>
+
             <Link
               href="/showroom"
               className="hidden md:inline-flex font-body text-sm font-medium px-5 py-2.5 bg-brand-terracotta text-white hover:bg-brand-copper transition-colors duration-300"
             >
-              Visit Showroom
+              {lang === "en" ? "Visit Showroom" : "Visitar Showroom"}
             </Link>
 
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="lg:hidden p-2 text-brand-charcoal"
+              className="lg:hidden p-2 text-brand-charcoal cursor-pointer"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
             >
               {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -111,7 +132,7 @@ const Header = () => {
                     onClick={() => setMobileOpen(false)}
                     className="block py-3 font-body text-base font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors"
                   >
-                    {link.label.en}
+                    {link.label[lang]}
                   </Link>
                   {"children" in link && (
                     <div className="pl-4 space-y-1">
@@ -122,19 +143,31 @@ const Header = () => {
                           onClick={() => setMobileOpen(false)}
                           className="block py-2 text-sm text-brand-stone hover:text-brand-terracotta transition-colors"
                         >
-                          {child.label.en}
+                          {child.label[lang]}
                         </Link>
                       ))}
                     </div>
                   )}
                 </div>
               ))}
+
+              {/* WhatsApp in mobile */}
+              <a
+                href={`https://wa.me/${SITE_CONFIG.showroom.whatsapp.replace(/\s+/g, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 py-3 font-body text-base font-medium text-[#25D366]"
+              >
+                <MessageCircle className="w-5 h-5" />
+                WhatsApp
+              </a>
+
               <Link
                 href="/showroom"
                 onClick={() => setMobileOpen(false)}
                 className="block mt-4 text-center py-3 bg-brand-terracotta text-white font-body font-medium text-sm hover:bg-brand-copper transition-colors"
               >
-                Visit Showroom
+                {lang === "en" ? "Visit Showroom" : "Visitar Showroom"}
               </Link>
             </div>
           </motion.div>

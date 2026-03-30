@@ -1,15 +1,49 @@
 "use client";
 
+import { useState, type FormEvent } from "react";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { Button } from "@/app/components/ui/button";
 import { MapPin, Clock, Phone, Mail, MessageCircle } from "lucide-react";
+import { useLocale } from "next-intl";
 import { SITE_CONFIG } from "@/app/lib/constants";
 
-const ContactPage = () => (
+const ContactPage = () => {
+  const locale = useLocale() as "en" | "es";
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setStatus("sending");
+    const form = e.currentTarget;
+    const data = new FormData(form);
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: data.get("firstName"),
+          lastName: data.get("lastName"),
+          email: data.get("email"),
+          phone: data.get("phone"),
+          type: data.get("type"),
+          message: data.get("message"),
+        }),
+      });
+
+      if (!res.ok) throw new Error();
+      setStatus("sent");
+      form.reset();
+    } catch {
+      setStatus("error");
+    }
+  };
+
+  return (
   <>
-    <Header />
+    <Header locale={locale} />
     <main>
       {/* Hero */}
       <section className="pt-32 pb-16 md:pt-40 md:pb-20 bg-brand-charcoal">
@@ -39,30 +73,37 @@ const ContactPage = () => (
                 <h2 className="font-display text-3xl font-light tracking-wide text-brand-charcoal mb-8">
                   Send Us a Message
                 </h2>
-                <form className="space-y-5">
+                <form className="space-y-5" onSubmit={handleSubmit}>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <input
                       type="text"
+                      name="firstName"
+                      required
                       placeholder="First name"
                       className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
                     />
                     <input
                       type="text"
+                      name="lastName"
                       placeholder="Last name"
                       className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
                     />
                   </div>
                   <input
                     type="email"
+                    name="email"
+                    required
                     placeholder="Email address"
                     className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
                   />
                   <input
                     type="tel"
+                    name="phone"
                     placeholder="Phone / WhatsApp"
                     className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
                   />
                   <select
+                    name="type"
                     className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal focus:outline-none focus:border-brand-terracotta transition-colors"
                     defaultValue=""
                   >
@@ -77,16 +118,29 @@ const ContactPage = () => (
                     <option value="other">General Question</option>
                   </select>
                   <textarea
+                    name="message"
                     placeholder="Tell us about your project or question"
                     rows={5}
                     className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors resize-none"
                   />
-                  <Button variant="primary" className="w-full sm:w-auto">
-                    Send Message
+                  <Button variant="primary" className="w-full sm:w-auto" disabled={status === "sending"}>
+                    {status === "sending" ? "Sending..." : status === "sent" ? "Sent!" : "Send Message"}
                   </Button>
-                  <p className="font-body text-sm text-brand-stone">
-                    We respond within 2 hours during business hours.
-                  </p>
+                  {status === "sent" && (
+                    <p className="font-body text-sm text-brand-sage">
+                      Thank you! We&apos;ll be in touch within 2 hours.
+                    </p>
+                  )}
+                  {status === "error" && (
+                    <p className="font-body text-sm text-red-600">
+                      Something went wrong. Please try again or message us on WhatsApp.
+                    </p>
+                  )}
+                  {status === "idle" && (
+                    <p className="font-body text-sm text-brand-stone">
+                      We respond within 2 hours during business hours.
+                    </p>
+                  )}
                 </form>
               </AnimatedSection>
             </div>
@@ -170,8 +224,9 @@ const ContactPage = () => (
         </div>
       </section>
     </main>
-    <Footer />
+    <Footer locale={locale} />
   </>
-);
+  );
+};
 
 export default ContactPage;

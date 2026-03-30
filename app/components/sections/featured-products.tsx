@@ -87,23 +87,23 @@ const featured = [
   },
 ];
 
-const FeaturedProducts = () => (
+const FeaturedProducts = ({ locale = "en" }: { locale?: string }) => (
   <section className="py-24 md:py-32 bg-brand-linen">
     <div className="mx-auto max-w-7xl px-6 lg:px-8">
       <AnimatedSection>
         <h2 className="text-center font-display text-4xl md:text-5xl font-normal tracking-wide text-brand-charcoal mb-4">
-          Curated Selections
+          {locale === "en" ? "Curated Selections" : "Selecciones Curadas"}
         </h2>
         <p className="text-center font-body text-brand-stone mb-12 max-w-2xl mx-auto">
-          Hand-picked pieces from our current collection
+          {locale === "en" ? "Hand-picked pieces from our current collection" : "Piezas seleccionadas a mano de nuestra colección actual"}
         </p>
       </AnimatedSection>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {featured.map((product, i) => (
           <AnimatedSection key={product.href} delay={i * 0.06}>
-            <Link href={product.href} className="group block bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
-              <div className="relative aspect-[4/5] overflow-hidden">
+            <Link href={product.href} className="group flex flex-col bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 h-full">
+              <div className="relative aspect-[4/5] overflow-hidden shrink-0">
                 <img
                   src={product.image}
                   alt={product.name}
@@ -113,30 +113,32 @@ const FeaturedProducts = () => (
                   {product.badge}
                 </span>
               </div>
-              <div className="p-5">
+              <div className="p-5 flex flex-col flex-1">
                 <p className="font-mono text-xs text-brand-stone uppercase tracking-wider">
                   {product.brand}
                 </p>
-                <h3 className="mt-1 font-body text-base font-medium text-brand-charcoal group-hover:text-brand-terracotta transition-colors duration-300 leading-snug line-clamp-2">
+                <h3 className="mt-1 font-body text-base font-medium text-brand-charcoal group-hover:text-brand-terracotta transition-colors duration-300 leading-snug line-clamp-2 min-h-[2.75rem]">
                   {product.name}
                 </h3>
-                {product.finishes.length > 1 && (
-                  <div className="flex items-center gap-1.5 mt-2">
-                    {product.finishes.slice(0, 5).map((finish) => (
-                      <span
-                        key={finish}
-                        className="w-3 h-3 rounded-full bg-brand-stone/30 border border-brand-stone/20"
-                        title={finish}
-                      />
-                    ))}
-                    {product.finishes.length > 5 && (
-                      <span className="font-mono text-[10px] text-brand-stone">
-                        +{product.finishes.length - 5}
-                      </span>
-                    )}
-                  </div>
-                )}
-                <p className="mt-2 font-mono text-lg text-brand-copper font-medium">
+                <div className="flex items-center gap-1.5 mt-2 min-h-[0.75rem]">
+                  {product.finishes.length > 1 && (
+                    <>
+                      {product.finishes.slice(0, 5).map((finish) => (
+                        <span
+                          key={finish}
+                          className="w-3 h-3 rounded-full bg-brand-stone/30 border border-brand-stone/20"
+                          title={finish}
+                        />
+                      ))}
+                      {product.finishes.length > 5 && (
+                        <span className="font-mono text-[10px] text-brand-stone">
+                          +{product.finishes.length - 5}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </div>
+                <p className="mt-auto pt-2 font-mono text-lg text-brand-copper font-medium">
                   {product.price} <span className="text-xs text-brand-stone font-normal">MXN</span>
                 </p>
               </div>
@@ -147,7 +149,7 @@ const FeaturedProducts = () => (
 
       <div className="mt-12 text-center">
         <Button variant="primary" href="/shop">
-          Browse the Full Collection
+          {locale === "en" ? "Browse the Full Collection" : "Ver la Colección Completa"}
         </Button>
       </div>
     </div>

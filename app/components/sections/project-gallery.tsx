@@ -55,15 +55,17 @@ const projects = [
   },
 ];
 
-const ProjectGallery = () => (
+const ProjectGallery = ({ locale = "en" }: { locale?: string }) => (
   <section className="py-24 md:py-32 bg-brand-linen">
     <div className="mx-auto max-w-7xl px-6 lg:px-8">
       <AnimatedSection>
         <h2 className="text-center font-display text-4xl md:text-5xl font-normal tracking-wide text-brand-charcoal mb-4">
-          Installed. Admired. Credited.
+          {locale === "en" ? "Installed. Admired. Credited." : "Instalado. Admirado. Acreditado."}
         </h2>
         <p className="text-center font-body text-brand-stone mb-12 max-w-2xl mx-auto">
-          Real projects featuring Counter Cultures fixtures, credited to the architects and designers who specified them.
+          {locale === "en"
+            ? "Real projects featuring Counter Cultures fixtures, credited to the architects and designers who specified them."
+            : "Proyectos reales con accesorios Counter Cultures, acreditados a los arquitectos y diseñadores que los especificaron."}
         </p>
       </AnimatedSection>
 
@@ -83,7 +85,7 @@ const ProjectGallery = () => (
                       {project.title}
                     </h3>
                     <p className="font-mono text-sm text-brand-copper mt-1">
-                      Designed by {project.architect}
+                      {locale === "en" ? "Designed by" : "Diseñado por"} {project.architect}
                     </p>
                     <p className="font-body text-sm text-white/70 mt-1">
                       {project.location} · {project.fixtureCount} Counter Cultures fixtures
@@ -98,7 +100,7 @@ const ProjectGallery = () => (
 
       <div className="mt-12 text-center">
         <Button variant="secondary" href="/projects">
-          View All Projects
+          {locale === "en" ? "View All Projects" : "Ver Todos los Proyectos"}
         </Button>
       </div>
     </div>

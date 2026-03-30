@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, type FormEvent } from "react";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { CategoryHero } from "@/app/components/sections/category-hero";
@@ -13,6 +14,7 @@ import {
   HeadphonesIcon,
   Users,
 } from "lucide-react";
+import { useLocale } from "next-intl";
 
 const benefits = [
   {
@@ -67,9 +69,44 @@ const steps = [
   },
 ];
 
-const TradePage = () => (
+const TradePage = () => {
+  const locale = useLocale() as "en" | "es";
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setStatus("sending");
+    const form = e.currentTarget;
+    const data = new FormData(form);
+
+    try {
+      const res = await fetch("/api/trade", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: data.get("firstName"),
+          lastName: data.get("lastName"),
+          company: data.get("company"),
+          profession: data.get("profession"),
+          email: data.get("email"),
+          phone: data.get("phone"),
+          website: data.get("website"),
+          license: data.get("license"),
+          message: data.get("message"),
+        }),
+      });
+
+      if (!res.ok) throw new Error();
+      setStatus("sent");
+      form.reset();
+    } catch {
+      setStatus("error");
+    }
+  };
+
+  return (
   <>
-    <Header />
+    <Header locale={locale} />
     <main>
       <CategoryHero
         eyebrow="For Design Professionals"
@@ -190,25 +227,31 @@ const TradePage = () => (
           </AnimatedSection>
 
           <AnimatedSection delay={0.2}>
-            <form className="mt-10 space-y-5">
+            <form className="mt-10 space-y-5" onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <input
                   type="text"
+                  name="firstName"
+                  required
                   placeholder="First name"
                   className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
                 />
                 <input
                   type="text"
+                  name="lastName"
                   placeholder="Last name"
                   className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
                 />
               </div>
               <input
                 type="text"
+                name="company"
+                required
                 placeholder="Company / Studio name"
                 className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
               />
               <select
+                name="profession"
                 className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal focus:outline-none focus:border-brand-terracotta transition-colors"
                 defaultValue=""
               >
@@ -225,25 +268,31 @@ const TradePage = () => (
               </select>
               <input
                 type="email"
+                name="email"
+                required
                 placeholder="Email address"
                 className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
               />
               <input
                 type="tel"
+                name="phone"
                 placeholder="Phone / WhatsApp"
                 className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
               />
               <input
                 type="url"
+                name="website"
                 placeholder="Website or portfolio URL (optional)"
                 className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
               />
               <input
                 type="text"
+                name="license"
                 placeholder="License / Tax ID (RFC)"
                 className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
               />
               <textarea
+                name="message"
                 placeholder="Tell us about your typical projects and how you'd use the trade program"
                 rows={4}
                 className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors resize-none"
@@ -253,6 +302,7 @@ const TradePage = () => (
                 <input
                   type="checkbox"
                   id="terms"
+                  required
                   className="mt-1 accent-brand-terracotta"
                 />
                 <label
@@ -264,23 +314,36 @@ const TradePage = () => (
                 </label>
               </div>
 
-              <Button variant="primary" className="w-full">
-                Submit Application
+              <Button variant="primary" className="w-full" disabled={status === "sending"}>
+                {status === "sending" ? "Submitting..." : status === "sent" ? "Application Sent!" : "Submit Application"}
               </Button>
 
-              <div className="flex items-center gap-2 justify-center">
-                <Check className="w-4 h-4 text-brand-sage" />
-                <p className="font-body text-sm text-brand-stone">
-                  Applications reviewed within 48 hours
+              {status === "sent" && (
+                <p className="font-body text-sm text-brand-sage text-center">
+                  Thank you! We&apos;ll review your application within 48 hours.
                 </p>
-              </div>
+              )}
+              {status === "error" && (
+                <p className="font-body text-sm text-red-600 text-center">
+                  Something went wrong. Please try again or contact us directly.
+                </p>
+              )}
+              {status === "idle" && (
+                <div className="flex items-center gap-2 justify-center">
+                  <Check className="w-4 h-4 text-brand-sage" />
+                  <p className="font-body text-sm text-brand-stone">
+                    Applications reviewed within 48 hours
+                  </p>
+                </div>
+              )}
             </form>
           </AnimatedSection>
         </div>
       </section>
     </main>
-    <Footer />
+    <Footer locale={locale} />
   </>
-);
+  );
+};
 
 export default TradePage;

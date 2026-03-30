@@ -1,0 +1,112 @@
+{
+  "nav": {
+    "visitShowroom": "Visit Showroom",
+    "whatsapp": "WhatsApp"
+  },
+  "hero": {
+    "visitShowroom": "Visit Our Showroom"
+  },
+  "brandBar": {
+    "authorizedDealer": "Authorized Dealer",
+    "subtitle": "World-class fixtures and artisanal craft, curated under one roof in San Miguel de Allende."
+  },
+  "shopByRoom": {
+    "eyebrow": "Shop by Category",
+    "title": "Find Your Fixtures",
+    "subtitle": "Whether you're renovating a bathroom, upgrading a kitchen, or selecting hardware for a new build — we have it.",
+    "bathroom": "Bathroom",
+    "bathroomDesc": "Sinks, faucets, tubs, showers & more",
+    "kitchen": "Kitchen",
+    "kitchenDesc": "Sinks, faucets, hoods & appliances",
+    "hardware": "Door Hardware",
+    "hardwareDesc": "Locks, handles, knobs & pulls",
+    "viewAll": "View All Collections"
+  },
+  "featuredProducts": {
+    "eyebrow": "Featured",
+    "title": "Editor's Picks",
+    "browseAll": "Browse the Full Collection"
+  },
+  "founderStory": {
+    "eyebrow": "Our Story",
+    "title": "Where Two Worlds Meet",
+    "paragraph1": "In 2004, Roger Williams opened a small showroom in San Miguel de Allende with a radical idea: a single destination where architects could source world-class brands like Kohler, TOTO, and Brizo — and commission one-of-a-kind pieces from Mexico's finest artisans.",
+    "paragraph2": "Twenty years later, Counter Cultures remains the only showroom in the region bridging international precision engineering with the soul of Mexican craft. Every fixture is personally curated. Every artisan is a partner, not a supplier.",
+    "readMore": "Read the Full Story",
+    "meetArtisans": "Meet Our Artisans"
+  },
+  "artisanal": {
+    "badge": "Only at Counter Cultures",
+    "eyebrow": "The Artisanal Collection",
+    "title": "Handcrafted by Mexico's Master Artisans",
+    "paragraph": "Hand-hammered copper basins from Santa Clara del Cobre. Stone vessels carved from cantera rosa. Ceramic sinks painted in centuries-old Talavera tradition. Each piece carries the marks of its maker — and a story no factory can replicate.",
+    "explore": "Explore Artisanal Collection",
+    "commission": "Commission a Custom Piece"
+  },
+  "projectGallery": {
+    "eyebrow": "Our Work",
+    "title": "Project Gallery",
+    "viewAll": "View All Projects"
+  },
+  "tradeTeaser": {
+    "badge": "For Design Professionals",
+    "title": "The Trade Program",
+    "subtitle": "Architects, designers, and builders get dedicated pricing, specification support, and priority fulfillment on every brand we carry.",
+    "apply": "Apply for Trade Access",
+    "benefits": {
+      "pricing": "Trade pricing on all brands",
+      "support": "Dedicated specification support",
+      "priority": "Priority fulfillment & shipping",
+      "presentations": "Client showroom presentations"
+    }
+  },
+  "testimonial": {
+    "quote": "Counter Cultures transformed our project. Roger understood the vision immediately — he specified Brizo for the kitchen, TOTO for the guest baths, and then surprised us with a hand-hammered copper basin from a local artisan that became the centerpiece of the master suite. No other showroom in Mexico could have done that.",
+    "author": "Arq. Carolina Mendoza",
+    "role": "Principal, Studio Arquitectura MX · San Miguel de Allende"
+  },
+  "contactCTA": {
+    "title": "Visit the Showroom",
+    "getDirections": "Get Directions →",
+    "formTitle": "Start Your Project",
+    "namePlaceholder": "Your name",
+    "emailPlaceholder": "Email address",
+    "phonePlaceholder": "Phone number",
+    "projectType": "Project type",
+    "residential": "Residential",
+    "commercial": "Commercial",
+    "trade": "Trade / Professional",
+    "messagePlaceholder": "Tell us about your project",
+    "send": "Send Message",
+    "responseTime": "We respond within 2 hours during business hours.",
+    "whatsapp": "Message on WhatsApp"
+  },
+  "newsletter": {
+    "title": "Design Inspiration, Delivered",
+    "subtitle": "Trends, new arrivals, and artisan spotlights. Monthly, never spammy.",
+    "placeholder": "Your email",
+    "subscribe": "Subscribe"
+  },
+  "footer": {
+    "collections": "Collections",
+    "company": "Company",
+    "contact": "Contact",
+    "follow": "Follow",
+    "curated": "Curated in San Miguel de Allende, Mexico.",
+    "bathroomFixtures": "Bathroom Fixtures",
+    "kitchenFixtures": "Kitchen Fixtures",
+    "doorHardware": "Door Hardware",
+    "artisanalCollection": "Artisanal Collection",
+    "ourStory": "Our Story",
+    "projects": "Projects",
+    "blog": "Blog",
+    "tradeProgram": "Trade Program"
+  },
+  "common": {
+    "exploreCollection": "Explore the Collection",
+    "learnMore": "Learn More",
+    "viewAll": "View All",
+    "products": "products",
+    "product": "product"
+  }
+}

@@ -1,11 +1,13 @@
 "use client";
 
+import { useState, type FormEvent } from "react";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { CategoryHero } from "@/app/components/sections/category-hero";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { Button } from "@/app/components/ui/button";
 import { MapPin, Clock, Phone, MessageCircle, Mail } from "lucide-react";
+import { useLocale } from "next-intl";
 import { SITE_CONFIG } from "@/app/lib/constants";
 
 const galleryImages = [
@@ -17,9 +19,41 @@ const galleryImages = [
   "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=600&q=80",
 ];
 
-const ShowroomPage = () => (
+const ShowroomPage = () => {
+  const locale = useLocale() as "en" | "es";
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setStatus("sending");
+    const form = e.currentTarget;
+    const data = new FormData(form);
+
+    try {
+      const res = await fetch("/api/showroom-booking", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.get("name"),
+          email: data.get("email"),
+          phone: data.get("phone"),
+          date: data.get("date"),
+          time: data.get("time"),
+          notes: data.get("notes"),
+        }),
+      });
+
+      if (!res.ok) throw new Error();
+      setStatus("sent");
+      form.reset();
+    } catch {
+      setStatus("error");
+    }
+  };
+
+  return (
   <>
-    <Header />
+    <Header locale={locale} />
     <main>
       <CategoryHero
         eyebrow="San Miguel de Allende"
@@ -108,27 +142,34 @@ const ShowroomPage = () => (
               <h3 className="mt-4 font-display text-3xl font-light tracking-wide text-brand-charcoal mb-6">
                 Book an Appointment
               </h3>
-              <form className="space-y-4">
+              <form className="space-y-4" onSubmit={handleSubmit}>
                 <input
                   type="text"
+                  name="name"
+                  required
                   placeholder="Your name"
                   className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
                 />
                 <input
                   type="email"
+                  name="email"
+                  required
                   placeholder="Email address"
                   className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
                 />
                 <input
                   type="tel"
+                  name="phone"
                   placeholder="Phone / WhatsApp"
                   className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
                 />
                 <input
                   type="date"
+                  name="date"
                   className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal focus:outline-none focus:border-brand-terracotta transition-colors"
                 />
                 <select
+                  name="time"
                   className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal focus:outline-none focus:border-brand-terracotta transition-colors"
                   defaultValue=""
                 >
@@ -141,16 +182,29 @@ const ShowroomPage = () => (
                   <option value="late">Late Afternoon (16:00 – 18:00)</option>
                 </select>
                 <textarea
+                  name="notes"
                   placeholder="What are you looking for? (optional)"
                   rows={3}
                   className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors resize-none"
                 />
-                <Button variant="primary" className="w-full">
-                  Request Appointment
+                <Button variant="primary" className="w-full" disabled={status === "sending"}>
+                  {status === "sending" ? "Sending..." : status === "sent" ? "Booked!" : "Request Appointment"}
                 </Button>
-                <p className="font-body text-sm text-brand-stone text-center">
-                  We&apos;ll confirm within 2 hours during business hours.
-                </p>
+                {status === "sent" && (
+                  <p className="font-body text-sm text-brand-sage text-center">
+                    We&apos;ll confirm your appointment within 2 hours.
+                  </p>
+                )}
+                {status === "error" && (
+                  <p className="font-body text-sm text-red-600 text-center">
+                    Something went wrong. Please try again or call us directly.
+                  </p>
+                )}
+                {status === "idle" && (
+                  <p className="font-body text-sm text-brand-stone text-center">
+                    We&apos;ll confirm within 2 hours during business hours.
+                  </p>
+                )}
               </form>
             </AnimatedSection>
           </div>
@@ -203,8 +257,9 @@ const ShowroomPage = () => (
         </div>
       </section>
     </main>
-    <Footer />
+    <Footer locale={locale} />
   </>
-);
+  );
+};
 
 export default ShowroomPage;

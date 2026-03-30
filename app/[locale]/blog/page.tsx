@@ -4,6 +4,7 @@ import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import Link from "next/link";
+import { useLocale } from "next-intl";
 
 type BlogTrack = "Inspiration" | "Guides" | "Trade";
 
@@ -92,9 +93,12 @@ const trackColors: Record<BlogTrack, string> = {
   Trade: "bg-brand-sage",
 };
 
-const BlogPage = () => (
+const BlogPage = () => {
+  const locale = useLocale() as "en" | "es";
+
+  return (
   <>
-    <Header />
+    <Header locale={locale} />
     <main>
       {/* Hero */}
       <section className="pt-32 pb-16 md:pt-40 md:pb-20 bg-brand-charcoal">
@@ -215,8 +219,9 @@ const BlogPage = () => (
         </div>
       </section>
     </main>
-    <Footer />
+    <Footer locale={locale} />
   </>
-);
+  );
+};
 
 export default BlogPage;

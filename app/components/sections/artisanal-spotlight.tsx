@@ -3,7 +3,28 @@
 import { motion } from "framer-motion";
 import { Button } from "@/app/components/ui/button";
 
-const ArtisanalSpotlight = () => (
+const t = {
+  en: {
+    badge: "Only at Counter Cultures",
+    title1: "Handcrafted in Mexico.",
+    title2: "One Piece at a Time.",
+    paragraph: "Every artisan piece in our collection is made by hand in workshops across Mexico \u2014 copper basins hammered in Santa Clara del Cobre, volcanic stone carved in Quer\u00e9taro, Mistoa ceramics shaped in Guanajuato. No two pieces are identical. Each one carries the fingerprint of its maker.",
+    explore: "Explore Artisanal Collection",
+    commission: "Commission a Custom Piece",
+  },
+  es: {
+    badge: "Solo en Counter Cultures",
+    title1: "Hecho a Mano en M\u00e9xico.",
+    title2: "Una Pieza a la Vez.",
+    paragraph: "Cada pieza artesanal de nuestra colecci\u00f3n est\u00e1 hecha a mano en talleres de M\u00e9xico \u2014 lavabos de cobre martillados en Santa Clara del Cobre, piedra volc\u00e1nica tallada en Quer\u00e9taro, cer\u00e1mica Mistoa moldeada en Guanajuato. No hay dos piezas iguales. Cada una lleva la huella de su creador.",
+    explore: "Explorar Colecci\u00f3n Artesanal",
+    commission: "Encargar una Pieza Personalizada",
+  },
+};
+
+const ArtisanalSpotlight = ({ locale = "en" }: { locale?: string }) => {
+  const c = t[locale as "en" | "es"];
+  return (
   <section className="bg-brand-charcoal py-24 md:py-32">
     <div className="mx-auto max-w-7xl px-6 lg:px-8">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
@@ -16,26 +37,22 @@ const ArtisanalSpotlight = () => (
           className="lg:col-span-5"
         >
           <span className="inline-block bg-brand-copper text-white px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-sm">
-            Only at Counter Cultures
+            {c.badge}
           </span>
           <h2 className="mt-6 font-display text-4xl md:text-5xl font-light text-white tracking-wide leading-tight">
-            Handcrafted in Mexico.
+            {c.title1}
             <br />
-            <span className="italic">One Piece at a Time.</span>
+            <span className="italic">{c.title2}</span>
           </h2>
           <p className="mt-6 font-body text-base text-white/80 leading-relaxed">
-            Every artisan piece in our collection is made by hand in workshops
-            across Mexico — copper basins hammered in Santa Clara del Cobre,
-            volcanic stone carved in Querétaro, Mistoa ceramics shaped in
-            Guanajuato. No two pieces are identical. Each one carries the
-            fingerprint of its maker.
+            {c.paragraph}
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-4">
             <Button variant="primary" href="/artisanal">
-              Explore Artisanal Collection
+              {c.explore}
             </Button>
             <Button variant="ghost" href="/contact?type=commission" className="text-white hover:text-brand-copper">
-              Commission a Custom Piece
+              {c.commission}
             </Button>
           </div>
         </motion.div>
@@ -75,6 +92,7 @@ const ArtisanalSpotlight = () => (
       </div>
     </div>
   </section>
-);
+  );
+};
 
 export { ArtisanalSpotlight };

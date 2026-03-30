@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { submitNewsletter } from "@/app/lib/sheets";
+import { sendNewsletterWelcome } from "@/app/lib/email";
 
 export const POST = async (request: Request) => {
   try {
@@ -14,6 +15,8 @@ export const POST = async (request: Request) => {
     }
 
     await submitNewsletter(email);
+
+    sendNewsletterWelcome(email).catch(() => {});
 
     return NextResponse.json({ success: true });
   } catch {
