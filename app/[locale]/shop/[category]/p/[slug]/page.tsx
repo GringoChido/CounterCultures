@@ -4,6 +4,8 @@ import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { ProductDetail } from "./product-detail";
 import { getProductBySlug, getProducts } from "@/app/lib/sheets";
+import { PRODUCT_CATEGORIES } from "@/app/lib/constants";
+import type { CategoryKey } from "@/app/lib/constants";
 
 interface PDPProps {
   params: Promise<{ category: string; slug: string; locale: string }>;
@@ -29,17 +31,17 @@ export const generateMetadata = async ({ params }: PDPProps): Promise<Metadata> 
     title,
     description,
     alternates: {
-      canonical: `${BASE_URL}/${locale}/shop/${category}/${slug}`,
+      canonical: `${BASE_URL}/${locale}/shop/${category}/p/${slug}`,
       languages: {
-        en: `${BASE_URL}/en/shop/${category}/${slug}`,
-        es: `${BASE_URL}/es/shop/${category}/${slug}`,
-        "x-default": `${BASE_URL}/en/shop/${category}/${slug}`,
+        en: `${BASE_URL}/en/shop/${category}/p/${slug}`,
+        es: `${BASE_URL}/es/shop/${category}/p/${slug}`,
+        "x-default": `${BASE_URL}/en/shop/${category}/p/${slug}`,
       },
     },
     openGraph: {
       title,
       description,
-      url: `${BASE_URL}/${locale}/shop/${category}/${slug}`,
+      url: `${BASE_URL}/${locale}/shop/${category}/p/${slug}`,
       locale: isEs ? "es_MX" : "en_US",
       images: product.images[0]
         ? [{ url: product.images[0], alt: productName }]
@@ -56,15 +58,25 @@ export const generateMetadata = async ({ params }: PDPProps): Promise<Metadata> 
 
 const ProductPage = async ({ params }: PDPProps) => {
   const { category, slug, locale } = await params;
+  const lang = (locale as "en" | "es") || "en";
   const product = await getProductBySlug(slug);
 
   if (!product) notFound();
 
-  // Cross-sells: same category, different product
-  const related = await getProducts({ category: product.category });
-  const crossSells = related
-    .filter((p) => p.id !== product.id)
-    .slice(0, 4);
+  // Cross-sells: same subcategory first, then same category
+  const related = await getProducts({ category: product.category, subcategory: product.subcategory });
+  let crossSells = related.filter((p) => p.id !== product.id).slice(0, 4);
+  if (crossSells.length < 4) {
+    const moreCrossSells = await getProducts({ category: product.category });
+    const additional = moreCrossSells
+      .filter((p) => p.id !== product.id && !crossSells.some((cs) => cs.id === p.id))
+      .slice(0, 4 - crossSells.length);
+    crossSells = [...crossSells, ...additional];
+  }
+
+  // Resolve subcategory label for breadcrumbs
+  const catConfig = PRODUCT_CATEGORIES[category as CategoryKey];
+  const subConfig = catConfig?.subcategories.find((s) => s.slug === product.subcategory);
 
   // JSON-LD structured data
   const jsonLd = {
@@ -79,7 +91,11 @@ const ProductPage = async ({ params }: PDPProps) => {
       "@type": "Offer",
       price: product.price,
       priceCurrency: product.currency,
-      availability: "https://schema.org/InStock",
+      availability: product.availability === "in-stock"
+        ? "https://schema.org/InStock"
+        : product.availability === "made-to-order"
+          ? "https://schema.org/PreOrder"
+          : "https://schema.org/LimitedAvailability",
       seller: {
         "@type": "Organization",
         name: "Counter Cultures",
@@ -89,15 +105,22 @@ const ProductPage = async ({ params }: PDPProps) => {
 
   return (
     <>
-      <Header locale={locale} />
+      <Header locale={lang} />
       <main className="pt-20">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <ProductDetail product={product} crossSells={crossSells} />
+        <ProductDetail
+          product={product}
+          crossSells={crossSells}
+          locale={lang}
+          categoryLabel={catConfig?.label[lang] || category}
+          subcategoryLabel={subConfig?.label[lang] || product.subcategory}
+          subcategorySlug={product.subcategory}
+        />
       </main>
-      <Footer locale={locale} />
+      <Footer locale={lang} />
     </>
   );
 };

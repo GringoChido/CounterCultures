@@ -102,6 +102,32 @@
     "blog": "Blog",
     "tradeProgram": "Programa Trade"
   },
+  "shop": {
+    "breadcrumbHome": "Inicio",
+    "breadcrumbShop": "Tienda",
+    "allSubcategories": "Todos",
+    "viewAll": "Ver Todo",
+    "filters": "Filtros",
+    "noProducts": "No se encontraron productos en esta categoría.",
+    "productCount": "{count} productos",
+    "megaNavFeatured": "Colección Artesanal",
+    "megaNavFeaturedDesc": "Explora piezas hechas a mano por los maestros artesanos de México"
+  },
+  "product": {
+    "inquire": "Preguntar Sobre Esta Pieza",
+    "tradePricing": "Solicitar Precio Profesional",
+    "specSheet": "Descargar Ficha Técnica",
+    "finishes": "Acabados Disponibles",
+    "specifications": "Especificaciones",
+    "availability": "Disponibilidad",
+    "inStock": "En Stock",
+    "madeToOrder": "Hecho a Pedido (4-8 semanas)",
+    "specialOrder": "Pedido Especial",
+    "artisanBadge": "Hecho a Mano por Artesanos Mexicanos",
+    "tradePriceNote": "Precios profesionales disponibles — solicita acceso",
+    "relatedProducts": "También Te Puede Interesar",
+    "whatsappMessage": "Hola, me interesa {product} (SKU: {sku}). ¿Me pueden dar más información?"
+  },
   "common": {
     "exploreCollection": "Explorar la Colección",
     "learnMore": "Más Información",

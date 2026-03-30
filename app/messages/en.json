@@ -102,6 +102,32 @@
     "blog": "Blog",
     "tradeProgram": "Trade Program"
   },
+  "shop": {
+    "breadcrumbHome": "Home",
+    "breadcrumbShop": "Shop",
+    "allSubcategories": "All",
+    "viewAll": "View All",
+    "filters": "Filters",
+    "noProducts": "No products found in this category.",
+    "productCount": "{count} products",
+    "megaNavFeatured": "Artisanal Collection",
+    "megaNavFeaturedDesc": "Browse handcrafted pieces by Mexico's master artisans"
+  },
+  "product": {
+    "inquire": "Inquire About This Piece",
+    "tradePricing": "Request Trade Pricing",
+    "specSheet": "Download Spec Sheet",
+    "finishes": "Available Finishes",
+    "specifications": "Specifications",
+    "availability": "Availability",
+    "inStock": "In Stock",
+    "madeToOrder": "Made to Order (4-8 weeks)",
+    "specialOrder": "Special Order",
+    "artisanBadge": "Handcrafted by Mexican Artisans",
+    "tradePriceNote": "Trade pricing available — apply for access",
+    "relatedProducts": "You May Also Like",
+    "whatsappMessage": "Hi, I'm interested in {product} (SKU: {sku}). Could you provide more information?"
+  },
   "common": {
     "exploreCollection": "Explore the Collection",
     "learnMore": "Learn More",

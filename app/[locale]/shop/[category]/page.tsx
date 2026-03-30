@@ -152,7 +152,7 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
               {catConfig.subcategories.map((sub) => (
                 <a
                   key={sub.slug}
-                  href={`/shop/${category}?sub=${sub.slug}`}
+                  href={`/${locale}/shop/${category}/${sub.slug}`}
                   className="px-4 py-2 text-sm font-body border border-brand-stone/20 rounded-full text-brand-charcoal hover:border-brand-terracotta hover:text-brand-terracotta transition-colors"
                 >
                   {sub.label[lang]}

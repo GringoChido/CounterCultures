@@ -121,14 +121,28 @@ export const getProducts = async (
 ): Promise<Product[]> => {
   if (!isConfigured()) {
     // Development: use sample data
-    let products: Product[] = SAMPLE_PRODUCTS.map((p) => ({
-      ...p,
-      finishes: [...p.finishes],
-      images: [p.image],
-      descriptionEn: p.description,
-      availability: "in-stock" as const,
-      slug: p.name.toLowerCase().replace(/\s+/g, "-"),
-    }));
+    let products: Product[] = (SAMPLE_PRODUCTS as ReadonlyArray<typeof SAMPLE_PRODUCTS[number]>).map((p) => {
+      const record = p as unknown as Record<string, unknown>;
+      return {
+        id: p.id,
+        sku: p.sku,
+        brand: p.brand,
+        name: p.name,
+        nameEn: p.nameEn,
+        category: p.category as Product["category"],
+        subcategory: p.subcategory,
+        price: p.price,
+        currency: p.currency as Product["currency"],
+        finishes: [...p.finishes],
+        images: [p.image],
+        artisanal: p.artisanal,
+        description: (record.description as string) || "",
+        descriptionEn: (record.descriptionEn as string) || (record.description as string) || "",
+        availability: "in-stock" as const,
+        slug: (record.slug as string) || p.name.toLowerCase().replace(/\s+/g, "-"),
+        specifications: record.specifications as Record<string, string> | undefined,
+      };
+    });
 
     if (filter?.category) {
       products = products.filter((p) => p.category === filter.category);
@@ -195,6 +209,13 @@ export const getProductsByBrand = async (brand: string): Promise<Product[]> => {
 export const getFeaturedProducts = async (): Promise<Product[]> => {
   const products = await getProducts();
   return products.filter((p) => p.featured).slice(0, 8);
+};
+
+export const getProductsBySubcategory = async (
+  category: string,
+  subcategory: string
+): Promise<Product[]> => {
+  return getProducts({ category, subcategory });
 };
 
 // --- Lead Operations ---

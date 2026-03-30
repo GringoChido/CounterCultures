@@ -33,7 +33,7 @@ const ProductCard = ({
   artisanal,
 }: ProductCardProps) => (
   <Link
-    href={`/shop/${category}/${slug}`}
+    href={`/shop/${category}/p/${slug}`}
     className="group block"
   >
     <div className="relative overflow-hidden aspect-square bg-brand-sand/20">
