@@ -17,11 +17,14 @@ const LoginPage = () => {
     setError("");
     setLoading(true);
 
-    if (email && password) {
+    if (
+      email === "joshua@untold.works" &&
+      password === "GringoChido1!"
+    ) {
       sessionStorage.setItem("cc-portal-auth", "true");
       router.push("/dashboard/overview");
     } else {
-      setError("Please enter your email and password.");
+      setError("Invalid email or password.");
       setLoading(false);
     }
   };
