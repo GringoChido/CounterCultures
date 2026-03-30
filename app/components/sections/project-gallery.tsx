@@ -4,59 +4,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { Button } from "@/app/components/ui/button";
+import { PROJECTS } from "@/app/lib/projects";
 
-const projects = [
-  {
-    title: "Casa Rosada Master Bath",
-    architect: "Studio Arquitectura MX",
-    location: "San Miguel de Allende",
-    fixtureCount: 5,
-    image: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=600&q=75&auto=format",
-    href: "/projects/casa-rosada",
-  },
-  {
-    title: "Rancho Sereno Kitchen",
-    architect: "Taller Héctor Barroso",
-    location: "Querétaro",
-    fixtureCount: 3,
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=75&auto=format",
-    href: "/projects/rancho-sereno",
-  },
-  {
-    title: "Hotel Boutique Luna Spa",
-    architect: "Productora",
-    location: "San Miguel de Allende",
-    fixtureCount: 12,
-    image: "https://images.unsplash.com/photo-1600607687644-c7171b42498f?w=600&q=75&auto=format",
-    href: "/projects/hotel-luna",
-  },
-  {
-    title: "Villa Magnolia Guest Bath",
-    architect: "Esrawe Studio",
-    location: "San Miguel de Allende",
-    fixtureCount: 7,
-    image: "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=600&q=75&auto=format",
-    href: "/projects/villa-magnolia",
-  },
-  {
-    title: "Penthouse Centro Kitchen",
-    architect: "TO Architects",
-    location: "Ciudad de México",
-    fixtureCount: 4,
-    image: "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?w=600&q=75&auto=format",
-    href: "/projects/penthouse-centro",
-  },
-  {
-    title: "Casa del Jardín Bath Suite",
-    architect: "Frida Escobedo",
-    location: "San Miguel de Allende",
-    fixtureCount: 8,
-    image: "https://images.unsplash.com/photo-1600210492493-0946911123ea?w=600&q=75&auto=format",
-    href: "/projects/casa-del-jardin",
-  },
-];
+const ProjectGallery = ({ locale = "en" }: { locale?: string }) => {
+  const lang = locale as "en" | "es";
 
-const ProjectGallery = ({ locale = "en" }: { locale?: string }) => (
+  return (
   <section className="py-14 md:py-32 bg-brand-linen">
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <AnimatedSection>
@@ -71,13 +24,13 @@ const ProjectGallery = ({ locale = "en" }: { locale?: string }) => (
       </AnimatedSection>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
-        {projects.map((project, i) => (
-          <AnimatedSection key={project.href} delay={i * 0.08}>
-            <Link href={project.href} className="group block rounded-lg overflow-hidden">
+        {PROJECTS.map((project, i) => (
+          <AnimatedSection key={project.slug} delay={i * 0.08}>
+            <Link href={`/${locale}/projects/${project.slug}`} className="group block rounded-lg overflow-hidden">
               <div className="relative aspect-[16/10] overflow-hidden">
                 <Image
-                  src={project.image}
-                  alt={`${project.title} — designed by ${project.architect} in ${project.location}`}
+                  src={project.heroImage.replace("w=1920", "w=600").replace("q=80", "q=75")}
+                  alt={`${project.title} — designed by ${project.architect} in ${project.location[lang]}`}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
@@ -91,7 +44,7 @@ const ProjectGallery = ({ locale = "en" }: { locale?: string }) => (
                       {locale === "en" ? "Designed by" : "Diseñado por"} {project.architect}
                     </p>
                     <p className="font-body text-sm text-white/70 mt-1">
-                      {project.location} · {project.fixtureCount} Counter Cultures fixtures
+                      {project.location[lang]} · {project.fixtures.length} {locale === "en" ? "fixtures" : "accesorios"}
                     </p>
                   </div>
                 </div>
@@ -108,6 +61,7 @@ const ProjectGallery = ({ locale = "en" }: { locale?: string }) => (
       </div>
     </div>
   </section>
-);
+  );
+};
 
 export { ProjectGallery };
