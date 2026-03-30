@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { BRANDS } from "@/app/lib/constants";
+import { articles } from "@/app/lib/articles";
 
 const BASE_URL = "https://countercultures.mx";
 const LAST_MODIFIED = new Date("2026-03-30");
@@ -41,11 +42,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...localizedEntry("/showroom", "yearly", 0.6),
     ...localizedEntry("/contact", "yearly", 0.6),
     ...localizedEntry("/trade", "monthly", 0.7),
+    ...localizedEntry("/resources", "monthly", 0.7),
+    ...localizedEntry("/insights", "weekly", 0.8),
   ];
 
   const brandRoutes: MetadataRoute.Sitemap = BRANDS.flatMap(({ slug }) =>
     localizedEntry(`/brands/${slug}`, "monthly", 0.6)
   );
 
-  return [...staticRoutes, ...brandRoutes];
+  const articleRoutes: MetadataRoute.Sitemap = articles.flatMap(({ slug }) =>
+    localizedEntry(`/insights/${slug}`, "monthly", 0.6)
+  );
+
+  return [...staticRoutes, ...brandRoutes, ...articleRoutes];
 }

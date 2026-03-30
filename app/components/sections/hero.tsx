@@ -31,8 +31,7 @@ const slides: HeroSlide[] = [
       label: { en: "Explore Collection", es: "Explorar Colección" },
       href: "/shop/bathroom",
     },
-    image:
-      "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1920&q=80",
+    image: "/images/hero/smart-toilet.webp",
   },
   {
     eyebrow: {
@@ -51,8 +50,7 @@ const slides: HeroSlide[] = [
       label: { en: "Shop Showers", es: "Ver Regaderas" },
       href: "/shop/bathroom?sub=showers",
     },
-    image:
-      "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=1920&q=80",
+    image: "/images/hero/shower-system.webp",
   },
   {
     eyebrow: {
@@ -71,8 +69,7 @@ const slides: HeroSlide[] = [
       label: { en: "Shop Faucets", es: "Ver Grifos" },
       href: "/shop/bathroom?sub=faucets",
     },
-    image:
-      "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=1920&q=80",
+    image: "/images/hero/faucets.webp",
   },
   {
     eyebrow: {
@@ -91,8 +88,7 @@ const slides: HeroSlide[] = [
       label: { en: "Shop Hardware", es: "Ver Herrajes" },
       href: "/shop/hardware",
     },
-    image:
-      "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1920&q=80",
+    image: "/images/hero/door-hardware.webp",
   },
   {
     eyebrow: {
@@ -111,8 +107,7 @@ const slides: HeroSlide[] = [
       label: { en: "Shop Bathtubs", es: "Ver Bañeras" },
       href: "/shop/bathroom?sub=bathtubs",
     },
-    image:
-      "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=1920&q=80",
+    image: "/images/hero/bathtub.webp",
   },
 ];
 
