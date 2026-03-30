@@ -29,14 +29,14 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-brand-linen/95 backdrop-blur-sm border-b border-brand-stone/10">
-      <nav className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link href="/" className="flex flex-col leading-none">
-            <span className="font-display text-2xl font-light tracking-wider text-brand-charcoal">
+          <Link href="/" className="flex flex-col leading-none min-w-0">
+            <span className="font-display text-xl md:text-2xl font-light tracking-wider text-brand-charcoal">
               Counter Cultures
             </span>
-            <span className="font-mono text-[10px] tracking-[0.2em] text-brand-stone uppercase mt-0.5">
+            <span className="font-mono text-[9px] md:text-[10px] tracking-[0.2em] text-brand-stone uppercase mt-0.5">
               The Connected System
             </span>
           </Link>
@@ -78,12 +78,12 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
           </div>
 
           {/* Right side — WhatsApp + CTA + Mobile toggle */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 sm:gap-2">
             <a
               href={`https://wa.me/${SITE_CONFIG.showroom.whatsapp.replace(/\s+/g, "")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2 text-[#25D366] hover:text-[#20BD5A] transition-colors"
+              className="flex items-center justify-center w-11 h-11 text-[#25D366] hover:text-[#20BD5A] transition-colors"
               aria-label="WhatsApp"
             >
               <MessageCircle className="w-5 h-5" />
@@ -93,7 +93,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
             <div className="flex items-center font-mono text-xs tracking-wider">
               <Link
                 href={getLocalePath("en")}
-                className={`px-1.5 py-1 transition-colors ${
+                className={`flex items-center justify-center min-w-[2.75rem] h-11 px-1 transition-colors ${
                   lang === "en"
                     ? "text-brand-terracotta font-bold"
                     : "text-brand-stone hover:text-brand-charcoal"
@@ -104,7 +104,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               <span className="text-brand-stone/40">|</span>
               <Link
                 href={getLocalePath("es")}
-                className={`px-1.5 py-1 transition-colors ${
+                className={`flex items-center justify-center min-w-[2.75rem] h-11 px-1 transition-colors ${
                   lang === "es"
                     ? "text-brand-terracotta font-bold"
                     : "text-brand-stone hover:text-brand-charcoal"
@@ -129,7 +129,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
 
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="lg:hidden p-2 text-brand-charcoal cursor-pointer"
+              className="lg:hidden flex items-center justify-center w-11 h-11 text-brand-charcoal cursor-pointer"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
             >
               {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -150,7 +150,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
             onMouseEnter={() => setMegaMenuOpen(true)}
             onMouseLeave={() => setMegaMenuOpen(false)}
           >
-            <div className="mx-auto max-w-7xl px-6 lg:px-8 py-8">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
               <div className="grid grid-cols-3 gap-10">
                 {categories.map(([key, cat]) => (
                   <div key={key}>
@@ -215,9 +215,9 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
-            className="lg:hidden bg-brand-linen border-t border-brand-stone/10 overflow-hidden"
+            className="lg:hidden bg-brand-linen border-t border-brand-stone/10 overflow-hidden shadow-lg"
           >
-            <div className="px-6 py-6 space-y-1 max-h-[calc(100vh-5rem)] overflow-y-auto">
+            <div className="px-4 sm:px-6 py-4 space-y-0 max-h-[calc(100dvh-4rem)] overflow-y-auto">
               {NAV_LINKS.map((link) => {
                 const isShop = "children" in link;
 
@@ -227,27 +227,27 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                       <Link
                         href={link.href}
                         onClick={() => setMobileOpen(false)}
-                        className="block py-3 font-body text-base font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors"
+                        className="block py-3.5 font-body text-base font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors border-b border-brand-stone/5"
                       >
                         {link.label[lang]}
                       </Link>
                       {/* Mobile category accordion */}
-                      <div className="pl-4 space-y-0">
+                      <div className="pl-3">
                         {categories.map(([key, cat]) => (
-                          <div key={key}>
+                          <div key={key} className="border-b border-brand-stone/5">
                             <button
                               onClick={() =>
                                 setMobileCategoryOpen(
                                   mobileCategoryOpen === key ? null : key
                                 )
                               }
-                              className="flex items-center justify-between w-full py-2.5 text-left cursor-pointer"
+                              className="flex items-center justify-between w-full py-3.5 text-left cursor-pointer min-h-[44px]"
                             >
                               <span className="font-body text-sm font-medium text-brand-charcoal">
                                 {cat.label[lang]}
                               </span>
                               <ChevronDown
-                                className={`w-3.5 h-3.5 text-brand-stone transition-transform ${
+                                className={`w-4 h-4 text-brand-stone transition-transform shrink-0 ${
                                   mobileCategoryOpen === key ? "rotate-180" : ""
                                 }`}
                               />
@@ -261,13 +261,13 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                                   transition={{ duration: 0.2 }}
                                   className="overflow-hidden"
                                 >
-                                  <div className="pl-4 pb-2 space-y-1">
+                                  <div className="pl-3 pb-2 space-y-0">
                                     {cat.subcategories.map((sub) => (
                                       <Link
                                         key={sub.slug}
                                         href={`/${locale}/shop/${key}/${sub.slug}`}
                                         onClick={() => setMobileOpen(false)}
-                                        className="block py-1.5 text-sm text-brand-stone hover:text-brand-terracotta transition-colors"
+                                        className="flex items-center py-2.5 min-h-[44px] text-sm text-brand-stone hover:text-brand-terracotta transition-colors"
                                       >
                                         {sub.label[lang]}
                                       </Link>
@@ -275,7 +275,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                                     <Link
                                       href={`/${locale}/shop/${key}`}
                                       onClick={() => setMobileOpen(false)}
-                                      className="block py-1.5 text-sm font-medium text-brand-terracotta"
+                                      className="flex items-center py-2.5 min-h-[44px] text-sm font-medium text-brand-terracotta"
                                     >
                                       {lang === "en" ? `View All ${cat.label[lang]}` : `Ver Todo ${cat.label[lang]}`}
                                     </Link>
@@ -295,7 +295,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                     key={link.href}
                     href={link.href}
                     onClick={() => setMobileOpen(false)}
-                    className="block py-3 font-body text-base font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors"
+                    className="flex items-center py-3.5 min-h-[44px] font-body text-base font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors border-b border-brand-stone/5"
                   >
                     {link.label[lang]}
                   </Link>
@@ -307,19 +307,28 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                 href={`https://wa.me/${SITE_CONFIG.showroom.whatsapp.replace(/\s+/g, "")}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 py-3 font-body text-base font-medium text-[#25D366]"
+                className="flex items-center gap-2 py-3.5 min-h-[44px] font-body text-base font-medium text-[#25D366] border-b border-brand-stone/5"
               >
                 <MessageCircle className="w-5 h-5" />
                 WhatsApp
               </a>
 
-              <Link
-                href="/showroom"
-                onClick={() => setMobileOpen(false)}
-                className="block mt-4 text-center py-3 bg-brand-terracotta text-white font-body font-medium text-sm hover:bg-brand-copper transition-colors"
-              >
-                {lang === "en" ? "Visit Showroom" : "Visitar Showroom"}
-              </Link>
+              <div className="pt-4 pb-2 flex flex-col gap-3">
+                <Link
+                  href="/showroom"
+                  onClick={() => setMobileOpen(false)}
+                  className="block text-center py-3.5 bg-brand-terracotta text-white font-body font-medium text-sm hover:bg-brand-copper transition-colors"
+                >
+                  {lang === "en" ? "Visit Showroom" : "Visitar Showroom"}
+                </Link>
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMobileOpen(false)}
+                  className="block text-center py-3 border border-brand-stone/20 text-brand-stone font-body text-xs font-medium hover:text-brand-charcoal hover:border-brand-copper transition-colors rounded"
+                >
+                  Counter Portal
+                </Link>
+              </div>
             </div>
           </motion.div>
         )}

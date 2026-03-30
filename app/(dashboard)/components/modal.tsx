@@ -56,7 +56,7 @@ const Modal = ({
                 <h2 className="text-lg font-semibold text-dash-text">{title}</h2>
                 <button
                   onClick={onClose}
-                  className="p-1.5 rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
+                  className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5 text-dash-text-secondary" />
                 </button>

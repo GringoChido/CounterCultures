@@ -43,8 +43,10 @@ export const generateMetadata = async ({ params }: PDPProps): Promise<Metadata> 
       description,
       url: `${BASE_URL}/${locale}/shop/${category}/p/${slug}`,
       locale: isEs ? "es_MX" : "en_US",
+      alternateLocale: isEs ? "en_US" : "es_MX",
+      type: "website",
       images: product.images[0]
-        ? [{ url: product.images[0], alt: productName }]
+        ? [{ url: product.images[0], width: 1200, height: 630, alt: productName }]
         : [],
     },
     twitter: {
@@ -78,45 +80,117 @@ const ProductPage = async ({ params }: PDPProps) => {
   const catConfig = PRODUCT_CATEGORIES[category as CategoryKey];
   const subConfig = catConfig?.subcategories.find((s) => s.slug === product.subcategory);
 
-  // JSON-LD structured data
-  const jsonLd = {
+  const isEs = lang === "es";
+  const categoryLabel = catConfig?.label[lang] || category;
+  const subcategoryLabel = subConfig?.label[lang] || product.subcategory;
+
+  // Enriched Product JSON-LD — GEO: explicit entity linking, AEO: complete product data
+  const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
+    "@id": `${BASE_URL}/${lang}/shop/${category}/p/${product.slug}#product`,
     name: product.nameEn,
     description: product.descriptionEn,
-    brand: { "@type": "Brand", name: product.brand },
+    brand: {
+      "@type": "Brand",
+      name: product.brand,
+    },
+    manufacturer: {
+      "@type": "Organization",
+      name: product.brand,
+    },
     sku: product.sku,
-    image: product.images[0],
+    mpn: product.sku,
+    image: product.images.map((img) => ({
+      "@type": "ImageObject",
+      url: img,
+      representativeOfPage: img === product.images[0],
+    })),
+    url: `${BASE_URL}/${lang}/shop/${category}/p/${product.slug}`,
     offers: {
       "@type": "Offer",
-      price: product.price,
-      priceCurrency: product.currency,
-      availability: product.availability === "in-stock"
-        ? "https://schema.org/InStock"
-        : product.availability === "made-to-order"
-          ? "https://schema.org/PreOrder"
-          : "https://schema.org/LimitedAvailability",
+      "@id": `${BASE_URL}/${lang}/shop/${category}/p/${product.slug}#offer`,
+      price: product.price > 0 ? product.price : undefined,
+      priceCurrency: product.currency || "MXN",
+      availability:
+        product.availability === "in-stock"
+          ? "https://schema.org/InStock"
+          : product.availability === "made-to-order"
+            ? "https://schema.org/PreOrder"
+            : "https://schema.org/LimitedAvailability",
+      itemCondition: "https://schema.org/NewCondition",
       seller: {
         "@type": "Organization",
+        "@id": `${BASE_URL}/#organization`,
         name: "Counter Cultures",
       },
+      url: `${BASE_URL}/${lang}/shop/${category}/p/${product.slug}`,
     },
+    category: `${categoryLabel} > ${subcategoryLabel}`,
+    inProductGroupWithID: product.subcategory,
+    isRelatedTo: crossSells.slice(0, 3).map((p) => ({
+      "@type": "Product",
+      name: p.nameEn,
+      url: `${BASE_URL}/${lang}/shop/${p.category}/p/${p.slug}`,
+    })),
+  };
+
+  // BreadcrumbList JSON-LD
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: isEs ? "Inicio" : "Home",
+        item: `${BASE_URL}/${lang}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: isEs ? "Tienda" : "Shop",
+        item: `${BASE_URL}/${lang}/shop`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: categoryLabel,
+        item: `${BASE_URL}/${lang}/shop/${category}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 4,
+        name: subcategoryLabel,
+        item: `${BASE_URL}/${lang}/shop/${category}/${product.subcategory}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 5,
+        name: product.nameEn,
+        item: `${BASE_URL}/${lang}/shop/${category}/p/${product.slug}`,
+      },
+    ],
   };
 
   return (
     <>
       <Header locale={lang} />
-      <main className="pt-20">
+      <main className="pt-16 md:pt-20">
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
         />
         <ProductDetail
           product={product}
           crossSells={crossSells}
           locale={lang}
-          categoryLabel={catConfig?.label[lang] || category}
-          subcategoryLabel={subConfig?.label[lang] || product.subcategory}
+          categoryLabel={categoryLabel}
+          subcategoryLabel={subcategoryLabel}
           subcategorySlug={product.subcategory}
         />
       </main>

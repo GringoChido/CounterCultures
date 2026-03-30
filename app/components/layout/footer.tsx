@@ -54,10 +54,10 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
   };
 
   return (
-    <footer className="bg-brand-charcoal text-white py-16">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+    <footer className="bg-brand-charcoal text-white py-14 md:py-16">
+      <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
         {/* Logo */}
-        <Link href="/" className="block mb-12">
+        <Link href="/" className="block mb-10 md:mb-12">
           <span className="font-display text-2xl font-light tracking-wider">
             Counter Cultures
           </span>
@@ -66,18 +66,18 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
           </span>
         </Link>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-8">
           {/* Collections */}
           <div>
             <h4 className="font-body text-sm font-semibold tracking-wider uppercase mb-4 text-brand-sand">
               {t.collections[lang]}
             </h4>
-            <ul className="space-y-2.5">
+            <ul className="space-y-1">
               {footerNav.collections.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="font-body text-sm text-brand-stone hover:text-brand-terracotta transition-colors"
+                    className="inline-flex items-center min-h-[36px] font-body text-sm text-brand-stone hover:text-brand-terracotta transition-colors"
                   >
                     {link.label[lang]}
                   </Link>
@@ -91,12 +91,12 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
             <h4 className="font-body text-sm font-semibold tracking-wider uppercase mb-4 text-brand-sand">
               {t.company[lang]}
             </h4>
-            <ul className="space-y-2.5">
+            <ul className="space-y-1">
               {footerNav.company.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="font-body text-sm text-brand-stone hover:text-brand-terracotta transition-colors"
+                    className="inline-flex items-center min-h-[36px] font-body text-sm text-brand-stone hover:text-brand-terracotta transition-colors"
                   >
                     {link.label[lang]}
                   </Link>
@@ -110,7 +110,7 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
             <h4 className="font-body text-sm font-semibold tracking-wider uppercase mb-4 text-brand-sand">
               {t.contact[lang]}
             </h4>
-            <ul className="space-y-2.5 font-body text-sm text-brand-stone">
+            <ul className="space-y-2 font-body text-sm text-brand-stone">
               <li>{SITE_CONFIG.showroom.address}</li>
               <li>{SITE_CONFIG.showroom.hours}</li>
               <li>

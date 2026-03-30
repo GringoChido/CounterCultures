@@ -52,14 +52,14 @@ const SlideOut = ({
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className={`fixed top-0 right-0 h-screen ${width} bg-dash-surface border-l border-dash-border z-50 flex flex-col`}
+            className={`fixed top-0 right-0 h-screen ${width} max-w-[calc(100vw-2rem)] bg-dash-surface border-l border-dash-border z-50 flex flex-col`}
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 h-16 border-b border-dash-border shrink-0">
               <h2 className="text-lg font-semibold text-dash-text">{title}</h2>
               <button
                 onClick={onClose}
-                className="p-1.5 rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
+                className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5 text-dash-text-secondary" />
               </button>

@@ -21,6 +21,10 @@
   --font-mono: "JetBrains Mono", monospace;
 }
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
@@ -28,6 +32,7 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 /* Smooth scrolling */
@@ -39,4 +44,92 @@ html {
 ::selection {
   background-color: #C4725A;
   color: white;
+}
+
+/* Hide scrollbar while keeping scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Article body prose styles */
+.prose-custom {
+  max-width: 65ch;
+}
+
+.prose-custom h2 {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 300;
+  color: var(--color-brand-charcoal);
+  margin-top: 3rem;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+  .prose-custom h2 {
+    font-size: 2rem;
+  }
+}
+
+.prose-custom h3 {
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 400;
+  color: var(--color-brand-charcoal);
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.prose-custom p {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--color-brand-stone);
+  line-height: 1.75;
+  margin-bottom: 1rem;
+}
+
+.prose-custom ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.prose-custom li {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--color-brand-stone);
+  line-height: 1.75;
+}
+
+.prose-custom table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.prose-custom td {
+  padding: 0.5rem 1rem;
+  font-family: var(--font-body);
+  color: var(--color-brand-stone);
+  border-bottom: 1px solid rgba(168, 159, 145, 0.1);
+}
+
+.prose-custom strong {
+  font-weight: 600;
+  color: var(--color-brand-charcoal);
+}
+
+/* Prevent horizontal overflow on the article body */
+.prose-custom > * {
+  overflow-wrap: break-word;
+  word-break: break-word;
 }

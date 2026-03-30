@@ -11,18 +11,18 @@ const brands = [
 ];
 
 const BrandBar = ({ locale = "en" }: { locale?: string }) => (
-  <section className="bg-brand-charcoal py-16">
-    <div className="mx-auto max-w-7xl px-6 lg:px-8">
+  <section className="bg-brand-charcoal py-12 md:py-16">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <AnimatedSection>
-        <p className="text-center font-mono text-xs tracking-[0.25em] text-brand-copper uppercase mb-8">
+        <p className="text-center font-mono text-xs tracking-[0.25em] text-brand-copper uppercase mb-6 md:mb-8">
           {locale === "en" ? "Authorized Dealer" : "Distribuidor Autorizado"}
         </p>
-        <div className="flex flex-wrap items-center justify-center gap-0">
+        <div className="flex items-center justify-start md:justify-center overflow-x-auto scrollbar-hide gap-0">
           {brands.map((brand, i) => (
             <a
               key={brand.slug}
               href={`/brands/${brand.slug}`}
-              className={`flex items-center justify-center px-8 md:px-12 py-4 font-display text-xl md:text-2xl text-white tracking-wider hover:text-brand-copper transition-colors duration-300 ${
+              className={`flex items-center justify-center px-6 md:px-12 py-3 md:py-4 font-display text-lg md:text-2xl text-white tracking-wider hover:text-brand-copper transition-colors duration-300 shrink-0 ${
                 i < brands.length - 1 ? "border-r border-white/20" : ""
               }`}
             >

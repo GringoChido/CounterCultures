@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { ChevronRight, MessageCircle, ChevronDown, Download, Sparkles } from "lucide-react";
 import { ProductCard, formatPrice } from "@/app/components/ui/product-card";
@@ -64,7 +65,7 @@ const ProductDetail = ({
     <>
       {/* Breadcrumbs */}
       <nav className="bg-brand-linen border-b border-brand-stone/10">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8 py-4">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-2 font-mono text-xs text-brand-stone flex-wrap">
             <Link href={`/${locale}`} className="hover:text-brand-terracotta transition-colors">
               {t(locale, "home")}
@@ -94,39 +95,44 @@ const ProductDetail = ({
       </nav>
 
       {/* Product Section */}
-      <section className="py-12 lg:py-20 bg-brand-linen">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
+      <section className="py-10 lg:py-20 bg-brand-linen">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
             {/* Image Gallery */}
-            <div className="lg:sticky lg:top-28 lg:self-start">
+            <div className="lg:sticky lg:top-24 lg:self-start">
               <motion.div
                 key={selectedImage}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="aspect-square bg-brand-sand/20 overflow-hidden"
+                className="relative aspect-square bg-brand-sand/20 overflow-hidden"
               >
-                <img
+                <Image
                   src={product.images[selectedImage] || product.images[0]}
-                  alt={product.nameEn}
-                  className="w-full h-full object-cover"
+                  alt={`${product.nameEn} by ${product.brand}`}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  priority
+                  className="object-cover"
                 />
               </motion.div>
               {product.images.length > 1 && (
-                <div className="flex gap-3 mt-4">
+                <div className="flex gap-2 sm:gap-3 mt-3 md:mt-4 overflow-x-auto pb-1">
                   {product.images.map((img, i) => (
                     <button
                       key={i}
                       onClick={() => setSelectedImage(i)}
-                      className={`w-20 h-20 overflow-hidden border-2 transition-colors cursor-pointer ${
+                      className={`relative w-16 h-16 sm:w-20 sm:h-20 overflow-hidden border-2 transition-colors cursor-pointer shrink-0 ${
                         selectedImage === i
                           ? "border-brand-terracotta"
                           : "border-transparent hover:border-brand-stone/30"
                       }`}
                     >
-                      <img
+                      <Image
                         src={img}
                         alt={`${product.nameEn} view ${i + 1}`}
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="80px"
+                        className="object-cover"
                       />
                     </button>
                   ))}
@@ -212,20 +218,20 @@ const ProductDetail = ({
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="py-4 bg-brand-terracotta text-white font-body text-sm font-medium tracking-wider hover:bg-brand-copper transition-colors duration-300 flex items-center justify-center gap-2"
+                  className="py-4 min-h-[52px] bg-brand-terracotta text-white font-body text-sm font-medium tracking-wider hover:bg-brand-copper transition-colors duration-300 flex items-center justify-center gap-2"
                 >
                   <MessageCircle className="w-4 h-4" />
                   {t(locale, "inquire")}
                 </a>
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <Link
                     href={`/${locale}/trade`}
-                    className="flex-1 py-3 border border-brand-charcoal text-brand-charcoal font-body text-sm font-medium tracking-wider hover:bg-brand-charcoal hover:text-white transition-colors duration-300 text-center"
+                    className="flex-1 py-3.5 min-h-[48px] border border-brand-charcoal text-brand-charcoal font-body text-sm font-medium tracking-wider hover:bg-brand-charcoal hover:text-white transition-colors duration-300 text-center flex items-center justify-center"
                   >
                     {t(locale, "tradePricing")}
                   </Link>
                   <button
-                    className="flex-1 py-3 border border-brand-stone/30 text-brand-stone font-body text-sm font-medium tracking-wider hover:border-brand-stone hover:text-brand-charcoal transition-colors duration-300 flex items-center justify-center gap-2 cursor-pointer"
+                    className="flex-1 py-3.5 min-h-[48px] border border-brand-stone/30 text-brand-stone font-body text-sm font-medium tracking-wider hover:border-brand-stone hover:text-brand-charcoal transition-colors duration-300 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Download className="w-4 h-4" />
                     {t(locale, "specSheet")}
@@ -255,12 +261,12 @@ const ProductDetail = ({
                         ([key, value]) => (
                           <div
                             key={key}
-                            className="flex justify-between py-2 border-b border-brand-stone/5"
+                            className="flex justify-between gap-4 py-2 border-b border-brand-stone/5"
                           >
                             <span className="font-body text-sm text-brand-stone">
                               {key}
                             </span>
-                            <span className="font-mono text-sm text-brand-charcoal">
+                            <span className="font-mono text-sm text-brand-charcoal text-right">
                               {value}
                             </span>
                           </div>
@@ -278,7 +284,7 @@ const ProductDetail = ({
       {/* Cross-sells */}
       {crossSells.length > 0 && (
         <section className="py-16 lg:py-20 bg-white border-t border-brand-stone/10">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="font-display text-3xl font-light tracking-wide text-brand-charcoal mb-10">
               {t(locale, "relatedProducts")}
             </h2>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { ArrowRight } from "lucide-react";
@@ -13,7 +14,7 @@ const categories = [
     count: { en: "120+ curated pieces", es: "120+ piezas curadas" },
     href: "/shop/bathroom",
     image:
-      "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&q=80",
+      "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&q=75&auto=format",
   },
   {
     title: { en: "Kitchen Fixtures", es: "Accesorios de Cocina" },
@@ -21,7 +22,7 @@ const categories = [
     count: { en: "85+ curated pieces", es: "85+ piezas curadas" },
     href: "/shop/kitchen",
     image:
-      "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=800&q=80",
+      "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=800&q=75&auto=format",
   },
   {
     title: { en: "Door & Cabinet Hardware", es: "Chapas y Herrajes" },
@@ -29,20 +30,20 @@ const categories = [
     count: { en: "60+ curated pieces", es: "60+ piezas curadas" },
     href: "/shop/hardware",
     image:
-      "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&q=80",
+      "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&q=75&auto=format",
   },
 ];
 
 const ShopByRoom = ({ locale: localeProp = "en" }: { locale?: string }) => {
   const locale = localeProp as "en" | "es";
   return (
-  <section className="py-24 md:py-32 bg-brand-linen">
-    <div className="mx-auto max-w-7xl px-6 lg:px-8">
+  <section className="py-14 md:py-32 bg-brand-linen">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <AnimatedSection>
-        <h2 className="text-center font-display text-4xl md:text-5xl font-normal tracking-wide text-brand-charcoal mb-4">
+        <h2 className="text-center font-display text-3xl md:text-5xl font-normal tracking-wide text-brand-charcoal mb-4">
           {locale === "en" ? "Shop by Category" : "Comprar por Categoría"}
         </h2>
-        <p className="text-center font-body text-brand-stone mb-12 max-w-2xl mx-auto">
+        <p className="text-center font-body text-brand-stone mb-8 md:mb-12 max-w-2xl mx-auto">
           {locale === "en"
             ? "From world-class faucets and sinks to hand-forged door hardware — every piece curated for quality and design integrity."
             : "Desde grifos y lavabos de clase mundial hasta herrajes forjados a mano — cada pieza curada por calidad e integridad de diseño."}
@@ -53,13 +54,13 @@ const ShopByRoom = ({ locale: localeProp = "en" }: { locale?: string }) => {
         {categories.map((cat, i) => (
           <AnimatedSection key={cat.href} delay={i * 0.12}>
             <Link href={cat.href} className="group block relative overflow-hidden rounded-lg">
-              <div className="aspect-[4/5]">
-                <motion.img
+              <div className="relative aspect-[4/5]">
+                <Image
                   src={cat.image}
                   alt={cat.title[locale]}
-                  className="w-full h-full object-cover"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                  className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
                 />
               </div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />

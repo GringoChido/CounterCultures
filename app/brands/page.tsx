@@ -64,13 +64,13 @@ const brandDescriptions: Record<string, { tagline: string; description: string }
 const BrandsPage = () => (
   <>
     <Header />
-    <main className="pt-20">
+    <main className="pt-16 md:pt-20">
       <section className="py-16 lg:py-20 bg-brand-linen border-b border-brand-stone/10">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <span className="font-mono text-xs tracking-[0.2em] text-brand-stone uppercase">
             Authorized Dealer
           </span>
-          <h1 className="mt-3 font-display text-5xl md:text-6xl font-light tracking-wide text-brand-charcoal">
+          <h1 className="mt-3 font-display text-4xl md:text-5xl lg:text-6xl font-light tracking-wide text-brand-charcoal">
             Our Brands
           </h1>
           <p className="mt-4 font-body text-base text-brand-stone max-w-xl">
@@ -81,7 +81,7 @@ const BrandsPage = () => (
       </section>
 
       <section className="py-16 lg:py-20 bg-brand-linen">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {BRANDS.map((brand) => {
               const info = brandDescriptions[brand.slug];

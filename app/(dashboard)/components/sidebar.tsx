@@ -23,6 +23,7 @@ import {
   ChevronLeft,
   ChevronRight,
   LogOut,
+  X,
 } from "lucide-react";
 
 interface NavItem {
@@ -51,20 +52,21 @@ const navItems: NavItem[] = [
   { label: "Settings", href: "/dashboard/settings", icon: Settings, section: "System" },
 ];
 
-const Sidebar = () => {
+interface SidebarProps {
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
+}
+
+const Sidebar = ({ mobileOpen = false, onMobileClose }: SidebarProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
 
-  return (
-    <aside
-      className={`fixed top-0 left-0 h-screen bg-dash-sidebar text-white flex flex-col transition-all duration-300 z-40 ${
-        collapsed ? "w-16" : "w-60"
-      }`}
-    >
+  const navContent = (
+    <>
       {/* Logo */}
-      <div className="flex items-center justify-between px-4 h-16 border-b border-white/10">
+      <div className="flex items-center justify-between px-4 h-16 border-b border-white/10 shrink-0">
         {!collapsed && (
-          <Link href="/dashboard/overview" className="flex flex-col">
+          <Link href="/dashboard/overview" className="flex flex-col" onClick={onMobileClose}>
             <span className="font-display text-lg font-light tracking-wider">
               Counter Cultures
             </span>
@@ -73,9 +75,10 @@ const Sidebar = () => {
             </span>
           </Link>
         )}
+        {/* Desktop collapse button */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="p-1.5 rounded-md hover:bg-dash-sidebar-hover transition-colors cursor-pointer"
+          className="hidden lg:flex p-1.5 rounded-md hover:bg-dash-sidebar-hover transition-colors cursor-pointer"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? (
@@ -84,6 +87,16 @@ const Sidebar = () => {
             <ChevronLeft className="w-4 h-4" />
           )}
         </button>
+        {/* Mobile close button */}
+        {onMobileClose && (
+          <button
+            onClick={onMobileClose}
+            className="lg:hidden w-10 h-10 flex items-center justify-center rounded-md hover:bg-dash-sidebar-hover transition-colors cursor-pointer"
+            aria-label="Close menu"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
       </div>
 
       {/* Navigation */}
@@ -102,7 +115,8 @@ const Sidebar = () => {
               {item.section && collapsed && <div className="mt-4" />}
               <Link
                 href={item.href}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors mb-0.5 ${
+                onClick={onMobileClose}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors mb-0.5 min-h-[44px] ${
                   isActive
                     ? "bg-brand-copper/20 text-brand-copper font-medium"
                     : "text-white/70 hover:bg-dash-sidebar-hover hover:text-white"
@@ -118,9 +132,9 @@ const Sidebar = () => {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-white/10 p-3">
+      <div className="border-t border-white/10 p-3 shrink-0">
         <button
-          className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-white/70 hover:bg-dash-sidebar-hover hover:text-white transition-colors cursor-pointer ${
+          className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-white/70 hover:bg-dash-sidebar-hover hover:text-white transition-colors cursor-pointer min-h-[44px] ${
             collapsed ? "justify-center" : ""
           }`}
         >
@@ -128,7 +142,33 @@ const Sidebar = () => {
           {!collapsed && <span>Sign Out</span>}
         </button>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar — always visible on lg+ */}
+      <aside
+        className={`hidden lg:flex fixed top-0 left-0 h-screen bg-dash-sidebar text-white flex-col transition-all duration-300 z-40 ${
+          collapsed ? "w-16" : "w-60"
+        }`}
+      >
+        {navContent}
+      </aside>
+
+      {/* Mobile overlay + drawer */}
+      {mobileOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={onMobileClose}
+          />
+          <aside className="relative w-72 max-w-[85vw] h-full bg-dash-sidebar text-white flex flex-col z-10">
+            {navContent}
+          </aside>
+        </div>
+      )}
+    </>
   );
 };
 

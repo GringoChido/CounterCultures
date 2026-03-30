@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { Button } from "@/app/components/ui/button";
 
@@ -27,15 +28,17 @@ const content = {
 const FounderStory = ({ locale = "en" }: { locale?: string }) => {
   const t = content[locale as "en" | "es"];
   return (
-    <section className="py-24 md:py-32 bg-brand-sand/40">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+    <section className="py-14 md:py-32 bg-brand-sand/40">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <AnimatedSection>
-            <div className="aspect-[3/4] overflow-hidden rounded-lg">
-              <img
-                src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&q=80"
-                alt="Counter Cultures showroom interior"
-                className="w-full h-full object-cover"
+            <div className="relative aspect-[3/4] overflow-hidden rounded-lg">
+              <Image
+                src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&q=75&auto=format"
+                alt="Counter Cultures showroom interior featuring luxury bathroom and kitchen fixtures"
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
               />
             </div>
           </AnimatedSection>

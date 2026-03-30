@@ -102,12 +102,12 @@ export const BlogContent = () => {
     <main>
       {/* Hero */}
       <section className="pt-32 pb-16 md:pt-40 md:pb-20 bg-brand-charcoal">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
             <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
               Insights & Inspiration
             </span>
-            <h1 className="mt-4 font-display text-5xl md:text-7xl font-light text-white tracking-wide">
+            <h1 className="mt-4 font-display text-4xl sm:text-5xl md:text-7xl font-light text-white tracking-wide">
               The Journal
             </h1>
             <p className="mt-6 font-body text-base text-white/60 max-w-xl leading-relaxed">
@@ -120,13 +120,13 @@ export const BlogContent = () => {
 
       {/* Track filter */}
       <section className="py-6 bg-brand-linen border-b border-brand-stone/10">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap gap-2">
             {(["Inspiration", "Guides", "Trade"] as BlogTrack[]).map(
               (track) => (
                 <button
                   key={track}
-                  className="px-4 py-2 text-sm font-body border border-brand-stone/20 rounded-full text-brand-charcoal hover:border-brand-terracotta hover:text-brand-terracotta transition-colors cursor-pointer"
+                  className="px-4 min-h-[44px] flex items-center text-sm font-body border border-brand-stone/20 rounded-full text-brand-charcoal hover:border-brand-terracotta hover:text-brand-terracotta transition-colors cursor-pointer"
                 >
                   {track}
                 </button>
@@ -138,7 +138,7 @@ export const BlogContent = () => {
 
       {/* Posts */}
       <section className="py-20 md:py-28 bg-brand-linen">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Featured post */}
           <AnimatedSection>
             <Link

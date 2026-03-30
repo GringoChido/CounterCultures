@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { Button } from "@/app/components/ui/button";
 import { Check } from "lucide-react";
@@ -36,8 +37,8 @@ const content = {
 const TradeTeaser = ({ locale = "en" }: { locale?: string }) => {
   const t = content[locale as "en" | "es"];
   return (
-    <section className="py-24 md:py-32 bg-brand-sage/10">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+    <section className="py-14 md:py-32 bg-brand-sage/10">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
           <AnimatedSection className="lg:col-span-7">
             <span className="inline-block bg-brand-sage text-white px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-sm">
@@ -70,11 +71,13 @@ const TradeTeaser = ({ locale = "en" }: { locale?: string }) => {
           </AnimatedSection>
 
           <AnimatedSection delay={0.2} className="lg:col-span-5">
-            <div className="aspect-[4/5] rounded-lg overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=600&q=80"
-                alt="Architect reviewing fixture specifications"
-                className="w-full h-full object-cover"
+            <div className="relative aspect-[4/5] rounded-lg overflow-hidden">
+              <Image
+                src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=600&q=75&auto=format"
+                alt="Architect reviewing fixture specifications at Counter Cultures showroom"
+                fill
+                sizes="(max-width: 1024px) 100vw, 40vw"
+                className="object-cover"
               />
             </div>
           </AnimatedSection>

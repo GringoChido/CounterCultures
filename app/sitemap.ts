@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
-import { BRANDS } from "@/app/lib/constants";
+import { BRANDS, PRODUCT_CATEGORIES } from "@/app/lib/constants";
 import { articles } from "@/app/lib/articles";
+import { PROJECTS } from "@/app/lib/projects";
 
 const BASE_URL = "https://countercultures.mx";
 const LAST_MODIFIED = new Date("2026-03-30");
@@ -31,28 +32,49 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes: MetadataRoute.Sitemap = [
     ...localizedEntry("", "monthly", 1.0),
     ...localizedEntry("/shop", "weekly", 0.9),
-    ...localizedEntry("/shop/bathroom", "weekly", 0.8),
-    ...localizedEntry("/shop/kitchen", "weekly", 0.8),
-    ...localizedEntry("/shop/hardware", "weekly", 0.8),
+    ...localizedEntry("/shop/bathroom", "weekly", 0.85),
+    ...localizedEntry("/shop/kitchen", "weekly", 0.85),
+    ...localizedEntry("/shop/hardware", "weekly", 0.85),
     ...localizedEntry("/artisanal", "weekly", 0.8),
-    ...localizedEntry("/brands", "monthly", 0.7),
+    ...localizedEntry("/brands", "monthly", 0.75),
     ...localizedEntry("/our-story", "yearly", 0.6),
-    ...localizedEntry("/projects", "monthly", 0.7),
-    ...localizedEntry("/blog", "weekly", 0.7),
-    ...localizedEntry("/showroom", "yearly", 0.6),
-    ...localizedEntry("/contact", "yearly", 0.6),
-    ...localizedEntry("/trade", "monthly", 0.7),
+    ...localizedEntry("/projects", "monthly", 0.75),
+    ...localizedEntry("/showroom", "monthly", 0.7),
+    ...localizedEntry("/contact", "yearly", 0.65),
+    ...localizedEntry("/trade", "monthly", 0.75),
     ...localizedEntry("/resources", "monthly", 0.7),
     ...localizedEntry("/insights", "weekly", 0.8),
   ];
 
+  // Brand pages
   const brandRoutes: MetadataRoute.Sitemap = BRANDS.flatMap(({ slug }) =>
-    localizedEntry(`/brands/${slug}`, "monthly", 0.6)
+    localizedEntry(`/brands/${slug}`, "monthly", 0.65)
   );
 
+  // Shop subcategory pages
+  const subcategoryRoutes: MetadataRoute.Sitemap = Object.entries(
+    PRODUCT_CATEGORIES
+  ).flatMap(([catSlug, catConfig]) =>
+    catConfig.subcategories.flatMap((sub) =>
+      localizedEntry(`/shop/${catSlug}/${sub.slug}`, "weekly", 0.75)
+    )
+  );
+
+  // Article / insight pages
   const articleRoutes: MetadataRoute.Sitemap = articles.flatMap(({ slug }) =>
-    localizedEntry(`/insights/${slug}`, "monthly", 0.6)
+    localizedEntry(`/insights/${slug}`, "monthly", 0.65)
   );
 
-  return [...staticRoutes, ...brandRoutes, ...articleRoutes];
+  // Project detail pages
+  const projectRoutes: MetadataRoute.Sitemap = PROJECTS.flatMap(({ slug }) =>
+    localizedEntry(`/projects/${slug}`, "monthly", 0.7)
+  );
+
+  return [
+    ...staticRoutes,
+    ...brandRoutes,
+    ...subcategoryRoutes,
+    ...articleRoutes,
+    ...projectRoutes,
+  ];
 }

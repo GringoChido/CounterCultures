@@ -137,15 +137,24 @@ export const generateMetadata = async ({
       description,
       url: `${BASE_URL}/${locale}/brands/${slug}`,
       locale: isEs ? "es_MX" : "en_US",
+      alternateLocale: isEs ? "en_US" : "es_MX",
+      type: "website",
       images: heroData
-        ? [{ url: heroData.heroImage, width: 1920, height: 1080, alt: brand.name }]
+        ? [{ url: heroData.heroImage, width: 1200, height: 630, alt: brand.name }]
         : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: heroData ? [heroData.heroImage] : [],
     },
   };
 };
 
 const BrandPage = async ({ params }: BrandPageProps) => {
   const { slug, locale } = await params;
+  const isEs = locale === "es";
   const brand = BRANDS.find((b) => b.slug === slug);
 
   if (!brand) notFound();
@@ -158,8 +167,81 @@ const BrandPage = async ({ params }: BrandPageProps) => {
       "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1920&q=80",
   };
 
+  // GEO: Brand entity + authorized reseller relationship
+  const brandJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Brand",
+    name: brand.name,
+    description: heroData.description,
+    url: `${BASE_URL}/${locale}/brands/${slug}`,
+    logo: `${BASE_URL}/brands/${slug}-logo.png`,
+  };
+
+  const resellerJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${BASE_URL}/${locale}/brands/${slug}`,
+    name: isEs
+      ? `${brand.name} — Distribuidor Autorizado en San Miguel de Allende`
+      : `${brand.name} — Authorized Dealer in San Miguel de Allende`,
+    description: heroData.description,
+    url: `${BASE_URL}/${locale}/brands/${slug}`,
+    about: brandJsonLd,
+    publisher: {
+      "@type": "Organization",
+      "@id": `${BASE_URL}/#organization`,
+      name: "Counter Cultures",
+    },
+    numberOfItems: products.length,
+    mainEntity: {
+      "@type": "ItemList",
+      name: `${brand.name} Products`,
+      numberOfItems: products.length,
+      itemListElement: products.slice(0, 10).map((product, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        url: `${BASE_URL}/${locale}/shop/${product.category}/p/${product.slug}`,
+        name: product.nameEn,
+      })),
+    },
+  };
+
+  // BreadcrumbList JSON-LD
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: isEs ? "Inicio" : "Home",
+        item: `${BASE_URL}/${locale}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: isEs ? "Marcas" : "Brands",
+        item: `${BASE_URL}/${locale}/brands`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: brand.name,
+        item: `${BASE_URL}/${locale}/brands/${slug}`,
+      },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(resellerJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <Header locale={locale} />
       <main>
         <CategoryHero
@@ -174,7 +256,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
 
         {/* Value props */}
         <section className="py-12 bg-brand-sand/20 border-b border-brand-stone/10">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="flex items-start gap-4">
                 <Shield className="w-5 h-5 text-brand-terracotta mt-0.5 shrink-0" />

@@ -35,7 +35,7 @@ const CategoryHero = ({
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/15" />
     </div>
 
-    <div className="relative z-10 w-full pb-12 md:pb-16 px-6 md:px-16 max-w-5xl">
+    <div className="relative z-10 w-full pb-10 md:pb-16 px-5 sm:px-8 md:px-16 max-w-5xl">
       <motion.p
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}

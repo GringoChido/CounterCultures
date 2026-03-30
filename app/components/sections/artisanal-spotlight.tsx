@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { Button } from "@/app/components/ui/button";
 
@@ -25,8 +26,8 @@ const t = {
 const ArtisanalSpotlight = ({ locale = "en" }: { locale?: string }) => {
   const c = t[locale as "en" | "es"];
   return (
-  <section className="bg-brand-charcoal py-24 md:py-32">
-    <div className="mx-auto max-w-7xl px-6 lg:px-8">
+  <section className="bg-brand-charcoal py-14 md:py-32">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
         {/* Text — left column */}
         <motion.div
@@ -66,25 +67,31 @@ const ArtisanalSpotlight = ({ locale = "en" }: { locale?: string }) => {
           className="lg:col-span-7"
         >
           <div className="grid grid-cols-2 gap-4">
-            <div className="aspect-[4/5] rounded-lg overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1615529328331-f8917597711f?w=600&q=80"
-                alt="Hand-hammered copper basin"
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+            <div className="relative aspect-[4/5] rounded-lg overflow-hidden">
+              <Image
+                src="https://images.unsplash.com/photo-1615529328331-f8917597711f?w=600&q=75&auto=format"
+                alt="Hand-hammered copper basin from Santa Clara del Cobre"
+                fill
+                sizes="(max-width: 1024px) 50vw, 280px"
+                className="object-cover hover:scale-105 transition-transform duration-500"
               />
             </div>
-            <div className="aspect-[4/5] rounded-lg overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1620626011761-996317b8d101?w=600&q=80"
-                alt="Artisanal ceramic sink"
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+            <div className="relative aspect-[4/5] rounded-lg overflow-hidden">
+              <Image
+                src="https://images.unsplash.com/photo-1620626011761-996317b8d101?w=600&q=75&auto=format"
+                alt="Artisanal ceramic sink handcrafted in Guanajuato"
+                fill
+                sizes="(max-width: 1024px) 50vw, 280px"
+                className="object-cover hover:scale-105 transition-transform duration-500"
               />
             </div>
-            <div className="col-span-2 aspect-[16/9] rounded-lg overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80"
-                alt="Artisan workshop"
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+            <div className="relative col-span-2 aspect-[16/9] rounded-lg overflow-hidden">
+              <Image
+                src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=75&auto=format"
+                alt="Mexican artisan workshop where Counter Cultures fixtures are crafted"
+                fill
+                sizes="(max-width: 1024px) 100vw, 560px"
+                className="object-cover hover:scale-105 transition-transform duration-500"
               />
             </div>
           </div>

@@ -47,13 +47,13 @@ export const InsightsContent = () => {
       <Header locale={locale} />
       <main>
         {/* Hero */}
-        <section className="pt-32 pb-16 md:pt-40 md:pb-20 bg-brand-charcoal">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <section className="pt-28 pb-12 md:pt-40 md:pb-20 bg-brand-charcoal">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection>
               <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
                 {locale === "es" ? "Insights" : "Insights"}
               </span>
-              <h1 className="mt-4 font-display text-5xl md:text-7xl font-light text-white tracking-wide">
+              <h1 className="mt-4 font-display text-4xl sm:text-5xl md:text-7xl font-light text-white tracking-wide">
                 {locale === "es"
                   ? "Diseño, Producto y Artesanía"
                   : "Design, Product & Craft"}
@@ -69,8 +69,8 @@ export const InsightsContent = () => {
 
         {/* Featured Article */}
         {featured && (
-          <section className="py-16 md:py-20 bg-brand-linen">
-            <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <section className="py-12 md:py-20 bg-brand-linen">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <AnimatedSection>
                 <Link
                   href={`/${locale}/insights/${featured.slug}`}
@@ -80,13 +80,13 @@ export const InsightsContent = () => {
                     <div
                       className="w-full h-full transition-transform duration-500 group-hover:scale-105"
                       style={{
-                        backgroundImage: `url('${featured.image}')`,
+                        backgroundImage: `url('${featured.image.replace("q=80", "q=75").replace(/&?auto=format/g, "")}&auto=format')`,
                         backgroundSize: "cover",
                         backgroundPosition: "center",
                       }}
                     />
                   </div>
-                  <div className="mt-6 md:mt-0 flex flex-col justify-center">
+                  <div className="mt-5 md:mt-0 flex flex-col justify-center">
                     <div className="flex items-center gap-3">
                       <span
                         className={`inline-block px-3 py-1 text-[10px] font-mono tracking-wider text-white uppercase rounded ${pillarColors[featured.pillar]}`}
@@ -117,14 +117,14 @@ export const InsightsContent = () => {
 
         {/* Editor's Picks */}
         {editorsPicks.length > 0 && (
-          <section className="py-16 md:py-20 bg-white">
-            <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <section className="py-12 md:py-20 bg-white">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <AnimatedSection>
                 <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
                   {locale === "es" ? "Selección del Editor" : "Editor's Picks"}
                 </span>
               </AnimatedSection>
-              <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
                 {editorsPicks.slice(0, 3).map((article) => (
                   <AnimatedSection key={article.slug}>
                     <Link
@@ -135,7 +135,7 @@ export const InsightsContent = () => {
                         <div
                           className="w-full h-full transition-transform duration-500 group-hover:scale-105"
                           style={{
-                            backgroundImage: `url('${article.image}')`,
+                            backgroundImage: `url('${article.image.replace("q=80", "q=75").replace(/&?auto=format/g, "")}&auto=format')`,
                             backgroundSize: "cover",
                             backgroundPosition: "center",
                           }}
@@ -168,16 +168,16 @@ export const InsightsContent = () => {
         )}
 
         {/* Pillar Filter + Content Grid */}
-        <section className="py-16 md:py-20 bg-brand-linen">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <section className="py-12 md:py-20 bg-brand-linen">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection>
-              <h2 className="font-display text-4xl md:text-5xl font-light text-brand-charcoal tracking-wide">
+              <h2 className="font-display text-3xl md:text-5xl font-light text-brand-charcoal tracking-wide">
                 {locale === "es" ? "Todos los Artículos" : "All Articles"}
               </h2>
             </AnimatedSection>
 
             {/* Pillar Nav */}
-            <div className="mt-8 flex flex-wrap gap-2">
+            <div className="mt-6 md:mt-8 flex flex-wrap gap-2">
               {pillars.map((pillar) => (
                 <button
                   key={pillar}
@@ -210,7 +210,7 @@ export const InsightsContent = () => {
                       <div
                         className="w-full h-full transition-transform duration-500 group-hover:scale-105"
                         style={{
-                          backgroundImage: `url('${article.image}')`,
+                          backgroundImage: `url('${article.image.replace("q=80", "q=75").replace(/&?auto=format/g, "")}&auto=format')`,
                           backgroundSize: "cover",
                           backgroundPosition: "center",
                         }}

@@ -36,14 +36,14 @@ const FilterBar = ({
   const hasFilters = activeBrand || activeFinish || priceRange;
 
   return (
-    <div className="sticky top-20 z-30 bg-brand-linen/95 backdrop-blur-sm border-b border-brand-stone/10 py-4">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="flex items-center gap-3 flex-wrap">
+    <div className="sticky top-16 md:top-20 z-30 bg-brand-linen/95 backdrop-blur-sm border-b border-brand-stone/10 py-3 md:py-4">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-0.5">
           {/* Brand filter */}
-          <div className="relative">
+          <div className="relative shrink-0">
             <button
               onClick={() => setExpanded(expanded === "brand" ? null : "brand")}
-              className={`px-4 py-2 text-sm font-body border rounded-full transition-colors ${
+              className={`px-4 py-2.5 min-h-[44px] text-sm font-body border rounded-full transition-colors whitespace-nowrap ${
                 activeBrand
                   ? "border-brand-terracotta text-brand-terracotta bg-brand-terracotta/5"
                   : "border-brand-stone/30 text-brand-charcoal hover:border-brand-stone"
@@ -52,7 +52,7 @@ const FilterBar = ({
               {activeBrand || "Brand"}
             </button>
             {expanded === "brand" && (
-              <div className="absolute top-full left-0 mt-2 bg-white shadow-lg border border-brand-stone/10 rounded-sm py-2 min-w-[180px] z-40">
+              <div className="absolute top-full left-0 mt-2 bg-white shadow-lg border border-brand-stone/10 rounded-sm py-2 min-w-[180px] z-40 max-h-72 overflow-y-auto">
                 {BRANDS.map((brand) => (
                   <button
                     key={brand.slug}
@@ -60,7 +60,7 @@ const FilterBar = ({
                       onBrandChange(brand.name);
                       setExpanded(null);
                     }}
-                    className="block w-full text-left px-4 py-2 text-sm font-body text-brand-charcoal hover:bg-brand-linen hover:text-brand-terracotta transition-colors"
+                    className="block w-full text-left px-4 py-3 min-h-[44px] text-sm font-body text-brand-charcoal hover:bg-brand-linen hover:text-brand-terracotta transition-colors"
                   >
                     {brand.name}
                   </button>
@@ -70,10 +70,10 @@ const FilterBar = ({
           </div>
 
           {/* Price filter */}
-          <div className="relative">
+          <div className="relative shrink-0">
             <button
               onClick={() => setExpanded(expanded === "price" ? null : "price")}
-              className={`px-4 py-2 text-sm font-body border rounded-full transition-colors ${
+              className={`px-4 py-2.5 min-h-[44px] text-sm font-body border rounded-full transition-colors whitespace-nowrap ${
                 priceRange
                   ? "border-brand-terracotta text-brand-terracotta bg-brand-terracotta/5"
                   : "border-brand-stone/30 text-brand-charcoal hover:border-brand-stone"
@@ -94,7 +94,7 @@ const FilterBar = ({
                       onPriceChange(pr.range);
                       setExpanded(null);
                     }}
-                    className="block w-full text-left px-4 py-2 text-sm font-body text-brand-charcoal hover:bg-brand-linen hover:text-brand-terracotta transition-colors"
+                    className="block w-full text-left px-4 py-3 min-h-[44px] text-sm font-body text-brand-charcoal hover:bg-brand-linen hover:text-brand-terracotta transition-colors"
                   >
                     {pr.label}
                   </button>
@@ -105,12 +105,12 @@ const FilterBar = ({
 
           {/* Finish filter */}
           {availableFinishes.length > 0 && (
-            <div className="relative">
+            <div className="relative shrink-0">
               <button
                 onClick={() =>
                   setExpanded(expanded === "finish" ? null : "finish")
                 }
-                className={`px-4 py-2 text-sm font-body border rounded-full transition-colors ${
+                className={`px-4 py-2.5 min-h-[44px] text-sm font-body border rounded-full transition-colors whitespace-nowrap ${
                   activeFinish
                     ? "border-brand-terracotta text-brand-terracotta bg-brand-terracotta/5"
                     : "border-brand-stone/30 text-brand-charcoal hover:border-brand-stone"
@@ -127,7 +127,7 @@ const FilterBar = ({
                         onFinishChange(finish);
                         setExpanded(null);
                       }}
-                      className="block w-full text-left px-4 py-2 text-sm font-body text-brand-charcoal hover:bg-brand-linen hover:text-brand-terracotta transition-colors"
+                      className="block w-full text-left px-4 py-3 min-h-[44px] text-sm font-body text-brand-charcoal hover:bg-brand-linen hover:text-brand-terracotta transition-colors"
                     >
                       {finish}
                     </button>
@@ -141,9 +141,9 @@ const FilterBar = ({
           {hasFilters && (
             <button
               onClick={onClear}
-              className="inline-flex items-center gap-1 px-3 py-2 text-sm font-body text-brand-stone hover:text-brand-terracotta transition-colors"
+              className="inline-flex items-center gap-1 px-3 py-2.5 min-h-[44px] text-sm font-body text-brand-stone hover:text-brand-terracotta transition-colors shrink-0"
             >
-              <X className="w-3 h-3" /> Clear
+              <X className="w-3.5 h-3.5" /> Clear
             </button>
           )}
         </div>

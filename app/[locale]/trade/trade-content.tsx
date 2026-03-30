@@ -118,8 +118,8 @@ export const TradeContent = () => {
       />
 
       {/* Benefits */}
-      <section className="py-20 md:py-28 bg-brand-linen">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      <section className="py-12 md:py-28 bg-brand-linen">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
             <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
               Why Join
@@ -129,7 +129,7 @@ export const TradeContent = () => {
             </h2>
           </AnimatedSection>
 
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="mt-10 md:mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {benefits.map((benefit) => (
               <AnimatedSection key={benefit.title}>
                 <div className="p-6 bg-white rounded-lg border border-brand-stone/10">
@@ -148,8 +148,8 @@ export const TradeContent = () => {
       </section>
 
       {/* How It Works */}
-      <section className="py-20 md:py-28 bg-brand-charcoal">
-        <div className="mx-auto max-w-5xl px-6 lg:px-8">
+      <section className="py-12 md:py-28 bg-brand-charcoal">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
             <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
               Getting Started
@@ -181,7 +181,7 @@ export const TradeContent = () => {
 
       {/* Brands We Carry */}
       <section className="py-16 bg-brand-sand/30 border-b border-brand-stone/10">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
             <h3 className="font-display text-2xl text-brand-charcoal font-light text-center mb-8">
               Brands Available Through Trade
@@ -211,13 +211,13 @@ export const TradeContent = () => {
       </section>
 
       {/* Application Form */}
-      <section id="apply" className="py-20 md:py-28 bg-brand-linen">
-        <div className="mx-auto max-w-3xl px-6 lg:px-8">
+      <section id="apply" className="py-12 md:py-28 bg-brand-linen">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
             <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
               Trade Application
             </span>
-            <h2 className="mt-4 font-display text-4xl md:text-5xl font-light tracking-wide text-brand-charcoal">
+            <h2 className="mt-4 font-display text-3xl md:text-5xl font-light tracking-wide text-brand-charcoal">
               Apply for Access
             </h2>
             <p className="mt-4 font-body text-base text-brand-stone leading-relaxed">

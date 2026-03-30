@@ -32,13 +32,13 @@ const BrandPage = async ({ params }: BrandPageProps) => {
   return (
     <>
       <Header />
-      <main className="pt-20">
+      <main className="pt-16 md:pt-20">
         <section className="py-16 lg:py-24 bg-brand-charcoal text-white">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <span className="font-mono text-xs tracking-[0.2em] text-brand-stone uppercase">
               Authorized Dealer
             </span>
-            <h1 className="mt-4 font-display text-5xl md:text-7xl font-light tracking-wider">
+            <h1 className="mt-4 font-display text-4xl sm:text-5xl md:text-7xl font-light tracking-wider">
               {brand.name}
             </h1>
             <p className="mt-6 font-body text-base text-white/60 max-w-xl leading-relaxed">
@@ -51,7 +51,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
 
         {/* Why buy from Counter Cultures */}
         <section className="py-12 bg-brand-sand/20 border-b border-brand-stone/10">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div>
                 <h3 className="font-body text-sm font-semibold text-brand-charcoal">

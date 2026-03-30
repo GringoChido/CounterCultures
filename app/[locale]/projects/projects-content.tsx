@@ -26,15 +26,15 @@ export const ProjectsContent = () => {
           "Homes, hotels, and restaurants across Mexico — each one a collaboration between world-class brands, local artisans, and visionary architects.",
           "Casas, hoteles y restaurantes en todo México — cada uno una colaboración entre marcas de clase mundial, artesanos locales y arquitectos visionarios."
         )}
-        imageSrc="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920&q=80"
+        imageSrc="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920&q=75&auto=format"
         ctaLabel={t("Start Your Project", "Comienza Tu Proyecto")}
         ctaHref="/contact"
       />
 
       {/* Project Grid */}
-      <section className="py-20 md:py-28 bg-brand-linen">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <section className="py-12 md:py-28 bg-brand-linen">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {PROJECTS.map((project) => (
               <AnimatedSection key={project.slug}>
                 <Link
@@ -45,7 +45,7 @@ export const ProjectsContent = () => {
                     <div
                       className="w-full h-full transition-transform duration-500 group-hover:scale-105"
                       style={{
-                        backgroundImage: `url('${project.heroImage.replace("w=1920", "w=800")}')`,
+                        backgroundImage: `url('${project.heroImage.replace("w=1920", "w=800").replace("q=80", "q=75").replace(/&?auto=format/g, "")}&auto=format')`,
                         backgroundSize: "cover",
                         backgroundPosition: "center",
                       }}
@@ -96,8 +96,8 @@ export const ProjectsContent = () => {
       </section>
 
       {/* CTA */}
-      <section className="py-20 md:py-24 bg-brand-charcoal">
-        <div className="mx-auto max-w-4xl px-6 lg:px-8 text-center">
+      <section className="py-12 md:py-24 bg-brand-charcoal">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
           <AnimatedSection>
             <h2 className="font-display text-3xl md:text-5xl font-light text-white tracking-wide">
               {t("Have a Project in Mind?", "Tienes un Proyecto en Mente?")}

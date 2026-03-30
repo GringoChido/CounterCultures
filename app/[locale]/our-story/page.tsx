@@ -36,22 +36,101 @@ export const generateMetadata = async ({
       description,
       url: `${BASE_URL}/${locale}/our-story`,
       locale: isEs ? "es_MX" : "en_US",
+      alternateLocale: isEs ? "en_US" : "es_MX",
+      type: "website",
       images: [
         {
           url: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80",
           width: 1200,
           height: 630,
           alt: isEs
-            ? "Showroom Counter Cultures en San Miguel de Allende"
-            : "Counter Cultures showroom in San Miguel de Allende",
+            ? "Showroom Counter Cultures en San Miguel de Allende — fundado en 2004"
+            : "Counter Cultures showroom in San Miguel de Allende — founded in 2004",
         },
       ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=80"],
     },
   };
 };
 
-const OurStoryPage = () => {
-  return <OurStoryContent />;
+const OurStoryPage = async ({ params }: OurStoryPageProps) => {
+  const { locale } = await params;
+  const isEs = locale === "es";
+
+  // GEO: AboutPage with rich entity data for founder and organization
+  const aboutPageJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    "@id": `${BASE_URL}/${locale}/our-story`,
+    name: isEs
+      ? "Nuestra Historia — Counter Cultures"
+      : "Our Story — Counter Cultures",
+    description: isEs
+      ? "Counter Cultures fue fundada en 2004 por Roger Williams en San Miguel de Allende, México. Durante 20 años ha sido el puente entre los mejores fabricantes mundiales de accesorios y los maestros artesanos de México."
+      : "Counter Cultures was founded in 2004 by Roger Williams in San Miguel de Allende, Mexico. For 20 years, it has bridged the world's finest fixture manufacturers and Mexico's master artisans.",
+    url: `${BASE_URL}/${locale}/our-story`,
+    mainEntity: {
+      "@type": "Organization",
+      "@id": `${BASE_URL}/#organization`,
+      name: "Counter Cultures",
+      foundingDate: "2004",
+      founder: {
+        "@type": "Person",
+        "@id": `${BASE_URL}/#founder`,
+        name: "Roger Williams",
+        jobTitle: "Founder & Principal",
+        description: isEs
+          ? "Roger Williams fundó Counter Cultures en 2004 después de trasladarse a San Miguel de Allende. Lleva casi dos décadas colaborando con artesanos mexicanos y representando las mejores marcas de accesorios del mundo."
+          : "Roger Williams founded Counter Cultures in 2004 after relocating to San Miguel de Allende. He has spent nearly two decades collaborating with Mexican artisans and representing the world's finest fixture brands.",
+        worksFor: {
+          "@id": `${BASE_URL}/#organization`,
+        },
+      },
+      numberOfYearsInBusiness: 20,
+      slogan: isEs
+        ? "Donde el diseño de clase mundial se encuentra con el arte de México"
+        : "Where world-class design meets the soul of Mexican craft",
+    },
+  };
+
+  // BreadcrumbList JSON-LD
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: isEs ? "Inicio" : "Home",
+        item: `${BASE_URL}/${locale}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: isEs ? "Nuestra Historia" : "Our Story",
+        item: `${BASE_URL}/${locale}/our-story`,
+      },
+    ],
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutPageJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <OurStoryContent />
+    </>
+  );
 };
 
 export default OurStoryPage;

@@ -11,12 +11,12 @@ import { useLocale } from "next-intl";
 import { SITE_CONFIG } from "@/app/lib/constants";
 
 const galleryImages = [
-  "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80",
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80",
-  "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=600&q=80",
-  "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&q=80",
-  "https://images.unsplash.com/photo-1615529328331-f8917597711f?w=600&q=80",
-  "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=600&q=80",
+  "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=75&auto=format",
+  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=75&auto=format",
+  "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=600&q=75&auto=format",
+  "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&q=75&auto=format",
+  "https://images.unsplash.com/photo-1615529328331-f8917597711f?w=600&q=75&auto=format",
+  "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=600&q=75&auto=format",
 ];
 
 export const ShowroomContent = () => {
@@ -59,14 +59,14 @@ export const ShowroomContent = () => {
         eyebrow="San Miguel de Allende"
         title="Visit the Showroom"
         description="Walk through world-class fixtures from Kohler, TOTO, and Brizo alongside handcrafted artisanal pieces — all under one roof."
-        imageSrc="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920&q=80"
+        imageSrc="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920&q=75&auto=format"
         ctaLabel="Get Directions"
         ctaHref="#location"
       />
 
       {/* Info + Booking */}
-      <section className="py-20 md:py-28 bg-brand-linen">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      <section className="py-12 md:py-28 bg-brand-linen">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
             {/* Left — Info */}
             <AnimatedSection>
@@ -213,7 +213,7 @@ export const ShowroomContent = () => {
 
       {/* Map placeholder */}
       <section id="location" className="bg-brand-charcoal">
-        <div className="aspect-[21/9] md:aspect-[3/1] flex items-center justify-center">
+        <div className="aspect-[4/3] sm:aspect-[16/7] md:aspect-[3/1] flex items-center justify-center">
           <div className="text-center">
             <MapPin className="w-10 h-10 text-brand-copper mx-auto mb-4" />
             <p className="font-display text-2xl text-white font-light">
@@ -227,8 +227,8 @@ export const ShowroomContent = () => {
       </section>
 
       {/* Photo Gallery */}
-      <section className="py-20 md:py-28 bg-brand-sand/30">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      <section className="py-12 md:py-28 bg-brand-sand/30">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
             <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
               Inside the Showroom
@@ -238,7 +238,7 @@ export const ShowroomContent = () => {
             </h2>
           </AnimatedSection>
 
-          <div className="mt-12 grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="mt-10 md:mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
             {galleryImages.map((src, i) => (
               <AnimatedSection key={i} delay={i * 0.05}>
                 <div className="aspect-[4/3] rounded-lg overflow-hidden bg-brand-stone/10">

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { ChevronRight, MessageCircle, ChevronDown } from "lucide-react";
 import { ProductCard, formatPrice } from "@/app/components/ui/product-card";
@@ -21,7 +22,7 @@ const ProductDetail = ({ product, crossSells }: ProductDetailProps) => {
     <>
       {/* Breadcrumbs */}
       <nav className="bg-brand-linen border-b border-brand-stone/10">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8 py-4">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-2 font-mono text-xs text-brand-stone">
             <Link href="/shop" className="hover:text-brand-terracotta transition-colors">
               Shop
@@ -41,7 +42,7 @@ const ProductDetail = ({ product, crossSells }: ProductDetailProps) => {
 
       {/* Product Section */}
       <section className="py-12 lg:py-20 bg-brand-linen">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
             {/* Image Gallery */}
             <div>
@@ -49,12 +50,15 @@ const ProductDetail = ({ product, crossSells }: ProductDetailProps) => {
                 key={selectedImage}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="aspect-square bg-brand-sand/20 overflow-hidden"
+                className="relative aspect-square bg-brand-sand/20 overflow-hidden"
               >
-                <img
+                <Image
                   src={product.images[selectedImage] || product.images[0]}
-                  alt={product.nameEn}
-                  className="w-full h-full object-cover"
+                  alt={`${product.nameEn} by ${product.brand}`}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  priority
+                  className="object-cover"
                 />
               </motion.div>
               {product.images.length > 1 && (
@@ -63,16 +67,18 @@ const ProductDetail = ({ product, crossSells }: ProductDetailProps) => {
                     <button
                       key={i}
                       onClick={() => setSelectedImage(i)}
-                      className={`w-20 h-20 overflow-hidden border-2 transition-colors ${
+                      className={`relative w-20 h-20 overflow-hidden border-2 transition-colors cursor-pointer ${
                         selectedImage === i
                           ? "border-brand-terracotta"
                           : "border-transparent hover:border-brand-stone/30"
                       }`}
                     >
-                      <img
+                      <Image
                         src={img}
                         alt={`${product.nameEn} view ${i + 1}`}
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="80px"
+                        className="object-cover"
                       />
                     </button>
                   ))}
@@ -199,7 +205,7 @@ const ProductDetail = ({ product, crossSells }: ProductDetailProps) => {
       {/* Cross-sells */}
       {crossSells.length > 0 && (
         <section className="py-16 lg:py-20 bg-white border-t border-brand-stone/10">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="font-display text-3xl font-light tracking-wide text-brand-charcoal mb-10">
               Complete the Look
             </h2>

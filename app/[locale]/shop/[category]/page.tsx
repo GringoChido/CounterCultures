@@ -15,7 +15,9 @@ const categoryMeta: Record<
   string,
   {
     title: string;
+    titleEs: string;
     description: string;
+    descriptionEs: string;
     subtitle: string;
     heroImage: string;
     heroEyebrow: string;
@@ -24,8 +26,11 @@ const categoryMeta: Record<
 > = {
   bathroom: {
     title: "Bathroom Fixtures — Sinks, Faucets, Tubs & More",
+    titleEs: "Accesorios de Baño — Lavabos, Grifos, Bañeras y Más",
     description:
       "Luxury bathroom fixtures from Kohler, TOTO, Badeloft, California Faucets, and handcrafted artisanal copper and stone basins by Mexican artisans.",
+    descriptionEs:
+      "Accesorios de baño de lujo de Kohler, TOTO, Badeloft, California Faucets y lavabos artesanales de cobre y piedra hechos por artesanos mexicanos.",
     subtitle:
       "From TOTO's precision engineering to hand-hammered copper basins by local artisans — every piece chosen to elevate the most personal room in your home.",
     heroImage:
@@ -35,8 +40,11 @@ const categoryMeta: Record<
   },
   kitchen: {
     title: "Kitchen Fixtures — Sinks, Faucets, Hoods & Appliances",
+    titleEs: "Accesorios de Cocina — Tarjas, Mezcladoras, Campanas",
     description:
       "Premium kitchen sinks by BLANCO and Kohler, faucets by Brizo and California Faucets, range hoods, and professional-grade appliances.",
+    descriptionEs:
+      "Tarjas de cocina BLANCO y Kohler, mezcladoras Brizo y California Faucets, campanas y electrodomésticos de grado profesional.",
     subtitle:
       "BLANCO Silgranit sinks, Brizo Litze faucets, California Faucets bridge designs — professional-grade fixtures for kitchens that work as hard as you do.",
     heroImage:
@@ -46,8 +54,11 @@ const categoryMeta: Record<
   },
   hardware: {
     title: "Door Hardware — Locks, Handles, Knobs & Pulls",
+    titleEs: "Herrajes para Puertas — Chapas, Manijas, Perillas y Jaladeras",
     description:
       "Hand-cast bronze entry lock sets by Sun Valley Bronze and precision door hardware by Emtek. Every piece individually finished.",
+    descriptionEs:
+      "Cerraduras de bronce fundido a mano de Sun Valley Bronze y herrajes de precisión Emtek. Cada pieza acabada individualmente.",
     subtitle:
       "Sun Valley Bronze hand-cast silicon bronze and Emtek solid brass — door hardware that makes an entrance before you even walk through it.",
     heroImage:
@@ -59,38 +70,16 @@ const categoryMeta: Record<
 
 const BASE_URL = "https://countercultures.mx";
 
-const categoryMetaEs: Record<
-  string,
-  { title: string; description: string }
-> = {
-  bathroom: {
-    title: "Accesorios de Baño — Lavabos, Grifos, Bañeras y Más",
-    description:
-      "Accesorios de baño de lujo de Kohler, TOTO, Badeloft, California Faucets y lavabos artesanales de cobre y piedra hechos por artesanos mexicanos.",
-  },
-  kitchen: {
-    title: "Accesorios de Cocina — Tarjas, Mezcladoras, Campanas",
-    description:
-      "Tarjas de cocina BLANCO y Kohler, mezcladoras Brizo y California Faucets, campanas y electrodomésticos de grado profesional.",
-  },
-  hardware: {
-    title: "Herrajes para Puertas — Chapas, Manijas, Perillas y Jaladeras",
-    description:
-      "Cerraduras de bronce fundido a mano de Sun Valley Bronze y herrajes de precisión Emtek. Cada pieza acabada individualmente.",
-  },
-};
-
 export const generateMetadata = async ({
   params,
 }: CategoryPageProps): Promise<Metadata> => {
   const { category, locale } = await params;
   const isEs = locale === "es";
-  const metaEn = categoryMeta[category];
-  const metaEs = categoryMetaEs[category];
-  if (!metaEn) return { title: "Shop" };
+  const meta = categoryMeta[category];
+  if (!meta) return { title: "Shop" };
 
-  const title = isEs && metaEs ? metaEs.title : metaEn.title;
-  const description = isEs && metaEs ? metaEs.description : metaEn.description;
+  const title = isEs ? meta.titleEs : meta.title;
+  const description = isEs ? meta.descriptionEs : meta.description;
 
   return {
     title,
@@ -108,14 +97,22 @@ export const generateMetadata = async ({
       description,
       url: `${BASE_URL}/${locale}/shop/${category}`,
       locale: isEs ? "es_MX" : "en_US",
+      alternateLocale: isEs ? "en_US" : "es_MX",
+      type: "website",
       images: [
         {
-          url: metaEn.heroImage,
-          width: 1920,
-          height: 1080,
+          url: meta.heroImage,
+          width: 1200,
+          height: 630,
           alt: title,
         },
       ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [meta.heroImage],
     },
   };
 };
@@ -123,6 +120,7 @@ export const generateMetadata = async ({
 const CategoryPage = async ({ params }: CategoryPageProps) => {
   const { category, locale } = await params;
   const lang = (locale as "en" | "es") || "en";
+  const isEs = lang === "es";
 
   if (!categoryMeta[category]) notFound();
 
@@ -131,8 +129,58 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
     PRODUCT_CATEGORIES[category as keyof typeof PRODUCT_CATEGORIES];
   const products = await getProducts({ category });
 
+  // BreadcrumbList JSON-LD
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: isEs ? "Inicio" : "Home",
+        item: `${BASE_URL}/${locale}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: isEs ? "Tienda" : "Shop",
+        item: `${BASE_URL}/${locale}/shop`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: catConfig?.label[lang] ?? category,
+        item: `${BASE_URL}/${locale}/shop/${category}`,
+      },
+    ],
+  };
+
+  // ItemList JSON-LD — helps search and AI engines enumerate products
+  const itemListJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: isEs ? meta.titleEs : meta.title,
+    description: isEs ? meta.descriptionEs : meta.description,
+    url: `${BASE_URL}/${locale}/shop/${category}`,
+    numberOfItems: products.length,
+    itemListElement: products.slice(0, 20).map((product, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: `${BASE_URL}/${locale}/shop/${category}/p/${product.slug}`,
+      name: lang === "es" ? product.name : product.nameEn,
+    })),
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+      />
       <Header locale={lang} />
       <main>
         <CategoryHero
@@ -146,14 +194,14 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
         />
 
         {/* Subcategory pills */}
-        <section className="py-8 bg-brand-linen border-b border-brand-stone/10">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="flex flex-wrap gap-2">
+        <section className="py-4 md:py-8 bg-brand-linen border-b border-brand-stone/10">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
               {catConfig.subcategories.map((sub) => (
                 <a
                   key={sub.slug}
                   href={`/${locale}/shop/${category}/${sub.slug}`}
-                  className="px-4 py-2 text-sm font-body border border-brand-stone/20 rounded-full text-brand-charcoal hover:border-brand-terracotta hover:text-brand-terracotta transition-colors"
+                  className="px-4 py-2.5 min-h-[44px] flex items-center text-sm font-body border border-brand-stone/20 rounded-full text-brand-charcoal hover:border-brand-terracotta hover:text-brand-terracotta transition-colors shrink-0 whitespace-nowrap"
                 >
                   {sub.label[lang]}
                 </a>

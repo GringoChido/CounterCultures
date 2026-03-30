@@ -12,7 +12,7 @@ const Heading = ({
   as: Component = "h2",
 }: TypographyProps) => {
   const sizeMap = {
-    h1: "text-5xl md:text-7xl lg:text-8xl",
+    h1: "text-4xl sm:text-5xl md:text-7xl lg:text-8xl",
     h2: "text-4xl md:text-5xl lg:text-6xl",
     h3: "text-3xl md:text-4xl",
     h4: "text-2xl md:text-3xl",

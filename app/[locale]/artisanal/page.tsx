@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { getProducts } from "@/app/lib/sheets";
@@ -64,6 +65,8 @@ export const generateMetadata = async ({
       description,
       url: `${BASE_URL}/${locale}/artisanal`,
       locale: isEs ? "es_MX" : "en_US",
+      alternateLocale: isEs ? "en_US" : "es_MX",
+      type: "website",
       images: [
         {
           url: "https://images.unsplash.com/photo-1615529328331-f8917597711f?w=1200&q=80",
@@ -75,32 +78,167 @@ export const generateMetadata = async ({
         },
       ],
     },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["https://images.unsplash.com/photo-1615529328331-f8917597711f?w=1200&q=80"],
+    },
   };
 };
 
 const ArtisanalPage = async ({ params }: ArtisanalPageProps) => {
   const { locale } = await params;
+  const isEs = locale === "es";
   const products = await getProducts({ artisanal: true });
+
+  // GEO: Entity-rich structured data for artisanal collection
+  const artisanalJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Collection",
+    name: isEs
+      ? "Colección Artesanal Counter Cultures"
+      : "Counter Cultures Artisanal Collection",
+    description: isEs
+      ? "Lavabos de cobre, cerámicas Mistoa, vasijas de piedra y herrajes de bronce forjado a mano — diseñados por Roger Williams y creados por artesanos mexicanos de Michoacán, Guanajuato y Querétaro."
+      : "Copper basins, Mistoa ceramic sinks, stone vessels, and hand-forged bronze hardware — designed by Roger Williams and crafted by Mexican artisans from Michoacán, Guanajuato, and Querétaro.",
+    url: `${BASE_URL}/${locale}/artisanal`,
+    creator: {
+      "@type": "Person",
+      "@id": `${BASE_URL}/#founder`,
+      name: "Roger Williams",
+    },
+    producer: {
+      "@type": "Organization",
+      "@id": `${BASE_URL}/#organization`,
+      name: "Counter Cultures",
+    },
+    about: [
+      { "@type": "Thing", name: "Copper Basins" },
+      { "@type": "Thing", name: "Mexican Artisan Craft" },
+      { "@type": "Thing", name: "Ceramic Sinks" },
+      { "@type": "Thing", name: "Stone Vessels" },
+      { "@type": "Thing", name: "Hand-Forged Bronze Hardware" },
+    ],
+    locationCreated: {
+      "@type": "Country",
+      name: "Mexico",
+    },
+  };
+
+  // AEO: FAQ for artisanal collection questions
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: isEs
+      ? [
+          {
+            "@type": "Question",
+            name: "¿Cómo se hacen los lavabos de cobre de Counter Cultures?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Los lavabos de cobre de Counter Cultures son fabricados a mano por artesanos de Santa Clara del Cobre, Michoacán. Cada pieza comienza como una lámina de cobre plana de calibre 16. El artesano la calienta y la martilla sobre un molde de madera llamado yunque. Un solo lavabo requiere entre 3,000 y 8,000 golpes de martillo. La pátina natural evoluciona con el tiempo.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "¿Puedo encargar una pieza artesanal personalizada?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Sí. Counter Cultures acepta encargos personalizados de lavabos de cobre, vasijas de piedra y cerámicas Mistoa. Elige el material, especifica las dimensiones, comparte tu inspiración y nuestros artesanos crearán una pieza única. Contáctanos para iniciar tu encargo.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "¿Cuánto tiempo tarda un encargo artesanal?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Los tiempos de producción varían según la complejidad: lavabos de cobre estándar 3–4 semanas, piezas personalizadas de cobre 5–8 semanas, vasijas de piedra talladas a mano 4–6 semanas, cerámicas Mistoa 3–5 semanas.",
+            },
+          },
+        ]
+      : [
+          {
+            "@type": "Question",
+            name: "How are Counter Cultures copper basins made?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Counter Cultures copper basins are handmade by artisans from Santa Clara del Cobre, Michoacán. Each piece starts as a flat 16-gauge copper sheet. The artisan heats it and hammers it over a wooden form called a yunque. A single basin requires 3,000–8,000 hammer strikes. The natural patina evolves over time.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Can I commission a custom artisanal piece?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Yes. Counter Cultures accepts custom commissions for copper basins, stone vessels, and Mistoa ceramics. Choose your material, specify dimensions, share your inspiration, and our artisans will craft a one-of-a-kind piece. Contact us to begin your commission.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "How long does an artisanal commission take?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Production times vary by complexity: standard copper basins 3–4 weeks, custom copper pieces 5–8 weeks, hand-carved stone vessels 4–6 weeks, Mistoa ceramics 3–5 weeks.",
+            },
+          },
+        ],
+  };
+
+  // BreadcrumbList JSON-LD
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: isEs ? "Inicio" : "Home",
+        item: `${BASE_URL}/${locale}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: isEs ? "Artesanal" : "Artisanal",
+        item: `${BASE_URL}/${locale}/artisanal`,
+      },
+    ],
+  };
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(artisanalJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <Header locale={locale} />
-      <main className="pt-20">
+      <main className="pt-16 md:pt-20">
         {/* Hero */}
         <section className="relative py-32 lg:py-40 overflow-hidden">
           <div className="absolute inset-0">
-            <img
-              src="https://images.unsplash.com/photo-1615529328331-f8917597711f?w=1920&q=80"
-              alt="Mexican artisan at work"
-              className="w-full h-full object-cover"
+            <Image
+              src="https://images.unsplash.com/photo-1615529328331-f8917597711f?w=1920&q=75&auto=format"
+              alt="Mexican artisan hand-hammering a copper basin in a traditional workshop"
+              fill
+              sizes="100vw"
+              priority
+              className="object-cover"
             />
             <div className="absolute inset-0 bg-brand-charcoal/50" />
           </div>
-          <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
               The Artisanal Collection
             </span>
-            <h1 className="mt-6 font-display text-5xl md:text-7xl lg:text-8xl font-light text-white tracking-wide leading-tight">
+            <h1 className="mt-6 font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-light text-white tracking-wide leading-tight">
               Handcrafted by Mexico&apos;s
               <br />
               <span className="italic">Master Artisans</span>
@@ -115,7 +253,7 @@ const ArtisanalPage = async ({ params }: ArtisanalPageProps) => {
 
         {/* Artisan Profiles */}
         <section className="py-20 lg:py-28 bg-brand-linen">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <span className="font-mono text-xs tracking-[0.2em] text-brand-stone uppercase">
               The Makers
             </span>
@@ -150,7 +288,7 @@ const ArtisanalPage = async ({ params }: ArtisanalPageProps) => {
 
         {/* Commission CTA */}
         <section className="py-20 lg:py-28 bg-brand-charcoal text-white">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8 text-center">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
             <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
               Bespoke
             </span>

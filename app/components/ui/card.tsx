@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Image from "next/image";
 
 interface CardProps {
   children: ReactNode;
@@ -38,11 +39,13 @@ const CardImage = ({
   className = "",
   aspectRatio = "video",
 }: CardImageProps) => (
-  <div className={`overflow-hidden ${aspectStyles[aspectRatio]}`}>
-    <img
+  <div className={`relative overflow-hidden ${aspectStyles[aspectRatio]}`}>
+    <Image
       src={src}
       alt={alt}
-      className={`w-full h-full object-cover transition-transform duration-500 ease-in-out hover:scale-105 ${className}`}
+      fill
+      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+      className={`object-cover transition-transform duration-500 ease-in-out hover:scale-105 ${className}`}
     />
   </div>
 );

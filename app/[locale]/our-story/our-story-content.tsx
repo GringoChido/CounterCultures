@@ -59,14 +59,14 @@ export const OurStoryContent = () => {
         eyebrow="Our Story"
         title="Where Two Worlds Meet"
         description="For 20 years, Counter Cultures has been the bridge between the world's finest fixture manufacturers and Mexico's master artisans."
-        imageSrc="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80"
+        imageSrc="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=75&auto=format"
         ctaLabel="Visit the Showroom"
         ctaHref="/showroom"
       />
 
       {/* Founder Section */}
-      <section className="py-20 md:py-28 bg-brand-linen">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      <section className="py-12 md:py-28 bg-brand-linen">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <AnimatedSection>
               <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
@@ -104,7 +104,7 @@ export const OurStoryContent = () => {
                   className="w-full h-full"
                   style={{
                     backgroundImage:
-                      "url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80')",
+                      "url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=75&auto=format')",
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                   }}
@@ -116,8 +116,8 @@ export const OurStoryContent = () => {
       </section>
 
       {/* Timeline */}
-      <section className="py-20 md:py-28 bg-brand-charcoal">
-        <div className="mx-auto max-w-5xl px-6 lg:px-8">
+      <section className="py-12 md:py-28 bg-brand-charcoal">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
             <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
               20 Years in the Making
@@ -130,8 +130,8 @@ export const OurStoryContent = () => {
           <div className="mt-16 space-y-0">
             {timeline.map((item, i) => (
               <AnimatedSection key={item.year} delay={i * 0.1}>
-                <div className="flex gap-8 md:gap-12 py-8 border-t border-white/10">
-                  <span className="font-mono text-2xl md:text-3xl text-brand-copper font-medium shrink-0 w-20 md:w-24">
+                <div className="flex gap-5 md:gap-12 py-6 md:py-8 border-t border-white/10">
+                  <span className="font-mono text-xl md:text-3xl text-brand-copper font-medium shrink-0 w-16 md:w-24">
                     {item.year}
                   </span>
                   <div>
@@ -150,8 +150,8 @@ export const OurStoryContent = () => {
       </section>
 
       {/* Artisan Profiles */}
-      <section className="py-20 md:py-28 bg-brand-sand/30">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      <section className="py-12 md:py-28 bg-brand-sand/30">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
             <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
               The Artisans
@@ -174,7 +174,7 @@ export const OurStoryContent = () => {
                 description:
                   "Third-generation coppersmith. Each of Don Miguel's basins is hand-hammered from a single sheet of copper — no seams, no molds, no shortcuts.",
                 image:
-                  "https://images.unsplash.com/photo-1615529328331-f8917597711f?w=600&q=80",
+                  "https://images.unsplash.com/photo-1615529328331-f8917597711f?w=600&q=75&auto=format",
               },
               {
                 name: "Maestra Elena Ruiz",
@@ -182,7 +182,7 @@ export const OurStoryContent = () => {
                 description:
                   "Elena's hand-painted ceramic sinks draw from centuries of Talavera tradition, reinterpreted with contemporary forms and a restrained palette.",
                 image:
-                  "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=600&q=80",
+                  "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=600&q=75&auto=format",
               },
               {
                 name: "Taller Piedra Viva",
@@ -190,7 +190,7 @@ export const OurStoryContent = () => {
                 description:
                   "A collective of stone carvers working in cantera rosa and volcanic basalt. Their vessel sinks and countertops bring the raw beauty of Mexican geology indoors.",
                 image:
-                  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=80",
+                  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&q=75&auto=format",
               },
             ].map((artisan) => (
               <AnimatedSection key={artisan.name}>
@@ -223,7 +223,7 @@ export const OurStoryContent = () => {
 
       {/* CTA */}
       <section className="py-20 md:py-24 bg-brand-terracotta">
-        <div className="mx-auto max-w-4xl px-6 lg:px-8 text-center">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
           <AnimatedSection>
             <h2 className="font-display text-3xl md:text-5xl font-light text-white tracking-wide">
               Come See It for Yourself

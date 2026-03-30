@@ -91,7 +91,7 @@ const BlogPostPage = async ({ params }: BlogPostPageProps) => {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
         />
         <article className="pt-32 pb-20 md:pt-40 md:pb-28">
-          <div className="mx-auto max-w-3xl px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
             <Link
               href="/blog"
               className="font-mono text-xs tracking-wider text-brand-terracotta uppercase hover:text-brand-copper transition-colors"

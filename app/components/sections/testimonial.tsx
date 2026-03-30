@@ -20,14 +20,14 @@ const content = {
 const Testimonial = ({ locale = "en" }: { locale?: string }) => {
   const t = content[locale as "en" | "es"];
   return (
-    <section className="bg-brand-charcoal py-20 md:py-28">
-      <div className="mx-auto max-w-5xl px-6 lg:px-8 text-center">
+    <section className="bg-brand-charcoal py-14 md:py-28">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center">
         <AnimatedSection>
-          <span className="inline-block font-display text-8xl text-brand-copper leading-none select-none">
+          <span className="inline-block font-display text-7xl md:text-8xl text-brand-copper leading-none select-none">
             &ldquo;
           </span>
 
-          <blockquote className="font-display text-2xl md:text-3xl text-white font-light italic leading-relaxed max-w-4xl mx-auto -mt-6">
+          <blockquote className="font-display text-xl md:text-3xl text-white font-light italic leading-relaxed max-w-4xl mx-auto -mt-4 md:-mt-6">
             {t.quote}
           </blockquote>
 

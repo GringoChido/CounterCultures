@@ -82,11 +82,11 @@ const ContactCTA = ({ locale = "en" }: { locale?: string }) => {
   };
 
   return (
-    <section className="py-24 md:py-32 bg-brand-linen">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+    <section className="py-14 md:py-32 bg-brand-linen">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
           <AnimatedSection>
-            <h2 className="font-display text-4xl md:text-5xl font-normal tracking-wide text-brand-charcoal">
+            <h2 className="font-display text-3xl md:text-5xl font-normal tracking-wide text-brand-charcoal">
               {t.title}
             </h2>
             <div className="mt-8 space-y-5">

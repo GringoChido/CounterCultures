@@ -170,7 +170,7 @@ const Hero = ({ locale = "en" }: { locale?: string }) => {
 
       {/* Content */}
       <div className="relative z-10 h-full flex items-end">
-        <div className="w-full pb-16 md:pb-24 px-6 md:px-16 max-w-5xl">
+        <div className="w-full pb-20 md:pb-28 px-5 sm:px-8 md:px-16 max-w-5xl">
           <AnimatePresence mode="wait">
             <motion.div
               key={current}
@@ -179,19 +179,19 @@ const Hero = ({ locale = "en" }: { locale?: string }) => {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
             >
-              <p className="font-mono text-sm uppercase tracking-[0.2em] text-brand-copper mb-4">
+              <p className="font-mono text-xs sm:text-sm uppercase tracking-[0.2em] text-brand-copper mb-3 md:mb-4">
                 {slide.eyebrow[lang]}
               </p>
 
-              <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-light text-white leading-[0.95] tracking-wide whitespace-pre-line">
+              <h1 className="font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-light text-white leading-[0.95] tracking-wide whitespace-pre-line">
                 {slide.title[lang]}
               </h1>
 
-              <p className="mt-6 font-body text-lg text-white/80 max-w-xl leading-relaxed">
+              <p className="mt-4 md:mt-6 font-body text-base md:text-lg text-white/80 max-w-xl leading-relaxed">
                 {slide.subtitle[lang]}
               </p>
 
-              <div className="mt-8 flex flex-col sm:flex-row items-start gap-4">
+              <div className="mt-6 md:mt-8 flex flex-col sm:flex-row items-start gap-3 md:gap-4">
                 <Button variant="primary" size="lg" href={slide.cta.href}>
                   {slide.cta.label[lang]}
                 </Button>
@@ -209,18 +209,18 @@ const Hero = ({ locale = "en" }: { locale?: string }) => {
         </div>
       </div>
 
-      {/* Navigation arrows */}
-      <div className="absolute right-6 md:right-16 bottom-16 md:bottom-24 z-20 flex items-center gap-3">
+      {/* Navigation arrows — hidden on small screens to avoid overlap */}
+      <div className="hidden sm:flex absolute right-6 md:right-16 bottom-16 md:bottom-24 z-20 items-center gap-3">
         <button
           onClick={prev}
-          className="w-12 h-12 rounded-full border border-white/30 flex items-center justify-center text-white hover:bg-white/10 transition-colors cursor-pointer"
+          className="w-11 h-11 md:w-12 md:h-12 rounded-full border border-white/30 flex items-center justify-center text-white hover:bg-white/10 transition-colors cursor-pointer"
           aria-label="Previous slide"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
         <button
           onClick={next}
-          className="w-12 h-12 rounded-full border border-white/30 flex items-center justify-center text-white hover:bg-white/10 transition-colors cursor-pointer"
+          className="w-11 h-11 md:w-12 md:h-12 rounded-full border border-white/30 flex items-center justify-center text-white hover:bg-white/10 transition-colors cursor-pointer"
           aria-label="Next slide"
         >
           <ChevronRight className="w-5 h-5" />

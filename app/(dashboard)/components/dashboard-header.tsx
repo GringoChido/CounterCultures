@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, Menu } from "lucide-react";
 
 const pageTitles: Record<string, string> = {
   "/dashboard/overview": "Overview",
@@ -22,15 +22,29 @@ const pageTitles: Record<string, string> = {
   "/dashboard/settings": "Settings",
 };
 
-const DashboardHeader = () => {
+interface DashboardHeaderProps {
+  onMenuClick?: () => void;
+}
+
+const DashboardHeader = ({ onMenuClick }: DashboardHeaderProps) => {
   const pathname = usePathname();
   const title = pageTitles[pathname] ?? "Dashboard";
 
   return (
-    <header className="h-16 bg-dash-surface border-b border-dash-border flex items-center justify-between px-6">
-      <h1 className="text-lg font-semibold text-dash-text">{title}</h1>
+    <header className="h-16 bg-dash-surface border-b border-dash-border flex items-center justify-between px-4 md:px-6">
+      <div className="flex items-center gap-3">
+        {/* Mobile hamburger */}
+        <button
+          onClick={onMenuClick}
+          className="lg:hidden w-10 h-10 flex items-center justify-center rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
+          aria-label="Open menu"
+        >
+          <Menu className="w-5 h-5 text-dash-text-secondary" />
+        </button>
+        <h1 className="text-lg font-semibold text-dash-text">{title}</h1>
+      </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3 md:gap-4">
         {/* Search */}
         <div className="relative hidden md:block">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dash-text-secondary" />
@@ -42,14 +56,14 @@ const DashboardHeader = () => {
         </div>
 
         {/* Notifications */}
-        <button className="relative p-2 rounded-lg hover:bg-dash-bg transition-colors cursor-pointer">
+        <button className="relative w-10 h-10 flex items-center justify-center rounded-lg hover:bg-dash-bg transition-colors cursor-pointer">
           <Bell className="w-5 h-5 text-dash-text-secondary" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-brand-terracotta rounded-full" />
+          <span className="absolute top-2 right-2 w-2 h-2 bg-brand-terracotta rounded-full" />
         </button>
 
         {/* User avatar */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-brand-copper flex items-center justify-center text-white text-sm font-semibold">
+          <div className="w-8 h-8 rounded-full bg-brand-copper flex items-center justify-center text-white text-sm font-semibold shrink-0">
             R
           </div>
           <div className="hidden md:block">

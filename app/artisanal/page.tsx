@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { getProducts } from "@/app/lib/sheets";
@@ -41,22 +42,25 @@ const ArtisanalPage = async () => {
   return (
     <>
       <Header />
-      <main className="pt-20">
+      <main className="pt-16 md:pt-20">
         {/* Hero */}
         <section className="relative py-32 lg:py-40 overflow-hidden">
           <div className="absolute inset-0">
-            <img
-              src="https://images.unsplash.com/photo-1615529328331-f8917597711f?w=1920&q=80"
-              alt="Mexican artisan at work"
-              className="w-full h-full object-cover"
+            <Image
+              src="https://images.unsplash.com/photo-1615529328331-f8917597711f?w=1920&q=75&auto=format"
+              alt="Mexican artisan hand-hammering a copper basin in a traditional workshop"
+              fill
+              sizes="100vw"
+              priority
+              className="object-cover"
             />
             <div className="absolute inset-0 bg-brand-charcoal/50" />
           </div>
-          <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
               The Artisanal Collection
             </span>
-            <h1 className="mt-6 font-display text-5xl md:text-7xl lg:text-8xl font-light text-white tracking-wide leading-tight">
+            <h1 className="mt-6 font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-light text-white tracking-wide leading-tight">
               Handcrafted by Mexico&apos;s
               <br />
               <span className="italic">Master Artisans</span>
@@ -71,7 +75,7 @@ const ArtisanalPage = async () => {
 
         {/* Artisan Profiles */}
         <section className="py-20 lg:py-28 bg-brand-linen">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <span className="font-mono text-xs tracking-[0.2em] text-brand-stone uppercase">
               The Makers
             </span>
@@ -106,7 +110,7 @@ const ArtisanalPage = async () => {
 
         {/* Commission CTA */}
         <section className="py-20 lg:py-28 bg-brand-charcoal text-white">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8 text-center">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
             <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
               Bespoke
             </span>

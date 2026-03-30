@@ -156,9 +156,9 @@ const FAQItem = ({
   <div className="border-b border-brand-stone/10">
     <button
       onClick={onToggle}
-      className="w-full flex items-center justify-between py-5 text-left cursor-pointer"
+      className="w-full flex items-center justify-between py-5 min-h-[56px] text-left cursor-pointer gap-4"
     >
-      <span className="font-body text-base font-medium text-brand-charcoal pr-8">
+      <span className="font-body text-base font-medium text-brand-charcoal">
         {question}
       </span>
       {isOpen ? (
@@ -205,13 +205,13 @@ export const ResourcesContent = () => {
       <Header locale={locale} />
       <main>
         {/* Hero */}
-        <section className="pt-32 pb-16 md:pt-40 md:pb-20 bg-brand-charcoal">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <section className="pt-28 pb-12 md:pt-40 md:pb-20 bg-brand-charcoal">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection>
               <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
                 {content.hero.eyebrow[locale]}
               </span>
-              <h1 className="mt-4 font-display text-5xl md:text-7xl font-light text-white tracking-wide">
+              <h1 className="mt-4 font-display text-4xl sm:text-5xl md:text-7xl font-light text-white tracking-wide">
                 {content.hero.title[locale]}
               </h1>
               <p className="mt-6 font-body text-base text-white/60 max-w-2xl leading-relaxed">
@@ -222,9 +222,9 @@ export const ResourcesContent = () => {
         </section>
 
         {/* Quick Access Cards */}
-        <section className="py-20 md:py-28 bg-brand-linen">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <section className="py-12 md:py-28 bg-brand-linen">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
               {content.quickAccess.map((card, i) => {
                 const Icon = card.icon;
                 return (
@@ -253,8 +253,8 @@ export const ResourcesContent = () => {
         </section>
 
         {/* Ordering FAQ */}
-        <section className="py-20 md:py-28 bg-white">
-          <div className="mx-auto max-w-3xl px-6 lg:px-8">
+        <section className="py-12 md:py-28 bg-white">
+          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection>
               <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
                 FAQ
@@ -282,13 +282,13 @@ export const ResourcesContent = () => {
         </section>
 
         {/* Brand Resource Hub */}
-        <section className="py-20 md:py-28 bg-brand-linen">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <section className="py-12 md:py-28 bg-brand-linen">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection>
               <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
                 {locale === "es" ? "Marcas" : "Brands"}
               </span>
-              <h2 className="mt-4 font-display text-4xl md:text-5xl font-light text-brand-charcoal tracking-wide">
+              <h2 className="mt-4 font-display text-3xl md:text-5xl font-light text-brand-charcoal tracking-wide">
                 {locale === "es"
                   ? "Centro de Recursos de Marca"
                   : "Brand Resource Hub"}
@@ -300,7 +300,7 @@ export const ResourcesContent = () => {
               </p>
             </AnimatedSection>
 
-            <div className="mt-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="mt-10 md:mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
               {BRANDS.map((brand) => (
                 <AnimatedSection key={brand.slug}>
                   <Link
@@ -321,8 +321,8 @@ export const ResourcesContent = () => {
         </section>
 
         {/* Glossary */}
-        <section className="py-20 md:py-28 bg-white" id="glossary">
-          <div className="mx-auto max-w-4xl px-6 lg:px-8">
+        <section className="py-12 md:py-28 bg-white" id="glossary">
+          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection>
               <div className="flex items-center gap-3 mb-4">
                 <BookOpen className="w-6 h-6 text-brand-copper" />
@@ -343,12 +343,12 @@ export const ResourcesContent = () => {
             </AnimatedSection>
 
             {/* Category Filter */}
-            <div className="mt-8 flex flex-wrap gap-2">
+            <div className="mt-8 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
               {categories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setGlossaryFilter(cat)}
-                  className={`px-4 py-2 text-sm font-body border rounded-full transition-colors cursor-pointer ${
+                  className={`px-4 py-2.5 min-h-[44px] text-sm font-body border rounded-full transition-colors cursor-pointer shrink-0 whitespace-nowrap ${
                     glossaryFilter === cat
                       ? "border-brand-terracotta text-brand-terracotta bg-brand-terracotta/5"
                       : "border-brand-stone/20 text-brand-charcoal hover:border-brand-terracotta hover:text-brand-terracotta"
@@ -379,8 +379,8 @@ export const ResourcesContent = () => {
         </section>
 
         {/* Warranty Table */}
-        <section className="py-20 md:py-28 bg-brand-linen">
-          <div className="mx-auto max-w-4xl px-6 lg:px-8">
+        <section className="py-12 md:py-28 bg-brand-linen">
+          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection>
               <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
                 {locale === "es" ? "Garantía" : "Warranty"}
@@ -438,8 +438,8 @@ export const ResourcesContent = () => {
         </section>
 
         {/* CTA */}
-        <section className="py-20 md:py-28 bg-brand-charcoal">
-          <div className="mx-auto max-w-3xl px-6 lg:px-8 text-center">
+        <section className="py-12 md:py-28 bg-brand-charcoal">
+          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
             <AnimatedSection>
               <h2 className="font-display text-4xl md:text-5xl font-light text-white tracking-wide">
                 {locale === "es"

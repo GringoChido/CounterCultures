@@ -46,13 +46,13 @@ export const ContactContent = () => {
     <Header locale={locale} />
     <main>
       {/* Hero */}
-      <section className="pt-32 pb-16 md:pt-40 md:pb-20 bg-brand-charcoal">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      <section className="pt-28 pb-12 md:pt-40 md:pb-20 bg-brand-charcoal">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
             <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
               Get in Touch
             </span>
-            <h1 className="mt-4 font-display text-5xl md:text-7xl font-light text-white tracking-wide">
+            <h1 className="mt-4 font-display text-4xl sm:text-5xl md:text-7xl font-light text-white tracking-wide">
               Contact Us
             </h1>
             <p className="mt-6 font-body text-base text-white/60 max-w-xl leading-relaxed">
@@ -64,8 +64,8 @@ export const ContactContent = () => {
       </section>
 
       {/* Form + Info */}
-      <section className="py-20 md:py-28 bg-brand-linen">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      <section className="py-12 md:py-28 bg-brand-linen">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-12 lg:gap-20">
             {/* Form — left, wider */}
             <div className="lg:col-span-3">

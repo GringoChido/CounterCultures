@@ -122,7 +122,7 @@ const ChatWidget = ({ locale = "en" }: { locale?: string }) => {
               </div>
               <button
                 onClick={() => setOpen(false)}
-                className="text-white/60 hover:text-white transition-colors cursor-pointer"
+                className="flex items-center justify-center w-10 h-10 text-white/60 hover:text-white transition-colors cursor-pointer"
                 aria-label="Close chat"
               >
                 <X className="w-5 h-5" />

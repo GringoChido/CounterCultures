@@ -49,10 +49,10 @@ const NewsletterStrip = ({ locale = "en" }: { locale?: string }) => {
   };
 
   return (
-    <section className="bg-brand-terracotta py-12">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+    <section className="bg-brand-terracotta py-10 md:py-12">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <AnimatedSection>
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5 md:gap-6">
             <div>
               <h2 className="font-display text-xl md:text-2xl text-white">
                 {t.title}
@@ -61,18 +61,18 @@ const NewsletterStrip = ({ locale = "en" }: { locale?: string }) => {
                 {t.subtitle}
               </p>
             </div>
-            <form className="flex w-full md:w-auto gap-3" onSubmit={handleSubmit}>
+            <form className="flex flex-col sm:flex-row w-full md:w-auto gap-3" onSubmit={handleSubmit}>
               <input
                 type="email"
                 name="email"
                 required
                 placeholder={t.placeholder}
-                className="w-full md:w-72 px-4 py-3 bg-white/10 border border-white/30 rounded-md text-white placeholder:text-white/50 font-body text-sm focus:outline-none focus:border-white transition-colors"
+                className="w-full sm:w-64 md:w-72 px-4 py-3 min-h-[48px] bg-white/10 border border-white/30 rounded-md text-white placeholder:text-white/50 font-body text-sm focus:outline-none focus:border-white transition-colors"
               />
               <button
                 type="submit"
                 disabled={status === "sending"}
-                className="px-6 py-3 bg-white text-brand-terracotta font-body text-sm font-semibold rounded-md hover:bg-white/90 transition-colors shrink-0 cursor-pointer disabled:opacity-70"
+                className="px-6 py-3 min-h-[48px] bg-white text-brand-terracotta font-body text-sm font-semibold rounded-md hover:bg-white/90 transition-colors shrink-0 cursor-pointer disabled:opacity-70"
               >
                 {status === "sending" ? t.sending : status === "sent" ? t.success : status === "error" ? t.error : t.subscribe}
               </button>

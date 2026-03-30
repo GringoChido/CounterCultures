@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 
 interface ProductCardProps {
   brand: string;
@@ -37,11 +38,12 @@ const ProductCard = ({
     className="group block"
   >
     <div className="relative overflow-hidden aspect-square bg-brand-sand/20">
-      <img
+      <Image
         src={image}
         alt={nameEn}
-        className="w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
-        loading="lazy"
+        fill
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+        className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
       />
       {artisanal && (
         <span className="absolute top-3 left-3 font-mono text-[10px] tracking-[0.15em] uppercase bg-brand-copper text-white px-2.5 py-1">

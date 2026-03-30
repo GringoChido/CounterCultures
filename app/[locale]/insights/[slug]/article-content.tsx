@@ -11,7 +11,7 @@ import {
   pillarLabels,
 } from "@/app/lib/articles";
 import Link from "next/link";
-import { ArrowLeft, Clock, User } from "lucide-react";
+import { ArrowLeft, Clock, User, ChevronDown } from "lucide-react";
 
 interface ArticleContentProps {
   article: Article;
@@ -81,6 +81,7 @@ export const ArticleContent = ({
   locale,
 }: ArticleContentProps) => {
   const [activeHeading, setActiveHeading] = useState("");
+  const [tocOpen, setTocOpen] = useState(false);
   const headings = extractHeadings(article.body[locale]);
   const bodyHtml = renderMarkdown(article.body[locale]);
 
@@ -118,8 +119,8 @@ export const ArticleContent = ({
       <Header locale={locale} />
       <main>
         {/* Hero */}
-        <section className="pt-32 pb-12 md:pt-40 md:pb-16 bg-brand-charcoal">
-          <div className="mx-auto max-w-4xl px-6 lg:px-8">
+        <section className="pt-28 pb-10 md:pt-40 md:pb-16 bg-brand-charcoal">
+          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection>
               <Link
                 href={`/${locale}/insights`}
@@ -158,12 +159,12 @@ export const ArticleContent = ({
 
         {/* Featured Image */}
         <section className="bg-brand-linen">
-          <div className="mx-auto max-w-5xl px-6 lg:px-8 -mt-2">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 -mt-2">
             <div className="aspect-[21/9] rounded-lg overflow-hidden">
               <div
                 className="w-full h-full"
                 style={{
-                  backgroundImage: `url('${article.image}')`,
+                  backgroundImage: `url('${article.image.replace("q=80", "q=75").replace(/&?auto=format/g, "")}&auto=format')`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }}
@@ -173,18 +174,51 @@ export const ArticleContent = ({
         </section>
 
         {/* Article Body + Sidebar */}
-        <section className="py-16 md:py-20 bg-brand-linen">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <section className="py-10 md:py-16 lg:py-20 bg-brand-linen">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            {/* Mobile TOC */}
+            {headings.filter((h) => h.level === 2).length > 0 && (
+              <div className="lg:hidden mb-8 bg-white border border-brand-stone/10 rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setTocOpen(!tocOpen)}
+                  className="flex items-center justify-between w-full px-5 py-4 text-left"
+                >
+                  <span className="font-mono text-[10px] tracking-[0.2em] text-brand-copper uppercase">
+                    {locale === "es" ? "En Este Artículo" : "In This Article"}
+                  </span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-brand-stone transition-transform ${tocOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+                {tocOpen && (
+                  <nav className="px-5 pb-4 space-y-1 border-t border-brand-stone/10 pt-3">
+                    {headings
+                      .filter((h) => h.level === 2)
+                      .map((h) => (
+                        <a
+                          key={h.id}
+                          href={`#${h.id}`}
+                          onClick={() => setTocOpen(false)}
+                          className="block py-2 font-body text-sm text-brand-stone hover:text-brand-charcoal transition-colors"
+                        >
+                          {h.text}
+                        </a>
+                      ))}
+                  </nav>
+                )}
+              </div>
+            )}
+
             <div className="lg:grid lg:grid-cols-[1fr_280px] lg:gap-16">
               {/* Body */}
               <article
-                className="prose-custom"
+                className="prose-custom min-w-0"
                 dangerouslySetInnerHTML={{ __html: bodyHtml }}
               />
 
               {/* Sidebar TOC */}
               <aside className="hidden lg:block">
-                <div className="sticky top-28">
+                <div className="sticky top-24">
                   <span className="font-mono text-[10px] tracking-[0.2em] text-brand-copper uppercase">
                     {locale === "es" ? "En Este Artículo" : "In This Article"}
                   </span>
@@ -237,7 +271,7 @@ export const ArticleContent = ({
         {/* Related Articles */}
         {relatedArticles.length > 0 && (
           <section className="py-16 md:py-20 bg-white">
-            <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <AnimatedSection>
                 <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
                   {locale === "es" ? "Artículos Relacionados" : "Related Articles"}
@@ -248,13 +282,13 @@ export const ArticleContent = ({
                   <AnimatedSection key={related.slug}>
                     <Link
                       href={`/${locale}/insights/${related.slug}`}
-                      className="group flex gap-6"
+                      className="group flex gap-4 sm:gap-6"
                     >
-                      <div className="w-32 h-24 rounded-lg overflow-hidden bg-brand-stone/10 shrink-0">
+                      <div className="w-24 h-20 sm:w-32 sm:h-24 rounded-lg overflow-hidden bg-brand-stone/10 shrink-0">
                         <div
                           className="w-full h-full transition-transform duration-500 group-hover:scale-105"
                           style={{
-                            backgroundImage: `url('${related.image}')`,
+                            backgroundImage: `url('${related.image.replace("q=80", "q=75").replace(/&?auto=format/g, "")}&auto=format')`,
                             backgroundSize: "cover",
                             backgroundPosition: "center",
                           }}
@@ -283,7 +317,7 @@ export const ArticleContent = ({
 
         {/* Newsletter CTA */}
         <section className="py-16 md:py-20 bg-brand-charcoal">
-          <div className="mx-auto max-w-3xl px-6 lg:px-8 text-center">
+          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
             <AnimatedSection>
               <h2 className="font-display text-3xl md:text-4xl font-light text-white tracking-wide">
                 {locale === "es"

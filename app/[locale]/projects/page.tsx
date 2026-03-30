@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ProjectsContent } from "./projects-content";
+import { PROJECTS } from "@/app/lib/projects";
 
 const BASE_URL = "https://countercultures.mx";
 
@@ -36,6 +37,8 @@ export const generateMetadata = async ({
       description,
       url: `${BASE_URL}/${locale}/projects`,
       locale: isEs ? "es_MX" : "en_US",
+      alternateLocale: isEs ? "en_US" : "es_MX",
+      type: "website",
       images: [
         {
           url: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=80",
@@ -47,11 +50,72 @@ export const generateMetadata = async ({
         },
       ],
     },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=80"],
+    },
   };
 };
 
-const ProjectsPage = () => {
-  return <ProjectsContent />;
+const ProjectsPage = async ({ params }: ProjectsPageProps) => {
+  const { locale } = await params;
+  const isEs = locale === "es";
+
+  // ItemList JSON-LD — GEO: enumerate projects for AI engines
+  const itemListJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: isEs
+      ? "Proyectos — Counter Cultures"
+      : "Projects — Counter Cultures",
+    description: isEs
+      ? "Proyectos residenciales, hoteleros y comerciales especificados por Counter Cultures en San Miguel de Allende y México."
+      : "Residential, hospitality, and commercial projects specified by Counter Cultures across San Miguel de Allende and Mexico.",
+    url: `${BASE_URL}/${locale}/projects`,
+    numberOfItems: PROJECTS.length,
+    itemListElement: PROJECTS.map((project, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: `${BASE_URL}/${locale}/projects/${project.slug}`,
+      name: project.title,
+    })),
+  };
+
+  // BreadcrumbList JSON-LD
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: isEs ? "Inicio" : "Home",
+        item: `${BASE_URL}/${locale}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: isEs ? "Proyectos" : "Projects",
+        item: `${BASE_URL}/${locale}/projects`,
+      },
+    ],
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <ProjectsContent />
+    </>
+  );
 };
 
 export default ProjectsPage;
