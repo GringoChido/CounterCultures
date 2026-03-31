@@ -24,6 +24,7 @@ import {
   ChevronRight,
   LogOut,
   X,
+  Database,
 } from "lucide-react";
 
 interface NavItem {
@@ -46,7 +47,8 @@ const navItems: NavItem[] = [
   { label: "Sales Analytics", href: "/dashboard/sales-analytics", icon: TrendingUp },
   { label: "Marketing Analytics", href: "/dashboard/marketing-analytics", icon: PieChart },
   { label: "Reports", href: "/dashboard/reports", icon: ClipboardList },
-  { label: "Products", href: "/dashboard/products", icon: Package, section: "Operations" },
+  { label: "Odoo", href: "/dashboard/odoo", icon: Database, section: "Operations" },
+  { label: "Products", href: "/dashboard/products", icon: Package },
   { label: "Trade Program", href: "/dashboard/trade-program", icon: Handshake },
   { label: "Drive", href: "/dashboard/drive", icon: FolderOpen },
   { label: "Settings", href: "/dashboard/settings", icon: Settings, section: "System" },
