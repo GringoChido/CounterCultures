@@ -90,38 +90,49 @@ const OdooPage = () => {
   const loadSummary = useCallback(async () => {
     try {
       const res = await fetch("/api/odoo/summary");
-      if (!res.ok) throw new Error("Failed to load summary");
       const data = await res.json();
+      if (data.error) {
+        console.warn("Summary error:", data.error);
+        return;
+      }
       setSummary(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load summary");
+      console.warn("Summary fetch failed:", err);
     }
   }, []);
 
   const loadSales = useCallback(async () => {
-    const res = await fetch("/api/odoo/sales?limit=25");
-    const data = await res.json();
-    setSales(data.orders ?? []);
+    try {
+      const res = await fetch("/api/odoo/sales?limit=25");
+      const data = await res.json();
+      setSales(data.orders ?? []);
+    } catch { /* ignore */ }
   }, []);
 
   const loadInvoices = useCallback(async () => {
-    const res = await fetch("/api/odoo/invoices?limit=25");
-    const data = await res.json();
-    setInvoices(data.invoices ?? []);
+    try {
+      const res = await fetch("/api/odoo/invoices?limit=25");
+      const data = await res.json();
+      setInvoices(data.invoices ?? []);
+    } catch { /* ignore */ }
   }, []);
 
   const loadContacts = useCallback(async (search = "") => {
-    const params = new URLSearchParams({ limit: "50", type: "customer" });
-    if (search) params.set("search", search);
-    const res = await fetch(`/api/odoo/contacts?${params}`);
-    const data = await res.json();
-    setContacts(data.contacts ?? []);
+    try {
+      const params = new URLSearchParams({ limit: "50", type: "customer" });
+      if (search) params.set("search", search);
+      const res = await fetch(`/api/odoo/contacts?${params}`);
+      const data = await res.json();
+      setContacts(data.contacts ?? []);
+    } catch { /* ignore */ }
   }, []);
 
   const loadPurchases = useCallback(async () => {
-    const res = await fetch("/api/odoo/purchases?limit=25");
-    const data = await res.json();
-    setPurchases(data.orders ?? []);
+    try {
+      const res = await fetch("/api/odoo/purchases?limit=25");
+      const data = await res.json();
+      setPurchases(data.orders ?? []);
+    } catch { /* ignore */ }
   }, []);
 
   const loadAll = useCallback(async () => {
@@ -129,13 +140,10 @@ const OdooPage = () => {
     setError("");
     const ok = await testConnection();
     if (ok) {
-      await Promise.all([
-        loadSummary(),
-        loadSales(),
-        loadInvoices(),
-        loadContacts(),
-        loadPurchases(),
-      ]);
+      // Load in small batches to avoid Netlify function timeouts
+      await Promise.all([loadSales(), loadInvoices()]);
+      await Promise.all([loadContacts(), loadPurchases()]);
+      await loadSummary();
     }
     setLoading(false);
   }, [testConnection, loadSummary, loadSales, loadInvoices, loadContacts, loadPurchases]);
