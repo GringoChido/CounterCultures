@@ -69,7 +69,7 @@ const ArtisanalSpotlight = ({ locale = "en" }: { locale?: string }) => {
           <div className="grid grid-cols-2 gap-4">
             <div className="relative aspect-[4/5] rounded-lg overflow-hidden">
               <Image
-                src="https://images.unsplash.com/photo-1615529328331-f8917597711f?w=600&q=75&auto=format"
+                src="/Assets/Santa Clara del Cobre.webp"
                 alt="Hand-hammered copper basin from Santa Clara del Cobre"
                 fill
                 sizes="(max-width: 1024px) 50vw, 280px"
@@ -78,8 +78,8 @@ const ArtisanalSpotlight = ({ locale = "en" }: { locale?: string }) => {
             </div>
             <div className="relative aspect-[4/5] rounded-lg overflow-hidden">
               <Image
-                src="https://images.unsplash.com/photo-1620626011761-996317b8d101?w=600&q=75&auto=format"
-                alt="Artisanal ceramic sink handcrafted in Guanajuato"
+                src="/Assets/Mistoa Studio.png"
+                alt="Mistoa Studio ceramic basin handcrafted in Guanajuato"
                 fill
                 sizes="(max-width: 1024px) 50vw, 280px"
                 className="object-cover hover:scale-105 transition-transform duration-500"
@@ -87,8 +87,8 @@ const ArtisanalSpotlight = ({ locale = "en" }: { locale?: string }) => {
             </div>
             <div className="relative col-span-2 aspect-[16/9] rounded-lg overflow-hidden">
               <Image
-                src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=75&auto=format"
-                alt="Mexican artisan workshop where Counter Cultures fixtures are crafted"
+                src="/Assets/Stone Artisans.webp"
+                alt="Hand-carved stone sink by artisans in Querétaro, Mexico"
                 fill
                 sizes="(max-width: 1024px) 100vw, 560px"
                 className="object-cover hover:scale-105 transition-transform duration-500"

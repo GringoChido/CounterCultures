@@ -17,6 +17,8 @@ const artisans = [
     name: "Mistoa Studio",
     location: "Guanajuato",
     specialty: "Ceramic basins in 10 colorways",
+    image: "/Assets/Mistoa Studio.png",
+    alt: "Mistoa Studio ceramic basin handcrafted in Guanajuato, Mexico",
     story:
       "Each Mistoa basin is hand-shaped on the wheel, dipped in small-batch glazes inspired by the Mexican landscape — from Arcilla clay to Azul Profundo.",
   },
@@ -24,6 +26,8 @@ const artisans = [
     name: "Santa Clara del Cobre",
     location: "Michoacán",
     specialty: "Hand-hammered copper vessels",
+    image: "/Assets/Santa Clara del Cobre.webp",
+    alt: "Hand-hammered copper basin by artisans of Santa Clara del Cobre, Michoacán",
     story:
       "The coppersmiths of Santa Clara del Cobre have forged copper since pre-Hispanic times. Each Counter Cultures basin carries the marks of its maker — Michelle, Eloy, Cindi, Flor de Plata.",
   },
@@ -31,6 +35,8 @@ const artisans = [
     name: "Stone Artisans",
     location: "Querétaro",
     specialty: "Riolita stone & travertine sinks",
+    image: "/Assets/Stone Artisans.webp",
+    alt: "Hand-carved riolita stone sink by artisans in Querétaro, Mexico",
     story:
       "Quarried from the volcanic highlands, each stone sink is carved by hand and polished to reveal the natural grain — no two pieces are alike.",
   },
@@ -87,18 +93,35 @@ const ArtisanalPage = async () => {
               {artisans.map((artisan) => (
                 <div
                   key={artisan.name}
-                  className="bg-white p-8 border border-brand-stone/5"
+                  className="group bg-white border border-brand-stone/5 overflow-hidden"
                 >
-                  <div className="w-10 h-0.5 bg-brand-copper mb-6" />
-                  <h3 className="font-display text-xl font-light text-brand-charcoal tracking-wide">
-                    {artisan.name}
-                  </h3>
-                  <p className="mt-1 font-mono text-xs text-brand-copper tracking-wide">
-                    {artisan.location} · {artisan.specialty}
-                  </p>
-                  <p className="mt-4 font-body text-sm text-brand-stone leading-relaxed">
-                    {artisan.story}
-                  </p>
+                  <div className="relative aspect-[4/3] overflow-hidden">
+                    <Image
+                      src={artisan.image}
+                      alt={artisan.alt}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-brand-charcoal/60 via-transparent to-transparent" />
+                    <div className="absolute bottom-4 left-4 right-4">
+                      <span className="inline-block bg-brand-copper/90 backdrop-blur-sm text-white px-3 py-1 text-[10px] font-mono tracking-[0.15em] uppercase">
+                        {artisan.location}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-8">
+                    <div className="w-10 h-0.5 bg-brand-copper mb-5" />
+                    <h3 className="font-display text-xl font-light text-brand-charcoal tracking-wide">
+                      {artisan.name}
+                    </h3>
+                    <p className="mt-1 font-mono text-xs text-brand-copper tracking-wide">
+                      {artisan.specialty}
+                    </p>
+                    <p className="mt-4 font-body text-sm text-brand-stone leading-relaxed">
+                      {artisan.story}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
