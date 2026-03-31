@@ -24,7 +24,7 @@ const footerNav = {
     { label: { en: "Bathroom Fixtures", es: "Accesorios de Baño" }, href: "/shop/bathroom" },
     { label: { en: "Kitchen Fixtures", es: "Accesorios de Cocina" }, href: "/shop/kitchen" },
     { label: { en: "Door Hardware", es: "Chapas y Herrajes" }, href: "/shop/hardware" },
-    { label: { en: "Artisanal Collection", es: "Colección Artesanal" }, href: "/artisanal" },
+    { label: { en: "Brands & Makers", es: "Marcas y Artesanos" }, href: "/brands" },
   ],
   company: [
     { label: { en: "Our Story", es: "Nuestra Historia" }, href: "/our-story" },

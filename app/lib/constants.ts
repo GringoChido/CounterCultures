@@ -29,12 +29,8 @@ export const NAV_LINKS = [
     ],
   },
   {
-    label: { en: "Brands", es: "Marcas" },
+    label: { en: "Brands & Makers", es: "Marcas y Artesanos" },
     href: "/brands",
-  },
-  {
-    label: { en: "Artisanal", es: "Artesanal" },
-    href: "/artisanal",
   },
   {
     label: { en: "Our Story", es: "Nuestra Historia" },

@@ -59,7 +59,7 @@ const FounderStory = ({ locale = "en" }: { locale?: string }) => {
               <Button variant="secondary" href="/our-story">
                 {t.readMore}
               </Button>
-              <Button variant="ghost" href="/artisanal">
+              <Button variant="ghost" href="/brands">
                 {t.meetArtisans}
               </Button>
             </div>

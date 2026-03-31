@@ -187,7 +187,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               {/* Featured bar */}
               <div className="mt-8 pt-6 border-t border-brand-stone/10">
                 <Link
-                  href={`/${locale}/artisanal`}
+                  href={`/${locale}/brands`}
                   className="flex items-center gap-3 group"
                 >
                   <Sparkles className="w-4 h-4 text-brand-copper" />

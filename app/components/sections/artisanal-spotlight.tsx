@@ -49,7 +49,7 @@ const ArtisanalSpotlight = ({ locale = "en" }: { locale?: string }) => {
             {c.paragraph}
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-4">
-            <Button variant="primary" href="/artisanal">
+            <Button variant="primary" href="/brands">
               {c.explore}
             </Button>
             <Button variant="ghost" href="/contact?type=commission" className="text-white hover:text-brand-copper">
