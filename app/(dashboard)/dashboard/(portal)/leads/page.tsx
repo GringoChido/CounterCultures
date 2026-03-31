@@ -75,6 +75,34 @@ const columns = [
   }),
 ];
 
+function exportLeadsToCSV(leads: Lead[]) {
+  const headers = ["Name", "Email", "Phone", "Source", "Status", "Rep", "Score", "Budget", "Project Type", "Created"];
+  const rows = leads.map((l) => [
+    l.name,
+    l.email,
+    l.phone,
+    l.source,
+    l.status,
+    l.assignedRep,
+    String(l.score),
+    l.budget,
+    l.projectType,
+    l.createdAt,
+  ]);
+
+  const csv = [headers, ...rows]
+    .map((row) => row.map((cell) => `"${(cell || "").replace(/"/g, '""')}"`).join(","))
+    .join("\n");
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `counter-cultures-leads-${new Date().toISOString().split("T")[0]}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 const LeadsPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
@@ -139,7 +167,10 @@ const LeadsPage = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 px-3 py-1.5 text-sm border border-dash-border rounded-lg hover:bg-dash-bg transition-colors cursor-pointer">
+          <button
+            onClick={() => exportLeadsToCSV(filteredLeads)}
+            className="flex items-center gap-2 px-3 py-1.5 text-sm border border-dash-border rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
+          >
             <Download className="w-4 h-4" />
             Export
           </button>

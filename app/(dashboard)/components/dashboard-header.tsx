@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Bell, Search, Menu } from "lucide-react";
+import { Bell, Search, Menu, Command } from "lucide-react";
 
 const pageTitles: Record<string, string> = {
   "/dashboard/overview": "Overview",
@@ -24,9 +24,10 @@ const pageTitles: Record<string, string> = {
 
 interface DashboardHeaderProps {
   onMenuClick?: () => void;
+  onSearchClick?: () => void;
 }
 
-const DashboardHeader = ({ onMenuClick }: DashboardHeaderProps) => {
+const DashboardHeader = ({ onMenuClick, onSearchClick }: DashboardHeaderProps) => {
   const pathname = usePathname();
   const title = pageTitles[pathname] ?? "Dashboard";
 
@@ -45,15 +46,24 @@ const DashboardHeader = ({ onMenuClick }: DashboardHeaderProps) => {
       </div>
 
       <div className="flex items-center gap-3 md:gap-4">
-        {/* Search */}
-        <div className="relative hidden md:block">
+        {/* Search trigger */}
+        <button
+          onClick={() => {
+            if (onSearchClick) {
+              onSearchClick();
+            } else {
+              // Dispatch Cmd+K programmatically
+              window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true, ctrlKey: true }));
+            }
+          }}
+          className="relative hidden md:flex items-center gap-2 pl-9 pr-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg w-64 hover:border-brand-copper/40 transition-colors cursor-pointer text-left"
+        >
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dash-text-secondary" />
-          <input
-            type="text"
-            placeholder="Search..."
-            className="pl-9 pr-4 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg w-64 focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
-          />
-        </div>
+          <span className="text-dash-text-secondary/50">Search...</span>
+          <kbd className="ml-auto flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono text-dash-text-secondary bg-dash-surface border border-dash-border rounded">
+            ⌘K
+          </kbd>
+        </button>
 
         {/* Notifications */}
         <button className="relative w-10 h-10 flex items-center justify-center rounded-lg hover:bg-dash-bg transition-colors cursor-pointer">

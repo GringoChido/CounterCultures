@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Sidebar } from "../components/sidebar";
 import { DashboardHeader } from "../components/dashboard-header";
+import { CommandPalette } from "../components/command-palette";
+import { AIChatWidget } from "../components/ai-chat-widget";
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname();
@@ -46,6 +48,8 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
         <DashboardHeader onMenuClick={() => setMobileSidebarOpen(true)} />
         <main className="p-4 md:p-6">{children}</main>
       </div>
+      <CommandPalette />
+      <AIChatWidget />
     </div>
   );
 };
