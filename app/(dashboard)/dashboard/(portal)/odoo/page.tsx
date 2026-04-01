@@ -245,6 +245,17 @@ const OdooPage = () => {
           <div>
             <p className="text-sm font-medium text-red-400">Connection Error</p>
             <p className="text-sm text-red-400/80 mt-1">{error}</p>
+            {error.toLowerCase().includes("authentication") && (
+              <div className="mt-3 text-sm text-red-400/70 space-y-1">
+                <p className="font-medium text-red-400">How to fix:</p>
+                <ol className="list-decimal list-inside space-y-1">
+                  <li>Log in to <a href="https://counter-cultures.odoo.com/odoo/settings/users" target="_blank" rel="noopener noreferrer" className="underline hover:text-red-300">Odoo → Settings → Users</a></li>
+                  <li>Click your user → &quot;API Keys&quot; tab → &quot;New API Key&quot;</li>
+                  <li>Copy the new key and update <code className="px-1.5 py-0.5 bg-red-500/10 rounded text-xs font-mono">ODOO_API_KEY</code> in your <code className="px-1.5 py-0.5 bg-red-500/10 rounded text-xs font-mono">.env.local</code></li>
+                  <li>Restart the dev server and click Refresh</li>
+                </ol>
+              </div>
+            )}
           </div>
         </div>
       )}

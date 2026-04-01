@@ -76,13 +76,17 @@ const authenticate = async (): Promise<number> => {
     service: "common",
     method: "authenticate",
     args: [ODOO_DB, ODOO_USERNAME, ODOO_API_KEY, {}],
-  })) as number;
+  })) as number | false;
 
-  if (!uid) {
-    throw new Error("Odoo authentication failed — check credentials");
+  if (!uid && uid !== 0) {
+    throw new Error(
+      "Odoo authentication failed — check credentials. " +
+      "The API key may have expired or been revoked. " +
+      "Generate a new one in Odoo → Settings → Users → API Keys."
+    );
   }
 
-  return uid;
+  return uid as number;
 };
 
 const execute = async (
