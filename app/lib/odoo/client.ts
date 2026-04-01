@@ -3,6 +3,8 @@ const ODOO_DB = process.env.ODOO_DB ?? "";
 const ODOO_USERNAME = process.env.ODOO_USERNAME ?? "";
 const ODOO_API_KEY = process.env.ODOO_API_KEY ?? "";
 
+const FETCH_TIMEOUT = 15_000; // 15 seconds
+
 interface OdooRpcResponse {
   jsonrpc: string;
   id: number;
@@ -19,30 +21,54 @@ const jsonRpc = async (
   method: string,
   params: Record<string, unknown>
 ): Promise<unknown> => {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      jsonrpc: "2.0",
-      id: Date.now(),
-      method,
-      params,
-    }),
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
 
-  if (!res.ok) {
-    throw new Error(`Odoo HTTP error: ${res.status} ${res.statusText}`);
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: Date.now(),
+        method,
+        params,
+      }),
+      signal: controller.signal,
+    });
+
+    if (!res.ok) {
+      throw new Error(`Odoo HTTP error: ${res.status} ${res.statusText}`);
+    }
+
+    const data = (await res.json()) as OdooRpcResponse;
+
+    if (data.error) {
+      throw new Error(
+        `Odoo RPC error: ${data.error.message} — ${data.error.data?.message ?? ""}`
+      );
+    }
+
+    return data.result;
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new Error("Odoo request timed out (15s)");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
   }
+};
 
-  const data = (await res.json()) as OdooRpcResponse;
+// Cached authentication to avoid re-authenticating on every call
+let cachedUid: number | null = null;
+let cacheExpiry = 0;
 
-  if (data.error) {
-    throw new Error(
-      `Odoo RPC error: ${data.error.message} — ${data.error.data?.message ?? ""}`
-    );
-  }
-
-  return data.result;
+const getCachedUid = async (): Promise<number> => {
+  if (cachedUid && Date.now() < cacheExpiry) return cachedUid;
+  cachedUid = await authenticate();
+  cacheExpiry = Date.now() + 5 * 60 * 1000; // 5 min
+  return cachedUid;
 };
 
 const authenticate = async (): Promise<number> => {
@@ -81,7 +107,7 @@ const searchRead = async (
   offset = 0,
   order?: string
 ): Promise<Record<string, unknown>[]> => {
-  const uid = await authenticate();
+  const uid = await getCachedUid();
   const kwargs: Record<string, unknown> = { fields, limit, offset };
   if (order) kwargs.order = order;
 
@@ -93,7 +119,7 @@ const searchCount = async (
   model: string,
   domain: unknown[][] = []
 ): Promise<number> => {
-  const uid = await authenticate();
+  const uid = await getCachedUid();
   const result = await execute(uid, model, "search_count", [domain]);
   return result as number;
 };
@@ -103,7 +129,7 @@ const read = async (
   ids: number[],
   fields: string[] = []
 ): Promise<Record<string, unknown>[]> => {
-  const uid = await authenticate();
+  const uid = await getCachedUid();
   const result = await execute(uid, model, "read", [ids], { fields });
   return result as Record<string, unknown>[];
 };

@@ -29,6 +29,8 @@ const t = (locale: "en" | "es", key: string) => {
     inquire: { en: "Inquire About This Piece", es: "Preguntar Sobre Esta Pieza" },
     tradePricing: { en: "Request Trade Pricing", es: "Solicitar Precio Profesional" },
     specSheet: { en: "Download Spec Sheet", es: "Descargar Ficha Técnica" },
+    payOnline: { en: "Pay / Reserve Online", es: "Pagar / Reservar en Línea" },
+    reserveDeposit: { en: "Reserve with 30% Deposit", es: "Reservar con 30% de Anticipo" },
     finishes: { en: "Available Finishes", es: "Acabados Disponibles" },
     specifications: { en: "Specifications", es: "Especificaciones" },
     artisanBadge: { en: "Handcrafted by Mexican Artisans", es: "Hecho a Mano por Artesanos Mexicanos" },
@@ -51,6 +53,35 @@ const ProductDetail = ({
   const [selectedFinish, setSelectedFinish] = useState(product.finishes[0] || "");
   const [selectedImage, setSelectedImage] = useState(0);
   const [specsOpen, setSpecsOpen] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  const isHighValue = product.price > 50000;
+  const depositPercent = isHighValue ? 30 : undefined;
+  const displayAmount = isHighValue ? Math.round(product.price * 0.3) : product.price;
+
+  const handleCheckout = async () => {
+    setCheckoutLoading(true);
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productName: product.nameEn,
+          productSku: product.sku,
+          amount: product.price,
+          currency: "mxn",
+          locale,
+          depositPercent,
+        }),
+      });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } catch {
+      // Checkout unavailable
+    } finally {
+      setCheckoutLoading(false);
+    }
+  };
 
   const whatsappMessage = locale === "es"
     ? `Hola, me interesa ${product.name} (SKU: ${product.sku}). ¿Me pueden dar más información?`
@@ -237,6 +268,17 @@ const ProductDetail = ({
                     {t(locale, "specSheet")}
                   </button>
                 </div>
+                <button
+                  onClick={handleCheckout}
+                  disabled={checkoutLoading}
+                  className="w-full py-3 font-body text-sm font-medium border border-brand-stone/20 text-brand-charcoal hover:bg-brand-charcoal hover:text-white transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  {checkoutLoading
+                    ? "..."
+                    : isHighValue
+                      ? `${t(locale, "reserveDeposit")} ($${displayAmount.toLocaleString()} MXN)`
+                      : t(locale, "payOnline")}
+                </button>
               </div>
 
               {/* Specifications */}

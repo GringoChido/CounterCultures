@@ -15,4 +15,5 @@ export type {
   OdooPurchaseOrder,
   OdooProduct,
   OdooDashboardSummary,
+  OdooCRMLead,
 } from "./types";

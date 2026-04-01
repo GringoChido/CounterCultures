@@ -9,6 +9,7 @@ import {
   Kanban,
   MessageCircle,
   CalendarDays,
+  CalendarCheck,
   Share2,
   Mail,
   FileText,
@@ -25,6 +26,7 @@ import {
   LogOut,
   X,
   Database,
+  CreditCard,
 } from "lucide-react";
 
 interface NavItem {
@@ -32,11 +34,13 @@ interface NavItem {
   href: string;
   icon: React.ElementType;
   section?: string;
+  badge?: number;
 }
 
 const navItems: NavItem[] = [
   { label: "Overview", href: "/dashboard/overview", icon: LayoutDashboard },
-  { label: "Leads", href: "/dashboard/leads", icon: Users, section: "Sales" },
+  { label: "Weekly Review", href: "/dashboard/weekly-review", icon: CalendarCheck, section: "Sales" },
+  { label: "Leads", href: "/dashboard/leads", icon: Users, badge: 2 },
   { label: "Pipeline", href: "/dashboard/pipeline", icon: Kanban },
   { label: "WhatsApp", href: "/dashboard/whatsapp", icon: MessageCircle },
   { label: "Content Calendar", href: "/dashboard/content-calendar", icon: CalendarDays, section: "Marketing" },
@@ -48,8 +52,9 @@ const navItems: NavItem[] = [
   { label: "Marketing Analytics", href: "/dashboard/marketing-analytics", icon: PieChart },
   { label: "Reports", href: "/dashboard/reports", icon: ClipboardList },
   { label: "Odoo", href: "/dashboard/odoo", icon: Database, section: "Operations" },
+  { label: "Stripe", href: "/dashboard/stripe", icon: CreditCard },
   { label: "Products", href: "/dashboard/products", icon: Package },
-  { label: "Trade Program", href: "/dashboard/trade-program", icon: Handshake },
+  { label: "Trade Program", href: "/dashboard/trade-program", icon: Handshake, badge: 2 },
   { label: "Drive", href: "/dashboard/drive", icon: FolderOpen },
   { label: "Settings", href: "/dashboard/settings", icon: Settings, section: "System" },
 ];
@@ -125,8 +130,22 @@ const Sidebar = ({ mobileOpen = false, onMobileClose }: SidebarProps) => {
                 }`}
                 title={collapsed ? item.label : undefined}
               >
-                <Icon className="w-4.5 h-4.5 shrink-0" />
-                {!collapsed && <span>{item.label}</span>}
+                <span className="relative shrink-0">
+                  <Icon className="w-4.5 h-4.5" />
+                  {item.badge && item.badge > 0 && collapsed && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-brand-terracotta rounded-full" />
+                  )}
+                </span>
+                {!collapsed && (
+                  <>
+                    <span className="flex-1">{item.label}</span>
+                    {item.badge && item.badge > 0 && (
+                      <span className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-brand-terracotta text-white text-[10px] font-bold px-1">
+                        {item.badge}
+                      </span>
+                    )}
+                  </>
+                )}
               </Link>
             </div>
           );

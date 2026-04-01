@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import {
   Users,
@@ -14,6 +15,7 @@ import {
   MessageCircle,
   FileText,
   ArrowRight,
+  CreditCard,
 } from "lucide-react";
 import {
   AreaChart,
@@ -37,6 +39,7 @@ import {
   SAMPLE_LEADS,
   SAMPLE_PIPELINE,
   SAMPLE_ACTIVITIES,
+  SAMPLE_CAMPAIGNS,
 } from "@/app/lib/sample-dashboard-data";
 
 const revenueData = [
@@ -70,6 +73,7 @@ const activityIcons: Record<string, React.ElementType> = {
   note: FileText,
   deal: DollarSign,
   lead: Users,
+  whatsapp: MessageCircle,
 };
 
 const statusVariants: Record<string, BadgeVariant> = {
@@ -87,6 +91,24 @@ const formatCurrency = (value: number) => {
   return `$${value}`;
 };
 
+// Funnel data
+const funnelData = [
+  { name: "Email Campaigns", value: 145, color: "#635bff" },
+  { name: "New Leads", value: 12, color: "#B87333" },
+  { name: "Pipeline", value: 10400000, color: "#C4725A", isCurrency: true },
+  { name: "Quotes", value: 6, color: "#7A8B6F" },
+  { name: "Won", value: 320000, color: "#22c55e", isCurrency: true },
+];
+
+// 90-Day KPI Targets
+const ninetyDayTargets = [
+  { label: "New Contract Leads", target: 30, actual: 12 },
+  { label: "Meetings Booked", target: 20, actual: 8 },
+  { label: "Proposals Sent", target: 15, actual: 6 },
+  { label: "Deals Closed", target: 5, actual: 1 },
+  { label: "Revenue", target: 5000000, actual: 320000, format: "currency" as const },
+];
+
 const OverviewPage = () => {
   const today = format(new Date(), "EEEE, MMMM d");
   const greeting =
@@ -98,9 +120,35 @@ const OverviewPage = () => {
 
   const recentLeads = SAMPLE_LEADS.slice(0, 5);
   const topDeals = SAMPLE_PIPELINE.filter(
-    (d) => d.stage !== "closed-won" && d.stage !== "closed-lost"
+    (d) => !["closed-won", "closed-lost", "won", "lost"].includes(d.stage)
   ).slice(0, 4);
   const recentActivity = SAMPLE_ACTIVITIES.slice(0, 6);
+
+  // Stripe data
+  const [stripeVolume, setStripeVolume] = useState<string | null>(null);
+  const [recentPayments, setRecentPayments] = useState<{ id: string; customerName: string | null; amount: number; currency: string; created: number; status: string }[]>([]);
+
+  useEffect(() => {
+    const fetchStripe = async () => {
+      try {
+        const [summaryRes, paymentsRes] = await Promise.all([
+          fetch("/api/stripe/summary"),
+          fetch("/api/stripe/payments?limit=5"),
+        ]);
+        const summaryData = await summaryRes.json();
+        const paymentsData = await paymentsRes.json();
+        if (summaryData.last30Days) {
+          setStripeVolume(
+            new Intl.NumberFormat("es-MX", { style: "currency", currency: summaryData.last30Days.currency?.toUpperCase() ?? "MXN", minimumFractionDigits: 0 }).format(summaryData.last30Days.volume / 100)
+          );
+        }
+        setRecentPayments(paymentsData.payments?.slice(0, 5) ?? []);
+      } catch {
+        // Stripe not configured — hide gracefully
+      }
+    };
+    fetchStripe();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -113,7 +161,7 @@ const OverviewPage = () => {
       </div>
 
       {/* KPI Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
         <KPICard
           label="New Leads"
           value={String(SAMPLE_KPI.newLeadsThisMonth)}
@@ -142,6 +190,14 @@ const OverviewPage = () => {
           icon={Eye}
           accentColor="bg-brand-sage"
         />
+        {stripeVolume && (
+          <KPICard
+            label="Stripe Revenue (30d)"
+            value={stripeVolume}
+            icon={CreditCard}
+            accentColor="bg-[#635bff]"
+          />
+        )}
       </div>
 
       {/* Charts Row */}
@@ -157,36 +213,10 @@ const OverviewPage = () => {
                     <stop offset="100%" stopColor="#B87333" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <XAxis
-                  dataKey="month"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 11, fill: "#6B7280" }}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 11, fill: "#6B7280" }}
-                  tickFormatter={(v) => formatCurrency(v)}
-                />
-                <Tooltip
-                  formatter={(value) => [
-                    `$${Number(value).toLocaleString()} MXN`,
-                    "Revenue",
-                  ]}
-                  contentStyle={{
-                    borderRadius: "8px",
-                    border: "1px solid #E5E7EB",
-                    fontSize: "12px",
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke="#B87333"
-                  strokeWidth={2}
-                  fill="url(#revenueGrad)"
-                />
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#6B7280" }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#6B7280" }} tickFormatter={(v) => formatCurrency(v)} />
+                <Tooltip formatter={(value) => [`$${Number(value).toLocaleString()} MXN`, "Revenue"]} contentStyle={{ borderRadius: "8px", border: "1px solid #1E2028", backgroundColor: "#12141A", fontSize: "12px", color: "#E8E9ED" }} />
+                <Area type="monotone" dataKey="revenue" stroke="#B87333" strokeWidth={2} fill="url(#revenueGrad)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -197,38 +227,10 @@ const OverviewPage = () => {
           <div className="h-52">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={pipelineByStage} layout="vertical">
-                <XAxis
-                  type="number"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 11, fill: "#6B7280" }}
-                  tickFormatter={(v) => formatCurrency(v)}
-                />
-                <YAxis
-                  type="category"
-                  dataKey="stage"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fontSize: 11, fill: "#6B7280" }}
-                  width={80}
-                />
-                <Tooltip
-                  formatter={(value) => [
-                    `$${Number(value).toLocaleString()} MXN`,
-                    "Value",
-                  ]}
-                  contentStyle={{
-                    borderRadius: "8px",
-                    border: "1px solid #E5E7EB",
-                    fontSize: "12px",
-                  }}
-                />
-                <Bar
-                  dataKey="value"
-                  fill="#B87333"
-                  radius={[0, 4, 4, 0]}
-                  barSize={20}
-                />
+                <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#6B7280" }} tickFormatter={(v) => formatCurrency(v)} />
+                <YAxis type="category" dataKey="stage" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#6B7280" }} width={80} />
+                <Tooltip formatter={(value) => [`$${Number(value).toLocaleString()} MXN`, "Value"]} contentStyle={{ borderRadius: "8px", border: "1px solid #1E2028", backgroundColor: "#12141A", fontSize: "12px", color: "#E8E9ED" }} />
+                <Bar dataKey="value" fill="#B87333" radius={[0, 4, 4, 0]} barSize={20} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -239,15 +241,7 @@ const OverviewPage = () => {
           <div className="h-52 flex items-center">
             <ResponsiveContainer width="50%" height="100%">
               <PieChart>
-                <Pie
-                  data={leadSourceData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={40}
-                  outerRadius={70}
-                  dataKey="value"
-                  strokeWidth={0}
-                >
+                <Pie data={leadSourceData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} dataKey="value" strokeWidth={0}>
                   {leadSourceData.map((entry, i) => (
                     <Cell key={i} fill={entry.color} />
                   ))}
@@ -257,16 +251,9 @@ const OverviewPage = () => {
             <div className="flex-1 space-y-2">
               {leadSourceData.map((source) => (
                 <div key={source.name} className="flex items-center gap-2">
-                  <div
-                    className="w-2.5 h-2.5 rounded-full"
-                    style={{ backgroundColor: source.color }}
-                  />
-                  <span className="text-xs text-dash-text-secondary">
-                    {source.name}
-                  </span>
-                  <span className="text-xs font-medium text-dash-text ml-auto">
-                    {source.value}%
-                  </span>
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: source.color }} />
+                  <span className="text-xs text-dash-text-secondary">{source.name}</span>
+                  <span className="text-xs font-medium text-dash-text ml-auto">{source.value}%</span>
                 </div>
               ))}
             </div>
@@ -274,39 +261,69 @@ const OverviewPage = () => {
         </ChartCard>
       </div>
 
+      {/* Marketing to Revenue Funnel */}
+      <div className="bg-dash-surface rounded-xl border border-dash-border p-5">
+        <h3 className="text-sm font-semibold text-dash-text mb-4">Marketing to Revenue Funnel</h3>
+        <div className="flex items-center justify-between overflow-x-auto gap-2">
+          {funnelData.map((step, i) => (
+            <div key={step.name} className="flex items-center gap-2 min-w-0">
+              <div className="text-center min-w-[100px]">
+                <p className="text-lg font-bold text-dash-text" style={{ color: step.color }}>
+                  {step.isCurrency ? formatCurrency(step.value) : step.value.toLocaleString()}
+                </p>
+                <p className="text-[10px] text-dash-text-secondary mt-1">{step.name}</p>
+              </div>
+              {i < funnelData.length - 1 && (
+                <ArrowRight className="w-4 h-4 text-dash-text-secondary shrink-0" />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 90-Day KPI Targets */}
+      <div className="bg-dash-surface rounded-xl border border-dash-border p-5">
+        <h3 className="text-sm font-semibold text-dash-text mb-4">90-Day Growth Targets</h3>
+        <div className="space-y-4">
+          {ninetyDayTargets.map((kpi) => {
+            const pct = Math.round((kpi.actual / kpi.target) * 100);
+            const barColor = pct >= 75 ? "bg-emerald-500" : pct >= 50 ? "bg-amber-500" : "bg-red-500";
+            return (
+              <div key={kpi.label}>
+                <div className="flex items-center justify-between text-sm mb-1.5">
+                  <span className="text-dash-text-secondary">{kpi.label}</span>
+                  <span className="text-dash-text font-medium">
+                    {kpi.format === "currency" ? formatCurrency(kpi.actual) : kpi.actual} / {kpi.format === "currency" ? formatCurrency(kpi.target) : kpi.target}
+                    <span className="text-dash-text-secondary ml-2">({pct}%)</span>
+                  </span>
+                </div>
+                <div className="w-full bg-dash-bg rounded-full h-2">
+                  <div className={`${barColor} h-2 rounded-full transition-all`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Recent Leads */}
         <div className="bg-dash-surface rounded-xl border border-dash-border p-5 lg:col-span-1">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-dash-text">
-              Recent Leads
-            </h3>
-            <Link
-              href="/dashboard/leads"
-              className="text-xs text-brand-copper hover:underline flex items-center gap-1"
-            >
+            <h3 className="text-sm font-semibold text-dash-text">Recent Leads</h3>
+            <Link href="/dashboard/leads" className="text-xs text-brand-copper hover:underline flex items-center gap-1">
               View all <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
           <div className="space-y-3">
             {recentLeads.map((lead) => (
-              <div
-                key={lead.id}
-                className="flex items-center justify-between py-2 border-b border-dash-border last:border-0"
-              >
+              <div key={lead.id} className="flex items-center justify-between py-2 border-b border-dash-border last:border-0">
                 <div>
-                  <p className="text-sm font-medium text-dash-text">
-                    {lead.name}
-                  </p>
-                  <p className="text-xs text-dash-text-secondary">
-                    {lead.source}
-                  </p>
+                  <p className="text-sm font-medium text-dash-text">{lead.name}</p>
+                  <p className="text-xs text-dash-text-secondary">{lead.source}</p>
                 </div>
-                <StatusBadge
-                  label={lead.status}
-                  variant={statusVariants[lead.status]}
-                />
+                <StatusBadge label={lead.status} variant={statusVariants[lead.status]} />
               </div>
             ))}
           </div>
@@ -316,34 +333,20 @@ const OverviewPage = () => {
         <div className="bg-dash-surface rounded-xl border border-dash-border p-5 lg:col-span-1">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-dash-text">Top Deals</h3>
-            <Link
-              href="/dashboard/pipeline"
-              className="text-xs text-brand-copper hover:underline flex items-center gap-1"
-            >
+            <Link href="/dashboard/pipeline" className="text-xs text-brand-copper hover:underline flex items-center gap-1">
               View all <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
           <div className="space-y-3">
             {topDeals.map((deal) => (
-              <div
-                key={deal.id}
-                className="py-2 border-b border-dash-border last:border-0"
-              >
+              <div key={deal.id} className="py-2 border-b border-dash-border last:border-0">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-dash-text">
-                    {deal.name}
-                  </p>
-                  <p className="text-sm font-semibold text-brand-copper">
-                    {formatCurrency(deal.value)}
-                  </p>
+                  <p className="text-sm font-medium text-dash-text">{deal.name}</p>
+                  <p className="text-sm font-semibold text-brand-copper">{formatCurrency(deal.value)}</p>
                 </div>
                 <div className="flex items-center justify-between mt-1">
-                  <p className="text-xs text-dash-text-secondary">
-                    {deal.contactName}
-                  </p>
-                  <p className="text-xs text-dash-text-secondary">
-                    {deal.probability}% probability
-                  </p>
+                  <p className="text-xs text-dash-text-secondary">{deal.contactName}</p>
+                  <p className="text-xs text-dash-text-secondary">{deal.probability}% probability</p>
                 </div>
               </div>
             ))}
@@ -352,26 +355,19 @@ const OverviewPage = () => {
 
         {/* Recent Activity */}
         <div className="bg-dash-surface rounded-xl border border-dash-border p-5 lg:col-span-1">
-          <h3 className="text-sm font-semibold text-dash-text mb-4">
-            Recent Activity
-          </h3>
+          <h3 className="text-sm font-semibold text-dash-text mb-4">Recent Activity</h3>
           <div className="space-y-3">
             {recentActivity.map((activity) => {
               const Icon = activityIcons[activity.type] ?? MessageCircle;
               return (
-                <div
-                  key={activity.id}
-                  className="flex gap-3 py-2 border-b border-dash-border last:border-0"
-                >
+                <div key={activity.id} className="flex gap-3 py-2 border-b border-dash-border last:border-0">
                   <div className="w-7 h-7 rounded-full bg-dash-bg flex items-center justify-center shrink-0 mt-0.5">
                     <Icon className="w-3.5 h-3.5 text-dash-text-secondary" />
                   </div>
                   <div>
-                    <p className="text-xs text-dash-text leading-relaxed">
-                      {activity.description}
-                    </p>
+                    <p className="text-xs text-dash-text leading-relaxed">{activity.description}</p>
                     <p className="text-[10px] text-dash-text-secondary mt-0.5">
-                      {activity.rep && `${activity.rep} · `}
+                      {activity.rep && `${activity.rep} \u00B7 `}
                       {format(new Date(activity.timestamp), "MMM d, h:mm a")}
                     </p>
                   </div>
@@ -382,47 +378,57 @@ const OverviewPage = () => {
         </div>
       </div>
 
+      {/* Recent Stripe Payments */}
+      {recentPayments.length > 0 && (
+        <div className="bg-dash-surface rounded-xl border border-dash-border p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-dash-text">Recent Stripe Payments</h3>
+            <Link href="/dashboard/stripe" className="text-xs text-[#635bff] hover:underline flex items-center gap-1">
+              View all <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-dash-border">
+                  <th className="text-left pb-2 text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">Customer</th>
+                  <th className="text-left pb-2 text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">Status</th>
+                  <th className="text-right pb-2 text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentPayments.map((p) => (
+                  <tr key={p.id} className="border-b border-dash-border last:border-0">
+                    <td className="py-2 text-dash-text">{p.customerName ?? "\u2014"}</td>
+                    <td className="py-2">
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${p.status === "succeeded" ? "bg-emerald-500/10 text-emerald-400" : "bg-amber-500/10 text-amber-400"}`}>
+                        {p.status}
+                      </span>
+                    </td>
+                    <td className="py-2 text-right font-medium text-dash-text">
+                      {new Intl.NumberFormat("es-MX", { style: "currency", currency: p.currency?.toUpperCase() ?? "MXN", minimumFractionDigits: 2 }).format(p.amount / 100)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* Quick Actions */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          {
-            label: "Add Lead",
-            icon: Users,
-            href: "/dashboard/leads",
-            color: "bg-status-new/10 text-status-new",
-          },
-          {
-            label: "New Deal",
-            icon: DollarSign,
-            href: "/dashboard/pipeline",
-            color: "bg-brand-copper/10 text-brand-copper",
-          },
-          {
-            label: "Schedule Post",
-            icon: Share2,
-            href: "/dashboard/content-calendar",
-            color: "bg-brand-sage/10 text-brand-sage",
-          },
-          {
-            label: "Send Email",
-            icon: Mail,
-            href: "/dashboard/email-campaigns",
-            color: "bg-brand-terracotta/10 text-brand-terracotta",
-          },
+          { label: "Add Lead", icon: Users, href: "/dashboard/leads", color: "bg-status-new/10 text-status-new" },
+          { label: "New Deal", icon: DollarSign, href: "/dashboard/pipeline", color: "bg-brand-copper/10 text-brand-copper" },
+          { label: "Schedule Post", icon: Share2, href: "/dashboard/content-calendar", color: "bg-brand-sage/10 text-brand-sage" },
+          { label: "Send Email", icon: Mail, href: "/dashboard/email-campaigns", color: "bg-brand-terracotta/10 text-brand-terracotta" },
         ].map((action) => (
-          <Link
-            key={action.label}
-            href={action.href}
-            className="bg-dash-surface rounded-xl border border-dash-border p-4 flex items-center gap-3 hover:border-brand-copper/30 transition-colors"
-          >
-            <div
-              className={`w-10 h-10 rounded-lg flex items-center justify-center ${action.color}`}
-            >
+          <Link key={action.label} href={action.href} className="bg-dash-surface rounded-xl border border-dash-border p-4 flex items-center gap-3 hover:border-brand-copper/30 transition-colors">
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${action.color}`}>
               <action.icon className="w-5 h-5" />
             </div>
-            <span className="text-sm font-medium text-dash-text">
-              {action.label}
-            </span>
+            <span className="text-sm font-medium text-dash-text">{action.label}</span>
           </Link>
         ))}
       </div>

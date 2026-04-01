@@ -53,6 +53,20 @@ const PaymentMethodsPage = async ({ params }: PageProps) => {
           </h1>
 
           <h2 className="font-display text-xl font-medium text-brand-charcoal mt-10 mb-4">
+            {isEs ? "Pago con Tarjeta en Línea (Stripe)" : "Online Card Payments (Stripe)"}
+          </h2>
+          <p className="font-body text-base text-brand-charcoal/80 leading-relaxed mb-4">
+            {isEs
+              ? "Aceptamos pagos con tarjeta de crédito y débito (VISA, Mastercard, American Express) a través de Stripe, nuestra plataforma de pagos segura. Puede pagar directamente desde las páginas de producto o a través de enlaces de pago personalizados."
+              : "We accept credit and debit card payments (VISA, Mastercard, American Express) through Stripe, our secure payment platform. You can pay directly from product pages or via custom payment links."}
+          </p>
+          <ul className="font-body text-base text-brand-charcoal/80 list-disc pl-6 space-y-2 mb-4">
+            <li>{isEs ? "Pagos seguros procesados por Stripe" : "Secure payments processed by Stripe"}</li>
+            <li>{isEs ? "Artículos de alto valor: reserve con 30% de anticipo" : "High-value items: reserve with a 30% deposit"}</li>
+            <li>{isEs ? "Confirmación instantánea por correo electrónico" : "Instant email confirmation"}</li>
+          </ul>
+
+          <h2 className="font-display text-xl font-medium text-brand-charcoal mt-10 mb-4">
             {isEs ? "Efectivo y Transferencias Bancarias" : "Cash & Bank Transfers"}
           </h2>
           <p className="font-body text-base text-brand-charcoal/80 leading-relaxed mb-4">

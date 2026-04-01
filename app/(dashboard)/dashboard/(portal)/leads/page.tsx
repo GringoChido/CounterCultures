@@ -2,13 +2,13 @@
 
 import { useState, useMemo } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
-import { format } from "date-fns";
-import { Plus, Filter, Download } from "lucide-react";
+import { format, differenceInDays, isPast, parseISO } from "date-fns";
+import { Plus, Filter, Download, Phone, Mail, MessageCircle, ClipboardList } from "lucide-react";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
-import { SAMPLE_LEADS, type Lead } from "@/app/lib/sample-dashboard-data";
+import { SAMPLE_LEADS, type Lead, type ContactRole } from "@/app/lib/sample-dashboard-data";
 
 const statusVariants: Record<string, BadgeVariant> = {
   new: "new",
@@ -21,8 +21,30 @@ const statusVariants: Record<string, BadgeVariant> = {
 
 const statusOptions = ["all", "new", "contacted", "qualified", "proposal", "won", "lost"] as const;
 const sourceOptions = ["all", "Showroom Walk-in", "Website Contact Form", "Instagram", "WhatsApp", "Trade Program", "Referral"] as const;
+const contactTypeOptions: ("all" | ContactRole)[] = [
+  "all", "Architect", "Interior Designer", "Developer", "Builder",
+  "Private Client", "Supplier", "Partner", "Hospitality Designer",
+];
 
 const columnHelper = createColumnHelper<Lead>();
+
+const DaysAgoIndicator = ({ dateStr }: { dateStr?: string }) => {
+  if (!dateStr) return <span className="text-dash-text-secondary">&mdash;</span>;
+  const days = differenceInDays(new Date(), parseISO(dateStr));
+  const color = days <= 7 ? "text-status-won" : days <= 30 ? "text-status-contacted" : days <= 60 ? "text-amber-400" : "text-status-lost";
+  return <span className={`text-xs ${color}`}>{days}d ago</span>;
+};
+
+const FollowUpIndicator = ({ dateStr }: { dateStr?: string }) => {
+  if (!dateStr) return <span className="text-dash-text-secondary">&mdash;</span>;
+  const overdue = isPast(parseISO(dateStr));
+  return (
+    <span className={`text-xs ${overdue ? "text-red-400 font-medium" : "text-dash-text-secondary"}`}>
+      {format(parseISO(dateStr), "MMM d")}
+      {overdue && " (overdue)"}
+    </span>
+  );
+};
 
 const columns = [
   columnHelper.accessor("name", {
@@ -31,6 +53,9 @@ const columns = [
       <div>
         <p className="font-medium">{info.getValue()}</p>
         <p className="text-xs text-dash-text-secondary">{info.row.original.email}</p>
+        {info.row.original.companyName && (
+          <p className="text-[10px] text-dash-text-secondary">{info.row.original.companyName}</p>
+        )}
       </div>
     ),
   }),
@@ -49,9 +74,16 @@ const columns = [
       />
     ),
   }),
+  columnHelper.accessor("contactType", {
+    header: "Type",
+    cell: (info) => {
+      const val = info.getValue();
+      return val ? <span className="text-xs text-dash-text-secondary">{val}</span> : <span className="text-dash-text-secondary">&mdash;</span>;
+    },
+  }),
   columnHelper.accessor("assignedRep", {
     header: "Rep",
-    cell: (info) => info.getValue() || <span className="text-dash-text-secondary">—</span>,
+    cell: (info) => info.getValue() || <span className="text-dash-text-secondary">&mdash;</span>,
   }),
   columnHelper.accessor("score", {
     header: "Score",
@@ -66,17 +98,58 @@ const columns = [
       return <span className={`font-semibold ${color}`}>{score}</span>;
     },
   }),
+  columnHelper.accessor("lastContactDate", {
+    header: "Last Contact",
+    cell: (info) => <DaysAgoIndicator dateStr={info.getValue()} />,
+  }),
+  columnHelper.accessor("nextFollowUp", {
+    header: "Follow-Up",
+    cell: (info) => <FollowUpIndicator dateStr={info.getValue()} />,
+  }),
   columnHelper.accessor("budget", {
     header: "Budget",
   }),
-  columnHelper.accessor("createdAt", {
-    header: "Created",
-    cell: (info) => format(new Date(info.getValue()), "MMM d, yyyy"),
+  columnHelper.display({
+    id: "actions",
+    header: "Actions",
+    cell: (info) => {
+      const lead = info.row.original;
+      const waPhone = (lead.whatsapp ?? lead.phone).replace(/\s+/g, "").replace(/^\+/, "");
+      return (
+        <div className="flex items-center gap-1.5">
+          <a
+            href={`https://wa.me/${waPhone}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-emerald-500/10 text-emerald-400 transition-colors"
+            title="WhatsApp"
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+          </a>
+          <a
+            href={`mailto:${lead.email}`}
+            onClick={(e) => e.stopPropagation()}
+            className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-blue-500/10 text-blue-400 transition-colors"
+            title="Email"
+          >
+            <Mail className="w-3.5 h-3.5" />
+          </a>
+          <button
+            onClick={(e) => e.stopPropagation()}
+            className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-brand-copper/10 text-brand-copper transition-colors cursor-pointer"
+            title="Log Activity"
+          >
+            <ClipboardList className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      );
+    },
   }),
 ];
 
 function exportLeadsToCSV(leads: Lead[]) {
-  const headers = ["Name", "Email", "Phone", "Source", "Status", "Rep", "Score", "Budget", "Project Type", "Created"];
+  const headers = ["Name", "Email", "Phone", "Source", "Status", "Rep", "Score", "Budget", "Project Type", "Contact Type", "Company", "Created"];
   const rows = leads.map((l) => [
     l.name,
     l.email,
@@ -87,6 +160,8 @@ function exportLeadsToCSV(leads: Lead[]) {
     String(l.score),
     l.budget,
     l.projectType,
+    l.contactType ?? "",
+    l.companyName ?? "",
     l.createdAt,
   ]);
 
@@ -106,22 +181,30 @@ function exportLeadsToCSV(leads: Lead[]) {
 const LeadsPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
+  const [contactTypeFilter, setContactTypeFilter] = useState<string>("all");
+  const [showStale, setShowStale] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   const filteredLeads = useMemo(() => {
     return SAMPLE_LEADS.filter((lead) => {
       if (statusFilter !== "all" && lead.status !== statusFilter) return false;
       if (sourceFilter !== "all" && lead.source !== sourceFilter) return false;
+      if (contactTypeFilter !== "all" && lead.contactType !== contactTypeFilter) return false;
+      if (showStale) {
+        if (!lead.lastContactDate) return true;
+        return differenceInDays(new Date(), parseISO(lead.lastContactDate)) > 60;
+      }
       return true;
     });
-  }, [statusFilter, sourceFilter]);
+  }, [statusFilter, sourceFilter, contactTypeFilter, showStale]);
 
   const counts = useMemo(() => {
-    const c = { total: SAMPLE_LEADS.length, new: 0, qualified: 0, won: 0 };
+    const c = { total: SAMPLE_LEADS.length, new: 0, qualified: 0, won: 0, stale: 0 };
     SAMPLE_LEADS.forEach((l) => {
       if (l.status === "new") c.new++;
       if (l.status === "qualified") c.qualified++;
       if (l.status === "won") c.won++;
+      if (l.lastContactDate && differenceInDays(new Date(), parseISO(l.lastContactDate)) > 60) c.stale++;
     });
     return c;
   }, []);
@@ -137,8 +220,8 @@ const LeadsPage = () => {
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-1.5">
             <Filter className="w-4 h-4 text-dash-text-secondary" />
             <select
@@ -164,6 +247,27 @@ const LeadsPage = () => {
               </option>
             ))}
           </select>
+          <select
+            value={contactTypeFilter}
+            onChange={(e) => setContactTypeFilter(e.target.value)}
+            className="text-sm bg-dash-surface border border-dash-border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
+          >
+            {contactTypeOptions.map((s) => (
+              <option key={s} value={s}>
+                {s === "all" ? "All Contact Types" : s}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={() => setShowStale(!showStale)}
+            className={`text-xs px-3 py-1.5 rounded-lg border transition-colors cursor-pointer ${
+              showStale
+                ? "border-brand-copper bg-brand-copper/10 text-brand-copper"
+                : "border-dash-border text-dash-text-secondary hover:text-dash-text"
+            }`}
+          >
+            Stale Leads ({counts.stale})
+          </button>
         </div>
 
         <div className="flex items-center gap-2">
@@ -218,6 +322,24 @@ const LeadsPage = () => {
                   <span className="text-dash-text-secondary">Source:</span>{" "}
                   {selectedLead.source}
                 </p>
+                {selectedLead.companyName && (
+                  <p>
+                    <span className="text-dash-text-secondary">Company:</span>{" "}
+                    {selectedLead.companyName}
+                  </p>
+                )}
+                {selectedLead.contactType && (
+                  <p>
+                    <span className="text-dash-text-secondary">Contact Type:</span>{" "}
+                    {selectedLead.contactType}
+                  </p>
+                )}
+                {selectedLead.city && (
+                  <p>
+                    <span className="text-dash-text-secondary">City:</span>{" "}
+                    {selectedLead.city}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -258,6 +380,45 @@ const LeadsPage = () => {
                 </p>
               </div>
             </div>
+
+            {/* Follow-up Info */}
+            {(selectedLead.lastContactDate || selectedLead.nextFollowUp) && (
+              <div>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary mb-3">
+                  Follow-Up
+                </h4>
+                <div className="space-y-2 text-sm">
+                  {selectedLead.lastContactDate && (
+                    <p>
+                      <span className="text-dash-text-secondary">Last Contact:</span>{" "}
+                      {format(parseISO(selectedLead.lastContactDate), "MMM d, yyyy")} (<DaysAgoIndicator dateStr={selectedLead.lastContactDate} />)
+                    </p>
+                  )}
+                  {selectedLead.nextFollowUp && (
+                    <p>
+                      <span className="text-dash-text-secondary">Next Follow-Up:</span>{" "}
+                      <FollowUpIndicator dateStr={selectedLead.nextFollowUp} />
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Tags */}
+            {selectedLead.tags && selectedLead.tags.length > 0 && (
+              <div>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary mb-3">
+                  Tags
+                </h4>
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedLead.tags.map((tag) => (
+                    <span key={tag} className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-dash-bg text-dash-text-secondary border border-dash-border">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Notes */}
             <div>

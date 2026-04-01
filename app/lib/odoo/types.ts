@@ -103,6 +103,27 @@ interface OdooDashboardSummary {
   };
 }
 
+interface OdooCRMLead {
+  id: number;
+  name: string;
+  contact_name: string;
+  partner_id: [number, string] | false;
+  email_from: string;
+  phone: string;
+  expected_revenue: number;
+  probability: number;
+  stage_id: [number, string];
+  user_id: [number, string] | false;
+  date_deadline: string;
+  create_date: string;
+  write_date: string;
+  type: "lead" | "opportunity";
+  priority: "0" | "1" | "2" | "3";
+  lost_reason: [number, string] | false;
+  tag_ids: [number, string][];
+  description: string;
+}
+
 export type {
   OdooContact,
   OdooSaleOrder,
@@ -110,4 +131,5 @@ export type {
   OdooPurchaseOrder,
   OdooProduct,
   OdooDashboardSummary,
+  OdooCRMLead,
 };
