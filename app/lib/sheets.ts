@@ -48,13 +48,18 @@ const getSheets = () => google.sheets({ version: "v4", auth: getAuth() });
 const fetchSheetData = async (range: string): Promise<string[][]> => {
   if (!isConfigured()) return [];
 
-  const sheets = getSheets();
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId: SHEETS_ID!,
-    range,
-  });
+  try {
+    const sheets = getSheets();
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: SHEETS_ID!,
+      range,
+    });
 
-  return (response.data.values as string[][]) ?? [];
+    return (response.data.values as string[][]) ?? [];
+  } catch (error) {
+    console.error(`[Sheets] Failed to fetch "${range}":`, error);
+    return [];
+  }
 };
 
 // ── Write Operations ──────────────────────────────────────────────────
@@ -100,6 +105,39 @@ const rowToProduct = (row: string[], index: number): Product => ({
   slug: row[17] || row[3]?.toLowerCase().replace(/\s+/g, "-") || "",
 });
 
+const sampleToProducts = (): Product[] =>
+  (SAMPLE_PRODUCTS as ReadonlyArray<(typeof SAMPLE_PRODUCTS)[number]>).map(
+    (p) => {
+      const record = p as unknown as Record<string, unknown>;
+      return {
+        id: p.id,
+        sku: p.sku,
+        brand: p.brand,
+        name: p.name,
+        nameEn: p.nameEn,
+        category: p.category as Product["category"],
+        subcategory: p.subcategory,
+        price: p.price,
+        currency: p.currency as Product["currency"],
+        finishes: [...p.finishes],
+        images: [p.image],
+        artisanal: p.artisanal,
+        description: (record.description as string) || "",
+        descriptionEn:
+          (record.descriptionEn as string) ||
+          (record.description as string) ||
+          "",
+        availability: "in-stock" as const,
+        slug:
+          (record.slug as string) ||
+          p.name.toLowerCase().replace(/\s+/g, "-"),
+        specifications: record.specifications as
+          | Record<string, string>
+          | undefined,
+      };
+    }
+  );
+
 // ── Public API ────────────────────────────────────────────────────────
 
 const applyFilters = (
@@ -134,43 +172,14 @@ export const getProducts = async (
   filter?: ProductFilter
 ): Promise<Product[]> => {
   if (!isConfigured()) {
-    // Development: use sample data
-    let products: Product[] = (
-      SAMPLE_PRODUCTS as ReadonlyArray<(typeof SAMPLE_PRODUCTS)[number]>
-    ).map((p) => {
-      const record = p as unknown as Record<string, unknown>;
-      return {
-        id: p.id,
-        sku: p.sku,
-        brand: p.brand,
-        name: p.name,
-        nameEn: p.nameEn,
-        category: p.category as Product["category"],
-        subcategory: p.subcategory,
-        price: p.price,
-        currency: p.currency as Product["currency"],
-        finishes: [...p.finishes],
-        images: [p.image],
-        artisanal: p.artisanal,
-        description: (record.description as string) || "",
-        descriptionEn:
-          (record.descriptionEn as string) ||
-          (record.description as string) ||
-          "",
-        availability: "in-stock" as const,
-        slug:
-          (record.slug as string) ||
-          p.name.toLowerCase().replace(/\s+/g, "-"),
-        specifications: record.specifications as
-          | Record<string, string>
-          | undefined,
-      };
-    });
-
-    return applyFilters(products, filter);
+    return applyFilters(sampleToProducts(), filter);
   }
 
   const rows = await fetchSheetData("Products!A2:R");
+  if (rows.length === 0) {
+    console.warn("[Sheets] No product data returned — using sample data");
+    return applyFilters(sampleToProducts(), filter);
+  }
   const products = rows.map(rowToProduct);
   return applyFilters(products, filter);
 };
