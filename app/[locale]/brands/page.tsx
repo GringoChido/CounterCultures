@@ -47,66 +47,120 @@ const artisans = [
 /*  Brand descriptions                                                 */
 /* ------------------------------------------------------------------ */
 
-const brandDescriptions: Record<string, { tagline: string; description: string; origin: string }> = {
+const brandDescriptions: Record<string, { tagline: string; description: string; origin: string; image: string }> = {
   kohler: {
     tagline: "Bold Looks. Lasting Quality.",
     description: "Since 1873, Kohler has defined kitchen and bath innovation — from precision-engineered faucets to their iconic cast iron sinks.",
     origin: "Wisconsin, USA",
+    image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&q=80&auto=format",
   },
   toto: {
     tagline: "People-First Innovation.",
     description: "Japan's leading fixture manufacturer, known for CEFIONTECT glaze technology and the world's most advanced toilet engineering.",
     origin: "Kitakyushu, Japan",
+    image: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800&q=80&auto=format",
   },
   brizo: {
     tagline: "Fashion for the Home.",
     description: "Brizo brings fashion-forward design to kitchen and bath — the Litze collection's industrial precision is a kitchen centerpiece.",
     origin: "Indianapolis, USA",
+    image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80&auto=format",
   },
   blanco: {
     tagline: "The Kitchen Sink Experts.",
     description: "German engineering meets kitchen design. BLANCO's patented Silgranit material is heat, scratch, and stain resistant.",
     origin: "Oberderdingen, Germany",
+    image: "https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=800&q=80&auto=format",
   },
   "california-faucets": {
     tagline: "Handcrafted in Huntington Beach.",
     description: "Over 30 finish options, made to order in California. Bridge-style faucets and custom configurations for architects.",
     origin: "Huntington Beach, USA",
+    image: "https://images.unsplash.com/photo-1585412727339-54e4bae3bbf9?w=800&q=80&auto=format",
   },
   "sun-valley-bronze": {
     tagline: "Hand-Cast. Hand-Finished. Idaho-Made.",
     description: "Each Sun Valley Bronze lock set is individually sand-cast in silicon bronze and hand-finished — functional sculpture for your door.",
     origin: "Bellevue, Idaho, USA",
+    image: "https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?w=800&q=80&auto=format",
   },
   emtek: {
     tagline: "Hardware for Every Style.",
     description: "Solid brass door hardware with designs spanning modern to traditional — Hampton, Ribbon & Reed, T-Bar, and more.",
     origin: "City of Industry, USA",
+    image: "https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?w=600&q=80&auto=format",
   },
   badeloft: {
     tagline: "Modern Bathing Reimagined.",
     description: "Freestanding tubs in seamless mineral casting — sculptural forms with ergonomic comfort and easy-clean surfaces.",
     origin: "Berlin, Germany",
+    image: "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=600&q=80&auto=format",
   },
   bante: {
     tagline: "Farmhouse Refined.",
     description: "Fireclay and ceramic farmhouse sinks — the Duetto, Marea, and Duo collections bring timeless style to the kitchen.",
     origin: "Mexico",
+    image: "https://images.unsplash.com/photo-1584622781564-1d987f7333c1?w=600&q=80&auto=format",
   },
   mistoa: {
     tagline: "Mexican Artisanal Ceramics.",
     description: "Hand-shaped ceramic basins available in 10 curated colorways inspired by the Mexican landscape — Surco, Poas, Barú, Sisa, Musa.",
     origin: "Guanajuato, Mexico",
+    image: "https://images.unsplash.com/photo-1615529328331-f8917597711f?w=600&q=80&auto=format",
   },
   "villeroy-boch": {
     tagline: "European Craftsmanship Since 1748.",
     description: "The Architectura line brings German precision to the bathroom — undermount, vessel, and countertop basins in timeless white.",
     origin: "Mettlach, Germany",
+    image: "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=600&q=80&auto=format",
   },
   aquaspa: {
     tagline: "Spa-Grade Shower Systems.",
     description: "Rain showers, body sprays, and complete spa systems — bringing the luxury spa experience into the home.",
     origin: "Mexico",
+    image: "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=600&q=80&auto=format",
+  },
+  ebbe: {
+    tagline: "Engineered Drain Solutions.",
+    description: "Precision-machined linear and square shower drains — stainless steel construction with tile-insert and decorative grate options.",
+    origin: "California, USA",
+    image: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=600&q=80&auto=format",
+  },
+  delta: {
+    tagline: "Innovation at Every Turn.",
+    description: "Touch2O and ShieldSpray technologies across kitchen and bath. Delta's H2Okinetic showerheads sculpt water into a warmer, more powerful pattern.",
+    origin: "Indianapolis, USA",
+    image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&q=80&auto=format",
+  },
+  rohl: {
+    tagline: "Authentic Luxury Since 1983.",
+    description: "Italian-made bridge faucets and fireclay farmhouse sinks — every piece reflects ROHL's commitment to European craftsmanship and heritage design.",
+    origin: "Irvine, California, USA",
+    image: "https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=600&q=80&auto=format",
+  },
+  teka: {
+    tagline: "German Kitchen Technology.",
+    description: "Built-in ovens, induction hobs, and stainless steel sinks — Teka brings 95 years of German-engineered kitchen innovation to Mexico.",
+    origin: "Haiger, Germany",
+    image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80&auto=format",
+  },
+  smeg: {
+    tagline: "Technology with Style.",
+    description: "Iconic Italian design meets precision engineering — retro-style refrigerators, ranges, and small appliances that define the modern kitchen.",
+    origin: "Guastalla, Italy",
+    image: "https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?w=600&q=80&auto=format",
+  },
+  bluestar: {
+    tagline: "Restaurant Power. Residential Beauty.",
+    description: "Open-burner ranges with 25,000 BTU and 750+ color options — the professional chef's choice, built by hand in Pennsylvania.",
+    origin: "Pennsylvania, USA",
+    image: "https://images.unsplash.com/photo-1556909114-44e3e70034e2?w=600&q=80&auto=format",
+  },
+  baldwin: {
+    tagline: "American Craftsmanship Since 1946.",
+    description: "Forged brass door hardware with lifetime finishes — from estate rosettes to contemporary levers, each set is built to last generations.",
+    origin: "Reading, Pennsylvania, USA",
+    image: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=600&q=80&auto=format",
   },
 };
 
@@ -363,40 +417,104 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {BRANDS.map((brand) => {
+            {/* Flagship brands — 2-column with large images */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+              {BRANDS.slice(0, 6).map((brand) => {
                 const info = brandDescriptions[brand.slug];
                 return (
                   <Link
                     key={brand.slug}
                     href={`/${locale}/brands/${brand.slug}`}
-                    className="group relative bg-white p-7 border border-brand-stone/8 overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-brand-copper/20 hover:-translate-y-0.5"
+                    className="group relative bg-white border border-brand-stone/8 overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-brand-copper/20 hover:-translate-y-0.5"
                   >
-                    <div className="absolute top-0 left-0 w-0 h-0.5 bg-brand-copper transition-all duration-500 group-hover:w-full" />
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-display text-xl font-light text-brand-charcoal group-hover:text-brand-terracotta transition-colors duration-300 tracking-wide">
-                          {brand.name}
-                        </h3>
-                        {info && (
-                          <>
-                            <p className="mt-1.5 font-mono text-[10px] text-brand-copper tracking-[0.15em] uppercase">
-                              {info.origin}
-                            </p>
-                            <p className="mt-2 font-mono text-xs text-brand-stone/80 tracking-wide">
-                              {info.tagline}
-                            </p>
-                            <p className="mt-3 font-body text-sm text-brand-stone leading-relaxed line-clamp-2">
-                              {info.description}
-                            </p>
-                          </>
-                        )}
+                    <div className="absolute top-0 left-0 w-0 h-0.5 bg-brand-copper transition-all duration-500 group-hover:w-full z-10" />
+                    {/* Image */}
+                    {info && (
+                      <div className="relative h-52 lg:h-64 overflow-hidden">
+                        <Image
+                          src={info.image}
+                          alt={`${brand.name} products`}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                          className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
+                        <div className="absolute bottom-4 left-6">
+                          <p className="font-mono text-[10px] text-white/80 tracking-[0.15em] uppercase">
+                            {info.origin}
+                          </p>
+                          <h3 className="mt-1 font-display text-2xl lg:text-3xl font-light text-white tracking-wide">
+                            {brand.name}
+                          </h3>
+                        </div>
                       </div>
-                      <span className="shrink-0 mt-1 w-8 h-8 rounded-full border border-brand-stone/10 flex items-center justify-center text-brand-stone/30 group-hover:border-brand-copper/40 group-hover:text-brand-copper transition-all duration-300">
+                    )}
+                    {/* Content */}
+                    <div className="p-7 lg:p-8">
+                      {info && (
+                        <>
+                          <p className="font-mono text-xs text-brand-copper tracking-wide">
+                            {info.tagline}
+                          </p>
+                          <p className="mt-3 font-body text-sm text-brand-stone leading-relaxed">
+                            {info.description}
+                          </p>
+                        </>
+                      )}
+                      <span className="inline-flex items-center gap-2 mt-4 font-mono text-xs text-brand-stone/50 group-hover:text-brand-copper transition-colors duration-300 tracking-wide uppercase">
+                        {isEs ? "Explorar" : "Explore"}
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M7 17L17 7M17 7H7M17 7V17" />
                         </svg>
                       </span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Remaining brands — 3-column with small images */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {BRANDS.slice(6).map((brand) => {
+                const info = brandDescriptions[brand.slug];
+                return (
+                  <Link
+                    key={brand.slug}
+                    href={`/${locale}/brands/${brand.slug}`}
+                    className="group relative bg-white border border-brand-stone/8 overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-brand-copper/20 hover:-translate-y-0.5"
+                  >
+                    <div className="absolute top-0 left-0 w-0 h-0.5 bg-brand-copper transition-all duration-500 group-hover:w-full z-10" />
+                    {/* Small image */}
+                    {info && (
+                      <div className="relative h-36 overflow-hidden">
+                        <Image
+                          src={info.image}
+                          alt={`${brand.name} products`}
+                          fill
+                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/15 to-transparent" />
+                        <h3 className="absolute bottom-3 left-5 font-display text-xl font-light text-white tracking-wide">
+                          {brand.name}
+                        </h3>
+                      </div>
+                    )}
+                    {/* Content */}
+                    <div className="p-5">
+                      {info && (
+                        <>
+                          <p className="font-mono text-[10px] text-brand-copper tracking-[0.15em] uppercase">
+                            {info.origin}
+                          </p>
+                          <p className="mt-1.5 font-mono text-xs text-brand-stone/80 tracking-wide">
+                            {info.tagline}
+                          </p>
+                          <p className="mt-2.5 font-body text-sm text-brand-stone leading-relaxed line-clamp-2">
+                            {info.description}
+                          </p>
+                        </>
+                      )}
                     </div>
                   </Link>
                 );

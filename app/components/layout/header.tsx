@@ -99,7 +99,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                     : "text-brand-stone hover:text-brand-charcoal"
                 }`}
               >
-                EN
+                English
               </Link>
               <span className="text-brand-stone/40">|</span>
               <Link
@@ -110,16 +110,10 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                     : "text-brand-stone hover:text-brand-charcoal"
                 }`}
               >
-                ES
+                Español
               </Link>
             </div>
 
-            <Link
-              href="/showroom"
-              className="hidden md:inline-flex font-body text-sm font-medium px-5 py-2.5 bg-brand-terracotta text-white hover:bg-brand-copper transition-colors duration-300"
-            >
-              {lang === "en" ? "Visit Showroom" : "Visitar Showroom"}
-            </Link>
             <Link
               href="/dashboard"
               className="hidden md:inline-flex font-body text-sm font-medium px-5 py-2.5 bg-brand-copper text-white hover:bg-brand-terracotta transition-colors duration-300"
@@ -314,13 +308,6 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               </a>
 
               <div className="pt-4 pb-2 flex flex-col gap-3">
-                <Link
-                  href="/showroom"
-                  onClick={() => setMobileOpen(false)}
-                  className="block text-center py-3.5 bg-brand-terracotta text-white font-body font-medium text-sm hover:bg-brand-copper transition-colors"
-                >
-                  {lang === "en" ? "Visit Showroom" : "Visitar Showroom"}
-                </Link>
                 <Link
                   href="/dashboard"
                   onClick={() => setMobileOpen(false)}
