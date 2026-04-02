@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { readSheet, appendRow, type SheetTab } from "@/app/lib/dashboard-sheets";
 import { searchFiles, listFiles, createFolder, getFile, isConfigured as driveConfigured } from "@/app/lib/google-drive";
+import { readMasterPriceList, summarizePriceList, listPriceListFiles, syncPriceLists, isConfigured as priceListConfigured } from "@/app/lib/price-lists";
 
 // ---------------------------------------------------------------------------
 // Tool definitions for Claude — these map to real CRM + Drive operations
@@ -165,6 +166,56 @@ const TOOLS: Anthropic.Messages.Tool[] = [
       required: ["fileId"],
     },
   },
+  {
+    name: "search_price_list",
+    description:
+      "Search the master price list across all supplier brands. Filter by brand, SKU, product name, or category. Use when the user asks about wholesale prices, dealer costs, MAP pricing, margins, or supplier pricing.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        query: {
+          type: "string",
+          description: "Search term — SKU, product name, brand, or category",
+        },
+        brand: {
+          type: "string",
+          description:
+            'Filter by brand (e.g., "Ruvati", "BLANCO", "Deltana", "California Faucets"). Leave empty for all brands.',
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: "get_price_list_summary",
+    description:
+      "Get a summary of the master price list: total products, brand breakdown with counts and average MSRPs. Use when the user asks for an overview of pricing, how many products we carry, or brand statistics.",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "list_price_list_files",
+    description:
+      "List all files in the PRICE LIST Shared Drive — shows which supplier price books are available (Excel files and PDF catalogs). Use when the user asks what price lists or catalogs we have.",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: "sync_price_lists",
+    description:
+      "Trigger a sync of all supplier Excel price books into the master price list. Downloads and parses each file, normalizing data into a unified format. Use when the user asks to refresh, update, or sync price data.",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -298,6 +349,70 @@ async function executeTool(
         );
       }
 
+      case "search_price_list": {
+        if (!priceListConfigured()) return "Price List Drive is not configured yet. Set GOOGLE_PRICE_LIST_DRIVE_ID.";
+        let rows = await readMasterPriceList();
+        if (input.brand) {
+          const b = (input.brand as string).toLowerCase();
+          rows = rows.filter((r) => r.brand.toLowerCase() === b);
+        }
+        if (input.query) {
+          const q = (input.query as string).toLowerCase();
+          rows = rows.filter(
+            (r) =>
+              r.sku.toLowerCase().includes(q) ||
+              r.productName.toLowerCase().includes(q) ||
+              r.brand.toLowerCase().includes(q) ||
+              r.category.toLowerCase().includes(q)
+          );
+        }
+        if (rows.length === 0) return "No products found in the master price list matching those criteria.";
+        const limited = rows.slice(0, 20);
+        return `Found ${rows.length} products (showing first ${limited.length}):\n${JSON.stringify(
+          limited.map((r) => ({
+            brand: r.brand,
+            sku: r.sku,
+            name: r.productName,
+            category: r.category,
+            msrp: r.msrp ? `$${r.msrp}` : "N/A",
+            map: r.mapPrice ? `$${r.mapPrice}` : "N/A",
+            dealerCost: r.dealerCost ? `$${r.dealerCost}` : "N/A",
+            margin: r.marginPct ? `${r.marginPct}%` : "N/A",
+          })),
+          null,
+          2
+        )}`;
+      }
+
+      case "get_price_list_summary": {
+        if (!priceListConfigured()) return "Price List Drive is not configured yet.";
+        const rows = await readMasterPriceList();
+        if (rows.length === 0) return "The master price list is empty. Try running a sync first.";
+        const summary = summarizePriceList(rows);
+        return JSON.stringify(summary, null, 2);
+      }
+
+      case "list_price_list_files": {
+        if (!priceListConfigured()) return "Price List Drive is not configured yet.";
+        const files = await listPriceListFiles();
+        return JSON.stringify(
+          files.map((f) => ({
+            name: f.name,
+            type: f.isParseable ? "Excel (parseable)" : f.mimeType,
+            size: f.size,
+            modified: f.modifiedTime,
+          })),
+          null,
+          2
+        );
+      }
+
+      case "sync_price_lists": {
+        if (!priceListConfigured()) return "Price List Drive is not configured yet.";
+        const result = await syncPriceLists();
+        return `Sync complete: ${result.totalRows} total products parsed from ${result.results.length} files.\n\nDetails:\n${result.results.map((r) => `- ${r.brand} (${r.fileName}): ${r.rowsParsed} rows — ${r.status}${r.error ? ` — ${r.error}` : ""}`).join("\n")}`;
+      }
+
       default:
         return `Unknown tool: ${name}`;
     }
@@ -325,6 +440,10 @@ You have **real-time access** to the CRM data and Google Drive through tools. Yo
 - Browse Drive folders and see what's inside
 - Create new folders in Drive
 - Get file details and preview links
+- Search the master price list across all supplier brands (Ruvati, BLANCO, Deltana, California Faucets, etc.)
+- Get price list summaries with brand breakdowns and average MSRPs
+- See which supplier price books and catalogs are available
+- Trigger a price list sync to refresh data from supplier Excel files
 
 ## YOUR PERSONALITY
 - Concise and action-oriented — give answers, not lectures

@@ -20,6 +20,7 @@ import {
   AlertCircle,
   X,
   Eye,
+  DollarSign,
 } from "lucide-react";
 import { PreviewPanel, type PreviewFile } from "@/app/(dashboard)/components/preview-panel";
 
@@ -381,26 +382,39 @@ const DrivePage = () => {
         </div>
       </div>
 
-      {/* Breadcrumbs */}
-      <div className="flex items-center gap-1 text-sm overflow-x-auto">
-        <button
-          onClick={navigateToRoot}
-          className="flex items-center gap-1 text-dash-text-secondary hover:text-brand-copper transition-colors shrink-0 cursor-pointer"
-        >
-          <Home className="w-3.5 h-3.5" />
-          <span>CRM Drive</span>
-        </button>
-        {breadcrumbs.map((crumb) => (
-          <div key={crumb.id} className="flex items-center gap-1 shrink-0">
-            <ChevronRight className="w-3 h-3 text-dash-text-secondary" />
-            <button
-              onClick={() => navigateToFolder(crumb.id)}
-              className="text-dash-text-secondary hover:text-brand-copper transition-colors cursor-pointer"
-            >
-              {crumb.name}
-            </button>
-          </div>
-        ))}
+      {/* Breadcrumbs + Quick Nav */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-1 text-sm overflow-x-auto">
+          <button
+            onClick={navigateToRoot}
+            className="flex items-center gap-1 text-dash-text-secondary hover:text-brand-copper transition-colors shrink-0 cursor-pointer"
+          >
+            <Home className="w-3.5 h-3.5" />
+            <span>CRM Drive</span>
+          </button>
+          {breadcrumbs.map((crumb) => (
+            <div key={crumb.id} className="flex items-center gap-1 shrink-0">
+              <ChevronRight className="w-3 h-3 text-dash-text-secondary" />
+              <button
+                onClick={() => navigateToFolder(crumb.id)}
+                className="text-dash-text-secondary hover:text-brand-copper transition-colors cursor-pointer"
+              >
+                {crumb.name}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Quick nav to Price List Shared Drive */}
+        {process.env.NEXT_PUBLIC_PRICE_LIST_DRIVE_ID && (
+          <button
+            onClick={() => navigateToFolder(process.env.NEXT_PUBLIC_PRICE_LIST_DRIVE_ID!)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-brand-copper/10 text-brand-copper border border-brand-copper/20 rounded-lg hover:bg-brand-copper/20 transition-colors shrink-0 cursor-pointer"
+          >
+            <DollarSign className="w-3.5 h-3.5" />
+            Price Lists
+          </button>
+        )}
       </div>
 
       {/* New Folder Modal */}

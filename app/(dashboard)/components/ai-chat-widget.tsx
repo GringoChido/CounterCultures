@@ -27,7 +27,7 @@ const SUGGESTIONS = [
   { text: "Show me all leads", icon: Database },
   { text: "Search products by brand", icon: Package },
   { text: "What's in the Drive?", icon: FolderSearch },
-  { text: "Create a new folder called Q2 Reports", icon: FileText },
+  { text: "Show me a price list summary", icon: FileText },
 ];
 
 // Minimal markdown renderer for assistant messages
