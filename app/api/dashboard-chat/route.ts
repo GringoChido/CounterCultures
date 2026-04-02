@@ -1,132 +1,377 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { SAMPLE_LEADS, SAMPLE_PIPELINE, SAMPLE_ACTIVITIES } from "@/app/lib/sample-dashboard-data";
-import { samplePosts, sampleComments, sampleAnalytics, sampleScheduledPosts } from "@/app/lib/social/sample-data";
+import { readSheet, appendRow, type SheetTab } from "@/app/lib/dashboard-sheets";
+import { searchFiles, listFiles, createFolder, getFile, isConfigured as driveConfigured } from "@/app/lib/google-drive";
 
 // ---------------------------------------------------------------------------
-// Build a comprehensive system prompt with ALL dashboard data
+// Tool definitions for Claude — these map to real CRM + Drive operations
 // ---------------------------------------------------------------------------
 
-function buildDashboardContext(): string {
-  // Leads summary
-  const leadsByStatus: Record<string, number> = {};
-  const leadsBySource: Record<string, number> = {};
-  SAMPLE_LEADS.forEach((l) => {
-    leadsByStatus[l.status] = (leadsByStatus[l.status] || 0) + 1;
-    leadsBySource[l.source] = (leadsBySource[l.source] || 0) + 1;
-  });
+const TOOLS: Anthropic.Messages.Tool[] = [
+  {
+    name: "search_products",
+    description:
+      "Search the Products sheet by name, SKU, brand, or category. Returns matching rows. Use when the user asks about a specific product or wants to find products.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        query: {
+          type: "string",
+          description: "Search term — product name, SKU, brand, or category",
+        },
+      },
+      required: ["query"],
+    },
+  },
+  {
+    name: "get_leads",
+    description:
+      "Read leads from the CRM. Optionally filter by status, source, or rep. Use when the user asks about leads, prospects, or inquiries.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        status: {
+          type: "string",
+          description:
+            'Filter by status (e.g., "new", "contacted", "qualified", "proposal", "won", "lost"). Leave empty for all.',
+        },
+        source: {
+          type: "string",
+          description:
+            'Filter by source (e.g., "website", "instagram", "trade_show", "referral"). Leave empty for all.',
+        },
+        limit: {
+          type: "number",
+          description: "Max number of leads to return. Default: 20.",
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: "get_pipeline",
+    description:
+      "Read pipeline deals from the CRM. Optionally filter by stage. Use when the user asks about deals, pipeline value, opportunities.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        stage: {
+          type: "string",
+          description:
+            'Filter by stage (e.g., "Discovery", "Proposal", "Negotiation", "Closed Won", "Closed Lost"). Leave empty for all.',
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: "read_crm_tab",
+    description:
+      "Read data from any CRM spreadsheet tab. Available tabs: Products, Leads, Pipeline, Contacts, Activity_Log, Reps, Trade_Applications, Content_Calendar, Email_Campaigns, Social_Posts, Newsletter, Bookings, Website_Analytics, Sales_Metrics, Marketing_Metrics, Settings.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        tab: {
+          type: "string",
+          description: "The sheet tab name to read from",
+        },
+      },
+      required: ["tab"],
+    },
+  },
+  {
+    name: "add_crm_row",
+    description:
+      "Add a new row to any CRM spreadsheet tab. Use when the user asks to log something, add a lead, create a record, etc. You must know the column headers first (call read_crm_tab to check).",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        tab: {
+          type: "string",
+          description: "The sheet tab to append to",
+        },
+        values: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Array of cell values in column order. Match the header row exactly.",
+        },
+      },
+      required: ["tab", "values"],
+    },
+  },
+  {
+    name: "search_drive",
+    description:
+      "Search Google Drive for files by name or content. Use when the user asks to find a file, document, image, or spreadsheet in Drive.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        query: {
+          type: "string",
+          description: "Search query — file name or content keywords",
+        },
+      },
+      required: ["query"],
+    },
+  },
+  {
+    name: "list_drive_folder",
+    description:
+      "List files inside a Google Drive folder. If no folderId is given, lists the root CRM folder. Use when the user asks to see what's in a folder or browse Drive.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        folderId: {
+          type: "string",
+          description:
+            "Google Drive folder ID to list. Omit for root CRM folder.",
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: "create_drive_folder",
+    description:
+      "Create a new folder in Google Drive. Use when the user asks to create, make, or set up a new folder.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        name: {
+          type: "string",
+          description: "Name for the new folder",
+        },
+        parentFolderId: {
+          type: "string",
+          description:
+            "Parent folder ID. Omit to create in the root CRM folder.",
+        },
+      },
+      required: ["name"],
+    },
+  },
+  {
+    name: "get_file_info",
+    description:
+      "Get detailed info about a specific file in Google Drive, including its preview/view link. Use when the user asks about a specific file by ID.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        fileId: {
+          type: "string",
+          description: "The Google Drive file ID",
+        },
+      },
+      required: ["fileId"],
+    },
+  },
+];
 
-  // Pipeline summary
-  const pipelineByStage: Record<string, { count: number; value: number }> = {};
-  let totalPipelineValue = 0;
-  SAMPLE_PIPELINE.forEach((d) => {
-    if (!pipelineByStage[d.stage]) pipelineByStage[d.stage] = { count: 0, value: 0 };
-    pipelineByStage[d.stage].count++;
-    pipelineByStage[d.stage].value += d.value;
-    totalPipelineValue += d.value;
-  });
+// ---------------------------------------------------------------------------
+// Tool execution — calls real APIs
+// ---------------------------------------------------------------------------
 
-  // Social summary
-  const igAnalytics = sampleAnalytics.instagram_30d;
-  const fbAnalytics = sampleAnalytics.facebook_30d;
+async function executeTool(
+  name: string,
+  input: Record<string, unknown>
+): Promise<string> {
+  try {
+    switch (name) {
+      case "search_products": {
+        const rows = await readSheet<Record<string, string>>("Products");
+        const q = (input.query as string).toLowerCase();
+        const matches = rows.filter((r) =>
+          Object.values(r).some((v) => v.toLowerCase().includes(q))
+        );
+        if (matches.length === 0) return "No products found matching that query.";
+        return JSON.stringify(matches.slice(0, 15), null, 2);
+      }
 
-  return `You are the Counter Cultures Dashboard AI Assistant. You help employees and admins navigate and understand the Counter Portal dashboard. You have real-time knowledge of ALL dashboard data.
+      case "get_leads": {
+        let rows = await readSheet<Record<string, string>>("Leads");
+        if (input.status) {
+          const s = (input.status as string).toLowerCase();
+          rows = rows.filter((r) => (r.Status || r.status || "").toLowerCase() === s);
+        }
+        if (input.source) {
+          const s = (input.source as string).toLowerCase();
+          rows = rows.filter((r) => (r.Source || r.source || "").toLowerCase().includes(s));
+        }
+        const limit = (input.limit as number) || 20;
+        return rows.length === 0
+          ? "No leads found matching those filters."
+          : JSON.stringify(rows.slice(0, limit), null, 2);
+      }
 
-## YOUR ROLE
-- Answer questions about dashboard data, metrics, leads, deals, social media, and analytics
-- Help users navigate the dashboard ("where do I find X?")
-- Provide insights and recommendations based on the data
-- Be concise, helpful, and data-driven
-- Use specific numbers from the data when answering
-- If someone asks to DO something (create a post, export data), tell them which dashboard section handles that
+      case "get_pipeline": {
+        let rows = await readSheet<Record<string, string>>("Pipeline");
+        if (input.stage) {
+          const s = (input.stage as string).toLowerCase();
+          rows = rows.filter((r) => (r.Stage || r.stage || "").toLowerCase().includes(s));
+        }
+        return rows.length === 0
+          ? "No pipeline deals found."
+          : JSON.stringify(rows.slice(0, 20), null, 2);
+      }
 
-## DASHBOARD SECTIONS
-The dashboard has these sections accessible from the sidebar:
-- **Overview** (/dashboard/overview): Main KPIs, revenue trend, pipeline chart, recent activity
-- **Leads** (/dashboard/leads): Lead management with filtering, search, export to CSV, detail panels
-- **Pipeline** (/dashboard/pipeline): Kanban board with drag-and-drop deal management
-- **WhatsApp** (/dashboard/whatsapp): Customer messaging inbox
-- **Content Calendar** (/dashboard/content-calendar): Visual calendar for scheduling social posts
-- **Social Media Hub** (/dashboard/social): 4 tabs — Feed, Create Post, Comments, Analytics. Supports Facebook & Instagram via Meta Graph API
-- **Email Campaigns** (/dashboard/email-campaigns): Campaign management
-- **Blog Manager** (/dashboard/blog-manager): Blog post management
-- **Website Analytics** (/dashboard/website-analytics): Traffic, pageviews, bounce rate
-- **Sales Analytics** (/dashboard/sales-analytics): Revenue, deals closed, win rate
-- **Marketing Analytics** (/dashboard/marketing-analytics): Leads generated, CPL, channel performance
-- **Reports** (/dashboard/reports): Generate monthly sales, pipeline, marketing reports
-- **Products** (/dashboard/products): Product catalog with SKUs and pricing
-- **Trade Program** (/dashboard/trade-program): Trade partner management (18 active members)
-- **Drive** (/dashboard/drive): File management and documents
-- **Settings** (/dashboard/settings): Account, notifications, integrations, team members
+      case "read_crm_tab": {
+        const tab = input.tab as SheetTab;
+        const rows = await readSheet<Record<string, string>>(tab);
+        if (rows.length === 0) return `The "${tab}" tab is empty or has no data rows.`;
+        // Return summary + first rows
+        const summary = `Tab "${tab}" has ${rows.length} rows. Columns: ${Object.keys(rows[0]).join(", ")}`;
+        const preview = rows.slice(0, 10);
+        return `${summary}\n\nFirst ${preview.length} rows:\n${JSON.stringify(preview, null, 2)}`;
+      }
 
-## TIPS & SHORTCUTS
-- Press **⌘K** (or Ctrl+K) to open the global search — search for pages, leads, and deals
-- The **Export** button on the Leads page downloads a CSV of the currently filtered leads
-- Settings are saved automatically when you toggle notifications or integrations
+      case "add_crm_row": {
+        const tab = input.tab as SheetTab;
+        const values = input.values as string[];
+        await appendRow(tab, values);
+        return `Successfully added a new row to "${tab}" with ${values.length} values.`;
+      }
 
-## CURRENT DATA
+      case "search_drive": {
+        if (!driveConfigured()) return "Google Drive is not configured yet.";
+        const files = await searchFiles(input.query as string, 10);
+        if (files.length === 0) return "No files found matching that search.";
+        return JSON.stringify(
+          files.map((f) => ({
+            id: f.id,
+            name: f.name,
+            type: f.mimeType,
+            modified: f.modifiedTime,
+            link: f.webViewLink,
+            isFolder: f.isFolder,
+          })),
+          null,
+          2
+        );
+      }
 
-### Leads (${SAMPLE_LEADS.length} total)
-By Status: ${Object.entries(leadsByStatus).map(([s, c]) => `${s}: ${c}`).join(", ")}
-By Source: ${Object.entries(leadsBySource).map(([s, c]) => `${s}: ${c}`).join(", ")}
+      case "list_drive_folder": {
+        if (!driveConfigured()) return "Google Drive is not configured yet.";
+        const result = await listFiles(
+          (input.folderId as string) || undefined,
+          20
+        );
+        if (result.files.length === 0) return "This folder is empty.";
+        return JSON.stringify(
+          result.files.map((f) => ({
+            id: f.id,
+            name: f.name,
+            type: f.isFolder ? "folder" : f.mimeType,
+            modified: f.modifiedTime,
+            link: f.webViewLink,
+          })),
+          null,
+          2
+        );
+      }
 
-Recent leads:
-${SAMPLE_LEADS.slice(0, 8).map((l) => `- ${l.name} (${l.status}) — Source: ${l.source}, Score: ${l.score}, Budget: ${l.budget}, Rep: ${l.assignedRep}`).join("\n")}
+      case "create_drive_folder": {
+        if (!driveConfigured()) return "Google Drive is not configured yet.";
+        const folder = await createFolder(
+          input.name as string,
+          (input.parentFolderId as string) || undefined
+        );
+        return `Created folder "${folder.name}" (ID: ${folder.id}). Link: ${folder.webViewLink}`;
+      }
 
-### Pipeline (${SAMPLE_PIPELINE.length} deals, total value: $${(totalPipelineValue / 1000000).toFixed(1)}M)
-By Stage:
-${Object.entries(pipelineByStage).map(([stage, data]) => `- ${stage}: ${data.count} deals, $${(data.value / 1000).toFixed(0)}K`).join("\n")}
+      case "get_file_info": {
+        if (!driveConfigured()) return "Google Drive is not configured yet.";
+        const file = await getFile(input.fileId as string);
+        return JSON.stringify(
+          {
+            id: file.id,
+            name: file.name,
+            type: file.mimeType,
+            size: file.size,
+            modified: file.modifiedTime,
+            created: file.createdTime,
+            link: file.webViewLink,
+            thumbnail: file.thumbnailLink,
+            isFolder: file.isFolder,
+          },
+          null,
+          2
+        );
+      }
 
-Active deals:
-${SAMPLE_PIPELINE.map((d) => `- ${d.name} — ${d.contactName}, $${(d.value / 1000).toFixed(0)}K, ${d.stage}, ${d.probability}% probability, close: ${d.expectedClose}`).join("\n")}
-
-### Social Media
-Instagram (30d): ${igAnalytics.followers.toLocaleString()} followers (+${igAnalytics.followerGrowth}), ${igAnalytics.engagementRate}% engagement, ${igAnalytics.totalReach.toLocaleString()} reach, ${igAnalytics.postsPublished} posts
-Facebook (30d): ${fbAnalytics.followers.toLocaleString()} followers (+${fbAnalytics.followerGrowth}), ${fbAnalytics.engagementRate}% engagement, ${fbAnalytics.totalReach.toLocaleString()} reach, ${fbAnalytics.postsPublished} posts
-Combined followers: ${(igAnalytics.followers + fbAnalytics.followers).toLocaleString()}
-
-Recent posts:
-${samplePosts.slice(0, 5).map((p) => `- [${p.platform}] "${p.message.slice(0, 80)}..." — ${p.metrics.likes} likes, ${p.metrics.comments} comments, ${p.metrics.engagement || "N/A"}% engagement`).join("\n")}
-
-Pending comments needing reply: ${sampleComments.filter((c) => c.replies.length === 0).length}
-Scheduled posts: ${sampleScheduledPosts.filter((p) => p.status === "scheduled").length}
-
-### Recent Activity
-${SAMPLE_ACTIVITIES.slice(0, 6).map((a) => `- ${a.description} (${a.rep}, ${a.timestamp})`).join("\n")}
-
-### Key Metrics (from Overview)
-- New Leads: 5 (+25% vs last month)
-- Pipeline Value: $5.2M (+18%)
-- Conversion Rate: 12.5% (+3.2%)
-- Website Visitors: 2,840 (+22%)
-
-### Website Analytics
-- Monthly Visitors: 2,280
-- Page Views: 6,840
-- Bounce Rate: 38.2%
-- Avg Session: 3m 24s
-- Top traffic sources: Organic Search, Instagram, Direct, Referral
-
-### Sales Analytics
-- Total Revenue: $2.42M
-- Deals Closed: 38
-- Win Rate: 72%
-
-### Marketing Analytics
-- Leads Generated: 72
-- Cost per Lead: $32.80
-- Email Open Rate: 49.3%
-- Top channels: Organic Search, Instagram Ads, Facebook Ads, Email, WhatsApp, Referral
-`;
+      default:
+        return `Unknown tool: ${name}`;
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`[Tool ${name}]`, msg);
+    return `Error executing ${name}: ${msg}`;
+  }
 }
 
-const SYSTEM_PROMPT = buildDashboardContext();
+// ---------------------------------------------------------------------------
+// System prompt
+// ---------------------------------------------------------------------------
+
+const SYSTEM_PROMPT = `You are the Counter Cultures Dashboard AI Assistant — a smart, helpful digital assistant embedded in the Counter Portal CRM dashboard.
+
+## YOUR CAPABILITIES
+You have **real-time access** to the CRM data and Google Drive through tools. You can:
+- Look up products by name, SKU, brand, or category
+- Pull up leads, filter by status/source, and add new ones
+- View the sales pipeline and deal stages
+- Read any CRM spreadsheet tab (Products, Leads, Pipeline, Contacts, Trade_Applications, Bookings, etc.)
+- Add new rows to any CRM tab
+- Search Google Drive for documents, images, spreadsheets
+- Browse Drive folders and see what's inside
+- Create new folders in Drive
+- Get file details and preview links
+
+## YOUR PERSONALITY
+- Concise and action-oriented — give answers, not lectures
+- Use real data from the tools when possible, not guesses
+- Format data clearly: use bullet points for lists, bold for key values
+- When you perform an action (add a lead, create a folder), confirm what you did
+- If you can link to a file or Drive item, include the link
+- Speak in a warm, professional tone — you're a teammate, not a robot
+
+## DASHBOARD SECTIONS (for navigation help)
+- **Overview** (/dashboard/overview): KPIs, revenue, pipeline chart
+- **Leads** (/dashboard/leads): Lead management, filtering, CSV export
+- **Pipeline** (/dashboard/pipeline): Kanban board with deal stages
+- **Drive** (/dashboard/drive): Google Drive file browser
+- **Products** (/dashboard/products): Product catalog
+- **Trade Program** (/dashboard/trade-program): Trade partners
+- **Social Media** (/dashboard/social): Facebook & Instagram via Meta API
+- **Content Calendar** (/dashboard/content-calendar): Post scheduling
+- **Email Campaigns** (/dashboard/email-campaigns): Campaign management
+- **Analytics**: Website, Sales, and Marketing analytics pages
+- **Reports** (/dashboard/reports): Generate monthly reports
+- **Settings** (/dashboard/settings): Account & integrations
+
+## TIPS
+- Press **⌘K** to open global search
+- The Leads page has an Export CSV button
+- The Drive page lets you upload files and create folders directly
+
+## RULES
+- Always use your tools to get real data — never make up numbers
+- If a tool returns an error, explain what happened and suggest next steps
+- When asked about data you don't have a tool for, tell them which dashboard section to check
+- Keep responses under ~300 words unless the user asks for more detail`;
+
+// ---------------------------------------------------------------------------
+// Route handler — tool-use loop
+// ---------------------------------------------------------------------------
 
 export const POST = async (request: Request) => {
   try {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       return Response.json(
-        { error: "AI assistant is not configured. Add ANTHROPIC_API_KEY to your environment variables." },
+        {
+          error:
+            "AI assistant is not configured. Add ANTHROPIC_API_KEY to your environment variables.",
+        },
         { status: 503 }
       );
     }
@@ -141,18 +386,66 @@ export const POST = async (request: Request) => {
 
     const client = new Anthropic({ apiKey });
 
-    const response = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 800,
-      system: SYSTEM_PROMPT,
-      messages,
+    // Run the agentic loop — Claude may call tools multiple times
+    let currentMessages: Anthropic.Messages.MessageParam[] = messages.map(
+      (m) => ({ role: m.role, content: m.content })
+    );
+    let iterations = 0;
+    const MAX_ITERATIONS = 6; // safety limit
+
+    while (iterations < MAX_ITERATIONS) {
+      iterations++;
+
+      const response = await client.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 1200,
+        system: SYSTEM_PROMPT,
+        tools: TOOLS,
+        messages: currentMessages,
+      });
+
+      // If no tool use, extract text and return
+      if (response.stop_reason === "end_turn" || !response.content.some((b) => b.type === "tool_use")) {
+        const text = response.content
+          .filter((b): b is Anthropic.Messages.TextBlock => b.type === "text")
+          .map((b) => b.text)
+          .join("\n");
+
+        return Response.json({ message: text || "I processed that but have nothing to add." });
+      }
+
+      // Handle tool calls
+      const toolResults: Anthropic.Messages.ToolResultBlockParam[] = [];
+
+      for (const block of response.content) {
+        if (block.type === "tool_use") {
+          const result = await executeTool(
+            block.name,
+            block.input as Record<string, unknown>
+          );
+          toolResults.push({
+            type: "tool_result",
+            tool_use_id: block.id,
+            content: result,
+          });
+        }
+      }
+
+      // Add assistant response + tool results to conversation
+      currentMessages = [
+        ...currentMessages,
+        { role: "assistant", content: response.content },
+        { role: "user", content: toolResults },
+      ];
+    }
+
+    // If we hit max iterations, return what we have
+    return Response.json({
+      message:
+        "I ran into a lot of steps trying to answer that. Could you try a more specific question?",
     });
-
-    const text =
-      response.content[0].type === "text" ? response.content[0].text : "";
-
-    return Response.json({ message: text });
-  } catch {
+  } catch (err) {
+    console.error("[Dashboard Chat]", err);
     return Response.json({ error: "Failed to respond" }, { status: 500 });
   }
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   MessageCircle,
   X,
@@ -9,6 +9,11 @@ import {
   Sparkles,
   Minimize2,
   Maximize2,
+  Database,
+  FolderSearch,
+  Package,
+  FileText,
+  Trash2,
 } from "lucide-react";
 
 interface Message {
@@ -19,11 +24,62 @@ interface Message {
 }
 
 const SUGGESTIONS = [
-  "How many leads came in this month?",
-  "What's our pipeline value?",
-  "Which social posts performed best?",
-  "Where do I export leads as CSV?",
+  { text: "Show me all leads", icon: Database },
+  { text: "Search products by brand", icon: Package },
+  { text: "What's in the Drive?", icon: FolderSearch },
+  { text: "Create a new folder called Q2 Reports", icon: FileText },
 ];
+
+// Minimal markdown renderer for assistant messages
+function RichText({ text }: { text: string }) {
+  // Process the text into segments
+  const lines = text.split("\n");
+
+  return (
+    <div className="space-y-1.5">
+      {lines.map((line, i) => {
+        // Bold headers (** **)
+        const processed = line.replace(
+          /\*\*(.+?)\*\*/g,
+          '<strong class="font-semibold text-dash-text">$1</strong>'
+        );
+
+        // Bullet points
+        if (line.startsWith("- ") || line.startsWith("• ")) {
+          return (
+            <div key={i} className="flex gap-1.5 pl-1">
+              <span className="text-brand-copper mt-0.5 shrink-0">•</span>
+              <span
+                dangerouslySetInnerHTML={{
+                  __html: processed.replace(/^[-•]\s*/, ""),
+                }}
+              />
+            </div>
+          );
+        }
+
+        // Links — turn Google Drive / Sheets URLs into clickable links
+        const withLinks = processed.replace(
+          /(https:\/\/(?:docs\.google\.com|drive\.google\.com)[^\s)]+)/g,
+          '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-brand-copper underline underline-offset-2 hover:text-brand-copper/80">Open in Google →</a>'
+        );
+
+        // Empty lines become spacing
+        if (line.trim() === "") {
+          return <div key={i} className="h-1" />;
+        }
+
+        return (
+          <p
+            key={i}
+            className="leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: withLinks }}
+          />
+        );
+      })}
+    </div>
+  );
+}
 
 export function AIChatWidget() {
   const [open, setOpen] = useState(false);
@@ -44,56 +100,64 @@ export function AIChatWidget() {
     }
   }, [open]);
 
-  async function sendMessage(text: string) {
-    if (!text.trim() || loading) return;
+  const sendMessage = useCallback(
+    async (text: string) => {
+      if (!text.trim() || loading) return;
 
-    const userMsg: Message = {
-      id: `u-${Date.now()}`,
-      role: "user",
-      content: text.trim(),
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMsg]);
-    setInput("");
-    setLoading(true);
-
-    try {
-      const apiMessages = [...messages, userMsg].map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
-
-      const res = await fetch("/api/dashboard-chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: apiMessages }),
-      });
-
-      const data = await res.json();
-
-      const assistantMsg: Message = {
-        id: `a-${Date.now()}`,
-        role: "assistant",
-        content: data.message || data.error || "Sorry, I couldn't process that.",
+      const userMsg: Message = {
+        id: `u-${Date.now()}`,
+        role: "user",
+        content: text.trim(),
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, assistantMsg]);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `e-${Date.now()}`,
+      setMessages((prev) => [...prev, userMsg]);
+      setInput("");
+      setLoading(true);
+
+      try {
+        const apiMessages = [...messages, userMsg].map((m) => ({
+          role: m.role,
+          content: m.content,
+        }));
+
+        const res = await fetch("/api/dashboard-chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages: apiMessages }),
+        });
+
+        const data = await res.json();
+
+        const assistantMsg: Message = {
+          id: `a-${Date.now()}`,
           role: "assistant",
-          content: "Connection error. Please try again.",
+          content:
+            data.message || data.error || "Sorry, I couldn't process that.",
           timestamp: new Date(),
-        },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  }
+        };
+
+        setMessages((prev) => [...prev, assistantMsg]);
+      } catch {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `e-${Date.now()}`,
+            role: "assistant",
+            content: "Connection error. Please try again.",
+            timestamp: new Date(),
+          },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [messages, loading]
+  );
+
+  const clearChat = () => {
+    setMessages([]);
+  };
 
   const widthClass = expanded ? "w-[500px]" : "w-[380px]";
   const heightClass = expanded ? "h-[600px]" : "h-[480px]";
@@ -112,11 +176,22 @@ export function AIChatWidget() {
                 <Sparkles className="w-4 h-4 text-white" />
               </div>
               <div>
-                <p className="text-sm font-semibold">Dashboard Assistant</p>
-                <p className="text-[10px] text-white/50">Powered by Claude AI</p>
+                <p className="text-sm font-semibold">CRM Assistant</p>
+                <p className="text-[10px] text-white/50">
+                  Connected to Drive &amp; Sheets
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-1">
+              {messages.length > 0 && (
+                <button
+                  onClick={clearChat}
+                  title="Clear chat"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5 text-white/50" />
+                </button>
+              )}
               <button
                 onClick={() => setExpanded(!expanded)}
                 className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
@@ -141,12 +216,15 @@ export function AIChatWidget() {
             {messages.length === 0 && (
               <div className="space-y-4">
                 <div className="text-center py-4">
-                  <Sparkles className="w-8 h-8 mx-auto mb-2 text-brand-copper/30" />
+                  <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-brand-copper/20 to-brand-terracotta/10 flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-brand-copper" />
+                  </div>
                   <p className="text-sm font-medium text-dash-text">
-                    Hi! I&apos;m your dashboard assistant.
+                    Hi! I&apos;m your CRM Assistant.
                   </p>
-                  <p className="text-xs text-dash-text-secondary mt-1">
-                    Ask me anything about your leads, pipeline, analytics, or how to use the dashboard.
+                  <p className="text-xs text-dash-text-secondary mt-1 max-w-[280px] mx-auto">
+                    I can search products, pull up leads, browse Drive files,
+                    create folders, and more — all from right here.
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -155,11 +233,12 @@ export function AIChatWidget() {
                   </p>
                   {SUGGESTIONS.map((s) => (
                     <button
-                      key={s}
-                      onClick={() => sendMessage(s)}
-                      className="block w-full text-left px-3 py-2 text-xs text-dash-text bg-dash-bg rounded-lg border border-dash-border hover:border-brand-copper/30 hover:bg-brand-copper/5 transition-colors cursor-pointer"
+                      key={s.text}
+                      onClick={() => sendMessage(s.text)}
+                      className="flex items-center gap-2.5 w-full text-left px-3 py-2.5 text-xs text-dash-text bg-dash-bg rounded-lg border border-dash-border hover:border-brand-copper/30 hover:bg-brand-copper/5 transition-colors cursor-pointer"
                     >
-                      {s}
+                      <s.icon className="w-3.5 h-3.5 text-brand-copper/60 shrink-0" />
+                      {s.text}
                     </button>
                   ))}
                 </div>
@@ -172,16 +251,24 @@ export function AIChatWidget() {
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                  className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-sm ${
                     msg.role === "user"
                       ? "bg-brand-copper text-white rounded-br-md"
                       : "bg-dash-bg text-dash-text border border-dash-border rounded-bl-md"
                   }`}
                 >
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
+                  {msg.role === "assistant" ? (
+                    <RichText text={msg.content} />
+                  ) : (
+                    <p className="whitespace-pre-wrap leading-relaxed">
+                      {msg.content}
+                    </p>
+                  )}
                   <p
-                    className={`text-[9px] mt-1 ${
-                      msg.role === "user" ? "text-white/50" : "text-dash-text-secondary"
+                    className={`text-[9px] mt-1.5 ${
+                      msg.role === "user"
+                        ? "text-white/50"
+                        : "text-dash-text-secondary"
                     }`}
                   >
                     {msg.timestamp.toLocaleTimeString([], {
@@ -197,8 +284,10 @@ export function AIChatWidget() {
               <div className="flex justify-start">
                 <div className="bg-dash-bg border border-dash-border rounded-2xl rounded-bl-md px-4 py-3">
                   <div className="flex items-center gap-2 text-dash-text-secondary">
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span className="text-xs">Thinking...</span>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-copper" />
+                    <span className="text-xs">
+                      Querying CRM...
+                    </span>
                   </div>
                 </div>
               </div>
@@ -221,7 +310,7 @@ export function AIChatWidget() {
                     sendMessage(input);
                   }
                 }}
-                placeholder="Ask about your dashboard..."
+                placeholder="Search products, pull leads, browse Drive..."
                 className="flex-1 bg-dash-bg border border-dash-border rounded-xl px-3.5 py-2.5 text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
               />
               <button

@@ -1,71 +1,63 @@
 /**
  * Google Sheets API v4 wrapper
  *
- * This is the single source of truth for all data operations.
- * In production, this reads/writes to the "Counter Cultures CRM" spreadsheet.
+ * Single source of truth for all website data operations:
+ * products, leads, trade applications, newsletter, bookings.
  *
- * For development, we fall back to sample data from constants.ts.
- * To enable the Sheets API:
- * 1. Create a Google Cloud service account
- * 2. Share the spreadsheet with the service account email
- * 3. Set GOOGLE_SHEETS_ID and GOOGLE_SERVICE_ACCOUNT_KEY env vars
+ * In production, reads/writes to the "Counter Cultures CRM" spreadsheet
+ * using the Google Cloud Service Account.
+ *
+ * In development (no env vars), falls back to sample data from constants.ts.
+ *
+ * Required env vars:
+ *   GOOGLE_SERVICE_ACCOUNT_EMAIL
+ *   GOOGLE_PRIVATE_KEY
+ *   GOOGLE_SHEETS_ID
  */
 
+import { google } from "googleapis";
 import type { Product, ProductFilter } from "./types";
 import { SAMPLE_PRODUCTS } from "./constants";
 
+// ── Config ────────────────────────────────────────────────────────────
+
 const SHEETS_ID = process.env.GOOGLE_SHEETS_ID;
-const SERVICE_ACCOUNT_KEY = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
 
-const isConfigured = () => Boolean(SHEETS_ID && SERVICE_ACCOUNT_KEY);
-
-// --- Auth ---
-
-const getAuthToken = async (): Promise<string> => {
-  if (!SERVICE_ACCOUNT_KEY) throw new Error("Google Service Account key not configured");
-
-  const key = JSON.parse(SERVICE_ACCOUNT_KEY);
-  const now = Math.floor(Date.now() / 1000);
-
-  const header = btoa(JSON.stringify({ alg: "RS256", typ: "JWT" }));
-  const claim = btoa(
-    JSON.stringify({
-      iss: key.client_email,
-      scope: "https://www.googleapis.com/auth/spreadsheets",
-      aud: "https://oauth2.googleapis.com/token",
-      exp: now + 3600,
-      iat: now,
-    })
+const isConfigured = () =>
+  Boolean(
+    SHEETS_ID &&
+      process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
+      process.env.GOOGLE_PRIVATE_KEY
   );
 
-  // In production, sign with the private key using Web Crypto or a JWT library
-  // For now, this is a placeholder — install googleapis or jose for proper JWT signing
-  const token = `${header}.${claim}`;
-  return token;
-};
+// ── Auth (shared with dashboard-sheets.ts) ────────────────────────────
 
-// --- Read Operations ---
-
-const fetchSheetData = async (
-  range: string
-): Promise<string[][]> => {
-  if (!isConfigured()) return [];
-
-  const token = await getAuthToken();
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEETS_ID}/values/${encodeURIComponent(range)}`;
-
-  const res = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}` },
-    next: { revalidate: 60 },
+const getAuth = () =>
+  new google.auth.GoogleAuth({
+    credentials: {
+      client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+    },
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
 
-  if (!res.ok) throw new Error(`Sheets API error: ${res.status}`);
+const getSheets = () => google.sheets({ version: "v4", auth: getAuth() });
 
-  const data = await res.json();
-  return data.values || [];
+// ── Read Operations ───────────────────────────────────────────────────
+
+const fetchSheetData = async (range: string): Promise<string[][]> => {
+  if (!isConfigured()) return [];
+
+  const sheets = getSheets();
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: SHEETS_ID!,
+    range,
+  });
+
+  return (response.data.values as string[][]) ?? [];
 };
 
-// --- Write Operations ---
+// ── Write Operations ──────────────────────────────────────────────────
 
 const appendSheetData = async (
   range: string,
@@ -76,22 +68,16 @@ const appendSheetData = async (
     return;
   }
 
-  const token = await getAuthToken();
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEETS_ID}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED`;
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ values }),
+  const sheets = getSheets();
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: SHEETS_ID!,
+    range,
+    valueInputOption: "USER_ENTERED",
+    requestBody: { values },
   });
-
-  if (!res.ok) throw new Error(`Sheets API write error: ${res.status}`);
 };
 
-// --- Product Helpers ---
+// ── Product Helpers ───────────────────────────────────────────────────
 
 const rowToProduct = (row: string[], index: number): Product => ({
   id: row[0] || String(index),
@@ -114,14 +100,44 @@ const rowToProduct = (row: string[], index: number): Product => ({
   slug: row[17] || row[3]?.toLowerCase().replace(/\s+/g, "-") || "",
 });
 
-// --- Public API ---
+// ── Public API ────────────────────────────────────────────────────────
+
+const applyFilters = (
+  products: Product[],
+  filter?: ProductFilter
+): Product[] => {
+  let result = products;
+  if (filter?.category) {
+    result = result.filter((p) => p.category === filter.category);
+  }
+  if (filter?.subcategory) {
+    result = result.filter((p) => p.subcategory === filter.subcategory);
+  }
+  if (filter?.brand) {
+    result = result.filter(
+      (p) => p.brand.toLowerCase() === filter.brand?.toLowerCase()
+    );
+  }
+  if (filter?.artisanal !== undefined) {
+    result = result.filter((p) => p.artisanal === filter.artisanal);
+  }
+  if (filter?.minPrice) {
+    result = result.filter((p) => p.price >= (filter.minPrice ?? 0));
+  }
+  if (filter?.maxPrice) {
+    result = result.filter((p) => p.price <= (filter.maxPrice ?? Infinity));
+  }
+  return result;
+};
 
 export const getProducts = async (
   filter?: ProductFilter
 ): Promise<Product[]> => {
   if (!isConfigured()) {
     // Development: use sample data
-    let products: Product[] = (SAMPLE_PRODUCTS as ReadonlyArray<typeof SAMPLE_PRODUCTS[number]>).map((p) => {
+    let products: Product[] = (
+      SAMPLE_PRODUCTS as ReadonlyArray<(typeof SAMPLE_PRODUCTS)[number]>
+    ).map((p) => {
       const record = p as unknown as Record<string, unknown>;
       return {
         id: p.id,
@@ -137,62 +153,26 @@ export const getProducts = async (
         images: [p.image],
         artisanal: p.artisanal,
         description: (record.description as string) || "",
-        descriptionEn: (record.descriptionEn as string) || (record.description as string) || "",
+        descriptionEn:
+          (record.descriptionEn as string) ||
+          (record.description as string) ||
+          "",
         availability: "in-stock" as const,
-        slug: (record.slug as string) || p.name.toLowerCase().replace(/\s+/g, "-"),
-        specifications: record.specifications as Record<string, string> | undefined,
+        slug:
+          (record.slug as string) ||
+          p.name.toLowerCase().replace(/\s+/g, "-"),
+        specifications: record.specifications as
+          | Record<string, string>
+          | undefined,
       };
     });
 
-    if (filter?.category) {
-      products = products.filter((p) => p.category === filter.category);
-    }
-    if (filter?.subcategory) {
-      products = products.filter((p) => p.subcategory === filter.subcategory);
-    }
-    if (filter?.brand) {
-      products = products.filter(
-        (p) => p.brand.toLowerCase() === filter.brand?.toLowerCase()
-      );
-    }
-    if (filter?.artisanal !== undefined) {
-      products = products.filter((p) => p.artisanal === filter.artisanal);
-    }
-    if (filter?.minPrice) {
-      products = products.filter((p) => p.price >= (filter.minPrice ?? 0));
-    }
-    if (filter?.maxPrice) {
-      products = products.filter((p) => p.price <= (filter.maxPrice ?? Infinity));
-    }
-
-    return products;
+    return applyFilters(products, filter);
   }
 
   const rows = await fetchSheetData("Products!A2:R");
-  let products = rows.map(rowToProduct);
-
-  if (filter?.category) {
-    products = products.filter((p) => p.category === filter.category);
-  }
-  if (filter?.subcategory) {
-    products = products.filter((p) => p.subcategory === filter.subcategory);
-  }
-  if (filter?.brand) {
-    products = products.filter(
-      (p) => p.brand.toLowerCase() === filter.brand?.toLowerCase()
-    );
-  }
-  if (filter?.artisanal !== undefined) {
-    products = products.filter((p) => p.artisanal === filter.artisanal);
-  }
-  if (filter?.minPrice) {
-    products = products.filter((p) => p.price >= (filter.minPrice ?? 0));
-  }
-  if (filter?.maxPrice) {
-    products = products.filter((p) => p.price <= (filter.maxPrice ?? Infinity));
-  }
-
-  return products;
+  const products = rows.map(rowToProduct);
+  return applyFilters(products, filter);
 };
 
 export const getProductBySlug = async (
@@ -202,7 +182,9 @@ export const getProductBySlug = async (
   return products.find((p) => p.slug === slug) || null;
 };
 
-export const getProductsByBrand = async (brand: string): Promise<Product[]> => {
+export const getProductsByBrand = async (
+  brand: string
+): Promise<Product[]> => {
   return getProducts({ brand });
 };
 
@@ -218,7 +200,7 @@ export const getProductsBySubcategory = async (
   return getProducts({ category, subcategory });
 };
 
-// --- Lead Operations ---
+// ── Lead Operations ───────────────────────────────────────────────────
 
 export const submitLead = async (lead: {
   name: string;
