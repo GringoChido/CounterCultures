@@ -248,6 +248,32 @@ export const trashFile = async (fileId: string): Promise<void> => {
   });
 };
 
+/** Export a Google Workspace file as PDF and return the buffer */
+export const exportAsPdf = async (fileId: string): Promise<Buffer> => {
+  const drive = getDrive();
+  const res = await drive.files.export(
+    { fileId, mimeType: "application/pdf" },
+    { responseType: "arraybuffer" }
+  );
+  return Buffer.from(res.data as ArrayBuffer);
+};
+
+/** Set a file to be viewable by anyone with the link */
+export const setSharePermission = async (fileId: string): Promise<string> => {
+  const drive = getDrive();
+  await drive.permissions.create({
+    fileId,
+    requestBody: { role: "reader", type: "anyone" },
+    supportsAllDrives: true,
+  });
+  const file = await drive.files.get({
+    fileId,
+    fields: "webViewLink",
+    supportsAllDrives: true,
+  });
+  return file.data.webViewLink ?? "";
+};
+
 // ── Utility ───────────────────────────────────────────────────────────
 
 const mapFile = (f: drive_v3.Schema$File): DriveFile => ({

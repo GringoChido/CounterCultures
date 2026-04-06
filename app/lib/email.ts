@@ -149,6 +149,35 @@ export const sendBookingConfirmation = async (
   });
 };
 
+// --- Send document to customer ---
+
+export const sendDocument = async (
+  to: string,
+  subject: string,
+  htmlBody: string,
+  pdfBuffer: Buffer,
+  fileName: string
+): Promise<void> => {
+  await getResend()?.emails.send({
+    from: FROM,
+    to,
+    subject,
+    html: `
+      <div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; color: #2C2C2C;">
+        ${htmlBody}
+        <hr style="border: none; border-top: 1px solid #E5E0DB; margin: 32px 0;" />
+        <p style="font-size: 12px; color: #999;">Counter Cultures · Providencia, San Miguel de Allende, México</p>
+      </div>
+    `,
+    attachments: [
+      {
+        filename: fileName,
+        content: pdfBuffer.toString("base64"),
+      },
+    ],
+  });
+};
+
 // --- Internal notification to Roger ---
 
 export const notifyRoger = async (subject: string, body: string): Promise<void> => {

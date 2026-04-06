@@ -34,7 +34,7 @@ interface SearchItem {
   id: string;
   label: string;
   description?: string;
-  category: "page" | "lead" | "deal" | "action";
+  category: "page" | "lead" | "deal" | "action" | "document";
   href: string;
   icon: React.ElementType;
   keywords?: string[];
@@ -95,6 +95,7 @@ const categoryLabels: Record<string, string> = {
   page: "Pages",
   lead: "Leads",
   deal: "Deals",
+  document: "Documents",
   action: "Actions",
 };
 
@@ -106,22 +107,57 @@ export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [docItems, setDocItems] = useState<SearchItem[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   const allItems = useMemo(() => buildSearchItems(), []);
 
+  // Fetch documents when query changes
+  useEffect(() => {
+    if (!open || !query.trim() || query.length < 2) {
+      setDocItems([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `/api/dashboard/documents?q=${encodeURIComponent(query)}`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const items: SearchItem[] = (data.documents ?? []).map(
+            (doc: { Doc_ID: string; Type: string; Customer_Name: string; Created_Date: string; Amount: string }) => ({
+              id: `doc-${doc.Doc_ID}`,
+              label: doc.Doc_ID,
+              description: `${doc.Type} · ${doc.Customer_Name} · ${doc.Created_Date}${doc.Amount ? ` · $${parseInt(doc.Amount).toLocaleString()}` : ""}`,
+              category: "document" as const,
+              href: "/dashboard/drive",
+              icon: FileText,
+              keywords: [doc.Customer_Name, doc.Type],
+            })
+          );
+          setDocItems(items);
+        }
+      } catch {
+        setDocItems([]);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query, open]);
+
   const filtered = useMemo(() => {
     if (!query.trim()) return allItems.slice(0, 12); // show pages by default
     const q = query.toLowerCase();
-    return allItems.filter((item) => {
+    const matched = allItems.filter((item) => {
       if (item.label.toLowerCase().includes(q)) return true;
       if (item.description?.toLowerCase().includes(q)) return true;
       if (item.keywords?.some((k) => k.toLowerCase().includes(q))) return true;
       return false;
     });
-  }, [query, allItems]);
+    return [...matched, ...docItems];
+  }, [query, allItems, docItems]);
 
   // Group by category
   const grouped = useMemo(() => {

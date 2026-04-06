@@ -14,7 +14,14 @@ import {
   FileIcon,
   File,
   Loader2,
+  Download,
+  Send,
+  Pencil,
 } from "lucide-react";
+import { toast } from "sonner";
+import { detectDocumentType, getDocumentTypeLabel } from "@/app/lib/document-numbers";
+import type { DocumentType } from "@/app/lib/document-numbers";
+import type { PipelineDeal } from "@/app/lib/sample-dashboard-data";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -30,9 +37,25 @@ export interface PreviewFile {
   modifiedTime?: string;
 }
 
+/** Optional document context passed when previewing a document from pipeline */
+export interface DocumentContext {
+  docId?: string;
+  docType?: DocumentType;
+  customerName?: string;
+  customerEmail?: string;
+  status?: string;
+  deal?: PipelineDeal | null;
+}
+
 interface PreviewPanelProps {
   file: PreviewFile | null;
   onClose: () => void;
+  /** Optional context for document-aware actions */
+  documentContext?: DocumentContext;
+  /** Callback when user clicks Edit on a document */
+  onEdit?: (docType: DocumentType, docId: string) => void;
+  /** Callback when user clicks Send on a document */
+  onSend?: (docId: string) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -156,13 +179,27 @@ function formatFileSize(bytes: string | undefined): string {
   return `${(num / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+const STATUS_STYLES: Record<string, string> = {
+  Draft: "bg-dash-text-secondary/10 text-dash-text-secondary",
+  Sent: "bg-blue-500/10 text-blue-400",
+  Paid: "bg-status-won/10 text-status-won",
+  Signed: "bg-emerald-500/10 text-emerald-400",
+};
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
-export function PreviewPanel({ file, onClose }: PreviewPanelProps) {
+export function PreviewPanel({
+  file,
+  onClose,
+  documentContext,
+  onEdit,
+  onSend,
+}: PreviewPanelProps) {
   const [fullscreen, setFullscreen] = useState(false);
   const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   if (!file) return null;
 
@@ -173,10 +210,30 @@ export function PreviewPanel({ file, onClose }: PreviewPanelProps) {
   const sizeLabel = formatFileSize(file.size);
   const isFolder = file.mimeType === GOOGLE_MIME.folder;
 
+  // Detect if this is a CC document from the file name
+  const detectedDocType =
+    documentContext?.docType ?? detectDocumentType(file.name);
+  const isDocument = !!detectedDocType;
+  const docId = documentContext?.docId ?? file.name.replace(/\.\w+$/, "");
+  const docStatus = documentContext?.status ?? "Draft";
+
   // Positioning classes
   const panelClasses = fullscreen
     ? "fixed inset-0 z-[60]"
     : "fixed inset-y-0 right-0 w-[55%] min-w-[480px] max-w-[900px] z-[60]";
+
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      const url = `https://drive.google.com/uc?export=download&id=${file.id}`;
+      window.open(url, "_blank");
+      toast.success("Download started");
+    } catch {
+      toast.error("Download failed");
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
     <>
@@ -206,13 +263,13 @@ export function PreviewPanel({ file, onClose }: PreviewPanelProps) {
                 <span>{typeLabel}</span>
                 {sizeLabel && (
                   <>
-                    <span className="text-dash-border">•</span>
+                    <span className="text-dash-border">&bull;</span>
                     <span>{sizeLabel}</span>
                   </>
                 )}
                 {file.modifiedTime && (
                   <>
-                    <span className="text-dash-border">•</span>
+                    <span className="text-dash-border">&bull;</span>
                     <span>
                       {new Date(file.modifiedTime).toLocaleDateString()}
                     </span>
@@ -257,6 +314,32 @@ export function PreviewPanel({ file, onClose }: PreviewPanelProps) {
           </div>
         </div>
 
+        {/* Document metadata strip */}
+        {isDocument && (
+          <div className="flex items-center gap-3 px-5 py-2 border-b border-dash-border bg-dash-bg/30 text-xs">
+            <span className="font-['JetBrains_Mono',monospace] text-[10px] uppercase tracking-wider text-brand-copper">
+              {getDocumentTypeLabel(detectedDocType!)}
+            </span>
+            <span className="text-dash-border">&bull;</span>
+            <span className="text-dash-text-secondary font-['JetBrains_Mono',monospace]">
+              {docId}
+            </span>
+            {documentContext?.customerName && (
+              <>
+                <span className="text-dash-border">&bull;</span>
+                <span className="text-dash-text-secondary">
+                  {documentContext.customerName}
+                </span>
+              </>
+            )}
+            <span
+              className={`ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${STATUS_STYLES[docStatus] ?? STATUS_STYLES.Draft}`}
+            >
+              {docStatus}
+            </span>
+          </div>
+        )}
+
         {/* Content */}
         <div className="flex-1 relative overflow-hidden bg-[#f0f0f0]">
           {isFolder ? (
@@ -270,7 +353,7 @@ export function PreviewPanel({ file, onClose }: PreviewPanelProps) {
                   rel="noopener noreferrer"
                   className="text-sm text-brand-copper hover:underline"
                 >
-                  Open in Google Drive →
+                  Open in Google Drive &rarr;
                 </a>
               )}
             </div>
@@ -307,10 +390,55 @@ export function PreviewPanel({ file, onClose }: PreviewPanelProps) {
                   rel="noopener noreferrer"
                   className="text-sm text-brand-copper hover:underline"
                 >
-                  Open in Google Drive →
+                  Open in Google Drive &rarr;
                 </a>
               )}
             </div>
+          )}
+        </div>
+
+        {/* Action bar — shown for all files, enhanced for documents */}
+        <div className="flex items-center gap-2 px-5 py-3 border-t border-dash-border bg-dash-bg/50">
+          {isDocument && detectedDocType && onEdit && (
+            <button
+              onClick={() => onEdit(detectedDocType, docId)}
+              className="flex items-center gap-2 px-3 py-2 text-xs border border-dash-border rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              Edit
+            </button>
+          )}
+          {isDocument && onSend && (
+            <button
+              onClick={() => onSend(docId)}
+              className="flex items-center gap-2 px-3 py-2 text-xs bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer"
+            >
+              <Send className="w-3.5 h-3.5" />
+              Send
+            </button>
+          )}
+          <button
+            onClick={handleDownload}
+            disabled={downloading}
+            className="flex items-center gap-2 px-3 py-2 text-xs border border-dash-border rounded-lg hover:bg-dash-bg transition-colors disabled:opacity-50 cursor-pointer"
+          >
+            {downloading ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Download className="w-3.5 h-3.5" />
+            )}
+            Download
+          </button>
+          {file.webViewLink && (
+            <a
+              href={file.webViewLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-3 py-2 text-xs border border-dash-border rounded-lg hover:bg-dash-bg transition-colors ml-auto"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              Open in Drive
+            </a>
           )}
         </div>
       </div>

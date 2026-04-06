@@ -32,7 +32,8 @@ type SheetTab =
   | "Website_Analytics"
   | "Sales_Metrics"
   | "Marketing_Metrics"
-  | "Settings";
+  | "Settings"
+  | "Documents";
 
 // Read all rows from a sheet tab (returns array of objects using header row as keys)
 const readSheet = async <T extends Record<string, string>>(

@@ -21,8 +21,12 @@ import {
   X,
   Eye,
   DollarSign,
+  Send,
 } from "lucide-react";
 import { PreviewPanel, type PreviewFile } from "@/app/(dashboard)/components/preview-panel";
+import { SendDialog } from "@/app/(dashboard)/components/send-dialog";
+import type { DocumentRecord, DocumentType } from "@/app/lib/document-numbers";
+import { getDocumentTypeLabel } from "@/app/lib/document-numbers";
 
 // ── Types ─────────────────────────────────────────────────────────────
 
@@ -118,6 +122,37 @@ const DrivePage = () => {
 
   // Preview state
   const [previewFile, setPreviewFile] = useState<PreviewFile | null>(null);
+
+  // View toggle: files vs documents
+  const [viewMode, setViewMode] = useState<"files" | "documents">("files");
+  const [documents, setDocuments] = useState<DocumentRecord[]>([]);
+  const [docsLoading, setDocsLoading] = useState(false);
+
+  // Send dialog
+  const [sendDialogOpen, setSendDialogOpen] = useState(false);
+  const [sendDocId, setSendDocId] = useState("");
+  const [sendDocType, setSendDocType] = useState("");
+
+  const fetchDocuments = useCallback(async (query?: string) => {
+    setDocsLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (query) params.set("q", query);
+      const res = await fetch(`/api/dashboard/documents?${params}`);
+      if (res.ok) {
+        const data = await res.json();
+        setDocuments(data.documents ?? []);
+      }
+    } catch {
+      setDocuments([]);
+    } finally {
+      setDocsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (viewMode === "documents") fetchDocuments();
+  }, [viewMode, fetchDocuments]);
 
   const openPreview = (file: DriveFile) => {
     setPreviewFile({
@@ -382,6 +417,31 @@ const DrivePage = () => {
         </div>
       </div>
 
+      {/* View toggle */}
+      <div className="flex gap-1 bg-dash-bg rounded-lg p-1 w-fit">
+        <button
+          onClick={() => setViewMode("files")}
+          className={`px-4 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+            viewMode === "files"
+              ? "bg-dash-surface text-dash-text shadow-sm"
+              : "text-dash-text-secondary hover:text-dash-text"
+          }`}
+        >
+          Files
+        </button>
+        <button
+          onClick={() => setViewMode("documents")}
+          className={`px-4 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer flex items-center gap-1.5 ${
+            viewMode === "documents"
+              ? "bg-dash-surface text-dash-text shadow-sm"
+              : "text-dash-text-secondary hover:text-dash-text"
+          }`}
+        >
+          <FileText className="w-3.5 h-3.5" />
+          Documents
+        </button>
+      </div>
+
       {/* Breadcrumbs + Quick Nav */}
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-1 text-sm overflow-x-auto">
@@ -617,10 +677,133 @@ const DrivePage = () => {
         </>
       )}
 
+      {/* Documents view */}
+      {viewMode === "documents" && (
+        <div className="bg-dash-surface rounded-xl border border-dash-border">
+          <div className="p-5 border-b border-dash-border flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-dash-text">
+              Generated Documents
+            </h3>
+            <p className="text-xs text-dash-text-secondary">
+              {documents.length} document{documents.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+          {docsLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 animate-spin text-brand-copper" />
+            </div>
+          ) : documents.length === 0 ? (
+            <div className="py-12 text-center">
+              <FileText className="w-10 h-10 text-dash-text-secondary/30 mx-auto mb-2" />
+              <p className="text-sm text-dash-text-secondary">
+                No documents generated yet
+              </p>
+              <p className="text-xs text-dash-text-secondary/60 mt-1">
+                Create quotes, invoices, and POs from the Pipeline
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-dash-border">
+              {documents.map((doc) => (
+                <div
+                  key={doc.Doc_ID}
+                  className="flex items-center justify-between px-5 py-3 hover:bg-dash-bg/50 transition-colors group"
+                >
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="w-8 h-8 rounded-lg bg-brand-copper/10 text-brand-copper flex items-center justify-center shrink-0">
+                      <FileText className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-dash-text truncate">
+                        {doc.Doc_ID}
+                      </p>
+                      <p className="text-xs text-dash-text-secondary truncate">
+                        {getDocumentTypeLabel(doc.Type as DocumentType)} &middot;{" "}
+                        {doc.Customer_Name} &middot; {doc.Created_Date}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0 ml-4">
+                    {doc.Amount && (
+                      <span className="text-xs text-brand-copper font-medium">
+                        ${parseInt(doc.Amount).toLocaleString()}
+                      </span>
+                    )}
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                        doc.Status === "Sent"
+                          ? "bg-blue-500/10 text-blue-400"
+                          : doc.Status === "Paid"
+                            ? "bg-status-won/10 text-status-won"
+                            : "bg-dash-text-secondary/10 text-dash-text-secondary"
+                      }`}
+                    >
+                      {doc.Status}
+                    </span>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {doc.Drive_File_ID && (
+                        <button
+                          onClick={() =>
+                            openPreview({
+                              id: doc.Drive_File_ID,
+                              name: doc.File_Name,
+                              mimeType: "application/pdf",
+                              size: "0",
+                              modifiedTime: doc.Created_Date,
+                              webViewLink: `https://drive.google.com/file/d/${doc.Drive_File_ID}/view`,
+                              thumbnailLink: null,
+                              isFolder: false,
+                            })
+                          }
+                          className="p-1.5 rounded hover:bg-brand-copper/10 transition-colors cursor-pointer"
+                          title="Preview"
+                        >
+                          <Eye className="w-3.5 h-3.5 text-brand-copper" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          setSendDocId(doc.Doc_ID);
+                          setSendDocType(
+                            getDocumentTypeLabel(doc.Type as DocumentType)
+                          );
+                          setSendDialogOpen(true);
+                        }}
+                        className="p-1.5 rounded hover:bg-brand-copper/10 transition-colors cursor-pointer"
+                        title="Send"
+                      >
+                        <Send className="w-3.5 h-3.5 text-brand-copper" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Preview Panel */}
       <PreviewPanel
         file={previewFile}
         onClose={() => setPreviewFile(null)}
+        onSend={(docId) => {
+          setPreviewFile(null);
+          setSendDocId(docId);
+          setSendDocType("Document");
+          setSendDialogOpen(true);
+        }}
+      />
+
+      {/* Send Dialog */}
+      <SendDialog
+        open={sendDialogOpen}
+        onClose={() => setSendDialogOpen(false)}
+        docId={sendDocId}
+        docType={sendDocType}
+        customerName=""
+        customerEmail=""
+        onSent={() => fetchDocuments()}
       />
     </div>
   );
