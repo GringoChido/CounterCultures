@@ -48,8 +48,8 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
     contact: { en: "Contact", es: "Contacto" },
     follow: { en: "Follow", es: "Síguenos" },
     curated: {
-      en: "Curated in San Miguel de Allende, Mexico.",
-      es: "Curado en San Miguel de Allende, México.",
+      en: "Premium kitchen, bath & architectural hardware — curated in San Miguel de Allende, Mexico.",
+      es: "Cocina, baño y herrajes arquitectónicos premium — curado en San Miguel de Allende, México.",
     },
   };
 
@@ -62,7 +62,7 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
             Counter Cultures
           </span>
           <span className="block font-mono text-[10px] tracking-[0.2em] text-brand-stone uppercase mt-1">
-            The Connected System
+            Premium Kitchen, Bath & Hardware
           </span>
         </Link>
 

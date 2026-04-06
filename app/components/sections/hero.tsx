@@ -16,73 +16,73 @@ interface HeroSlide {
 const slides: HeroSlide[] = [
   {
     eyebrow: {
-      en: "Smart Bathrooms",
-      es: "Baños Inteligentes",
+      en: "San Miguel de Allende's Premier Showroom",
+      es: "El Showroom Premier de San Miguel de Allende",
+    },
+    title: {
+      en: "Premium Kitchen,\nBath & Hardware",
+      es: "Cocina, Baño y\nHerrajes Premium",
+    },
+    subtitle: {
+      en: "Authorized dealer for 19 international brands and Mexican artisans. 491 curated pieces — sourced worldwide, delivered to your project in Mexico.",
+      es: "Distribuidor autorizado de 19 marcas internacionales y artesanos mexicanos. 491 piezas curadas — importadas del mundo, entregadas en tu proyecto en México.",
+    },
+    cta: {
+      label: { en: "Explore the Collection", es: "Explorar la Colección" },
+      href: "/shop",
+    },
+    image: "/images/hero/smart-toilet.webp",
+  },
+  {
+    eyebrow: {
+      en: "Authorized Dealer — Kohler, TOTO & More",
+      es: "Distribuidor Autorizado — Kohler, TOTO y Más",
     },
     title: {
       en: "Smart\nToilets",
       es: "Sanitarios\nInteligentes",
     },
     subtitle: {
-      en: "Discover a world of comfort and innovation with our exquisite collection of smart fixtures.",
-      es: "Descubre un mundo de confort e innovación con nuestra exquisita colección de sanitarios.",
+      en: "Counter Cultures is the authorized TOTO and Kohler dealer in San Miguel de Allende. Smart toilets and bidets — sourced direct, delivered to your project.",
+      es: "Counter Cultures es el distribuidor autorizado de TOTO y Kohler en San Miguel de Allende. Sanitarios inteligentes y bidés — importados directo, entregados en tu proyecto.",
     },
     cta: {
-      label: { en: "Explore Collection", es: "Explorar Colección" },
+      label: { en: "Shop Smart Toilets", es: "Ver Sanitarios Inteligentes" },
       href: "/shop/bathroom",
-    },
-    image: "/images/hero/smart-toilet.webp",
-  },
-  {
-    eyebrow: {
-      en: "Luxury Showers",
-      es: "Regaderas de Lujo",
-    },
-    title: {
-      en: "Shower\nSystems",
-      es: "Regaderas\npara Baño",
-    },
-    subtitle: {
-      en: "Imported shower systems crafted with advanced technology and durable materials.",
-      es: "Regaderas de importación fabricadas con tecnología avanzada y materiales duraderos.",
-    },
-    cta: {
-      label: { en: "Shop Showers", es: "Ver Regaderas" },
-      href: "/shop/bathroom?sub=showers",
     },
     image: "/images/hero/shower-system.webp",
   },
   {
     eyebrow: {
-      en: "Designer Faucets",
-      es: "Grifería de Diseño",
+      en: "Authorized Brizo & California Faucets Dealer",
+      es: "Distribuidor Autorizado de Brizo y California Faucets",
     },
     title: {
-      en: "Bathroom\nFaucets",
-      es: "Grifos\npara Baño",
+      en: "Designer\nFaucets",
+      es: "Grifería\nde Diseño",
     },
     subtitle: {
-      en: "The bathroom of your dreams awaits. Premium faucets from Brizo, Kohler, and California Faucets.",
-      es: "¡El baño de tus sueños te espera! Grifos premium de Brizo, Kohler y California Faucets.",
+      en: "Premium faucets from Brizo, Kohler, and California Faucets — available at our San Miguel de Allende showroom. We order direct from the factory and deliver to you.",
+      es: "Grifería premium de Brizo, Kohler y California Faucets — disponible en nuestro showroom en San Miguel de Allende. Pedimos directo de fábrica y te lo entregamos.",
     },
     cta: {
-      label: { en: "Shop Faucets", es: "Ver Grifos" },
+      label: { en: "Shop Faucets", es: "Ver Grifería" },
       href: "/shop/bathroom?sub=faucets",
     },
     image: "/images/hero/faucets.webp",
   },
   {
     eyebrow: {
-      en: "Artisan Hardware",
-      es: "Herrajes Artesanales",
+      en: "Sun Valley Bronze & Emtek — Authorized Dealer",
+      es: "Sun Valley Bronze y Emtek — Distribuidor Autorizado",
     },
     title: {
-      en: "Door\nHardware",
-      es: "Chapas y\nHerrajes",
+      en: "Architectural\nHardware",
+      es: "Herrajes\nArquitectónicos",
     },
     subtitle: {
-      en: "Find the finest locks and hardware for your doors. Sun Valley Bronze and Emtek.",
-      es: "Encuentra las mejores chapas y herrajes para puertas. Sun Valley Bronze y Emtek.",
+      en: "Hand-cast bronze entry sets and precision door hardware — curated for Mexico's finest homes. Only at Counter Cultures, San Miguel de Allende.",
+      es: "Chapas de bronce fundidas a mano y herrajes de precisión — curados para las mejores casas de México. Solo en Counter Cultures, San Miguel de Allende.",
     },
     cta: {
       label: { en: "Shop Hardware", es: "Ver Herrajes" },
@@ -92,16 +92,16 @@ const slides: HeroSlide[] = [
   },
   {
     eyebrow: {
-      en: "Statement Pieces",
-      es: "Piezas de Diseño",
+      en: "International Precision Meets Mexican Soul",
+      es: "Precisión Internacional con Alma Mexicana",
     },
     title: {
       en: "Freestanding\nBathtubs",
       es: "Bañeras\nIndependientes",
     },
     subtitle: {
-      en: "Transform your bathroom into an oasis of relaxation. Explore our collection of freestanding tubs.",
-      es: "Transforma tu baño en un oasis de relajación. Explora nuestra colección de bañeras.",
+      en: "From Badeloft soaking tubs to hand-hammered copper basins by Mexican artisans — Counter Cultures brings the world's best to San Miguel de Allende.",
+      es: "Desde tinas Badeloft hasta lavabos de cobre martillado por artesanos mexicanos — Counter Cultures trae lo mejor del mundo a San Miguel de Allende.",
     },
     cta: {
       label: { en: "Shop Bathtubs", es: "Ver Bañeras" },

@@ -11,11 +11,11 @@ const BASE_URL = "https://countercultures.mx";
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: "Counter Cultures — Luxury Bath & Kitchen Fixtures in San Miguel de Allende",
+    default: "Counter Cultures | Premium Kitchen, Bath & Architectural Hardware | San Miguel de Allende",
     template: "%s | Counter Cultures",
   },
   description:
-    "San Miguel de Allende's premier showroom for luxury bath, kitchen, and hardware fixtures. Authorized dealer for Kohler, TOTO, Brizo, BLANCO, and more — alongside handcrafted Mexican artisanal pieces.",
+    "Premium kitchen, bath, and architectural hardware showroom in San Miguel de Allende, Mexico. Authorized dealer for Kohler, TOTO, Brizo, BLANCO, California Faucets, and 14 more brands. 491 curated pieces — international brands and Mexican artisans, sourced worldwide and delivered to your project.",
   keywords: [
     "luxury bath fixtures San Miguel de Allende",
     "kitchen fixtures Mexico",
@@ -40,9 +40,9 @@ export const metadata: Metadata = {
     alternateLocale: "es_MX",
     siteName: "Counter Cultures",
     url: BASE_URL,
-    title: "Counter Cultures — Luxury Bath & Kitchen Fixtures",
+    title: "Counter Cultures | Premium Kitchen, Bath & Hardware | San Miguel de Allende",
     description:
-      "San Miguel de Allende's premier showroom for luxury bath, kitchen, and hardware fixtures. Kohler, TOTO, Brizo, BLANCO, and handcrafted Mexican artisanal pieces.",
+      "Premium kitchen, bath & architectural hardware showroom in San Miguel de Allende. Authorized dealer for Kohler, TOTO, Brizo, BLANCO, and 15 more brands. 491 curated pieces delivered to your project.",
     images: [
       {
         url: `${BASE_URL}/og-image.jpg`,
@@ -56,9 +56,9 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@countercultures",
     creator: "@countercultures",
-    title: "Counter Cultures — Luxury Bath & Kitchen Fixtures",
+    title: "Counter Cultures | Premium Kitchen, Bath & Hardware | San Miguel de Allende",
     description:
-      "San Miguel de Allende's premier showroom for luxury bath, kitchen, and hardware fixtures.",
+      "Premium kitchen, bath & architectural hardware showroom in San Miguel de Allende. 491 curated pieces from 19 authorized brands.",
     images: [`${BASE_URL}/og-image.jpg`],
   },
   robots: {

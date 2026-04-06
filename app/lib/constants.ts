@@ -1,8 +1,8 @@
 export const SITE_CONFIG = {
   name: "Counter Cultures",
-  tagline: "The Connected System",
+  tagline: "Premium Kitchen, Bath & Hardware",
   description:
-    "San Miguel de Allende's premier bath and kitchen fixture destination. Where world-class design meets the soul of Mexican craft.",
+    "San Miguel de Allende's premier kitchen, bath, and architectural hardware showroom. Authorized dealer for Kohler, TOTO, Brizo, BLANCO, and 15 more brands — plus Mexican artisan pieces. 491 curated products, sourced worldwide and delivered to your project.",
   url: "https://countercultures.com.mx",
   showroom: {
     address: "Providencia, San Miguel de Allende, Guanajuato, Mexico",

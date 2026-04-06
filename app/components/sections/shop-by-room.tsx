@@ -41,12 +41,12 @@ const ShopByRoom = ({ locale: localeProp = "en" }: { locale?: string }) => {
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <AnimatedSection>
         <h2 className="text-center font-display text-3xl md:text-5xl font-normal tracking-wide text-brand-charcoal mb-4">
-          {locale === "en" ? "Shop by Category" : "Comprar por Categoría"}
+          {locale === "en" ? "Browse Our Collection" : "Explora Nuestra Colección"}
         </h2>
         <p className="text-center font-body text-brand-stone mb-8 md:mb-12 max-w-2xl mx-auto">
           {locale === "en"
-            ? "From world-class faucets and sinks to hand-forged door hardware — every piece curated for quality and design integrity."
-            : "Desde grifos y lavabos de clase mundial hasta herrajes forjados a mano — cada pieza curada por calidad e integridad de diseño."}
+            ? "491 premium pieces across kitchen, bath & architectural hardware — from 19 authorized brands and Mexican artisans. Available for order and delivery in Mexico."
+            : "491 piezas premium en cocina, baño y herrajes arquitectónicos — de 19 marcas autorizadas y artesanos mexicanos. Disponibles para pedido y entrega en México."}
         </p>
       </AnimatedSection>
 

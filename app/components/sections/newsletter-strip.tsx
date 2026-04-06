@@ -5,8 +5,8 @@ import { AnimatedSection } from "@/app/components/ui/animated-section";
 
 const content = {
   en: {
-    title: "Design Inspiration, Delivered",
-    subtitle: "Trends, new arrivals, and artisan spotlights. Monthly, never spammy.",
+    title: "Design Inspiration from San Miguel's Premier Showroom",
+    subtitle: "New collections, design inspiration, and exclusive trade offers from Counter Cultures. Monthly, never spammy.",
     placeholder: "Your email",
     subscribe: "Subscribe",
     sending: "Sending...",
@@ -14,8 +14,8 @@ const content = {
     error: "Try again",
   },
   es: {
-    title: "Inspiraci\u00f3n de Dise\u00f1o, Entregada",
-    subtitle: "Tendencias, nuevos productos y perfiles de artesanos. Mensual, sin spam.",
+    title: "Inspiraci\u00f3n de Dise\u00f1o desde el Showroom Premier de San Miguel",
+    subtitle: "Nuevas colecciones, inspiraci\u00f3n de dise\u00f1o y ofertas exclusivas de Counter Cultures. Mensual, sin spam.",
     placeholder: "Tu correo",
     subscribe: "Suscribirse",
     sending: "Enviando...",

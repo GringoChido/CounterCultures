@@ -32,8 +32,8 @@ const BrandBar = ({ locale = "en" }: { locale?: string }) => (
         </div>
         <p className="text-center font-body text-sm text-white/60 mt-8">
           {locale === "en"
-            ? "Factory-authorized sales, service, and installation support for Mexico\u2019s most discerning projects."
-            : "Ventas autorizadas de fábrica, servicio y soporte de instalación para los proyectos más exigentes de México."}
+            ? "Your authorized dealer in San Miguel de Allende — factory-direct pricing, sourcing, and delivery for Mexico\u2019s most discerning projects."
+            : "Tu distribuidor autorizado en San Miguel de Allende — precios directos de fábrica, importación y entrega para los proyectos más exigentes de México."}
         </p>
       </AnimatedSection>
     </div>
