@@ -1,9 +1,31 @@
 "use client";
 
+import { useState, useEffect, useCallback } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Plus, Package } from "lucide-react";
+import { Plus, Package, Loader2 } from "lucide-react";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
+
+interface SheetProduct {
+  slug: string;
+  name: string;
+  brand: string;
+  category: string;
+  subcategory: string;
+  price_mxn: string;
+  price_usd: string;
+  description: string;
+  features: string;
+  dimensions: string;
+  materials: string;
+  finish: string;
+  availability: string;
+  image_url: string;
+  gallery_urls: string;
+  featured: string;
+  lead_time: string;
+  sku: string;
+}
 
 interface Product {
   id: string;
@@ -14,6 +36,16 @@ interface Product {
   price: number;
   availability: "in-stock" | "low-stock" | "out-of-stock" | "made-to-order";
 }
+
+const mapProduct = (s: SheetProduct): Product => ({
+  id: s.slug || s.sku,
+  sku: s.sku,
+  name: s.name,
+  brand: s.brand,
+  category: s.category,
+  price: parseFloat(s.price_mxn) || 0,
+  availability: (s.availability as Product["availability"]) || "in-stock",
+});
 
 const availabilityVariants: Record<string, BadgeVariant> = {
   "in-stock": "success",
@@ -28,63 +60,6 @@ const availabilityLabels: Record<string, string> = {
   "out-of-stock": "Out of Stock",
   "made-to-order": "Made to Order",
 };
-
-const products: Product[] = [
-  {
-    id: "1",
-    sku: "CC-OVB-18",
-    name: "Hand-Hammered Oval Basin 18\"",
-    brand: "Counter Cultures",
-    category: "Basins",
-    price: 9000,
-    availability: "in-stock",
-  },
-  {
-    id: "2",
-    sku: "CC-FHS-33",
-    name: "Copper Farmhouse Sink 33\"",
-    brand: "Counter Cultures",
-    category: "Kitchen Sinks",
-    price: 15000,
-    availability: "in-stock",
-  },
-  {
-    id: "3",
-    sku: "CC-RVB-16",
-    name: "Round Vessel Basin 16\"",
-    brand: "Counter Cultures",
-    category: "Basins",
-    price: 7000,
-    availability: "low-stock",
-  },
-  {
-    id: "4",
-    sku: "CC-BRS-15",
-    name: "Copper Bar Sink 15\"",
-    brand: "Counter Cultures",
-    category: "Bar Sinks",
-    price: 5500,
-    availability: "in-stock",
-  },
-  {
-    id: "5",
-    sku: "CC-CPB-20",
-    name: "Custom Patina Basin 20\"",
-    brand: "Counter Cultures",
-    category: "Basins",
-    price: 12000,
-    availability: "made-to-order",
-  },
-  {
-    id: "6",
-    sku: "CC-DBL-36",
-    name: "Double Bowl Farmhouse Sink 36\"",
-    brand: "Counter Cultures",
-    category: "Kitchen Sinks",
-    price: 22000,
-    availability: "out-of-stock",
-  },
-];
 
 const columnHelper = createColumnHelper<Product>();
 
@@ -117,12 +92,58 @@ const columns = [
     header: "Availability",
     cell: (info) => {
       const status = info.getValue();
-      return <StatusBadge label={availabilityLabels[status]} variant={availabilityVariants[status]} />;
+      return <StatusBadge label={availabilityLabels[status] ?? status} variant={availabilityVariants[status] ?? "info"} />;
     },
   }),
 ];
 
 const ProductsPage = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchProducts = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch("/api/dashboard/products");
+      if (!res.ok) throw new Error("Failed to fetch products");
+      const data = await res.json();
+      setProducts((data.products as SheetProduct[]).map(mapProduct));
+    } catch (err) {
+      console.error(err);
+      setError("Unable to load products from CRM.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-brand-copper" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-4">
+        <p className="text-red-400">{error}</p>
+        <button
+          onClick={fetchProducts}
+          className="px-4 py-2 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
   const inStock = products.filter((p) => p.availability === "in-stock").length;
   const lowStock = products.filter((p) => p.availability === "low-stock").length;
 

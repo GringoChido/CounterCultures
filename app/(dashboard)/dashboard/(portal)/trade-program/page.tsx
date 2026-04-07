@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Users, Clock, Percent, DollarSign, CheckCircle2, XCircle, Briefcase, TrendingUp } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Users, Clock, Percent, DollarSign, CheckCircle2, XCircle, Briefcase, TrendingUp, Loader2 } from "lucide-react";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
@@ -50,7 +50,7 @@ interface Application {
   estimatedAnnual: string;
 }
 
-const pendingApplications: Application[] = [
+const fallbackApplications: Application[] = [
   { id: "APP-001", company: "Desert Modern Studio", contact: "Ryan Torres", email: "ryan@desertmodern.mx", submitted: "Mar 25, 2026", projectTypes: "Luxury Residential, Boutique Hotels", estimatedAnnual: "$200,000 USD" },
   { id: "APP-002", company: "Oaxaca Craft Collective", contact: "Laura Vega", email: "laura@oaxacacraft.mx", submitted: "Mar 22, 2026", projectTypes: "Commercial, Restaurant", estimatedAnnual: "$80,000 USD" },
 ];
@@ -63,6 +63,36 @@ const formatCurrency = (value: number) => {
 
 const TradeProgramPage = () => {
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
+  const [pendingApplications, setPendingApplications] = useState<Application[]>(fallbackApplications);
+  const [appsLoading, setAppsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        const res = await fetch("/api/dashboard/trade-program");
+        if (res.ok) {
+          const data = await res.json();
+          const apps = (data.applications as Array<Record<string, string>>)
+            .filter((a) => a.status === "pending" || !a.status)
+            .map((a) => ({
+              id: a.id,
+              company: a.company,
+              contact: a.contact_name,
+              email: a.email,
+              submitted: a.created_at,
+              projectTypes: a.license_number ? `License: ${a.license_number}` : "",
+              estimatedAnnual: "",
+            }));
+          if (apps.length > 0) setPendingApplications(apps);
+        }
+      } catch {
+        // Keep fallback data
+      } finally {
+        setAppsLoading(false);
+      }
+    };
+    fetchApplications();
+  }, []);
 
   const totalTradeRevenue = tradeMembers.reduce((sum, m) => sum + m.revenue, 0);
   const directRevenue = 520000; // sample direct revenue

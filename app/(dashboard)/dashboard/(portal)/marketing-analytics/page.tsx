@@ -1,11 +1,12 @@
 "use client";
 
-import { Users, DollarSign, Mail, Share2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Users, DollarSign, Mail, Share2, Loader2 } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from "recharts";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { ChartCard } from "@/app/(dashboard)/components/chart-card";
 
-const leadsOverTime = [
+const fallbackLeadsOverTime = [
   { month: "Oct", leads: 42 },
   { month: "Nov", leads: 58 },
   { month: "Dec", leads: 35 },
@@ -31,6 +32,53 @@ const campaignMetrics = [
 ];
 
 const MarketingAnalyticsPage = () => {
+  const [leadsOverTime, setLeadsOverTime] = useState(fallbackLeadsOverTime);
+  const [kpis, setKpis] = useState({ leadsGenerated: "72", costPerLead: "$32.80", emailOpenRate: "49.3%", socialEngagement: "4.8%" });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMarketing = async () => {
+      try {
+        const res = await fetch("/api/dashboard/marketing-analytics");
+        if (res.ok) {
+          const data = await res.json();
+          const metrics = data.metrics as Array<Record<string, string>>;
+          if (metrics.length > 0) {
+            const chartData = metrics.map((m) => ({
+              month: m.date || "",
+              leads: parseInt(m.unique_visitors) || 0,
+            }));
+            if (chartData.some((d) => d.leads > 0)) {
+              setLeadsOverTime(chartData);
+            }
+            const latest = metrics[metrics.length - 1];
+            if (latest.website_visits) {
+              setKpis({
+                leadsGenerated: latest.unique_visitors || "0",
+                costPerLead: "$" + (parseFloat(latest.bounce_rate) || 0).toFixed(1),
+                emailOpenRate: latest.avg_session || "0",
+                socialEngagement: latest.conversion_rate ? `${latest.conversion_rate}%` : "0%",
+              });
+            }
+          }
+        }
+      } catch {
+        // Keep fallback data
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMarketing();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-brand-copper" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -39,10 +87,10 @@ const MarketingAnalyticsPage = () => {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KPICard label="Leads Generated" value="72" change={10.8} icon={Users} accentColor="bg-brand-copper" />
-        <KPICard label="Cost per Lead" value="$32.80" change={-8.5} icon={DollarSign} accentColor="bg-status-won" />
-        <KPICard label="Email Open Rate" value="49.3%" change={3.2} icon={Mail} accentColor="bg-brand-sage" />
-        <KPICard label="Social Engagement" value="4.8%" change={0.6} icon={Share2} accentColor="bg-brand-terracotta" />
+        <KPICard label="Leads Generated" value={kpis.leadsGenerated} icon={Users} accentColor="bg-brand-copper" />
+        <KPICard label="Cost per Lead" value={kpis.costPerLead} icon={DollarSign} accentColor="bg-status-won" />
+        <KPICard label="Email Open Rate" value={kpis.emailOpenRate} icon={Mail} accentColor="bg-brand-sage" />
+        <KPICard label="Social Engagement" value={kpis.socialEngagement} icon={Share2} accentColor="bg-brand-terracotta" />
       </div>
 
       <ChartCard title="Leads Over Time" subtitle="Monthly lead generation">

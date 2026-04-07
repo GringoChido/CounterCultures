@@ -1,11 +1,12 @@
 "use client";
 
-import { DollarSign, Target, TrendingUp, Award } from "lucide-react";
+import { useState, useEffect } from "react";
+import { DollarSign, Target, TrendingUp, Award, Loader2 } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { ChartCard } from "@/app/(dashboard)/components/chart-card";
 
-const monthlyRevenue = [
+const fallbackMonthlyRevenue = [
   { month: "Oct", revenue: 285000 },
   { month: "Nov", revenue: 420000 },
   { month: "Dec", revenue: 355000 },
@@ -36,6 +37,53 @@ const formatCurrency = (value: number) => {
 };
 
 const SalesAnalyticsPage = () => {
+  const [monthlyRevenue, setMonthlyRevenue] = useState(fallbackMonthlyRevenue);
+  const [kpis, setKpis] = useState({ totalRevenue: "$2.42M", dealsClosed: "38", avgDealSize: "$63.7K", winRate: "72%" });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSalesMetrics = async () => {
+      try {
+        const res = await fetch("/api/dashboard/sales-analytics");
+        if (res.ok) {
+          const data = await res.json();
+          const metrics = data.metrics as Array<Record<string, string>>;
+          if (metrics.length > 0) {
+            const chartData = metrics.map((m) => ({
+              month: m.date || "",
+              revenue: parseFloat(m.total_revenue) || 0,
+            }));
+            if (chartData.some((d) => d.revenue > 0)) {
+              setMonthlyRevenue(chartData);
+            }
+            const latest = metrics[metrics.length - 1];
+            if (latest.total_revenue) {
+              setKpis({
+                totalRevenue: formatCurrency(parseFloat(latest.total_revenue) || 0),
+                dealsClosed: latest.deals_closed || "0",
+                avgDealSize: formatCurrency(parseFloat(latest.avg_deal_size) || 0),
+                winRate: latest.conversion_rate ? `${latest.conversion_rate}%` : "0%",
+              });
+            }
+          }
+        }
+      } catch {
+        // Keep fallback data
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSalesMetrics();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-brand-copper" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -44,10 +92,10 @@ const SalesAnalyticsPage = () => {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KPICard label="Total Revenue" value="$2.42M" change={14.2} icon={DollarSign} accentColor="bg-brand-copper" />
-        <KPICard label="Deals Closed" value="38" change={8.5} icon={Target} accentColor="bg-status-won" />
-        <KPICard label="Avg Deal Size" value="$63.7K" change={3.1} icon={TrendingUp} accentColor="bg-brand-sage" />
-        <KPICard label="Win Rate" value="72%" change={5.0} icon={Award} accentColor="bg-brand-terracotta" />
+        <KPICard label="Total Revenue" value={kpis.totalRevenue} icon={DollarSign} accentColor="bg-brand-copper" />
+        <KPICard label="Deals Closed" value={kpis.dealsClosed} icon={Target} accentColor="bg-status-won" />
+        <KPICard label="Avg Deal Size" value={kpis.avgDealSize} icon={TrendingUp} accentColor="bg-brand-sage" />
+        <KPICard label="Win Rate" value={kpis.winRate} icon={Award} accentColor="bg-brand-terracotta" />
       </div>
 
       <ChartCard title="Monthly Revenue" subtitle="Last 6 months (MXN)">

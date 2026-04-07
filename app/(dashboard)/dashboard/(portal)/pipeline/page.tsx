@@ -274,9 +274,47 @@ type DealTabKey = "details" | "documents" | "line-items" | "payments" | "purchas
 
 const PipelinePage = () => {
   const [deals, setDeals] = useState(SAMPLE_PIPELINE);
+  const [loading, setLoading] = useState(true);
   const [activeDeal, setActiveDeal] = useState<PipelineDeal | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<PipelineDeal | null>(null);
   const [pipelineView, setPipelineView] = useState<PipelineView>("sales");
+
+  // Fetch pipeline deals from CRM — merge with sample data structure
+  useEffect(() => {
+    const fetchPipeline = async () => {
+      try {
+        const res = await fetch("/api/dashboard/pipeline");
+        if (res.ok) {
+          const data = await res.json();
+          const sheetDeals = data.deals as Array<Record<string, string>>;
+          if (sheetDeals.length > 0) {
+            const mapped: PipelineDeal[] = sheetDeals.map((d) => ({
+              id: d.id || `DEAL-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+              name: d.name || "Untitled Deal",
+              contactName: d.company || "",
+              contactCompany: d.company,
+              value: parseFloat(d.value) || 0,
+              currency: "MXN",
+              stage: (d.stage as PipelineStage) || "discovery",
+              probability: parseInt(d.probability) || 50,
+              expectedClose: d.expected_close || new Date().toISOString(),
+              assignedRep: d.owner || "",
+              products: "",
+              createdAt: d.created_at || new Date().toISOString(),
+              notes: "",
+              leadSource: d.source || "",
+            }));
+            setDeals(mapped);
+          }
+        }
+      } catch {
+        // Keep sample data on error
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPipeline();
+  }, []);
 
   // Lost reason modal state
   const [lostModalOpen, setLostModalOpen] = useState(false);

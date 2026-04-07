@@ -109,6 +109,15 @@ const ninetyDayTargets = [
   { label: "Revenue", target: 5000000, actual: 320000, format: "currency" as const },
 ];
 
+interface OverviewData {
+  totalLeads: number;
+  leadCounts: Record<string, number>;
+  totalDeals: number;
+  totalPipelineValue: number;
+  pipelineByStage: Record<string, { count: number; value: number }>;
+  latestSales: Record<string, string> | null;
+}
+
 const OverviewPage = () => {
   const today = format(new Date(), "EEEE, MMMM d");
   const greeting =
@@ -123,6 +132,24 @@ const OverviewPage = () => {
     (d) => !["closed-won", "closed-lost", "won", "lost"].includes(d.stage)
   ).slice(0, 4);
   const recentActivity = SAMPLE_ACTIVITIES.slice(0, 6);
+
+  // CRM overview data
+  const [overview, setOverview] = useState<OverviewData | null>(null);
+
+  useEffect(() => {
+    const fetchOverview = async () => {
+      try {
+        const res = await fetch("/api/dashboard/overview");
+        if (res.ok) {
+          const data = await res.json();
+          setOverview(data);
+        }
+      } catch {
+        // Keep sample data
+      }
+    };
+    fetchOverview();
+  }, []);
 
   // Stripe data
   const [stripeVolume, setStripeVolume] = useState<string | null>(null);
@@ -164,28 +191,28 @@ const OverviewPage = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
         <KPICard
           label="New Leads"
-          value={String(SAMPLE_KPI.newLeadsThisMonth)}
+          value={String(overview?.leadCounts?.["new"] ?? SAMPLE_KPI.newLeadsThisMonth)}
           change={SAMPLE_KPI.leadsChange}
           icon={Users}
           accentColor="bg-status-new"
         />
         <KPICard
           label="Pipeline Value"
-          value={formatCurrency(SAMPLE_KPI.pipelineValue)}
+          value={formatCurrency(overview?.totalPipelineValue ?? SAMPLE_KPI.pipelineValue)}
           change={SAMPLE_KPI.pipelineChange}
           icon={DollarSign}
           accentColor="bg-brand-copper"
         />
         <KPICard
           label="Conversion Rate"
-          value={`${SAMPLE_KPI.conversionRate}%`}
+          value={overview?.latestSales?.conversion_rate ? `${overview.latestSales.conversion_rate}%` : `${SAMPLE_KPI.conversionRate}%`}
           change={SAMPLE_KPI.conversionChange}
           icon={Target}
           accentColor="bg-status-won"
         />
         <KPICard
-          label="Website Visitors"
-          value={SAMPLE_KPI.websiteVisitors.toLocaleString()}
+          label="Total Leads"
+          value={String(overview?.totalLeads ?? SAMPLE_KPI.websiteVisitors)}
           change={SAMPLE_KPI.websiteChange}
           icon={Eye}
           accentColor="bg-brand-sage"

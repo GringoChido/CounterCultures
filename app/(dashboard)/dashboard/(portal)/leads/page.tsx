@@ -1,14 +1,57 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
 import { format, differenceInDays, isPast, parseISO } from "date-fns";
-import { Plus, Filter, Download, Phone, Mail, MessageCircle, ClipboardList } from "lucide-react";
+import { Plus, Filter, Download, Mail, MessageCircle, ClipboardList, Loader2 } from "lucide-react";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
-import { SAMPLE_LEADS, type Lead, type ContactRole } from "@/app/lib/sample-dashboard-data";
+
+// Shape matching Google Sheets Leads tab
+interface SheetLead {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  source: string;
+  status: string;
+  contact_type: string;
+  interest: string;
+  value: string;
+  created_at: string;
+  next_followup: string;
+}
+
+// UI-friendly lead derived from sheet data
+interface Lead {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  source: string;
+  status: string;
+  contactType: string;
+  interest: string;
+  value: string;
+  createdAt: string;
+  nextFollowUp: string;
+}
+
+const mapSheetLead = (s: SheetLead): Lead => ({
+  id: s.id,
+  name: s.name,
+  email: s.email,
+  phone: s.phone,
+  source: s.source,
+  status: s.status || "new",
+  contactType: s.contact_type,
+  interest: s.interest,
+  value: s.value,
+  createdAt: s.created_at,
+  nextFollowUp: s.next_followup,
+});
 
 const statusVariants: Record<string, BadgeVariant> = {
   new: "new",
@@ -21,29 +64,22 @@ const statusVariants: Record<string, BadgeVariant> = {
 
 const statusOptions = ["all", "new", "contacted", "qualified", "proposal", "won", "lost"] as const;
 const sourceOptions = ["all", "Showroom Walk-in", "Website Contact Form", "Instagram", "WhatsApp", "Trade Program", "Referral"] as const;
-const contactTypeOptions: ("all" | ContactRole)[] = [
-  "all", "Architect", "Interior Designer", "Developer", "Builder",
-  "Private Client", "Supplier", "Partner", "Hospitality Designer",
-];
 
 const columnHelper = createColumnHelper<Lead>();
 
-const DaysAgoIndicator = ({ dateStr }: { dateStr?: string }) => {
-  if (!dateStr) return <span className="text-dash-text-secondary">&mdash;</span>;
-  const days = differenceInDays(new Date(), parseISO(dateStr));
-  const color = days <= 7 ? "text-status-won" : days <= 30 ? "text-status-contacted" : days <= 60 ? "text-amber-400" : "text-status-lost";
-  return <span className={`text-xs ${color}`}>{days}d ago</span>;
-};
-
 const FollowUpIndicator = ({ dateStr }: { dateStr?: string }) => {
   if (!dateStr) return <span className="text-dash-text-secondary">&mdash;</span>;
-  const overdue = isPast(parseISO(dateStr));
-  return (
-    <span className={`text-xs ${overdue ? "text-red-400 font-medium" : "text-dash-text-secondary"}`}>
-      {format(parseISO(dateStr), "MMM d")}
-      {overdue && " (overdue)"}
-    </span>
-  );
+  try {
+    const overdue = isPast(parseISO(dateStr));
+    return (
+      <span className={`text-xs ${overdue ? "text-red-400 font-medium" : "text-dash-text-secondary"}`}>
+        {format(parseISO(dateStr), "MMM d")}
+        {overdue && " (overdue)"}
+      </span>
+    );
+  } catch {
+    return <span className="text-xs text-dash-text-secondary">{dateStr}</span>;
+  }
 };
 
 const columns = [
@@ -53,9 +89,6 @@ const columns = [
       <div>
         <p className="font-medium">{info.getValue()}</p>
         <p className="text-xs text-dash-text-secondary">{info.row.original.email}</p>
-        {info.row.original.companyName && (
-          <p className="text-[10px] text-dash-text-secondary">{info.row.original.companyName}</p>
-        )}
       </div>
     ),
   }),
@@ -70,7 +103,7 @@ const columns = [
     cell: (info) => (
       <StatusBadge
         label={info.getValue()}
-        variant={statusVariants[info.getValue()]}
+        variant={statusVariants[info.getValue()] ?? "new"}
       />
     ),
   }),
@@ -81,40 +114,24 @@ const columns = [
       return val ? <span className="text-xs text-dash-text-secondary">{val}</span> : <span className="text-dash-text-secondary">&mdash;</span>;
     },
   }),
-  columnHelper.accessor("assignedRep", {
-    header: "Rep",
+  columnHelper.accessor("interest", {
+    header: "Interest",
     cell: (info) => info.getValue() || <span className="text-dash-text-secondary">&mdash;</span>,
   }),
-  columnHelper.accessor("score", {
-    header: "Score",
-    cell: (info) => {
-      const score = info.getValue();
-      const color =
-        score >= 80
-          ? "text-status-won"
-          : score >= 50
-            ? "text-status-contacted"
-            : "text-status-lost";
-      return <span className={`font-semibold ${color}`}>{score}</span>;
-    },
-  }),
-  columnHelper.accessor("lastContactDate", {
-    header: "Last Contact",
-    cell: (info) => <DaysAgoIndicator dateStr={info.getValue()} />,
+  columnHelper.accessor("value", {
+    header: "Value",
+    cell: (info) => info.getValue() || <span className="text-dash-text-secondary">&mdash;</span>,
   }),
   columnHelper.accessor("nextFollowUp", {
     header: "Follow-Up",
     cell: (info) => <FollowUpIndicator dateStr={info.getValue()} />,
-  }),
-  columnHelper.accessor("budget", {
-    header: "Budget",
   }),
   columnHelper.display({
     id: "actions",
     header: "Actions",
     cell: (info) => {
       const lead = info.row.original;
-      const waPhone = (lead.whatsapp ?? lead.phone).replace(/\s+/g, "").replace(/^\+/, "");
+      const waPhone = lead.phone.replace(/\s+/g, "").replace(/^\+/, "");
       return (
         <div className="flex items-center gap-1.5">
           <a
@@ -149,20 +166,10 @@ const columns = [
 ];
 
 function exportLeadsToCSV(leads: Lead[]) {
-  const headers = ["Name", "Email", "Phone", "Source", "Status", "Rep", "Score", "Budget", "Project Type", "Contact Type", "Company", "Created"];
+  const headers = ["Name", "Email", "Phone", "Source", "Status", "Type", "Interest", "Value", "Follow-Up", "Created"];
   const rows = leads.map((l) => [
-    l.name,
-    l.email,
-    l.phone,
-    l.source,
-    l.status,
-    l.assignedRep,
-    String(l.score),
-    l.budget,
-    l.projectType,
-    l.contactType ?? "",
-    l.companyName ?? "",
-    l.createdAt,
+    l.name, l.email, l.phone, l.source, l.status,
+    l.contactType, l.interest, l.value, l.nextFollowUp, l.createdAt,
   ]);
 
   const csv = [headers, ...rows]
@@ -179,44 +186,89 @@ function exportLeadsToCSV(leads: Lead[]) {
 }
 
 const LeadsPage = () => {
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [contactTypeFilter, setContactTypeFilter] = useState<string>("all");
-  const [showStale, setShowStale] = useState(false);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
+  const fetchLeads = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch("/api/dashboard/leads");
+      if (!res.ok) throw new Error("Failed to fetch leads");
+      const data = await res.json();
+      setLeads((data.leads as SheetLead[]).map(mapSheetLead));
+    } catch (err) {
+      console.error(err);
+      setError("Unable to load leads from CRM. Check your connection.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchLeads();
+  }, [fetchLeads]);
+
   const filteredLeads = useMemo(() => {
-    return SAMPLE_LEADS.filter((lead) => {
+    return leads.filter((lead) => {
       if (statusFilter !== "all" && lead.status !== statusFilter) return false;
       if (sourceFilter !== "all" && lead.source !== sourceFilter) return false;
       if (contactTypeFilter !== "all" && lead.contactType !== contactTypeFilter) return false;
-      if (showStale) {
-        if (!lead.lastContactDate) return true;
-        return differenceInDays(new Date(), parseISO(lead.lastContactDate)) > 60;
-      }
       return true;
     });
-  }, [statusFilter, sourceFilter, contactTypeFilter, showStale]);
+  }, [leads, statusFilter, sourceFilter, contactTypeFilter]);
+
+  // Derive unique contact types from data
+  const contactTypes = useMemo(() => {
+    const types = new Set(leads.map((l) => l.contactType).filter(Boolean));
+    return ["all", ...Array.from(types)];
+  }, [leads]);
 
   const counts = useMemo(() => {
-    const c = { total: SAMPLE_LEADS.length, new: 0, qualified: 0, won: 0, stale: 0 };
-    SAMPLE_LEADS.forEach((l) => {
+    const c = { total: leads.length, new: 0, qualified: 0, won: 0 };
+    leads.forEach((l) => {
       if (l.status === "new") c.new++;
       if (l.status === "qualified") c.qualified++;
       if (l.status === "won") c.won++;
-      if (l.lastContactDate && differenceInDays(new Date(), parseISO(l.lastContactDate)) > 60) c.stale++;
     });
     return c;
-  }, []);
+  }, [leads]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-brand-copper" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-4">
+        <p className="text-red-400">{error}</p>
+        <button
+          onClick={fetchLeads}
+          className="px-4 py-2 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <KPICard label="Total Leads" value={String(counts.total)} />
-        <KPICard label="New" value={String(counts.new)} change={25} />
+        <KPICard label="New" value={String(counts.new)} />
         <KPICard label="Qualified" value={String(counts.qualified)} />
-        <KPICard label="Won" value={String(counts.won)} change={-10} />
+        <KPICard label="Won" value={String(counts.won)} />
       </div>
 
       {/* Actions */}
@@ -252,22 +304,12 @@ const LeadsPage = () => {
             onChange={(e) => setContactTypeFilter(e.target.value)}
             className="text-sm bg-dash-surface border border-dash-border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
           >
-            {contactTypeOptions.map((s) => (
+            {contactTypes.map((s) => (
               <option key={s} value={s}>
                 {s === "all" ? "All Contact Types" : s}
               </option>
             ))}
           </select>
-          <button
-            onClick={() => setShowStale(!showStale)}
-            className={`text-xs px-3 py-1.5 rounded-lg border transition-colors cursor-pointer ${
-              showStale
-                ? "border-brand-copper bg-brand-copper/10 text-brand-copper"
-                : "border-dash-border text-dash-text-secondary hover:text-dash-text"
-            }`}
-          >
-            Stale Leads ({counts.stale})
-          </button>
         </div>
 
         <div className="flex items-center gap-2">
@@ -302,7 +344,6 @@ const LeadsPage = () => {
       >
         {selectedLead && (
           <div className="space-y-6">
-            {/* Contact Info */}
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary mb-3">
                 Contact Information
@@ -322,126 +363,60 @@ const LeadsPage = () => {
                   <span className="text-dash-text-secondary">Source:</span>{" "}
                   {selectedLead.source}
                 </p>
-                {selectedLead.companyName && (
-                  <p>
-                    <span className="text-dash-text-secondary">Company:</span>{" "}
-                    {selectedLead.companyName}
-                  </p>
-                )}
                 {selectedLead.contactType && (
                   <p>
                     <span className="text-dash-text-secondary">Contact Type:</span>{" "}
                     {selectedLead.contactType}
                   </p>
                 )}
-                {selectedLead.city && (
+              </div>
+            </div>
+
+            <div>
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary mb-3">
+                Status
+              </h4>
+              <StatusBadge
+                label={selectedLead.status}
+                variant={statusVariants[selectedLead.status] ?? "new"}
+              />
+            </div>
+
+            <div>
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary mb-3">
+                Details
+              </h4>
+              <div className="space-y-2 text-sm">
+                {selectedLead.interest && (
                   <p>
-                    <span className="text-dash-text-secondary">City:</span>{" "}
-                    {selectedLead.city}
+                    <span className="text-dash-text-secondary">Interest:</span>{" "}
+                    {selectedLead.interest}
+                  </p>
+                )}
+                {selectedLead.value && (
+                  <p>
+                    <span className="text-dash-text-secondary">Value:</span>{" "}
+                    {selectedLead.value}
                   </p>
                 )}
               </div>
             </div>
 
-            {/* Status & Score */}
-            <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary mb-3">
-                Status
-              </h4>
-              <div className="flex items-center gap-4">
-                <StatusBadge
-                  label={selectedLead.status}
-                  variant={statusVariants[selectedLead.status]}
-                />
-                <span className="text-sm">
-                  Score: <span className="font-semibold">{selectedLead.score}</span>
-                </span>
-                {selectedLead.assignedRep && (
-                  <span className="text-sm text-dash-text-secondary">
-                    Rep: {selectedLead.assignedRep}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Project Info */}
-            <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary mb-3">
-                Project Details
-              </h4>
-              <div className="space-y-2 text-sm">
-                <p>
-                  <span className="text-dash-text-secondary">Type:</span>{" "}
-                  {selectedLead.projectType}
-                </p>
-                <p>
-                  <span className="text-dash-text-secondary">Budget:</span>{" "}
-                  {selectedLead.budget}
-                </p>
-              </div>
-            </div>
-
-            {/* Follow-up Info */}
-            {(selectedLead.lastContactDate || selectedLead.nextFollowUp) && (
+            {selectedLead.nextFollowUp && (
               <div>
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary mb-3">
                   Follow-Up
                 </h4>
-                <div className="space-y-2 text-sm">
-                  {selectedLead.lastContactDate && (
-                    <p>
-                      <span className="text-dash-text-secondary">Last Contact:</span>{" "}
-                      {format(parseISO(selectedLead.lastContactDate), "MMM d, yyyy")} (<DaysAgoIndicator dateStr={selectedLead.lastContactDate} />)
-                    </p>
-                  )}
-                  {selectedLead.nextFollowUp && (
-                    <p>
-                      <span className="text-dash-text-secondary">Next Follow-Up:</span>{" "}
-                      <FollowUpIndicator dateStr={selectedLead.nextFollowUp} />
-                    </p>
-                  )}
-                </div>
+                <FollowUpIndicator dateStr={selectedLead.nextFollowUp} />
               </div>
             )}
 
-            {/* Tags */}
-            {selectedLead.tags && selectedLead.tags.length > 0 && (
-              <div>
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary mb-3">
-                  Tags
-                </h4>
-                <div className="flex flex-wrap gap-1.5">
-                  {selectedLead.tags.map((tag) => (
-                    <span key={tag} className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-dash-bg text-dash-text-secondary border border-dash-border">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Notes */}
-            <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary mb-3">
-                Notes
-              </h4>
-              <p className="text-sm text-dash-text leading-relaxed">
-                {selectedLead.notes}
-              </p>
+            <div className="text-sm space-y-1 text-dash-text-secondary">
+              {selectedLead.createdAt && (
+                <p>Created: {selectedLead.createdAt}</p>
+              )}
             </div>
 
-            {/* Timeline */}
-            <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary mb-3">
-                Timeline
-              </h4>
-              <div className="text-sm space-y-1 text-dash-text-secondary">
-                <p>Created: {format(new Date(selectedLead.createdAt), "MMM d, yyyy 'at' h:mm a")}</p>
-                <p>Updated: {format(new Date(selectedLead.updatedAt), "MMM d, yyyy 'at' h:mm a")}</p>
-              </div>
-            </div>
-
-            {/* Actions */}
             <div className="flex gap-2 pt-4 border-t border-dash-border">
               <button className="flex-1 px-4 py-2 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer">
                 Edit Lead
