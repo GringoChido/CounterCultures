@@ -65,7 +65,7 @@ const ShopCatalog = ({ initialProducts, initialCategory }: ShopCatalogProps) => 
 
       <section className="py-10 lg:py-16 bg-brand-linen">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <p className="font-mono text-xs text-brand-stone mb-8">
+          <p className="font-body font-medium text-xs text-brand-stone mb-8">
             {filtered.length} product{filtered.length !== 1 ? "s" : ""}
           </p>
 

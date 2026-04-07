@@ -17,7 +17,7 @@ const InstagramFeed = () => (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <AnimatedSection>
         <div className="text-center mb-12">
-          <span className="font-mono text-xs tracking-[0.2em] text-brand-stone uppercase">
+          <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-stone uppercase">
             @countercultures
           </span>
           <h2 className="mt-3 font-display text-4xl md:text-5xl font-light tracking-wide text-brand-charcoal">

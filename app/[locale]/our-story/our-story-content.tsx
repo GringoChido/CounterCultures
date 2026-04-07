@@ -69,7 +69,7 @@ export const OurStoryContent = () => {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             <AnimatedSection>
-              <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
+              <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
                 The Founder
               </span>
               <h2 className="mt-4 font-display text-4xl md:text-5xl font-light tracking-wide text-brand-charcoal">
@@ -119,7 +119,7 @@ export const OurStoryContent = () => {
       <section className="py-12 md:py-28 bg-brand-charcoal">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
-            <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
+            <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
               20 Years in the Making
             </span>
             <h2 className="mt-4 font-display text-4xl md:text-5xl font-light tracking-wide text-white">
@@ -153,7 +153,7 @@ export const OurStoryContent = () => {
       <section className="py-12 md:py-28 bg-brand-sand/30">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
-            <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
+            <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
               The Artisans
             </span>
             <h2 className="mt-4 font-display text-4xl md:text-5xl font-light tracking-wide text-brand-charcoal">
@@ -208,7 +208,7 @@ export const OurStoryContent = () => {
                   <h3 className="mt-4 font-display text-xl text-brand-charcoal">
                     {artisan.name}
                   </h3>
-                  <p className="mt-1 font-mono text-xs tracking-wider text-brand-copper uppercase">
+                  <p className="mt-1 font-body font-semibold text-xs tracking-wider text-brand-terracotta uppercase">
                     {artisan.craft}
                   </p>
                   <p className="mt-3 font-body text-sm text-brand-stone leading-relaxed">

@@ -380,7 +380,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
             <div className="absolute inset-0 bg-gradient-to-r from-brand-charcoal/80 via-brand-charcoal/50 to-brand-charcoal/30" />
           </div>
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
+            <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
               {isEs ? "Distribuidor Autorizado · Hecho a Mano en México" : "Authorized Dealer · Handcrafted in Mexico"}
             </span>
             <h1 className="mt-6 font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-light text-white tracking-wide leading-[0.95]">
@@ -403,7 +403,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-14">
               <div>
-                <span className="font-mono text-xs tracking-[0.2em] text-brand-stone uppercase">
+                <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-stone uppercase">
                   {isEs ? "Distribuidor Autorizado" : "Authorized Dealer"}
                 </span>
                 <h2 className="mt-3 font-display text-4xl md:text-5xl font-light tracking-wide text-brand-charcoal">
@@ -440,7 +440,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
                         <div className="absolute bottom-4 left-6">
-                          <p className="font-mono text-[10px] text-white/80 tracking-[0.15em] uppercase">
+                          <p className="font-body font-semibold text-[10px] text-white/80 tracking-[0.15em] uppercase">
                             {info.origin}
                           </p>
                           <h3 className="mt-1 font-display text-2xl lg:text-3xl font-light text-white tracking-wide">
@@ -453,7 +453,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
                     <div className="p-7 lg:p-8">
                       {info && (
                         <>
-                          <p className="font-mono text-xs text-brand-copper tracking-wide">
+                          <p className="font-body font-medium text-xs text-brand-terracotta tracking-wide">
                             {info.tagline}
                           </p>
                           <p className="mt-3 font-body text-sm text-brand-stone leading-relaxed">
@@ -461,7 +461,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
                           </p>
                         </>
                       )}
-                      <span className="inline-flex items-center gap-2 mt-4 font-mono text-xs text-brand-stone/50 group-hover:text-brand-copper transition-colors duration-300 tracking-wide uppercase">
+                      <span className="inline-flex items-center gap-2 mt-4 font-body font-medium text-xs text-brand-stone/50 group-hover:text-brand-terracotta transition-colors duration-300 tracking-wide uppercase">
                         {isEs ? "Explorar" : "Explore"}
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M7 17L17 7M17 7H7M17 7V17" />
@@ -504,10 +504,10 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
                     <div className="p-5">
                       {info && (
                         <>
-                          <p className="font-mono text-[10px] text-brand-copper tracking-[0.15em] uppercase">
+                          <p className="font-body font-semibold text-[10px] text-brand-terracotta tracking-[0.15em] uppercase">
                             {info.origin}
                           </p>
-                          <p className="mt-1.5 font-mono text-xs text-brand-stone/80 tracking-wide">
+                          <p className="mt-1.5 font-body text-xs text-brand-stone/80 tracking-wide">
                             {info.tagline}
                           </p>
                           <p className="mt-2.5 font-body text-sm text-brand-stone leading-relaxed line-clamp-2">
@@ -550,7 +550,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
         <section className="py-20 lg:py-28 bg-brand-sand/30">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl mb-14">
-              <span className="font-mono text-xs tracking-[0.2em] text-brand-stone uppercase">
+              <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-stone uppercase">
                 {isEs ? "Los Creadores" : "The Makers"}
               </span>
               <h2 className="mt-3 font-display text-4xl md:text-5xl font-light tracking-wide text-brand-charcoal">
@@ -582,13 +582,13 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
 
                     {/* Overlay content at bottom of image */}
                     <div className="absolute bottom-0 left-0 right-0 p-6">
-                      <span className="inline-block bg-brand-copper text-white px-3 py-1 text-[10px] font-mono tracking-[0.15em] uppercase mb-3">
+                      <span className="inline-block bg-brand-copper text-white px-3 py-1 text-[10px] font-body font-semibold tracking-[0.15em] uppercase mb-3">
                         {artisan.location}
                       </span>
                       <h3 className="font-display text-2xl font-light text-white tracking-wide">
                         {artisan.name}
                       </h3>
-                      <p className="mt-1 font-mono text-xs text-white/70 tracking-wide">
+                      <p className="mt-1 font-body text-xs text-white/70 tracking-wide">
                         {artisan.specialty}
                       </p>
                     </div>
@@ -626,7 +626,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
             />
           </div>
           <div className="relative z-10 mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
-            <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
+            <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
               {isEs ? "A Tu Medida" : "Bespoke"}
             </span>
             <h2 className="mt-4 font-display text-4xl md:text-5xl font-light tracking-wide text-white">

@@ -58,7 +58,7 @@ const ProductGrid = ({
 
   return (
     <>
-      <p className="font-mono text-xs text-brand-stone mb-8 tracking-wide uppercase">
+      <p className="font-body font-semibold text-xs text-brand-stone mb-8 tracking-wide uppercase">
         {filteredAndSorted.length} product
         {filteredAndSorted.length !== 1 ? "s" : ""}
       </p>

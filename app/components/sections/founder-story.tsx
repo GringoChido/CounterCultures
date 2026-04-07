@@ -44,7 +44,7 @@ const FounderStory = ({ locale = "en" }: { locale?: string }) => {
           </AnimatedSection>
 
           <AnimatedSection delay={0.2}>
-            <span className="font-mono text-xs uppercase tracking-[0.2em] text-brand-copper">
+            <span className="font-body font-semibold text-xs uppercase tracking-[0.2em] text-brand-terracotta">
               {t.eyebrow}
             </span>
             <h2 className="mt-4 font-display text-4xl md:text-5xl font-normal tracking-wide text-brand-charcoal leading-tight">

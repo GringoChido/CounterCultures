@@ -36,8 +36,8 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
             <span className="font-display text-xl md:text-2xl font-light tracking-wider text-brand-charcoal">
               Counter Cultures
             </span>
-            <span className="font-mono text-[9px] md:text-[10px] tracking-[0.2em] text-brand-stone uppercase mt-0.5">
-              The Connected System
+            <span className="font-body text-[10px] md:text-[11px] tracking-[0.2em] text-brand-copper uppercase mt-0.5">
+              San Miguel de Allende, MX
             </span>
           </Link>
 
@@ -90,7 +90,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
             </a>
 
             {/* Language toggle */}
-            <div className="flex items-center font-mono text-xs tracking-wider">
+            <div className="flex items-center font-body text-xs tracking-wider">
               <Link
                 href={getLocalePath("en")}
                 className={`flex items-center justify-center min-w-[2.75rem] h-11 px-1 transition-colors ${

@@ -159,8 +159,8 @@ export function AIChatWidget() {
     setMessages([]);
   };
 
-  const widthClass = expanded ? "w-[500px]" : "w-[380px]";
-  const heightClass = expanded ? "h-[600px]" : "h-[480px]";
+  const widthClass = expanded ? "w-[500px] max-w-[calc(100vw-2rem)]" : "w-[380px] max-w-[calc(100vw-2rem)]";
+  const heightClass = expanded ? "h-[600px] max-h-[calc(100dvh-6rem)]" : "h-[480px] max-h-[calc(100dvh-6rem)]";
 
   return (
     <>

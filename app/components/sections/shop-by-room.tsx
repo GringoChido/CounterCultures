@@ -66,7 +66,7 @@ const ShopByRoom = ({ locale: localeProp = "en" }: { locale?: string }) => {
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8 flex items-end justify-between">
                 <div>
-                  <p className="font-mono text-xs uppercase tracking-wider text-brand-copper">
+                  <p className="font-body font-semibold text-xs uppercase tracking-wider text-brand-terracotta">
                     {cat.eyebrow[locale]}
                   </p>
                   <h3 className="mt-1 font-display text-2xl md:text-3xl font-light text-white tracking-wide">

@@ -97,7 +97,7 @@ const ProductDetail = ({
       {/* Breadcrumbs */}
       <nav className="bg-brand-linen border-b border-brand-stone/10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-2 font-mono text-xs text-brand-stone flex-wrap">
+          <div className="flex items-center gap-2 font-body font-medium text-xs text-brand-stone flex-wrap">
             <Link href={`/${locale}`} className="hover:text-brand-terracotta transition-colors">
               {t(locale, "home")}
             </Link>
@@ -173,7 +173,7 @@ const ProductDetail = ({
 
             {/* Product Info */}
             <div>
-              <p className="font-mono text-xs tracking-[0.2em] text-brand-terracotta uppercase">
+              <p className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
                 {product.brand}
               </p>
               <h1 className="mt-2 font-display text-3xl md:text-4xl font-light tracking-wide text-brand-charcoal">
@@ -183,12 +183,12 @@ const ProductDetail = ({
               {/* Badges */}
               <div className="flex flex-wrap gap-2 mt-3">
                 {product.artisanal && (
-                  <span className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-[0.15em] uppercase bg-brand-copper text-white px-3 py-1">
+                  <span className="inline-flex items-center gap-1.5 font-body font-semibold text-[10px] tracking-[0.15em] uppercase bg-brand-copper text-white px-3 py-1">
                     <Sparkles className="w-3 h-3" />
                     {t(locale, "artisanBadge")}
                   </span>
                 )}
-                <span className={`font-mono text-[10px] tracking-[0.15em] uppercase px-3 py-1 border border-brand-stone/20 ${availabilityInfo.color}`}>
+                <span className={`font-body font-semibold text-[10px] tracking-[0.15em] uppercase px-3 py-1 border border-brand-stone/20 ${availabilityInfo.color}`}>
                   {availabilityInfo[locale]}
                 </span>
               </div>

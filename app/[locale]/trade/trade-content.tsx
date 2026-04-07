@@ -121,7 +121,7 @@ export const TradeContent = () => {
       <section className="py-12 md:py-28 bg-brand-linen">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
-            <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
+            <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
               Why Join
             </span>
             <h2 className="mt-4 font-display text-4xl md:text-5xl font-light tracking-wide text-brand-charcoal">
@@ -151,7 +151,7 @@ export const TradeContent = () => {
       <section className="py-12 md:py-28 bg-brand-charcoal">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
-            <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
+            <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
               Getting Started
             </span>
             <h2 className="mt-4 font-display text-4xl md:text-5xl font-light tracking-wide text-white">
@@ -214,7 +214,7 @@ export const TradeContent = () => {
       <section id="apply" className="py-12 md:py-28 bg-brand-linen">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
-            <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
+            <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
               Trade Application
             </span>
             <h2 className="mt-4 font-display text-3xl md:text-5xl font-light tracking-wide text-brand-charcoal">

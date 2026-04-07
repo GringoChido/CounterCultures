@@ -33,13 +33,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
         />
 
         {product.artisanal && (
-          <span className="absolute top-3 left-3 font-mono text-[10px] tracking-[0.15em] uppercase bg-brand-copper text-white px-2.5 py-1 z-10">
+          <span className="absolute top-3 left-3 font-body font-semibold text-[10px] tracking-[0.15em] uppercase bg-brand-copper text-white px-2.5 py-1 z-10">
             Artisanal
           </span>
         )}
 
         {product.availability === "in-stock" && (
-          <span className="absolute top-3 right-3 font-mono text-[10px] tracking-[0.15em] uppercase bg-brand-sage text-white px-2.5 py-1 z-10">
+          <span className="absolute top-3 right-3 font-body font-semibold text-[10px] tracking-[0.15em] uppercase bg-brand-sage text-white px-2.5 py-1 z-10">
             In Stock
           </span>
         )}
@@ -55,7 +55,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       </div>
 
       <div className="mt-4 space-y-2">
-        <p className="font-mono text-xs text-brand-stone tracking-wide uppercase">
+        <p className="font-body font-semibold text-xs text-brand-stone tracking-wide uppercase">
           {product.brand}
         </p>
 

@@ -179,7 +179,7 @@ const Hero = ({ locale = "en" }: { locale?: string }) => {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
             >
-              <p className="font-mono text-xs sm:text-sm uppercase tracking-[0.2em] text-brand-copper mb-3 md:mb-4">
+              <p className="font-body font-semibold text-xs sm:text-sm uppercase tracking-[0.2em] text-brand-terracotta mb-3 md:mb-4">
                 {slide.eyebrow[lang]}
               </p>
 

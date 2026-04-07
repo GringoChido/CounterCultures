@@ -11,6 +11,7 @@ interface CategoryHeroProps {
   ctaLabel?: string;
   ctaHref?: string;
   imageSrc: string;
+  locale?: "en" | "es";
 }
 
 const CategoryHero = ({
@@ -21,6 +22,7 @@ const CategoryHero = ({
   ctaLabel = "Browse Collection",
   ctaHref = "#products",
   imageSrc,
+  locale = "en",
 }: CategoryHeroProps) => (
   <section className="relative h-[50vh] md:h-[60vh] flex items-end overflow-hidden">
     <div className="absolute inset-0">
@@ -40,7 +42,7 @@ const CategoryHero = ({
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.1 }}
-        className="font-mono text-xs uppercase tracking-[0.2em] text-brand-copper mb-3"
+        className="font-body font-semibold text-xs uppercase tracking-[0.2em] text-brand-terracotta mb-3"
       >
         {eyebrow}
       </motion.p>
@@ -73,8 +75,8 @@ const CategoryHero = ({
           {ctaLabel}
         </Button>
         {productCount !== undefined && (
-          <span className="font-mono text-sm text-white/60 tracking-wider">
-            {productCount} {productCount === 1 ? "product" : "products"}
+          <span className="font-body font-semibold text-sm text-white/60 tracking-wider">
+            {productCount} {locale === "es" ? (productCount === 1 ? "producto" : "productos") : (productCount === 1 ? "product" : "products")}
           </span>
         )}
       </motion.div>

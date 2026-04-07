@@ -59,4 +59,16 @@ const Spec = ({
   <Component className={`font-mono text-sm ${className}`}>{children}</Component>
 );
 
-export { Heading, Subheading, Body, Spec };
+const Eyebrow = ({
+  children,
+  className = "",
+  as: Component = "span",
+}: TypographyProps) => (
+  <Component
+    className={`font-body font-semibold text-xs uppercase tracking-[0.2em] text-brand-terracotta ${className}`}
+  >
+    {children}
+  </Component>
+);
+
+export { Heading, Subheading, Body, Spec, Eyebrow };

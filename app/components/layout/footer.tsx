@@ -61,8 +61,8 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
           <span className="font-display text-2xl font-light tracking-wider">
             Counter Cultures
           </span>
-          <span className="block font-mono text-[10px] tracking-[0.2em] text-brand-stone uppercase mt-1">
-            Premium Kitchen, Bath & Hardware
+          <span className="block font-body font-semibold text-[10px] tracking-[0.2em] text-brand-stone uppercase mt-1">
+            {lang === "es" ? "Cocina, Baño y Herrajes Premium" : "Premium Kitchen, Bath & Hardware"}
           </span>
         </Link>
 
@@ -206,7 +206,7 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
         {/* Built by Untold.works */}
         <div className="mt-4 text-center">
           <p className="font-body text-[11px] text-brand-stone/50">
-            Built by{" "}
+            {lang === "es" ? "Creado por" : "Built by"}{" "}
             <a
               href="https://untold.works"
               target="_blank"

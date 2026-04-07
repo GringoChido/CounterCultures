@@ -46,13 +46,13 @@ const ProductCard = ({
         className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
       />
       {artisanal && (
-        <span className="absolute top-3 left-3 font-mono text-[10px] tracking-[0.15em] uppercase bg-brand-copper text-white px-2.5 py-1">
+        <span className="absolute top-3 left-3 font-body font-semibold text-[10px] tracking-[0.15em] uppercase bg-brand-copper text-white px-2.5 py-1">
           Artisanal
         </span>
       )}
     </div>
     <div className="mt-4 space-y-1.5">
-      <p className="font-mono text-xs text-brand-stone tracking-wide uppercase">
+      <p className="font-body font-semibold text-xs text-brand-stone tracking-wide uppercase">
         {brand}
       </p>
       <h3 className="font-body text-sm font-medium text-brand-charcoal group-hover:text-brand-terracotta transition-colors duration-300 leading-snug line-clamp-2">

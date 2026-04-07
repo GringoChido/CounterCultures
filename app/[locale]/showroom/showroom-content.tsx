@@ -70,7 +70,7 @@ export const ShowroomContent = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
             {/* Left — Info */}
             <AnimatedSection>
-              <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
+              <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
                 Showroom Details
               </span>
               <h2 className="mt-4 font-display text-4xl md:text-5xl font-light tracking-wide text-brand-charcoal">
@@ -136,7 +136,7 @@ export const ShowroomContent = () => {
 
             {/* Right — Booking Form */}
             <AnimatedSection delay={0.2}>
-              <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
+              <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
                 Schedule a Visit
               </span>
               <h3 className="mt-4 font-display text-3xl font-light tracking-wide text-brand-charcoal mb-6">
@@ -230,7 +230,7 @@ export const ShowroomContent = () => {
       <section className="py-12 md:py-28 bg-brand-sand/30">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
-            <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
+            <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
               Inside the Showroom
             </span>
             <h2 className="mt-4 font-display text-4xl md:text-5xl font-light tracking-wide text-brand-charcoal">

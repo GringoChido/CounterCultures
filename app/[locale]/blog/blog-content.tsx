@@ -104,7 +104,7 @@ export const BlogContent = () => {
       <section className="pt-32 pb-16 md:pt-40 md:pb-20 bg-brand-charcoal">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
-            <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
+            <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
               Insights & Inspiration
             </span>
             <h1 className="mt-4 font-display text-4xl sm:text-5xl md:text-7xl font-light text-white tracking-wide">
@@ -157,7 +157,7 @@ export const BlogContent = () => {
               </div>
               <div className="mt-6 md:mt-0 flex flex-col justify-center">
                 <span
-                  className={`inline-block w-fit px-3 py-1 text-[10px] font-mono tracking-wider text-white uppercase rounded ${trackColors[posts[0].track]}`}
+                  className={`inline-block w-fit px-3 py-1 text-[10px] font-body font-semibold tracking-wider text-white uppercase rounded ${trackColors[posts[0].track]}`}
                 >
                   {posts[0].track}
                 </span>
@@ -167,7 +167,7 @@ export const BlogContent = () => {
                 <p className="mt-3 font-body text-base text-brand-stone leading-relaxed">
                   {posts[0].excerpt}
                 </p>
-                <div className="mt-4 flex items-center gap-3 font-mono text-xs text-brand-stone uppercase tracking-wider">
+                <div className="mt-4 flex items-center gap-3 font-body font-medium text-xs text-brand-stone uppercase tracking-wider">
                   <span>{posts[0].date}</span>
                   <span>·</span>
                   <span>{posts[0].readTime}</span>
@@ -196,7 +196,7 @@ export const BlogContent = () => {
                   </div>
                   <div className="mt-4">
                     <span
-                      className={`inline-block px-3 py-1 text-[10px] font-mono tracking-wider text-white uppercase rounded ${trackColors[post.track]}`}
+                      className={`inline-block px-3 py-1 text-[10px] font-body font-semibold tracking-wider text-white uppercase rounded ${trackColors[post.track]}`}
                     >
                       {post.track}
                     </span>
@@ -206,7 +206,7 @@ export const BlogContent = () => {
                     <p className="mt-2 font-body text-sm text-brand-stone leading-relaxed line-clamp-3">
                       {post.excerpt}
                     </p>
-                    <div className="mt-3 flex items-center gap-3 font-mono text-[10px] text-brand-stone uppercase tracking-wider">
+                    <div className="mt-3 flex items-center gap-3 font-body font-medium text-[10px] text-brand-stone uppercase tracking-wider">
                       <span>{post.date}</span>
                       <span>·</span>
                       <span>{post.readTime}</span>

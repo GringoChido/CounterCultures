@@ -81,7 +81,7 @@ const Sidebar = ({ mobileOpen = false, onMobileClose }: SidebarProps) => {
             <span className="font-display text-lg font-light tracking-wider">
               Counter Cultures
             </span>
-            <span className="font-mono text-[9px] tracking-[0.15em] text-brand-copper uppercase -mt-0.5">
+            <span className="font-body font-semibold text-[9px] tracking-[0.15em] text-brand-copper uppercase -mt-0.5">
               Counter Portal
             </span>
           </Link>

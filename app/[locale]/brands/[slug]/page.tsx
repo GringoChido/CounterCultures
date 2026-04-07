@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { CategoryHero } from "@/app/components/sections/category-hero";
-import { ShopCatalog } from "@/app/shop/shop-catalog";
+import { ShopCatalog } from "@/app/[locale]/shop/shop-catalog";
 import { getProductsByBrand } from "@/app/lib/sheets";
 import { BRANDS } from "@/app/lib/constants";
 import { Shield, Wrench, HeadphonesIcon } from "lucide-react";

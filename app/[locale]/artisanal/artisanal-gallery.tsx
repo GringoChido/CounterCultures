@@ -12,7 +12,7 @@ const ArtisanalGallery = ({ products }: ArtisanalGalleryProps) => (
   <section className="py-12 lg:py-28 bg-brand-sand/20">
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <AnimatedSection>
-        <span className="font-mono text-xs tracking-[0.2em] text-brand-stone uppercase">
+        <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-stone uppercase">
           The Collection
         </span>
         <h2 className="mt-3 font-display text-4xl md:text-5xl font-light tracking-wide text-brand-charcoal mb-14">

@@ -14,7 +14,7 @@ const BrandBar = ({ locale = "en" }: { locale?: string }) => (
   <section className="bg-brand-charcoal py-12 md:py-16">
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <AnimatedSection>
-        <p className="text-center font-mono text-xs tracking-[0.25em] text-brand-copper uppercase mb-6 md:mb-8">
+        <p className="text-center font-body font-semibold text-xs tracking-[0.25em] text-brand-terracotta uppercase mb-6 md:mb-8">
           {locale === "en" ? "Authorized Dealer" : "Distribuidor Autorizado"}
         </p>
         <div className="flex items-center justify-start md:justify-center overflow-x-auto scrollbar-hide gap-0">

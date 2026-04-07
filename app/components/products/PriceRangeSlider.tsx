@@ -103,7 +103,7 @@ const PriceRangeSlider = ({
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
-          <label className="block font-mono text-xs text-brand-stone uppercase tracking-wide">
+          <label className="block font-body font-medium text-xs text-brand-stone uppercase tracking-wide">
             Mínimo
           </label>
           <input
@@ -118,7 +118,7 @@ const PriceRangeSlider = ({
           />
         </div>
         <div className="space-y-1">
-          <label className="block font-mono text-xs text-brand-stone uppercase tracking-wide">
+          <label className="block font-body font-medium text-xs text-brand-stone uppercase tracking-wide">
             Máximo
           </label>
           <input

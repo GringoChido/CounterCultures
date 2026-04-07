@@ -48,11 +48,11 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                 transition={{ duration: 0.6 }}
               >
                 <div className="flex items-center gap-2 mb-3 md:mb-4 flex-wrap">
-                  <span className="font-mono text-xs tracking-widest text-white/60 uppercase">
+                  <span className="font-body font-medium text-xs tracking-widest text-white/60 uppercase">
                     {project.type[lang]}
                   </span>
                   <span className="text-white/30">|</span>
-                  <span className="font-mono text-xs tracking-widest text-white/60 uppercase">
+                  <span className="font-body font-medium text-xs tracking-widest text-white/60 uppercase">
                     {project.year}
                   </span>
                 </div>
@@ -78,7 +78,7 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
         {/* Breadcrumb */}
         <section className="py-4 bg-brand-linen border-b border-brand-stone/10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <nav className="flex items-center gap-2 font-mono text-xs text-brand-stone flex-wrap">
+            <nav className="flex items-center gap-2 font-body font-medium text-xs text-brand-stone flex-wrap">
               <Link href={`/${locale}`} className="hover:text-brand-terracotta transition-colors">
                 {t("Home", "Inicio")}
               </Link>
@@ -103,7 +103,7 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                       <p className="font-display text-2xl md:text-3xl font-light text-brand-charcoal">
                         {stat.value}
                       </p>
-                      <p className="mt-1 font-mono text-[10px] tracking-widest text-brand-stone uppercase">
+                      <p className="mt-1 font-body font-semibold text-[10px] tracking-widest text-brand-stone uppercase">
                         {stat.label[lang]}
                       </p>
                     </div>
@@ -141,7 +141,7 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                 <AnimatedSection delay={0.2}>
                   <div className="lg:sticky lg:top-24 space-y-8">
                     <div className="bg-white p-6 border border-brand-stone/10">
-                      <h3 className="font-mono text-xs tracking-widest text-brand-stone uppercase mb-4">
+                      <h3 className="font-body font-semibold text-xs tracking-widest text-brand-stone uppercase mb-4">
                         {t("Brands Specified", "Marcas Especificadas")}
                       </h3>
                       <div className="flex flex-wrap gap-2">
@@ -157,12 +157,12 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                     </div>
 
                     <div className="bg-white p-6 border border-brand-stone/10">
-                      <h3 className="font-mono text-xs tracking-widest text-brand-stone uppercase mb-4">
+                      <h3 className="font-body font-semibold text-xs tracking-widest text-brand-stone uppercase mb-4">
                         {t("Project Details", "Detalles del Proyecto")}
                       </h3>
                       <dl className="space-y-3">
                         <div>
-                          <dt className="font-mono text-[10px] tracking-wider text-brand-stone uppercase">
+                          <dt className="font-body font-semibold text-[10px] tracking-wider text-brand-stone uppercase">
                             {t("Architect", "Arquitecto")}
                           </dt>
                           <dd className="font-body text-sm text-brand-charcoal">
@@ -171,7 +171,7 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                         </div>
                         {project.architectFirm && (
                           <div>
-                            <dt className="font-mono text-[10px] tracking-wider text-brand-stone uppercase">
+                            <dt className="font-body font-semibold text-[10px] tracking-wider text-brand-stone uppercase">
                               {t("Firm", "Despacho")}
                             </dt>
                             <dd className="font-body text-sm text-brand-charcoal">
@@ -180,7 +180,7 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                           </div>
                         )}
                         <div>
-                          <dt className="font-mono text-[10px] tracking-wider text-brand-stone uppercase">
+                          <dt className="font-body font-semibold text-[10px] tracking-wider text-brand-stone uppercase">
                             {t("Location", "Ubicación")}
                           </dt>
                           <dd className="font-body text-sm text-brand-charcoal">
@@ -188,7 +188,7 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                           </dd>
                         </div>
                         <div>
-                          <dt className="font-mono text-[10px] tracking-wider text-brand-stone uppercase">
+                          <dt className="font-body font-semibold text-[10px] tracking-wider text-brand-stone uppercase">
                             {t("Year", "Año")}
                           </dt>
                           <dd className="font-body text-sm text-brand-charcoal">
@@ -284,11 +284,11 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                           project.gallery.length
                       )
                     }
-                    className="flex items-center justify-center px-5 py-3 min-h-[44px] text-white/60 hover:text-white font-mono text-sm transition-colors cursor-pointer"
+                    className="flex items-center justify-center px-5 py-3 min-h-[44px] text-white/60 hover:text-white font-body font-medium text-sm transition-colors cursor-pointer"
                   >
                     {t("Previous", "Anterior")}
                   </button>
-                  <span className="flex items-center justify-center px-3 font-mono text-sm text-white/40">
+                  <span className="flex items-center justify-center px-3 font-body font-medium text-sm text-white/40">
                     {lightboxIndex + 1} / {project.gallery.length}
                   </span>
                   <button
@@ -297,7 +297,7 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                         (lightboxIndex + 1) % project.gallery.length
                       )
                     }
-                    className="flex items-center justify-center px-5 py-3 min-h-[44px] text-white/60 hover:text-white font-mono text-sm transition-colors cursor-pointer"
+                    className="flex items-center justify-center px-5 py-3 min-h-[44px] text-white/60 hover:text-white font-body font-medium text-sm transition-colors cursor-pointer"
                   >
                     {t("Next", "Siguiente")}
                   </button>
@@ -318,16 +318,16 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
             <AnimatedSection delay={0.1}>
               <div className="bg-white border border-brand-stone/10 overflow-hidden">
                 <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-brand-sand/30 border-b border-brand-stone/10">
-                  <span className="col-span-4 font-mono text-[10px] tracking-widest text-brand-stone uppercase">
+                  <span className="col-span-4 font-body font-semibold text-[10px] tracking-widest text-brand-stone uppercase">
                     {t("Product", "Producto")}
                   </span>
-                  <span className="col-span-3 font-mono text-[10px] tracking-widest text-brand-stone uppercase">
+                  <span className="col-span-3 font-body font-semibold text-[10px] tracking-widest text-brand-stone uppercase">
                     {t("Brand", "Marca")}
                   </span>
-                  <span className="col-span-3 font-mono text-[10px] tracking-widest text-brand-stone uppercase">
+                  <span className="col-span-3 font-body font-semibold text-[10px] tracking-widest text-brand-stone uppercase">
                     {t("Location", "Ubicación")}
                   </span>
-                  <span className="col-span-2 font-mono text-[10px] tracking-widest text-brand-stone uppercase" />
+                  <span className="col-span-2 font-body font-semibold text-[10px] tracking-widest text-brand-stone uppercase" />
                 </div>
                 {project.fixtures.map((fixture, i) => (
                   <div
@@ -341,13 +341,13 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                       </p>
                       <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
                         <span className="font-body text-xs text-brand-stone">
-                          <span className="font-mono tracking-wider uppercase text-[9px] mr-1">
+                          <span className="font-body font-semibold tracking-wider uppercase text-[9px] mr-1">
                             {t("Brand", "Marca")}:
                           </span>
                           {fixture.brand}
                         </span>
                         <span className="font-body text-xs text-brand-stone">
-                          <span className="font-mono tracking-wider uppercase text-[9px] mr-1">
+                          <span className="font-body font-semibold tracking-wider uppercase text-[9px] mr-1">
                             {t("Location", "Ubicación")}:
                           </span>
                           {fixture.location[lang]}
@@ -356,7 +356,7 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                       {fixture.slug && (
                         <Link
                           href={`/${locale}/shop/bathroom/p/${fixture.slug}`}
-                          className="inline-flex items-center gap-1 mt-2 font-mono text-xs text-brand-terracotta hover:text-brand-copper transition-colors"
+                          className="inline-flex items-center gap-1 mt-2 font-body font-medium text-xs text-brand-terracotta hover:text-brand-copper transition-colors"
                         >
                           {t("View Product", "Ver Producto")}
                           <ChevronRight className="w-3 h-3" />
@@ -384,7 +384,7 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                         {fixture.slug && (
                           <Link
                             href={`/${locale}/shop/bathroom/p/${fixture.slug}`}
-                            className="inline-flex items-center gap-1 font-mono text-xs text-brand-terracotta hover:text-brand-copper transition-colors"
+                            className="inline-flex items-center gap-1 font-body font-medium text-xs text-brand-terracotta hover:text-brand-copper transition-colors"
                           >
                             {t("View", "Ver")}
                             <ChevronRight className="w-3 h-3" />
@@ -412,7 +412,7 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                   <p className="font-body text-sm font-medium text-white">
                     {project.testimonial.author}
                   </p>
-                  <p className="mt-1 font-mono text-xs tracking-wider text-white/50">
+                  <p className="mt-1 font-body font-medium text-xs tracking-wider text-white/50">
                     {project.testimonial.role[lang]}
                   </p>
                 </div>

@@ -50,7 +50,7 @@ export const InsightsContent = () => {
         <section className="pt-28 pb-12 md:pt-40 md:pb-20 bg-brand-charcoal">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection>
-              <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
+              <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
                 {locale === "es" ? "Insights" : "Insights"}
               </span>
               <h1 className="mt-4 font-display text-4xl sm:text-5xl md:text-7xl font-light text-white tracking-wide">
@@ -89,11 +89,11 @@ export const InsightsContent = () => {
                   <div className="mt-5 md:mt-0 flex flex-col justify-center">
                     <div className="flex items-center gap-3">
                       <span
-                        className={`inline-block px-3 py-1 text-[10px] font-mono tracking-wider text-white uppercase rounded ${pillarColors[featured.pillar]}`}
+                        className={`inline-block px-3 py-1 text-[10px] font-body font-semibold tracking-wider text-white uppercase rounded ${pillarColors[featured.pillar]}`}
                       >
                         {pillarLabels[featured.pillar][locale]}
                       </span>
-                      <span className="font-mono text-[10px] text-brand-copper uppercase tracking-wider">
+                      <span className="font-body font-semibold text-[10px] text-brand-terracotta uppercase tracking-wider">
                         {locale === "es" ? "Artículo Destacado" : "Featured"}
                       </span>
                     </div>
@@ -103,7 +103,7 @@ export const InsightsContent = () => {
                     <p className="mt-3 font-body text-base text-brand-stone leading-relaxed">
                       {featured.excerpt[locale]}
                     </p>
-                    <div className="mt-4 flex items-center gap-3 font-mono text-xs text-brand-stone uppercase tracking-wider">
+                    <div className="mt-4 flex items-center gap-3 font-body font-medium text-xs text-brand-stone uppercase tracking-wider">
                       <span>{formatDate(featured.date)}</span>
                       <span>·</span>
                       <span>{featured.readTime}</span>
@@ -120,7 +120,7 @@ export const InsightsContent = () => {
           <section className="py-12 md:py-20 bg-white">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <AnimatedSection>
-                <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
+                <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
                   {locale === "es" ? "Selección del Editor" : "Editor's Picks"}
                 </span>
               </AnimatedSection>
@@ -143,7 +143,7 @@ export const InsightsContent = () => {
                       </div>
                       <div className="mt-4">
                         <span
-                          className={`inline-block px-3 py-1 text-[10px] font-mono tracking-wider text-white uppercase rounded ${pillarColors[article.pillar]}`}
+                          className={`inline-block px-3 py-1 text-[10px] font-body font-semibold tracking-wider text-white uppercase rounded ${pillarColors[article.pillar]}`}
                         >
                           {pillarLabels[article.pillar][locale]}
                         </span>
@@ -153,7 +153,7 @@ export const InsightsContent = () => {
                         <p className="mt-2 font-body text-sm text-brand-stone leading-relaxed line-clamp-3">
                           {article.excerpt[locale]}
                         </p>
-                        <div className="mt-3 flex items-center gap-3 font-mono text-[10px] text-brand-stone uppercase tracking-wider">
+                        <div className="mt-3 flex items-center gap-3 font-body font-medium text-[10px] text-brand-stone uppercase tracking-wider">
                           <span>{formatDate(article.date)}</span>
                           <span>·</span>
                           <span>{article.readTime}</span>
@@ -218,7 +218,7 @@ export const InsightsContent = () => {
                     </div>
                     <div className="mt-4 flex flex-col flex-1">
                       <span
-                        className={`inline-block w-fit px-3 py-1 text-[10px] font-mono tracking-wider text-white uppercase rounded ${pillarColors[article.pillar]}`}
+                        className={`inline-block w-fit px-3 py-1 text-[10px] font-body font-semibold tracking-wider text-white uppercase rounded ${pillarColors[article.pillar]}`}
                       >
                         {pillarLabels[article.pillar][locale]}
                       </span>
@@ -228,7 +228,7 @@ export const InsightsContent = () => {
                       <p className="mt-2 font-body text-sm text-brand-stone leading-relaxed line-clamp-3 flex-1">
                         {article.excerpt[locale]}
                       </p>
-                      <div className="mt-3 flex items-center gap-3 font-mono text-[10px] text-brand-stone uppercase tracking-wider">
+                      <div className="mt-3 flex items-center gap-3 font-body font-medium text-[10px] text-brand-stone uppercase tracking-wider">
                         <span>{formatDate(article.date)}</span>
                         <span>·</span>
                         <span>{article.readTime}</span>

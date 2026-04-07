@@ -117,7 +117,7 @@ const FeaturedProducts = ({ locale = "en" }: { locale?: string }) => (
                 </span>
               </div>
               <div className="p-5 flex flex-col flex-1">
-                <p className="font-mono text-xs text-brand-stone uppercase tracking-wider">
+                <p className="font-body font-semibold text-xs text-brand-stone uppercase tracking-wider">
                   {product.brand}
                 </p>
                 <h3 className="mt-1 font-body text-base font-medium text-brand-charcoal group-hover:text-brand-terracotta transition-colors duration-300 leading-snug line-clamp-2 min-h-[2.75rem]">

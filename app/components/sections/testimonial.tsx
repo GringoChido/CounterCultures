@@ -32,7 +32,7 @@ const Testimonial = ({ locale = "en" }: { locale?: string }) => {
           </blockquote>
 
           <div className="mt-8">
-            <p className="font-mono text-sm text-brand-copper uppercase tracking-wider">
+            <p className="font-body font-semibold text-sm text-brand-terracotta uppercase tracking-wider">
               {t.author}
             </p>
             <p className="font-body text-sm text-white/50 mt-1">{t.role}</p>

@@ -36,7 +36,7 @@ const LoginPage = () => {
           <h1 className="font-display text-3xl font-light tracking-wider text-white">
             Counter Cultures
           </h1>
-          <p className="font-mono text-[11px] tracking-[0.2em] text-brand-copper uppercase mt-1">
+          <p className="font-body font-semibold text-[11px] tracking-[0.2em] text-brand-copper uppercase mt-1">
             Counter Portal
           </p>
         </div>

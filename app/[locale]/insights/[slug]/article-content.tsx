@@ -124,14 +124,14 @@ export const ArticleContent = ({
             <AnimatedSection>
               <Link
                 href={`/${locale}/insights`}
-                className="inline-flex items-center gap-2 font-mono text-xs text-white/40 hover:text-white transition-colors uppercase tracking-wider mb-8"
+                className="inline-flex items-center gap-2 font-body font-medium text-xs text-white/40 hover:text-white transition-colors uppercase tracking-wider mb-8"
               >
                 <ArrowLeft className="w-4 h-4" />
                 {locale === "es" ? "Volver a Insights" : "Back to Insights"}
               </Link>
 
               <span
-                className={`inline-block px-3 py-1 text-[10px] font-mono tracking-wider text-white uppercase rounded ${pillarColors[article.pillar]}`}
+                className={`inline-block px-3 py-1 text-[10px] font-body font-semibold tracking-wider text-white uppercase rounded ${pillarColors[article.pillar]}`}
               >
                 {pillarLabels[article.pillar][locale]}
               </span>
@@ -140,7 +140,7 @@ export const ArticleContent = ({
                 {article.title[locale]}
               </h1>
 
-              <div className="mt-6 flex flex-wrap items-center gap-4 font-mono text-xs text-white/50 uppercase tracking-wider">
+              <div className="mt-6 flex flex-wrap items-center gap-4 font-body font-medium text-xs text-white/50 uppercase tracking-wider">
                 <span className="flex items-center gap-1.5">
                   <User className="w-3.5 h-3.5" />
                   {article.author}
@@ -183,7 +183,7 @@ export const ArticleContent = ({
                   onClick={() => setTocOpen(!tocOpen)}
                   className="flex items-center justify-between w-full px-5 py-4 text-left"
                 >
-                  <span className="font-mono text-[10px] tracking-[0.2em] text-brand-copper uppercase">
+                  <span className="font-body font-semibold text-[10px] tracking-[0.2em] text-brand-terracotta uppercase">
                     {locale === "es" ? "En Este Artículo" : "In This Article"}
                   </span>
                   <ChevronDown
@@ -219,7 +219,7 @@ export const ArticleContent = ({
               {/* Sidebar TOC */}
               <aside className="hidden lg:block">
                 <div className="sticky top-24">
-                  <span className="font-mono text-[10px] tracking-[0.2em] text-brand-copper uppercase">
+                  <span className="font-body font-semibold text-[10px] tracking-[0.2em] text-brand-terracotta uppercase">
                     {locale === "es" ? "En Este Artículo" : "In This Article"}
                   </span>
                   <nav className="mt-4 space-y-2">
@@ -273,7 +273,7 @@ export const ArticleContent = ({
           <section className="py-16 md:py-20 bg-white">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <AnimatedSection>
-                <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
+                <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
                   {locale === "es" ? "Artículos Relacionados" : "Related Articles"}
                 </span>
               </AnimatedSection>
@@ -296,14 +296,14 @@ export const ArticleContent = ({
                       </div>
                       <div className="flex-1">
                         <span
-                          className={`inline-block px-2 py-0.5 text-[9px] font-mono tracking-wider text-white uppercase rounded ${pillarColors[related.pillar]}`}
+                          className={`inline-block px-2 py-0.5 text-[9px] font-body font-semibold tracking-wider text-white uppercase rounded ${pillarColors[related.pillar]}`}
                         >
                           {pillarLabels[related.pillar][locale]}
                         </span>
                         <h3 className="mt-2 font-display text-lg text-brand-charcoal group-hover:text-brand-terracotta transition-colors leading-snug">
                           {related.title[locale]}
                         </h3>
-                        <span className="mt-1 block font-mono text-[10px] text-brand-stone uppercase tracking-wider">
+                        <span className="mt-1 block font-body font-medium text-[10px] text-brand-stone uppercase tracking-wider">
                           {related.readTime}
                         </span>
                       </div>

@@ -94,7 +94,7 @@ const BlogPostPage = async ({ params }: BlogPostPageProps) => {
           <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
             <Link
               href="/blog"
-              className="font-mono text-xs tracking-wider text-brand-terracotta uppercase hover:text-brand-copper transition-colors"
+              className="font-body font-medium text-xs tracking-wider text-brand-terracotta uppercase hover:text-brand-copper transition-colors"
             >
               ← Back to Journal
             </Link>
@@ -103,7 +103,7 @@ const BlogPostPage = async ({ params }: BlogPostPageProps) => {
               {title}
             </h1>
 
-            <div className="mt-4 flex items-center gap-3 font-mono text-xs text-brand-stone uppercase tracking-wider">
+            <div className="mt-4 flex items-center gap-3 font-body font-medium text-xs text-brand-stone uppercase tracking-wider">
               <span>March 2026</span>
               <span>·</span>
               <span>5 min read</span>

@@ -208,7 +208,7 @@ export const ResourcesContent = () => {
         <section className="pt-28 pb-12 md:pt-40 md:pb-20 bg-brand-charcoal">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection>
-              <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
+              <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
                 {content.hero.eyebrow[locale]}
               </span>
               <h1 className="mt-4 font-display text-4xl sm:text-5xl md:text-7xl font-light text-white tracking-wide">
@@ -256,7 +256,7 @@ export const ResourcesContent = () => {
         <section className="py-12 md:py-28 bg-white">
           <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection>
-              <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
+              <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
                 FAQ
               </span>
               <h2 className="mt-4 font-display text-4xl md:text-5xl font-light text-brand-charcoal tracking-wide">
@@ -285,7 +285,7 @@ export const ResourcesContent = () => {
         <section className="py-12 md:py-28 bg-brand-linen">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection>
-              <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
+              <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
                 {locale === "es" ? "Marcas" : "Brands"}
               </span>
               <h2 className="mt-4 font-display text-3xl md:text-5xl font-light text-brand-charcoal tracking-wide">
@@ -326,7 +326,7 @@ export const ResourcesContent = () => {
             <AnimatedSection>
               <div className="flex items-center gap-3 mb-4">
                 <BookOpen className="w-6 h-6 text-brand-copper" />
-                <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
+                <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
                   {locale === "es" ? "Glosario" : "Glossary"}
                 </span>
               </div>
@@ -365,7 +365,7 @@ export const ResourcesContent = () => {
                 <div key={term.term.en} className="py-6">
                   <dt className="font-display text-xl text-brand-charcoal">
                     {term.term[locale]}
-                    <span className="ml-3 inline-block px-2 py-0.5 text-[10px] font-mono tracking-wider text-brand-stone uppercase bg-brand-linen rounded">
+                    <span className="ml-3 inline-block px-2 py-0.5 text-[10px] font-body font-medium tracking-wider text-brand-stone uppercase bg-brand-linen rounded">
                       {categoryLabels[term.category][locale]}
                     </span>
                   </dt>
@@ -382,7 +382,7 @@ export const ResourcesContent = () => {
         <section className="py-12 md:py-28 bg-brand-linen">
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection>
-              <span className="font-mono text-xs tracking-[0.2em] text-brand-copper uppercase">
+              <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
                 {locale === "es" ? "Garantía" : "Warranty"}
               </span>
               <h2 className="mt-4 font-display text-4xl md:text-5xl font-light text-brand-charcoal tracking-wide">
@@ -397,13 +397,13 @@ export const ResourcesContent = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b-2 border-brand-charcoal">
-                    <th className="text-left py-3 font-mono text-xs tracking-wider text-brand-charcoal uppercase">
+                    <th className="text-left py-3 font-body font-semibold text-xs tracking-wider text-brand-charcoal uppercase">
                       {locale === "es" ? "Marca" : "Brand"}
                     </th>
-                    <th className="text-left py-3 font-mono text-xs tracking-wider text-brand-charcoal uppercase">
+                    <th className="text-left py-3 font-body font-semibold text-xs tracking-wider text-brand-charcoal uppercase">
                       {locale === "es" ? "Residencial" : "Residential"}
                     </th>
-                    <th className="text-left py-3 font-mono text-xs tracking-wider text-brand-charcoal uppercase">
+                    <th className="text-left py-3 font-body font-semibold text-xs tracking-wider text-brand-charcoal uppercase">
                       {locale === "es" ? "Comercial" : "Commercial"}
                     </th>
                   </tr>
