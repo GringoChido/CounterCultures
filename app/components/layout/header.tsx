@@ -32,11 +32,11 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link href="/" className="flex flex-col leading-none min-w-0">
-            <span className="font-display text-xl md:text-2xl font-light tracking-wider text-brand-charcoal">
+          <Link href="/" className="flex flex-col leading-none shrink-0">
+            <span className="font-display text-xl md:text-2xl font-light tracking-wider text-brand-charcoal whitespace-nowrap">
               Counter Cultures
             </span>
-            <span className="font-body text-[10px] md:text-[11px] tracking-[0.2em] text-brand-copper uppercase mt-0.5">
+            <span className="hidden sm:block font-body text-[10px] md:text-[11px] tracking-[0.2em] text-brand-copper uppercase mt-0.5">
               San Miguel de Allende, MX
             </span>
           </Link>
@@ -93,24 +93,26 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
             <div className="flex items-center font-body text-xs tracking-wider">
               <Link
                 href={getLocalePath("en")}
-                className={`flex items-center justify-center min-w-[2.75rem] h-11 px-1 transition-colors ${
+                className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors ${
                   lang === "en"
                     ? "text-brand-terracotta font-bold"
                     : "text-brand-stone hover:text-brand-charcoal"
                 }`}
               >
-                English
+                <span className="sm:hidden">EN</span>
+                <span className="hidden sm:inline">English</span>
               </Link>
               <span className="text-brand-stone/40">|</span>
               <Link
                 href={getLocalePath("es")}
-                className={`flex items-center justify-center min-w-[2.75rem] h-11 px-1 transition-colors ${
+                className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors ${
                   lang === "es"
                     ? "text-brand-terracotta font-bold"
                     : "text-brand-stone hover:text-brand-charcoal"
                 }`}
               >
-                Español
+                <span className="sm:hidden">ES</span>
+                <span className="hidden sm:inline">Español</span>
               </Link>
             </div>
 
