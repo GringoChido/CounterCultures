@@ -22,6 +22,13 @@ export interface DocumentRecord {
   Created_Date: string;
   Sent_Date: string;
   Amount: string;
+  Version: string;
+  Parent_Doc_ID: string;
+  Brand: string;
+  Currency: string;
+  Dealer_Cost_Total: string;
+  Margin_Amount: string;
+  Margin_Percent: string;
 }
 
 const PREFIX_MAP: Record<DocumentType, string> = {

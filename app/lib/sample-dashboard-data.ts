@@ -10,7 +10,121 @@ export type PipelineStage =
   // New expanded stages
   | "target-identified" | "contacted" | "conversation-started" | "qualified-project"
   | "design-scope" | "proposal-sent" | "follow-up-negotiation" | "verbal-yes"
-  | "won" | "lost";
+  | "won" | "lost"
+  // Post-sale fulfillment stages
+  | "quote-approved" | "deposit-pending" | "deposit-received"
+  | "ordering" | "in-production" | "shipping" | "received"
+  | "delivery-scheduled" | "delivered" | "balance-pending"
+  | "complete" | "post-delivery-issue";
+
+// ---------------------------------------------------------------------------
+// Fulfillment & Operations Types
+// ---------------------------------------------------------------------------
+
+export type FulfillmentStage =
+  | "quote-approved"
+  | "deposit-invoiced"
+  | "deposit-received"
+  | "pos-placed"
+  | "in-production"
+  | "shipping"
+  | "received-at-cc"
+  | "quality-checked"
+  | "delivery-scheduled"
+  | "delivered"
+  | "balance-invoiced"
+  | "fully-paid"
+  | "complete"
+  | "issue";
+
+export type PaymentStructure = "full-upfront" | "fifty-fifty" | "net-30" | "custom";
+
+export interface DealLineItem {
+  id: string;
+  productName: string;
+  sku: string;
+  brand: string;
+  finish?: string;
+  quantity: number;
+  dealerCost: number;
+  quotedPrice: number;
+  msrp: number;
+  mapPrice?: number;
+  shippingCost: number;
+  leadTime?: string;
+  status: "current" | "special-order" | "custom" | "discontinued";
+  marginAmount: number;
+  marginPercent: number;
+}
+
+export interface DealPayment {
+  id: string;
+  type: "deposit" | "balance" | "full" | "installment";
+  invoiceId: string;
+  stripeInvoiceId?: string;
+  stripePaymentId?: string;
+  amount: number;
+  currency: string;
+  stripeFees?: number;
+  netReceived?: number;
+  status: "draft" | "sent" | "paid" | "overdue" | "cancelled" | "refunded";
+  dueDate?: string;
+  paidDate?: string;
+  installmentNumber?: number;
+}
+
+export interface PurchaseOrder {
+  id: string;
+  dealId: string;
+  brand: string;
+  manufacturerName: string;
+  manufacturerContact?: string;
+  items: {
+    sku: string;
+    productName: string;
+    finish?: string;
+    quantity: number;
+    dealerCost: number;
+  }[];
+  totalAmount: number;
+  currency: string;
+  status: "draft" | "sent" | "confirmed" | "paid-to-manufacturer" | "in-production" | "shipped" | "received" | "issue";
+  sentDate?: string;
+  confirmedDate?: string;
+  paymentToMfr?: {
+    date: string;
+    amount: number;
+    method: string;
+    reference: string;
+  };
+  shipTo: "cc-showroom" | "customer-direct";
+  requestedDeliveryDate?: string;
+  estimatedShipDate?: string;
+  trackingCarrier?: string;
+  trackingNumber?: string;
+  receivedDate?: string;
+  receivedCondition?: "good" | "damaged" | "wrong-item" | "partial";
+  receivedNotes?: string;
+  driveFileId?: string;
+}
+
+export interface DealShipment {
+  id: string;
+  dealId: string;
+  poId: string;
+  brand: string;
+  carrier?: string;
+  trackingNumber?: string;
+  status: "label-created" | "in-transit" | "customs" | "out-for-delivery" | "delivered-to-cc" | "delivered-to-customer";
+  shipDate?: string;
+  estimatedArrival?: string;
+  actualArrival?: string;
+  destination: "cc-showroom" | "customer-direct";
+  items: { sku: string; productName: string; quantity: number }[];
+  inspectionStatus?: "pending" | "passed" | "damaged" | "wrong-item";
+  inspectionNotes?: string;
+  inspectionPhotos?: string[];
+}
 
 export interface Lead {
   id: string;
@@ -62,6 +176,38 @@ export interface PipelineDeal {
   followUpDate?: string;
   competitor?: string;
   lostReason?: LostReason;
+
+  // Structured product data (Operations)
+  lineItems?: DealLineItem[];
+
+  // Financial
+  paymentStructure?: PaymentStructure;
+  payments?: DealPayment[];
+  customerType?: "retail" | "trade";
+  dealCurrency?: "MXN" | "USD";
+  taxRate?: number;
+
+  // Fulfillment
+  fulfillmentStage?: FulfillmentStage;
+  purchaseOrders?: PurchaseOrder[];
+  shipments?: DealShipment[];
+  deliveryStrategy?: "as-available" | "consolidate";
+  deliveryDate?: string;
+  deliveryAddress?: string;
+  deliveryNotes?: string;
+
+  // Financial summary (calculated)
+  totalQuoted?: number;
+  totalDealerCost?: number;
+  totalShipping?: number;
+  totalStripeFees?: number;
+  totalCollected?: number;
+  totalPaidToManufacturers?: number;
+  netMargin?: number;
+  marginPercent?: number;
+
+  // Versioning
+  quoteVersions?: { version: number; docId: string; status: "active" | "superseded" }[];
 }
 
 export interface ActivityItem {
@@ -435,6 +581,297 @@ export const SAMPLE_PIPELINE: PipelineDeal[] = [
     leadSource: "Instagram",
     followUpDate: "2026-04-05",
     competitor: "",
+  },
+
+  // -------------------------------------------------------------------------
+  // Post-sale sample deals — full operations data
+  // -------------------------------------------------------------------------
+
+  {
+    id: "DEAL-009",
+    name: "Arq. Carolina Mendoza \u2014 Kitchen Remodel",
+    contactName: "Carolina Mendoza",
+    contactCompany: "Mendoza Arquitectos",
+    contactRole: "Architect",
+    value: 145000,
+    currency: "MXN",
+    stage: "in-production",
+    probability: 100,
+    expectedClose: "2026-04-01",
+    assignedRep: "Roger",
+    products: "Brizo Litze Faucet, Brizo Litze Pot Filler, TOTO Washlet C5, TOTO Drake Toilet, Cal Faucets Descanso Shower System",
+    createdAt: "2026-03-01T10:00:00Z",
+    notes: "Kitchen remodel for colonial home in Centro. Custom finish on Cal Faucets shower \u2014 Satin Brass. Waiting on custom piece.",
+    projectType: "Luxury Residential",
+    leadSource: "Referral",
+    followUpDate: "2026-04-10",
+    customerType: "retail",
+    dealCurrency: "MXN",
+    taxRate: 16,
+    paymentStructure: "fifty-fifty",
+    deliveryStrategy: "consolidate",
+    deliveryAddress: "Calle Aldama 42, Centro, San Miguel de Allende",
+    deliveryNotes: "Ring bell at main gate. Ask for housekeeper Maria.",
+    fulfillmentStage: "in-production",
+    lineItems: [
+      { id: "LI-001", productName: "Litze Pull-Down Faucet", sku: "63054LF-GL", brand: "Brizo", finish: "Luxe Gold", quantity: 1, dealerCost: 22000, quotedPrice: 35000, msrp: 42000, shippingCost: 1500, leadTime: "3-4 weeks", status: "current", marginAmount: 13000, marginPercent: 37.1 },
+      { id: "LI-002", productName: "Litze Pot Filler", sku: "62174LF-GL", brand: "Brizo", finish: "Luxe Gold", quantity: 1, dealerCost: 16000, quotedPrice: 25000, msrp: 30000, shippingCost: 1200, leadTime: "3-4 weeks", status: "current", marginAmount: 9000, marginPercent: 36.0 },
+      { id: "LI-003", productName: "Washlet C5", sku: "SW3084#01", brand: "TOTO", quantity: 1, dealerCost: 12000, quotedPrice: 20000, msrp: 24000, shippingCost: 2000, leadTime: "2-3 weeks", status: "current", marginAmount: 8000, marginPercent: 40.0 },
+      { id: "LI-004", productName: "Drake Elongated Toilet", sku: "CST776CEG#01", brand: "TOTO", quantity: 1, dealerCost: 10000, quotedPrice: 17000, msrp: 20000, shippingCost: 2500, leadTime: "2-3 weeks", status: "current", marginAmount: 7000, marginPercent: 41.2 },
+      { id: "LI-005", productName: "Descanso Shower System", sku: "DSC-SHS-SB", brand: "California Faucets", finish: "Satin Brass (Custom)", quantity: 1, dealerCost: 15000, quotedPrice: 48000, msrp: 55000, shippingCost: 1800, leadTime: "6-8 weeks", status: "custom", marginAmount: 33000, marginPercent: 68.8 },
+    ],
+    payments: [
+      { id: "PAY-001", type: "deposit", invoiceId: "CC-INV-2026-001A", amount: 72500, currency: "MXN", stripeFees: 2613, netReceived: 69887, status: "paid", dueDate: "2026-03-28", paidDate: "2026-04-03" },
+      { id: "PAY-002", type: "balance", invoiceId: "CC-INV-2026-001B", amount: 72500, currency: "MXN", status: "draft", dueDate: "2026-05-15" },
+    ],
+    purchaseOrders: [
+      {
+        id: "CC-PO-2026-001", dealId: "DEAL-009", brand: "Brizo", manufacturerName: "Brizo / Delta Faucet", manufacturerContact: "rep@brizo.com",
+        items: [
+          { sku: "63054LF-GL", productName: "Litze Pull-Down Faucet", finish: "Luxe Gold", quantity: 1, dealerCost: 22000 },
+          { sku: "62174LF-GL", productName: "Litze Pot Filler", finish: "Luxe Gold", quantity: 1, dealerCost: 16000 },
+        ],
+        totalAmount: 38000, currency: "MXN", status: "shipped", sentDate: "2026-04-04", confirmedDate: "2026-04-05",
+        paymentToMfr: { date: "2026-04-08", amount: 38000, method: "wire", reference: "TRF-2026-0412" },
+        shipTo: "cc-showroom", estimatedShipDate: "2026-04-15", trackingCarrier: "FedEx", trackingNumber: "789123456700",
+      },
+      {
+        id: "CC-PO-2026-002", dealId: "DEAL-009", brand: "TOTO", manufacturerName: "TOTO USA",
+        items: [
+          { sku: "SW3084#01", productName: "Washlet C5", quantity: 1, dealerCost: 12000 },
+          { sku: "CST776CEG#01", productName: "Drake Elongated Toilet", quantity: 1, dealerCost: 10000 },
+        ],
+        totalAmount: 22000, currency: "MXN", status: "received", sentDate: "2026-04-04", confirmedDate: "2026-04-04",
+        paymentToMfr: { date: "2026-04-05", amount: 22000, method: "credit-card", reference: "CC-4521" },
+        shipTo: "cc-showroom", trackingCarrier: "UPS", trackingNumber: "1Z999AA10123456784",
+        receivedDate: "2026-04-18", receivedCondition: "good",
+      },
+      {
+        id: "CC-PO-2026-003", dealId: "DEAL-009", brand: "California Faucets", manufacturerName: "California Faucets",
+        items: [
+          { sku: "DSC-SHS-SB", productName: "Descanso Shower System", finish: "Satin Brass (Custom)", quantity: 1, dealerCost: 15000 },
+        ],
+        totalAmount: 15000, currency: "MXN", status: "in-production", sentDate: "2026-04-06",
+        shipTo: "cc-showroom", estimatedShipDate: "2026-05-10",
+      },
+    ],
+    shipments: [
+      {
+        id: "SHIP-001", dealId: "DEAL-009", poId: "CC-PO-2026-001", brand: "Brizo", carrier: "FedEx", trackingNumber: "789123456700",
+        status: "in-transit", shipDate: "2026-04-15", estimatedArrival: "2026-04-22", destination: "cc-showroom",
+        items: [
+          { sku: "63054LF-GL", productName: "Litze Pull-Down Faucet", quantity: 1 },
+          { sku: "62174LF-GL", productName: "Litze Pot Filler", quantity: 1 },
+        ],
+      },
+      {
+        id: "SHIP-002", dealId: "DEAL-009", poId: "CC-PO-2026-002", brand: "TOTO", carrier: "UPS", trackingNumber: "1Z999AA10123456784",
+        status: "delivered-to-cc", shipDate: "2026-04-10", estimatedArrival: "2026-04-18", actualArrival: "2026-04-18", destination: "cc-showroom",
+        items: [
+          { sku: "SW3084#01", productName: "Washlet C5", quantity: 1 },
+          { sku: "CST776CEG#01", productName: "Drake Elongated Toilet", quantity: 1 },
+        ],
+        inspectionStatus: "passed",
+      },
+    ],
+    totalQuoted: 145000, totalDealerCost: 75000, totalShipping: 9000, totalStripeFees: 5226,
+    totalCollected: 72500, totalPaidToManufacturers: 60000, netMargin: 55774, marginPercent: 38.5,
+  },
+
+  {
+    id: "DEAL-010",
+    name: "Hotel Boutique San Miguel \u2014 12 Bathrooms",
+    contactName: "Alejandro Vega",
+    contactCompany: "Grupo Hotelero Vega",
+    contactRole: "Hospitality Designer",
+    value: 870000,
+    currency: "MXN",
+    stage: "ordering",
+    probability: 100,
+    expectedClose: "2026-04-05",
+    assignedRep: "Roger",
+    products: "TOTO Neorest, Brizo Odin, California Faucets Rincon Bay, Kohler Purist",
+    createdAt: "2026-02-10T08:00:00Z",
+    notes: "Boutique hotel \u2014 12 bathrooms. Custom installment plan (3 payments). Staggered ordering across 4 brands.",
+    projectType: "Boutique Hotel",
+    leadSource: "Showroom Walk-in",
+    followUpDate: "2026-04-08",
+    customerType: "trade",
+    dealCurrency: "MXN",
+    taxRate: 16,
+    paymentStructure: "custom",
+    deliveryStrategy: "as-available",
+    deliveryAddress: "Calle Ancha de San Antonio 15, San Miguel de Allende",
+    fulfillmentStage: "pos-placed",
+    lineItems: [
+      { id: "LI-010", productName: "Neorest NX2 Intelligent Toilet", sku: "MS903CUMFG#01", brand: "TOTO", quantity: 12, dealerCost: 18000, quotedPrice: 28000, msrp: 35000, shippingCost: 3000, leadTime: "4-6 weeks", status: "current", marginAmount: 10000, marginPercent: 35.7 },
+      { id: "LI-011", productName: "Odin Pull-Down Faucet", sku: "63075LF-PC", brand: "Brizo", finish: "Polished Chrome", quantity: 12, dealerCost: 8500, quotedPrice: 14000, msrp: 16500, shippingCost: 800, leadTime: "3-4 weeks", status: "current", marginAmount: 5500, marginPercent: 39.3 },
+      { id: "LI-012", productName: "Rincon Bay Wall Mount", sku: "RB-WM-SN", brand: "California Faucets", finish: "Satin Nickel", quantity: 12, dealerCost: 5500, quotedPrice: 9500, msrp: 11000, shippingCost: 600, leadTime: "4-5 weeks", status: "current", marginAmount: 4000, marginPercent: 42.1 },
+      { id: "LI-013", productName: "Purist Widespread Faucet", sku: "K-14406-4-CP", brand: "Kohler", finish: "Polished Chrome", quantity: 12, dealerCost: 6000, quotedPrice: 10500, msrp: 12500, shippingCost: 500, leadTime: "2-3 weeks", status: "current", marginAmount: 4500, marginPercent: 42.9 },
+    ],
+    payments: [
+      { id: "PAY-010", type: "installment", invoiceId: "CC-INV-2026-003A", amount: 290000, currency: "MXN", stripeFees: 10443, netReceived: 279557, status: "paid", dueDate: "2026-03-20", paidDate: "2026-03-22", installmentNumber: 1 },
+      { id: "PAY-011", type: "installment", invoiceId: "CC-INV-2026-003B", amount: 290000, currency: "MXN", status: "sent", dueDate: "2026-04-20", installmentNumber: 2 },
+      { id: "PAY-012", type: "installment", invoiceId: "CC-INV-2026-003C", amount: 290000, currency: "MXN", status: "draft", dueDate: "2026-05-20", installmentNumber: 3 },
+    ],
+    purchaseOrders: [
+      {
+        id: "CC-PO-2026-010", dealId: "DEAL-010", brand: "TOTO", manufacturerName: "TOTO USA",
+        items: [{ sku: "MS903CUMFG#01", productName: "Neorest NX2 Intelligent Toilet", quantity: 12, dealerCost: 18000 }],
+        totalAmount: 216000, currency: "MXN", status: "confirmed", sentDate: "2026-03-25", confirmedDate: "2026-03-26",
+        shipTo: "cc-showroom", estimatedShipDate: "2026-04-25",
+      },
+      {
+        id: "CC-PO-2026-011", dealId: "DEAL-010", brand: "Brizo", manufacturerName: "Brizo / Delta Faucet",
+        items: [{ sku: "63075LF-PC", productName: "Odin Pull-Down Faucet", finish: "Polished Chrome", quantity: 12, dealerCost: 8500 }],
+        totalAmount: 102000, currency: "MXN", status: "sent", sentDate: "2026-04-01",
+        shipTo: "cc-showroom",
+      },
+      {
+        id: "CC-PO-2026-012", dealId: "DEAL-010", brand: "California Faucets", manufacturerName: "California Faucets",
+        items: [{ sku: "RB-WM-SN", productName: "Rincon Bay Wall Mount", finish: "Satin Nickel", quantity: 12, dealerCost: 5500 }],
+        totalAmount: 66000, currency: "MXN", status: "draft",
+        shipTo: "cc-showroom",
+      },
+      {
+        id: "CC-PO-2026-013", dealId: "DEAL-010", brand: "Kohler", manufacturerName: "Kohler Co.",
+        items: [{ sku: "K-14406-4-CP", productName: "Purist Widespread Faucet", finish: "Polished Chrome", quantity: 12, dealerCost: 6000 }],
+        totalAmount: 72000, currency: "MXN", status: "draft",
+        shipTo: "cc-showroom",
+      },
+    ],
+    shipments: [],
+    totalQuoted: 870000, totalDealerCost: 456000, totalShipping: 58800, totalStripeFees: 31323,
+    totalCollected: 290000, totalPaidToManufacturers: 0, netMargin: 323877, marginPercent: 37.2,
+  },
+
+  {
+    id: "DEAL-011",
+    name: "Luis Torres \u2014 Master Bath",
+    contactName: "Luis Torres",
+    contactRole: "Private Client",
+    value: 95000,
+    currency: "MXN",
+    stage: "complete",
+    probability: 100,
+    expectedClose: "2026-03-15",
+    assignedRep: "Carlos",
+    products: "Kohler Memoirs Stately Toilet, Kohler Memoirs Pedestal Sink, Kohler Purist Faucet",
+    createdAt: "2026-02-20T09:00:00Z",
+    notes: "Simple master bath upgrade. One brand (Kohler). Full upfront payment. Delivered and complete.",
+    projectType: "Luxury Residential",
+    leadSource: "WhatsApp",
+    customerType: "retail",
+    dealCurrency: "MXN",
+    taxRate: 16,
+    paymentStructure: "full-upfront",
+    deliveryStrategy: "consolidate",
+    deliveryDate: "2026-03-28",
+    deliveryAddress: "Privada de la Aurora 8, San Miguel de Allende",
+    fulfillmentStage: "complete",
+    lineItems: [
+      { id: "LI-020", productName: "Memoirs Stately Toilet", sku: "K-6669-0", brand: "Kohler", quantity: 1, dealerCost: 14000, quotedPrice: 25000, msrp: 30000, shippingCost: 2500, leadTime: "2-3 weeks", status: "current", marginAmount: 11000, marginPercent: 44.0 },
+      { id: "LI-021", productName: "Memoirs Pedestal Sink", sku: "K-2258-8-0", brand: "Kohler", quantity: 1, dealerCost: 12000, quotedPrice: 22000, msrp: 26000, shippingCost: 2000, leadTime: "2-3 weeks", status: "current", marginAmount: 10000, marginPercent: 45.5 },
+      { id: "LI-022", productName: "Purist Widespread Faucet", sku: "K-14406-4-CP", brand: "Kohler", finish: "Polished Chrome", quantity: 1, dealerCost: 6000, quotedPrice: 10000, msrp: 12500, shippingCost: 500, leadTime: "2-3 weeks", status: "current", marginAmount: 4000, marginPercent: 40.0 },
+    ],
+    payments: [
+      { id: "PAY-020", type: "full", invoiceId: "CC-INV-2026-005", amount: 95000, currency: "MXN", stripeFees: 3423, netReceived: 91577, status: "paid", dueDate: "2026-03-10", paidDate: "2026-03-10" },
+    ],
+    purchaseOrders: [
+      {
+        id: "CC-PO-2026-020", dealId: "DEAL-011", brand: "Kohler", manufacturerName: "Kohler Co.",
+        items: [
+          { sku: "K-6669-0", productName: "Memoirs Stately Toilet", quantity: 1, dealerCost: 14000 },
+          { sku: "K-2258-8-0", productName: "Memoirs Pedestal Sink", quantity: 1, dealerCost: 12000 },
+          { sku: "K-14406-4-CP", productName: "Purist Widespread Faucet", finish: "Polished Chrome", quantity: 1, dealerCost: 6000 },
+        ],
+        totalAmount: 32000, currency: "MXN", status: "received", sentDate: "2026-03-11", confirmedDate: "2026-03-11",
+        paymentToMfr: { date: "2026-03-12", amount: 32000, method: "credit-card", reference: "CC-7823" },
+        shipTo: "cc-showroom", trackingCarrier: "FedEx", trackingNumber: "456789012345",
+        receivedDate: "2026-03-25", receivedCondition: "good",
+      },
+    ],
+    shipments: [
+      {
+        id: "SHIP-020", dealId: "DEAL-011", poId: "CC-PO-2026-020", brand: "Kohler", carrier: "FedEx", trackingNumber: "456789012345",
+        status: "delivered-to-customer", shipDate: "2026-03-18", estimatedArrival: "2026-03-25", actualArrival: "2026-03-25", destination: "cc-showroom",
+        items: [
+          { sku: "K-6669-0", productName: "Memoirs Stately Toilet", quantity: 1 },
+          { sku: "K-2258-8-0", productName: "Memoirs Pedestal Sink", quantity: 1 },
+          { sku: "K-14406-4-CP", productName: "Purist Widespread Faucet", quantity: 1 },
+        ],
+        inspectionStatus: "passed",
+      },
+    ],
+    totalQuoted: 95000, totalDealerCost: 32000, totalShipping: 5000, totalStripeFees: 3423,
+    totalCollected: 95000, totalPaidToManufacturers: 32000, netMargin: 54577, marginPercent: 57.4,
+  },
+
+  {
+    id: "DEAL-012",
+    name: "Diana Reyes \u2014 Guest Bathroom",
+    contactName: "Diana Reyes",
+    contactRole: "Private Client",
+    value: 68000,
+    currency: "MXN",
+    stage: "post-delivery-issue",
+    probability: 100,
+    expectedClose: "2026-03-20",
+    assignedRep: "Roger",
+    products: "Brizo Litze Faucet, TOTO Drake Toilet, California Faucets Tiburon Shower",
+    createdAt: "2026-02-25T11:00:00Z",
+    notes: "Guest bath remodel. TOTO shipment arrived damaged. Cal Faucets Tiburon in Matte Black discontinued after quote \u2014 replacement quoted. Balance overdue 12 days.",
+    projectType: "Luxury Residential",
+    leadSource: "Referral",
+    followUpDate: "2026-04-02",
+    customerType: "retail",
+    dealCurrency: "MXN",
+    taxRate: 16,
+    paymentStructure: "fifty-fifty",
+    deliveryStrategy: "consolidate",
+    deliveryAddress: "Calle Correo 18, San Miguel de Allende",
+    fulfillmentStage: "issue",
+    lineItems: [
+      { id: "LI-030", productName: "Litze Single Handle Faucet", sku: "65035LF-NK", brand: "Brizo", finish: "Brilliance Luxe Nickel", quantity: 1, dealerCost: 12000, quotedPrice: 20000, msrp: 24000, shippingCost: 1200, leadTime: "3-4 weeks", status: "current", marginAmount: 8000, marginPercent: 40.0 },
+      { id: "LI-031", productName: "Drake Elongated Toilet", sku: "CST776CEG#01", brand: "TOTO", quantity: 1, dealerCost: 10000, quotedPrice: 17000, msrp: 20000, shippingCost: 2500, leadTime: "2-3 weeks", status: "current", marginAmount: 7000, marginPercent: 41.2 },
+      { id: "LI-032", productName: "Tiburon Shower Trim (DISCONTINUED)", sku: "TIB-SHT-MB", brand: "California Faucets", finish: "Matte Black", quantity: 1, dealerCost: 8000, quotedPrice: 31000, msrp: 35000, shippingCost: 1500, leadTime: "N/A", status: "discontinued", marginAmount: 23000, marginPercent: 74.2 },
+    ],
+    payments: [
+      { id: "PAY-030", type: "deposit", invoiceId: "CC-INV-2026-008A", amount: 34000, currency: "MXN", stripeFees: 1227, netReceived: 32773, status: "paid", dueDate: "2026-03-05", paidDate: "2026-03-06" },
+      { id: "PAY-031", type: "balance", invoiceId: "CC-INV-2026-008B", amount: 34000, currency: "MXN", status: "overdue", dueDate: "2026-03-25" },
+    ],
+    purchaseOrders: [
+      {
+        id: "CC-PO-2026-030", dealId: "DEAL-012", brand: "Brizo", manufacturerName: "Brizo / Delta Faucet",
+        items: [{ sku: "65035LF-NK", productName: "Litze Single Handle Faucet", finish: "Brilliance Luxe Nickel", quantity: 1, dealerCost: 12000 }],
+        totalAmount: 12000, currency: "MXN", status: "received", sentDate: "2026-03-07", confirmedDate: "2026-03-08",
+        paymentToMfr: { date: "2026-03-08", amount: 12000, method: "wire", reference: "TRF-2026-0308" },
+        shipTo: "cc-showroom", receivedDate: "2026-03-22", receivedCondition: "good",
+      },
+      {
+        id: "CC-PO-2026-031", dealId: "DEAL-012", brand: "TOTO", manufacturerName: "TOTO USA",
+        items: [{ sku: "CST776CEG#01", productName: "Drake Elongated Toilet", quantity: 1, dealerCost: 10000 }],
+        totalAmount: 10000, currency: "MXN", status: "issue", sentDate: "2026-03-07", confirmedDate: "2026-03-07",
+        paymentToMfr: { date: "2026-03-08", amount: 10000, method: "credit-card", reference: "CC-9102" },
+        shipTo: "cc-showroom", receivedDate: "2026-03-20", receivedCondition: "damaged", receivedNotes: "Bowl cracked during transit. Carrier claim filed.",
+      },
+    ],
+    shipments: [
+      {
+        id: "SHIP-030", dealId: "DEAL-012", poId: "CC-PO-2026-030", brand: "Brizo", carrier: "FedEx", trackingNumber: "111222333444",
+        status: "delivered-to-cc", shipDate: "2026-03-14", actualArrival: "2026-03-22", destination: "cc-showroom",
+        items: [{ sku: "65035LF-NK", productName: "Litze Single Handle Faucet", quantity: 1 }],
+        inspectionStatus: "passed",
+      },
+      {
+        id: "SHIP-031", dealId: "DEAL-012", poId: "CC-PO-2026-031", brand: "TOTO", carrier: "UPS", trackingNumber: "555666777888",
+        status: "delivered-to-cc", shipDate: "2026-03-12", actualArrival: "2026-03-20", destination: "cc-showroom",
+        items: [{ sku: "CST776CEG#01", productName: "Drake Elongated Toilet", quantity: 1 }],
+        inspectionStatus: "damaged", inspectionNotes: "Bowl cracked during transit. Carrier claim filed. Replacement ordered.",
+      },
+    ],
+    totalQuoted: 68000, totalDealerCost: 30000, totalShipping: 5200, totalStripeFees: 2454,
+    totalCollected: 34000, totalPaidToManufacturers: 22000, netMargin: 30346, marginPercent: 44.6,
   },
 ];
 

@@ -27,6 +27,8 @@ import {
   X,
   Database,
   CreditCard,
+  Wallet,
+  Truck,
 } from "lucide-react";
 
 interface NavItem {
@@ -52,7 +54,9 @@ const navItems: NavItem[] = [
   { label: "Marketing Analytics", href: "/dashboard/marketing-analytics", icon: PieChart },
   { label: "Reports", href: "/dashboard/reports", icon: ClipboardList },
   { label: "Odoo", href: "/dashboard/odoo", icon: Database, section: "Operations" },
+  { label: "Finance", href: "/dashboard/finance", icon: Wallet },
   { label: "Stripe", href: "/dashboard/stripe", icon: CreditCard },
+  { label: "Shipments", href: "/dashboard/shipments", icon: Truck },
   { label: "Products", href: "/dashboard/products", icon: Package },
   { label: "Trade Program", href: "/dashboard/trade-program", icon: Handshake, badge: 2 },
   { label: "Drive", href: "/dashboard/drive", icon: FolderOpen },

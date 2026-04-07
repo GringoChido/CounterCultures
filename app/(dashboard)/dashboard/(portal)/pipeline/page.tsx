@@ -30,6 +30,14 @@ import {
   Loader2,
   Send,
   Download,
+  Package,
+  Truck,
+  Wallet,
+  BarChart3,
+  CheckCircle2,
+  Circle,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
@@ -41,10 +49,21 @@ import {
   type PipelineDeal,
   type PipelineStage,
   type LostReason,
+  type DealLineItem,
+  type DealPayment,
+  type PurchaseOrder,
+  type DealShipment,
 } from "@/app/lib/sample-dashboard-data";
 import type { DocumentType } from "@/app/lib/document-numbers";
 import { getDocumentTypeLabel } from "@/app/lib/document-numbers";
 import type { DocumentRecord } from "@/app/lib/document-numbers";
+import {
+  calculateDealFinancials,
+  calculateStripeFees,
+  getDealCompletionChecklist,
+  generatePOsFromLineItems,
+  checkOverduePayments,
+} from "@/app/lib/deal-automation";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -71,14 +90,38 @@ const stageConfig: Record<
   "verbal-yes": { label: "Verbal Yes", color: "text-emerald-400", bgColor: "bg-emerald-400" },
   won: { label: "Won", color: "text-status-won", bgColor: "bg-status-won" },
   lost: { label: "Lost", color: "text-status-lost", bgColor: "bg-status-lost" },
+  // Post-sale fulfillment stages
+  "quote-approved":      { label: "Quote Approved",    color: "text-emerald-400", bgColor: "bg-emerald-400" },
+  "deposit-pending":     { label: "Deposit Pending",   color: "text-amber-400",   bgColor: "bg-amber-400" },
+  "deposit-received":    { label: "Deposit Received",  color: "text-green-400",   bgColor: "bg-green-400" },
+  "ordering":            { label: "Ordering",          color: "text-blue-400",    bgColor: "bg-blue-400" },
+  "in-production":       { label: "In Production",     color: "text-violet-400",  bgColor: "bg-violet-400" },
+  "shipping":            { label: "Shipping",          color: "text-cyan-400",    bgColor: "bg-cyan-400" },
+  "received":            { label: "Received at CC",    color: "text-teal-400",    bgColor: "bg-teal-400" },
+  "delivery-scheduled":  { label: "Delivery Scheduled", color: "text-indigo-400", bgColor: "bg-indigo-400" },
+  "delivered":           { label: "Delivered",         color: "text-green-400",   bgColor: "bg-green-400" },
+  "balance-pending":     { label: "Balance Pending",   color: "text-amber-400",   bgColor: "bg-amber-400" },
+  "complete":            { label: "Complete",          color: "text-emerald-500", bgColor: "bg-emerald-500" },
+  "post-delivery-issue": { label: "Issue",             color: "text-red-400",     bgColor: "bg-red-400" },
 };
 
-const stages: PipelineStage[] = [
+type PipelineView = "sales" | "operations";
+
+const salesStages: PipelineStage[] = [
   "target-identified", "contacted", "conversation-started", "qualified-project",
   "discovery", "design-scope", "proposal", "proposal-sent",
   "negotiation", "follow-up-negotiation", "verbal-yes",
   "closed-won", "won", "closed-lost", "lost",
 ];
+
+const opsStages: PipelineStage[] = [
+  "quote-approved", "deposit-pending", "deposit-received",
+  "ordering", "in-production", "shipping", "received",
+  "delivery-scheduled", "delivered", "balance-pending",
+  "complete", "post-delivery-issue",
+];
+
+const stages: PipelineStage[] = [...salesStages, ...opsStages];
 
 const lostStages: PipelineStage[] = ["closed-lost", "lost"];
 
@@ -227,10 +270,13 @@ const DealCardOverlay = ({ deal }: { deal: PipelineDeal }) => (
 // Pipeline Page
 // ---------------------------------------------------------------------------
 
+type DealTabKey = "details" | "documents" | "line-items" | "payments" | "purchase-orders" | "shipments" | "financial";
+
 const PipelinePage = () => {
   const [deals, setDeals] = useState(SAMPLE_PIPELINE);
   const [activeDeal, setActiveDeal] = useState<PipelineDeal | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<PipelineDeal | null>(null);
+  const [pipelineView, setPipelineView] = useState<PipelineView>("sales");
 
   // Lost reason modal state
   const [lostModalOpen, setLostModalOpen] = useState(false);
@@ -242,7 +288,7 @@ const PipelinePage = () => {
     useState<LostReason | null>(null);
 
   // Documents tab state
-  const [dealTab, setDealTab] = useState<"details" | "documents">("details");
+  const [dealTab, setDealTab] = useState<DealTabKey>("details");
   const [dealDocs, setDealDocs] = useState<DocumentRecord[]>([]);
   const [docsLoading, setDocsLoading] = useState(false);
 
@@ -338,9 +384,15 @@ const PipelinePage = () => {
     }
 
     setDeals((prev) =>
-      prev.map((d) =>
-        d.id === active.id ? { ...d, stage: targetStage } : d
-      )
+      prev.map((d) => {
+        if (d.id !== active.id) return d;
+        const updated = { ...d, stage: targetStage };
+        // When a deal is won, also set its fulfillment stage
+        if (targetStage === "won" || targetStage === "closed-won") {
+          updated.fulfillmentStage = "quote-approved";
+        }
+        return updated;
+      })
     );
   };
 
@@ -381,7 +433,7 @@ const PipelinePage = () => {
     setSendDialogOpen(true);
   };
 
-  const visibleStages = stages;
+  const visibleStages = pipelineView === "sales" ? salesStages : opsStages;
 
   return (
     <div className="space-y-6">
@@ -414,8 +466,30 @@ const PipelinePage = () => {
         />
       </div>
 
-      {/* Add Deal button */}
-      <div className="flex justify-end">
+      {/* View Toggle + Add Deal */}
+      <div className="flex items-center justify-between">
+        <div className="flex gap-1 bg-dash-bg rounded-lg p-1">
+          <button
+            onClick={() => setPipelineView("sales")}
+            className={`px-4 py-2 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+              pipelineView === "sales"
+                ? "bg-dash-surface text-dash-text shadow-sm"
+                : "text-dash-text-secondary hover:text-dash-text"
+            }`}
+          >
+            Sales Pipeline
+          </button>
+          <button
+            onClick={() => setPipelineView("operations")}
+            className={`px-4 py-2 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+              pipelineView === "operations"
+                ? "bg-dash-surface text-dash-text shadow-sm"
+                : "text-dash-text-secondary hover:text-dash-text"
+            }`}
+          >
+            Operations
+          </button>
+        </div>
         <button className="flex items-center gap-2 px-4 py-1.5 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer">
           <Plus className="w-4 h-4" />
           New Deal
@@ -496,28 +570,29 @@ const PipelinePage = () => {
         {selectedDeal && (
           <div className="space-y-6">
             {/* Tab switcher */}
-            <div className="flex gap-1 bg-dash-bg rounded-lg p-1">
-              <button
-                onClick={() => setDealTab("details")}
-                className={`flex-1 px-3 py-2 text-xs font-medium rounded-md transition-colors cursor-pointer ${
-                  dealTab === "details"
-                    ? "bg-dash-surface text-dash-text shadow-sm"
-                    : "text-dash-text-secondary hover:text-dash-text"
-                }`}
-              >
-                Details
-              </button>
-              <button
-                onClick={() => setDealTab("documents")}
-                className={`flex-1 px-3 py-2 text-xs font-medium rounded-md transition-colors cursor-pointer flex items-center justify-center gap-1.5 ${
-                  dealTab === "documents"
-                    ? "bg-dash-surface text-dash-text shadow-sm"
-                    : "text-dash-text-secondary hover:text-dash-text"
-                }`}
-              >
-                <FileText className="w-3.5 h-3.5" />
-                Documents
-              </button>
+            <div className="flex gap-1 bg-dash-bg rounded-lg p-1 overflow-x-auto">
+              {([
+                { key: "details" as DealTabKey, label: "Details", icon: User },
+                { key: "line-items" as DealTabKey, label: "Line Items", icon: Package },
+                { key: "payments" as DealTabKey, label: "Payments", icon: Wallet },
+                { key: "purchase-orders" as DealTabKey, label: "POs", icon: FileText },
+                { key: "shipments" as DealTabKey, label: "Shipments", icon: Truck },
+                { key: "financial" as DealTabKey, label: "P&L", icon: BarChart3 },
+                { key: "documents" as DealTabKey, label: "Docs", icon: FileText },
+              ]).map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setDealTab(tab.key)}
+                  className={`px-2.5 py-2 text-[11px] font-medium rounded-md transition-colors cursor-pointer flex items-center gap-1 whitespace-nowrap ${
+                    dealTab === tab.key
+                      ? "bg-dash-surface text-dash-text shadow-sm"
+                      : "text-dash-text-secondary hover:text-dash-text"
+                  }`}
+                >
+                  <tab.icon className="w-3 h-3" />
+                  {tab.label}
+                </button>
+              ))}
             </div>
 
             {/* Details Tab */}
@@ -773,6 +848,461 @@ const PipelinePage = () => {
                     ))}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Line Items Tab */}
+            {dealTab === "line-items" && (
+              <div className="space-y-4">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
+                  Product Line Items
+                </h4>
+                {(selectedDeal.lineItems ?? []).length === 0 ? (
+                  <div className="text-center py-8">
+                    <Package className="w-10 h-10 text-dash-text-secondary/30 mx-auto mb-2" />
+                    <p className="text-sm text-dash-text-secondary">No line items yet</p>
+                    <p className="text-xs text-dash-text-secondary/60 mt-1">Add structured product data to this deal</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      {(selectedDeal.lineItems ?? []).map((item) => (
+                        <div key={item.id} className="bg-dash-bg rounded-lg p-3 space-y-2">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-dash-text">{item.productName}</p>
+                              <p className="text-[11px] text-dash-text-secondary">{item.brand} &bull; SKU: {item.sku}{item.finish ? ` \u2022 ${item.finish}` : ""}</p>
+                            </div>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                              item.status === "current" ? "bg-green-500/10 text-green-400" :
+                              item.status === "custom" ? "bg-violet-500/10 text-violet-400" :
+                              item.status === "special-order" ? "bg-amber-500/10 text-amber-400" :
+                              "bg-red-500/10 text-red-400"
+                            }`}>
+                              {item.status}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-4 gap-2 text-[11px]">
+                            <div>
+                              <p className="text-dash-text-secondary">Qty</p>
+                              <p className="text-dash-text font-medium">{item.quantity}</p>
+                            </div>
+                            <div>
+                              <p className="text-dash-text-secondary">Dealer Cost</p>
+                              <p className="text-dash-text font-medium">${item.dealerCost.toLocaleString()}</p>
+                            </div>
+                            <div>
+                              <p className="text-dash-text-secondary">Quoted</p>
+                              <p className="text-brand-copper font-medium">${item.quotedPrice.toLocaleString()}</p>
+                            </div>
+                            <div>
+                              <p className="text-dash-text-secondary">Margin</p>
+                              <p className={`font-medium ${item.marginPercent >= 35 ? "text-green-400" : item.marginPercent >= 20 ? "text-amber-400" : "text-red-400"}`}>
+                                {item.marginPercent}%
+                              </p>
+                            </div>
+                          </div>
+                          {item.leadTime && (
+                            <p className="text-[10px] text-dash-text-secondary">Lead time: {item.leadTime} &bull; Shipping: ${item.shippingCost.toLocaleString()}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {/* Totals */}
+                    <div className="bg-dash-bg rounded-lg p-3 border border-dash-border">
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <p className="text-dash-text-secondary">Total Quoted</p>
+                          <p className="text-dash-text font-semibold">${(selectedDeal.totalQuoted ?? 0).toLocaleString()} MXN</p>
+                        </div>
+                        <div>
+                          <p className="text-dash-text-secondary">Total Dealer Cost</p>
+                          <p className="text-dash-text font-semibold">${(selectedDeal.totalDealerCost ?? 0).toLocaleString()} MXN</p>
+                        </div>
+                        <div>
+                          <p className="text-dash-text-secondary">Total Shipping</p>
+                          <p className="text-dash-text font-semibold">${(selectedDeal.totalShipping ?? 0).toLocaleString()} MXN</p>
+                        </div>
+                        <div>
+                          <p className="text-dash-text-secondary">Net Margin</p>
+                          <p className="text-green-400 font-semibold">{selectedDeal.marginPercent ?? 0}%</p>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Payments Tab */}
+            {dealTab === "payments" && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
+                    Payments
+                  </h4>
+                  {selectedDeal.paymentStructure && (
+                    <span className="text-[10px] px-2 py-0.5 bg-dash-bg rounded-full text-dash-text-secondary">
+                      {selectedDeal.paymentStructure === "fifty-fifty" ? "50/50 Split" :
+                       selectedDeal.paymentStructure === "full-upfront" ? "Full Upfront" :
+                       selectedDeal.paymentStructure === "net-30" ? "Net 30" : "Custom"}
+                    </span>
+                  )}
+                </div>
+                {/* Payment summary */}
+                {(selectedDeal.payments ?? []).length > 0 && (
+                  <div className="bg-dash-bg rounded-lg p-3 grid grid-cols-3 gap-2 text-xs">
+                    <div>
+                      <p className="text-dash-text-secondary">Total Due</p>
+                      <p className="text-dash-text font-semibold">${(selectedDeal.payments ?? []).reduce((s, p) => s + p.amount, 0).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-dash-text-secondary">Collected</p>
+                      <p className="text-green-400 font-semibold">${(selectedDeal.payments ?? []).filter(p => p.status === "paid").reduce((s, p) => s + p.amount, 0).toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-dash-text-secondary">Outstanding</p>
+                      <p className="text-amber-400 font-semibold">${(selectedDeal.payments ?? []).filter(p => p.status !== "paid" && p.status !== "cancelled").reduce((s, p) => s + p.amount, 0).toLocaleString()}</p>
+                    </div>
+                  </div>
+                )}
+                {(selectedDeal.payments ?? []).length === 0 ? (
+                  <div className="text-center py-8">
+                    <Wallet className="w-10 h-10 text-dash-text-secondary/30 mx-auto mb-2" />
+                    <p className="text-sm text-dash-text-secondary">No payments tracked</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {(selectedDeal.payments ?? []).map((payment) => (
+                      <div key={payment.id} className="bg-dash-bg rounded-lg p-3 flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                          payment.status === "paid" ? "bg-green-500/10 text-green-400" :
+                          payment.status === "overdue" ? "bg-red-500/10 text-red-400" :
+                          payment.status === "sent" ? "bg-blue-500/10 text-blue-400" :
+                          "bg-dash-surface text-dash-text-secondary"
+                        }`}>
+                          <DollarSign className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-dash-text">{payment.invoiceId}</p>
+                          <div className="flex items-center gap-2 text-[11px] text-dash-text-secondary">
+                            <span className="capitalize">{payment.type}{payment.installmentNumber ? ` ${payment.installmentNumber}` : ""}</span>
+                            <span className="text-dash-border">&bull;</span>
+                            <span className="text-brand-copper">${payment.amount.toLocaleString()} {payment.currency}</span>
+                            {payment.stripeFees && (
+                              <>
+                                <span className="text-dash-border">&bull;</span>
+                                <span>Fees: -${payment.stripeFees.toLocaleString()}</span>
+                              </>
+                            )}
+                          </div>
+                          {payment.dueDate && (
+                            <p className="text-[10px] text-dash-text-secondary mt-0.5">
+                              Due: {payment.dueDate}{payment.paidDate ? ` \u2022 Paid: ${payment.paidDate}` : ""}
+                            </p>
+                          )}
+                        </div>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium shrink-0 ${
+                          payment.status === "paid" ? "bg-green-500/10 text-green-400" :
+                          payment.status === "overdue" ? "bg-red-500/10 text-red-400" :
+                          payment.status === "sent" ? "bg-blue-500/10 text-blue-400" :
+                          payment.status === "draft" ? "bg-dash-text-secondary/10 text-dash-text-secondary" :
+                          "bg-amber-500/10 text-amber-400"
+                        }`}>
+                          {payment.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Purchase Orders Tab */}
+            {dealTab === "purchase-orders" && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
+                    Purchase Orders
+                  </h4>
+                  {(selectedDeal.lineItems ?? []).length > 0 && (selectedDeal.purchaseOrders ?? []).length === 0 && (
+                    <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer">
+                      <FilePlus className="w-3.5 h-3.5" />
+                      Generate POs
+                    </button>
+                  )}
+                </div>
+                {(selectedDeal.purchaseOrders ?? []).length === 0 ? (
+                  <div className="text-center py-8">
+                    <FileText className="w-10 h-10 text-dash-text-secondary/30 mx-auto mb-2" />
+                    <p className="text-sm text-dash-text-secondary">No purchase orders yet</p>
+                    <p className="text-xs text-dash-text-secondary/60 mt-1">Generate POs from line items to start ordering</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {(selectedDeal.purchaseOrders ?? []).map((po) => (
+                      <div key={po.id} className="bg-dash-bg rounded-lg p-3 space-y-2">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-dash-text">{po.id}</p>
+                            <p className="text-[11px] text-dash-text-secondary">{po.brand} &bull; {po.manufacturerName}</p>
+                          </div>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                            po.status === "received" ? "bg-green-500/10 text-green-400" :
+                            po.status === "shipped" ? "bg-cyan-500/10 text-cyan-400" :
+                            po.status === "in-production" ? "bg-violet-500/10 text-violet-400" :
+                            po.status === "confirmed" || po.status === "paid-to-manufacturer" ? "bg-blue-500/10 text-blue-400" :
+                            po.status === "sent" ? "bg-amber-500/10 text-amber-400" :
+                            po.status === "issue" ? "bg-red-500/10 text-red-400" :
+                            "bg-dash-text-secondary/10 text-dash-text-secondary"
+                          }`}>
+                            {po.status}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 text-[11px]">
+                          <div>
+                            <p className="text-dash-text-secondary">Items</p>
+                            <p className="text-dash-text font-medium">{po.items.length}</p>
+                          </div>
+                          <div>
+                            <p className="text-dash-text-secondary">Total (Dealer)</p>
+                            <p className="text-dash-text font-medium">${po.totalAmount.toLocaleString()}</p>
+                          </div>
+                          <div>
+                            <p className="text-dash-text-secondary">Mfr Paid</p>
+                            <p className={`font-medium ${po.paymentToMfr ? "text-green-400" : "text-amber-400"}`}>
+                              {po.paymentToMfr ? `\u2713 ${po.paymentToMfr.date}` : "Pending"}
+                            </p>
+                          </div>
+                        </div>
+                        {po.trackingNumber && (
+                          <p className="text-[10px] text-dash-text-secondary">
+                            {po.trackingCarrier}: {po.trackingNumber}
+                          </p>
+                        )}
+                        {po.receivedCondition && po.receivedCondition !== "good" && (
+                          <p className="text-[10px] text-red-400">
+                            Condition: {po.receivedCondition}{po.receivedNotes ? ` \u2014 ${po.receivedNotes}` : ""}
+                          </p>
+                        )}
+                        {/* Items list */}
+                        <div className="border-t border-dash-border pt-2 mt-1">
+                          {po.items.map((item, idx) => (
+                            <p key={idx} className="text-[10px] text-dash-text-secondary">
+                              {item.quantity}x {item.productName}{item.finish ? ` (${item.finish})` : ""} &mdash; ${item.dealerCost.toLocaleString()}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Shipments Tab */}
+            {dealTab === "shipments" && (
+              <div className="space-y-4">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
+                  Shipments
+                </h4>
+                {selectedDeal.deliveryStrategy && (
+                  <div className="bg-dash-bg rounded-lg p-2 text-[11px] text-dash-text-secondary flex items-center gap-1.5">
+                    <Truck className="w-3.5 h-3.5" />
+                    Strategy: {selectedDeal.deliveryStrategy === "consolidate" ? "Consolidate & deliver once" : "Deliver as available"}
+                  </div>
+                )}
+                {(selectedDeal.shipments ?? []).length === 0 ? (
+                  <div className="text-center py-8">
+                    <Truck className="w-10 h-10 text-dash-text-secondary/30 mx-auto mb-2" />
+                    <p className="text-sm text-dash-text-secondary">No shipments yet</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {(selectedDeal.shipments ?? []).map((shipment) => (
+                      <div key={shipment.id} className="bg-dash-bg rounded-lg p-3 space-y-2">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-dash-text">{shipment.brand}</p>
+                            <p className="text-[11px] text-dash-text-secondary">PO: {shipment.poId}</p>
+                          </div>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                            shipment.status === "delivered-to-customer" ? "bg-green-500/10 text-green-400" :
+                            shipment.status === "delivered-to-cc" ? "bg-teal-500/10 text-teal-400" :
+                            shipment.status === "in-transit" ? "bg-blue-500/10 text-blue-400" :
+                            shipment.status === "customs" ? "bg-amber-500/10 text-amber-400" :
+                            "bg-dash-text-secondary/10 text-dash-text-secondary"
+                          }`}>
+                            {shipment.status.replace(/-/g, " ")}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-[11px]">
+                          {shipment.carrier && (
+                            <div>
+                              <p className="text-dash-text-secondary">Carrier</p>
+                              <p className="text-dash-text font-medium">{shipment.carrier}</p>
+                            </div>
+                          )}
+                          {shipment.trackingNumber && (
+                            <div>
+                              <p className="text-dash-text-secondary">Tracking</p>
+                              <p className="text-dash-text font-medium font-mono text-[10px]">{shipment.trackingNumber}</p>
+                            </div>
+                          )}
+                          {shipment.estimatedArrival && (
+                            <div>
+                              <p className="text-dash-text-secondary">ETA</p>
+                              <p className="text-dash-text font-medium">{shipment.estimatedArrival}</p>
+                            </div>
+                          )}
+                          {shipment.actualArrival && (
+                            <div>
+                              <p className="text-dash-text-secondary">Arrived</p>
+                              <p className="text-dash-text font-medium">{shipment.actualArrival}</p>
+                            </div>
+                          )}
+                        </div>
+                        {/* Inspection */}
+                        {shipment.inspectionStatus && (
+                          <div className={`flex items-center gap-1.5 text-[10px] ${
+                            shipment.inspectionStatus === "passed" ? "text-green-400" :
+                            shipment.inspectionStatus === "damaged" ? "text-red-400" :
+                            "text-amber-400"
+                          }`}>
+                            {shipment.inspectionStatus === "passed" ? <CheckCircle2 className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
+                            Inspection: {shipment.inspectionStatus}
+                            {shipment.inspectionNotes && ` \u2014 ${shipment.inspectionNotes}`}
+                          </div>
+                        )}
+                        {/* Items */}
+                        <div className="border-t border-dash-border pt-2">
+                          {shipment.items.map((item, idx) => (
+                            <p key={idx} className="text-[10px] text-dash-text-secondary">
+                              {item.quantity}x {item.productName}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Financial Summary Tab */}
+            {dealTab === "financial" && (
+              <div className="space-y-4">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
+                  Deal P&L
+                </h4>
+
+                {/* Money In */}
+                <div className="bg-dash-bg rounded-lg p-3 space-y-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-green-400">Money In</p>
+                  {(selectedDeal.payments ?? []).map((p) => (
+                    <div key={p.id} className="flex items-center justify-between text-xs">
+                      <span className="text-dash-text-secondary">
+                        {p.invoiceId} ({p.type}{p.installmentNumber ? ` ${p.installmentNumber}` : ""}):
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <span className="text-dash-text">${p.amount.toLocaleString()} MXN</span>
+                        {p.status === "paid" ? (
+                          <span className="text-green-400">\u2705</span>
+                        ) : p.status === "overdue" ? (
+                          <span className="text-red-400">\u26a0\ufe0f</span>
+                        ) : (
+                          <span className="text-dash-text-secondary">\u23f3</span>
+                        )}
+                      </span>
+                    </div>
+                  ))}
+                  {(selectedDeal.totalStripeFees ?? 0) > 0 && (
+                    <div className="flex items-center justify-between text-xs border-t border-dash-border pt-1">
+                      <span className="text-dash-text-secondary">Stripe fees:</span>
+                      <span className="text-red-400">-${(selectedDeal.totalStripeFees ?? 0).toLocaleString()} MXN</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between text-xs font-semibold border-t border-dash-border pt-1">
+                    <span className="text-dash-text-secondary">Net collected:</span>
+                    <span className="text-dash-text">${((selectedDeal.totalCollected ?? 0) - (selectedDeal.totalStripeFees ?? 0)).toLocaleString()} MXN</span>
+                  </div>
+                </div>
+
+                {/* Money Out */}
+                <div className="bg-dash-bg rounded-lg p-3 space-y-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-red-400">Money Out</p>
+                  {(selectedDeal.purchaseOrders ?? []).map((po) => (
+                    <div key={po.id} className="flex items-center justify-between text-xs">
+                      <span className="text-dash-text-secondary">
+                        {po.id} ({po.brand}):
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <span className="text-dash-text">${po.totalAmount.toLocaleString()} MXN</span>
+                        {po.paymentToMfr ? (
+                          <span className="text-green-400">\u2705</span>
+                        ) : (
+                          <span className="text-dash-text-secondary">\u23f3</span>
+                        )}
+                      </span>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between text-xs font-semibold border-t border-dash-border pt-1">
+                    <span className="text-dash-text-secondary">Total manufacturer cost:</span>
+                    <span className="text-dash-text">${(selectedDeal.totalDealerCost ?? 0).toLocaleString()} MXN</span>
+                  </div>
+                </div>
+
+                {/* Deal P&L */}
+                <div className="bg-dash-bg rounded-lg p-3 space-y-1.5 border border-dash-border">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-copper">Deal P&L</p>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-dash-text-secondary">Total quoted:</span>
+                    <span className="text-dash-text">${(selectedDeal.totalQuoted ?? 0).toLocaleString()} MXN</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-dash-text-secondary">Stripe fees:</span>
+                    <span className="text-red-400">-${(selectedDeal.totalStripeFees ?? 0).toLocaleString()} MXN</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-dash-text-secondary">Manufacturer costs:</span>
+                    <span className="text-red-400">-${(selectedDeal.totalDealerCost ?? 0).toLocaleString()} MXN</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-dash-text-secondary">Shipping:</span>
+                    <span className="text-red-400">-${(selectedDeal.totalShipping ?? 0).toLocaleString()} MXN</span>
+                  </div>
+                  <div className="border-t border-dash-border my-1" />
+                  <div className="flex justify-between text-sm font-semibold">
+                    <span className="text-dash-text">Net profit:</span>
+                    <span className="text-green-400">${(selectedDeal.netMargin ?? 0).toLocaleString()} MXN</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-dash-text-secondary">Margin:</span>
+                    <span className="text-green-400 font-semibold">{selectedDeal.marginPercent ?? 0}%</span>
+                  </div>
+                </div>
+
+                {/* Completion Checklist */}
+                <div className="bg-dash-bg rounded-lg p-3 space-y-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-dash-text-secondary">Completion Checklist</p>
+                  {getDealCompletionChecklist(selectedDeal).map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-2 text-xs">
+                      {item.checked ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-green-400 shrink-0" />
+                      ) : (
+                        <Circle className="w-3.5 h-3.5 text-dash-text-secondary shrink-0" />
+                      )}
+                      <span className={item.checked ? "text-dash-text" : "text-dash-text-secondary"}>
+                        {item.label.en}
+                      </span>
+                    </div>
+                  ))}
+                  {getDealCompletionChecklist(selectedDeal).every(i => i.checked) && (
+                    <button className="w-full mt-2 px-4 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-500/90 transition-colors cursor-pointer">
+                      Mark Deal Complete
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>
