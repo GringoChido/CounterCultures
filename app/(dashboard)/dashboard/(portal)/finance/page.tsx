@@ -1,6 +1,7 @@
 "use client";
 
-import { DollarSign, AlertTriangle, Factory, TrendingUp } from "lucide-react";
+import Link from "next/link";
+import { DollarSign, AlertTriangle, Factory, TrendingUp, FileCheck, Shield } from "lucide-react";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import {
   SAMPLE_PIPELINE,
@@ -12,6 +13,9 @@ import {
   checkOverduePayments,
   calculateDealFinancials,
 } from "@/app/lib/deal-automation";
+import { SAMPLE_TRAFICOS } from "@/app/lib/sample-customs-data";
+import { TRAFICO_STATUS_CONFIG } from "@/app/lib/customs-data";
+import { calculateUSMCASavings } from "@/app/lib/reconciliation";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -105,6 +109,24 @@ const getMfrPaymentsThisMonth = (): number => {
   return total;
 };
 
+const getImportCostsMTD = (): number =>
+  SAMPLE_TRAFICOS
+    .filter((t) => t.totalImportCost && t.status !== "collecting")
+    .reduce((sum, t) => sum + (t.totalImportCost ?? 0), 0);
+
+const getUSMCASavingsTotal = (): { igiWaived: number; dtaWaived: number; totalSaved: number } =>
+  SAMPLE_TRAFICOS.reduce(
+    (acc, t) => {
+      const s = calculateUSMCASavings(t);
+      return {
+        igiWaived: acc.igiWaived + s.igiWaived,
+        dtaWaived: acc.dtaWaived + s.dtaWaived,
+        totalSaved: acc.totalSaved + s.totalSaved,
+      };
+    },
+    { igiWaived: 0, dtaWaived: 0, totalSaved: 0 }
+  );
+
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -132,8 +154,9 @@ const FinancePage = () => {
         }, 0) / completedDeals.length
       : 0;
 
+  const importCostsMTD = getImportCostsMTD();
   const moneyIn = revenueThisMonth;
-  const moneyOut = getMfrPaymentsThisMonth();
+  const moneyOut = getMfrPaymentsThisMonth() + importCostsMTD;
   const netCashFlow = moneyIn - moneyOut;
 
   return (
@@ -299,6 +322,7 @@ const FinancePage = () => {
                   <th className="pb-3 pr-4 text-right">Stripe Fees</th>
                   <th className="pb-3 pr-4 text-right">Mfr Costs</th>
                   <th className="pb-3 pr-4 text-right">Shipping</th>
+                  <th className="pb-3 pr-4 text-right">Import Costs</th>
                   <th className="pb-3 pr-4 text-right">Net Margin</th>
                   <th className="pb-3 text-right">Margin %</th>
                 </tr>
@@ -306,6 +330,9 @@ const FinancePage = () => {
               <tbody>
                 {completedDeals.map((deal) => {
                   const fin = calculateDealFinancials(deal);
+                  const importCost = deal.importCosts?.totalImportCost ?? 0;
+                  const adjustedMargin = fin.netMargin - importCost;
+                  const adjustedPct = fin.totalQuoted > 0 ? Math.round((adjustedMargin / fin.totalQuoted) * 1000) / 10 : 0;
                   return (
                     <tr
                       key={deal.id}
@@ -325,11 +352,14 @@ const FinancePage = () => {
                       <td className="py-3 pr-4 text-right text-dash-text-secondary">
                         {formatMXN(fin.totalShipping)}
                       </td>
+                      <td className="py-3 pr-4 text-right text-dash-text-secondary">
+                        {importCost > 0 ? formatMXN(importCost) : "—"}
+                      </td>
                       <td className="py-3 pr-4 text-right font-semibold text-brand-copper">
-                        {formatMXN(fin.netMargin)}
+                        {formatMXN(adjustedMargin)}
                       </td>
                       <td className="py-3 text-right font-semibold text-brand-copper">
-                        {fin.marginPercent}%
+                        {adjustedPct}%
                       </td>
                     </tr>
                   );
@@ -339,15 +369,17 @@ const FinancePage = () => {
                   const totals = completedDeals.reduce(
                     (acc, deal) => {
                       const fin = calculateDealFinancials(deal);
+                      const importCost = deal.importCosts?.totalImportCost ?? 0;
                       return {
                         revenue: acc.revenue + fin.totalQuoted,
                         stripeFees: acc.stripeFees + fin.totalStripeFees,
                         mfrCosts: acc.mfrCosts + fin.totalDealerCost,
                         shipping: acc.shipping + fin.totalShipping,
-                        netMargin: acc.netMargin + fin.netMargin,
+                        importCosts: acc.importCosts + importCost,
+                        netMargin: acc.netMargin + fin.netMargin - importCost,
                       };
                     },
-                    { revenue: 0, stripeFees: 0, mfrCosts: 0, shipping: 0, netMargin: 0 }
+                    { revenue: 0, stripeFees: 0, mfrCosts: 0, shipping: 0, importCosts: 0, netMargin: 0 }
                   );
                   const totalMarginPct =
                     totals.revenue > 0
@@ -369,6 +401,9 @@ const FinancePage = () => {
                       <td className="py-3 pr-4 text-right text-dash-text-secondary">
                         {formatMXN(totals.shipping)}
                       </td>
+                      <td className="py-3 pr-4 text-right text-dash-text-secondary">
+                        {totals.importCosts > 0 ? formatMXN(totals.importCosts) : "—"}
+                      </td>
                       <td className="py-3 pr-4 text-right text-brand-copper">
                         {formatMXN(totals.netMargin)}
                       </td>
@@ -384,7 +419,113 @@ const FinancePage = () => {
         )}
       </div>
 
-      {/* Section D: Cash Flow Summary */}
+      {/* Section D: Import Costs Summary */}
+      <div className="bg-dash-surface rounded-xl border border-dash-border p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-dash-text-secondary">
+            Import Costs Summary
+          </h2>
+          <Link
+            href="/dashboard/customs"
+            className="flex items-center gap-1.5 text-xs text-brand-copper hover:text-brand-copper/80 transition-colors"
+          >
+            <FileCheck className="w-3.5 h-3.5" />
+            View Customs
+          </Link>
+        </div>
+
+        {/* Running totals */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+          <div className="bg-dash-bg rounded-lg p-3 text-center">
+            <p className="text-[10px] text-dash-text-secondary uppercase tracking-wider mb-1">Import Cost MTD</p>
+            <p className="text-lg font-bold text-brand-copper">{formatMXN(getImportCostsMTD())}</p>
+          </div>
+          <div className="bg-dash-bg rounded-lg p-3 text-center">
+            <p className="text-[10px] text-dash-text-secondary uppercase tracking-wider mb-1">Active Crossings</p>
+            <p className="text-lg font-bold text-dash-text">
+              {SAMPLE_TRAFICOS.filter((t) => t.status !== "complete" && t.status !== "issue").length}
+            </p>
+          </div>
+          <div className="bg-dash-bg rounded-lg p-3 text-center">
+            <p className="text-[10px] text-dash-text-secondary uppercase tracking-wider mb-1">USMCA Savings</p>
+            <p className="text-lg font-bold text-emerald-400">{formatMXN(getUSMCASavingsTotal().totalSaved)}</p>
+          </div>
+          <div className="bg-dash-bg rounded-lg p-3 text-center">
+            <p className="text-[10px] text-dash-text-secondary uppercase tracking-wider mb-1">Avg Cost / Crossing</p>
+            <p className="text-lg font-bold text-dash-text">
+              {(() => {
+                const completed = SAMPLE_TRAFICOS.filter((t) => t.totalImportCost);
+                return completed.length > 0
+                  ? formatMXN(Math.round(completed.reduce((s, t) => s + (t.totalImportCost ?? 0), 0) / completed.length))
+                  : "—";
+              })()}
+            </p>
+          </div>
+        </div>
+
+        {/* Recent tráficos table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-dash-border text-left text-xs text-dash-text-secondary uppercase tracking-wider">
+                <th className="pb-3 pr-4">Tráfico #</th>
+                <th className="pb-3 pr-4 text-right">Invoice USD</th>
+                <th className="pb-3 pr-4 text-right">Total Cost MXN</th>
+                <th className="pb-3 pr-4">Status</th>
+                <th className="pb-3 pr-4">Items</th>
+              </tr>
+            </thead>
+            <tbody>
+              {SAMPLE_TRAFICOS.map((trafico) => {
+                const cfg = TRAFICO_STATUS_CONFIG[trafico.status];
+                return (
+                  <tr key={trafico.id} className="border-b border-dash-border/50 text-dash-text">
+                    <td className="py-3 pr-4 font-medium">{trafico.traficoNumber}</td>
+                    <td className="py-3 pr-4 text-right">
+                      {trafico.invoiceValueUSD ? `$${trafico.invoiceValueUSD.toLocaleString()} USD` : "—"}
+                    </td>
+                    <td className="py-3 pr-4 text-right font-medium">
+                      {trafico.totalImportCost ? formatMXN(trafico.totalImportCost) : "—"}
+                    </td>
+                    <td className="py-3 pr-4">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${cfg.bg} ${cfg.text}`}>
+                        {cfg.label.en}
+                      </span>
+                    </td>
+                    <td className="py-3 pr-4 text-dash-text-secondary">{trafico.items.length} vendors</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* USMCA Savings Detail */}
+        {getUSMCASavingsTotal().totalSaved > 0 && (
+          <div className="mt-4 bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="w-4 h-4 text-emerald-400" />
+              <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">USMCA Savings Tracker</p>
+            </div>
+            <div className="grid grid-cols-3 gap-4 text-xs">
+              <div>
+                <p className="text-dash-text-secondary">IGI Waived</p>
+                <p className="text-emerald-400 font-semibold">{formatMXN(getUSMCASavingsTotal().igiWaived)}</p>
+              </div>
+              <div>
+                <p className="text-dash-text-secondary">DTA Waived</p>
+                <p className="text-emerald-400 font-semibold">{formatMXN(getUSMCASavingsTotal().dtaWaived)}</p>
+              </div>
+              <div>
+                <p className="text-dash-text-secondary">Total Saved</p>
+                <p className="text-emerald-400 font-bold text-base">{formatMXN(getUSMCASavingsTotal().totalSaved)}</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Section E: Cash Flow Summary */}
       <div className="bg-dash-surface rounded-xl border border-dash-border p-5">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-dash-text-secondary mb-4">
           Cash Flow Summary
@@ -409,7 +550,7 @@ const FinancePage = () => {
               {formatMXN(moneyOut)}
             </p>
             <p className="text-xs text-dash-text-secondary mt-1">
-              Manufacturer payments
+              Manufacturer + import costs
             </p>
           </div>
           <div className="text-center">

@@ -11,12 +11,17 @@ import {
   ChevronRight,
   MapPin,
   Search,
+  FileCheck,
+  Ship,
 } from "lucide-react";
+import Link from "next/link";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import {
   SAMPLE_PIPELINE,
   type DealShipment,
 } from "@/app/lib/sample-dashboard-data";
+import { SAMPLE_TRAFICOS } from "@/app/lib/sample-customs-data";
+import { TRAFICO_STATUS_CONFIG } from "@/app/lib/customs-data";
 
 // ---------------------------------------------------------------------------
 // Collect all shipments from pipeline deals
@@ -279,6 +284,61 @@ const ShipmentsPage = () => {
 
                             {/* Inspection & Details */}
                             <div className="space-y-4">
+                              {/* Multi-leg tracking */}
+                              {shipment.legs && shipment.legs.length > 0 && (
+                                <div>
+                                  <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary mb-3">
+                                    Multi-Leg Tracking
+                                  </h4>
+                                  <div className="space-y-2">
+                                    {shipment.legs.map((leg, li) => (
+                                      <div key={li} className="flex items-center gap-3 bg-dash-surface rounded-lg border border-dash-border px-3 py-2">
+                                        <Ship className="w-3.5 h-3.5 text-dash-text-secondary shrink-0" />
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-xs font-medium text-dash-text">
+                                            {leg.leg === "us-to-border" ? "US → Border" : leg.leg === "domestic-to-sma" ? "Border → SMA" : "Direct"}
+                                          </p>
+                                          <p className="text-[10px] text-dash-text-secondary">
+                                            {leg.carrier} &middot; {leg.trackingNumber}
+                                          </p>
+                                        </div>
+                                        <span className="text-[10px] text-dash-text-secondary">{leg.status}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Customs sub-status */}
+                              {shipment.status === "customs" && shipment.traficoId && (() => {
+                                const trafico = SAMPLE_TRAFICOS.find((t) => t.id === shipment.traficoId);
+                                if (!trafico) return null;
+                                const tsc = TRAFICO_STATUS_CONFIG[trafico.status];
+                                return (
+                                  <div>
+                                    <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary mb-3">
+                                      Customs Status
+                                    </h4>
+                                    <div className="bg-dash-surface rounded-lg border border-dash-border px-3 py-2">
+                                      <div className="flex items-center justify-between mb-1">
+                                        <span className="text-xs font-medium text-dash-text">
+                                          Trafico {trafico.traficoNumber}
+                                        </span>
+                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${tsc.bg} ${tsc.text}`}>
+                                          {tsc.label.en}
+                                        </span>
+                                      </div>
+                                      <Link
+                                        href="/dashboard/customs"
+                                        className="inline-flex items-center gap-1 text-[10px] text-brand-copper hover:text-brand-copper/80 transition-colors mt-1"
+                                      >
+                                        <FileCheck className="w-3 h-3" /> View in Customs
+                                      </Link>
+                                    </div>
+                                  </div>
+                                );
+                              })()}
+
                               <div>
                                 <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary mb-3">
                                   Inspection Status

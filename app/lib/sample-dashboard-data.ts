@@ -55,6 +55,10 @@ export interface DealLineItem {
   status: "current" | "special-order" | "custom" | "discontinued";
   marginAmount: number;
   marginPercent: number;
+  // Customs / import fields
+  countryOfOrigin?: "US" | "Canada" | "China" | "Mexico" | "India" | "Other";
+  requiresImport?: boolean;  // Auto-calculated: true if origin != "Mexico"
+  hsCode?: string;            // Harmonized System code for customs classification
 }
 
 export interface DealPayment {
@@ -124,6 +128,10 @@ export interface DealShipment {
   inspectionStatus?: "pending" | "passed" | "damaged" | "wrong-item";
   inspectionNotes?: string;
   inspectionPhotos?: string[];
+  // Multi-leg tracking (customs)
+  legs?: import("./customs-data").ShipmentLeg[];
+  traficoId?: string;         // Links to parent Tráfico
+  pedimentoItemId?: string;   // Links to specific item in crossing
 }
 
 export interface Lead {
@@ -205,6 +213,9 @@ export interface PipelineDeal {
   totalPaidToManufacturers?: number;
   netMargin?: number;
   marginPercent?: number;
+
+  // Import costs (from Pedimento / batch crossing allocation)
+  importCosts?: import("./customs-data").ImportCostAllocation;
 
   // Versioning
   quoteVersions?: { version: number; docId: string; status: "active" | "superseded" }[];

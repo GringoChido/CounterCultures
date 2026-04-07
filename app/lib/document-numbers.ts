@@ -8,7 +8,7 @@
  *   Receipt:  CC-DR-2026-001
  */
 
-export type DocumentType = "quote" | "invoice" | "po" | "receipt";
+export type DocumentType = "quote" | "invoice" | "po" | "receipt" | "trafico" | "pedimento" | "calculo";
 
 export interface DocumentRecord {
   [key: string]: string;
@@ -36,6 +36,9 @@ const PREFIX_MAP: Record<DocumentType, string> = {
   invoice: "INV",
   po: "PO",
   receipt: "DR",
+  trafico: "TRF",
+  pedimento: "PED",
+  calculo: "CALC",
 };
 
 const TYPE_LABELS: Record<DocumentType, { en: string; es: string }> = {
@@ -43,6 +46,9 @@ const TYPE_LABELS: Record<DocumentType, { en: string; es: string }> = {
   invoice: { en: "Invoice", es: "Factura" },
   po: { en: "Purchase Order", es: "Orden de Compra" },
   receipt: { en: "Delivery Receipt", es: "Recibo de Entrega" },
+  trafico: { en: "Tráfico", es: "Tráfico" },
+  pedimento: { en: "Pedimento", es: "Pedimento" },
+  calculo: { en: "Cálculo", es: "Cálculo" },
 };
 
 export const getDocumentTypeLabel = (
