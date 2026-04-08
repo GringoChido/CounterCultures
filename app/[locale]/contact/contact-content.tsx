@@ -41,7 +41,7 @@ const t = {
   whatsapp: { en: "Message on WhatsApp", es: "Mensaje por WhatsApp" },
   forProfessionals: { en: "For design professionals", es: "Para profesionales del dise\u00f1o" },
   tradeCopy: {
-    en: "Architects, designers, and builders \u2014 ask about our Trade Program for dedicated pricing and specification support.",
+    en: "Architects, designers, and builders \u2014 ask about our Trade Program for trade pricing and specification support.",
     es: "Arquitectos, dise\u00f1adores y constructores \u2014 preg\u00fanta sobre nuestro Programa Trade para precios profesionales y soporte de especificaci\u00f3n.",
   },
   learnTrade: { en: "Learn About Trade \u2192", es: "Conocer el Programa Trade \u2192" },

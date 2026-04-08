@@ -8,7 +8,7 @@
   },
   "brandBar": {
     "authorizedDealer": "Distribuidor Autorizado",
-    "subtitle": "Accesorios de clase mundial y artesanía, curados bajo un solo techo en San Miguel de Allende."
+    "subtitle": "Accesorios de clase mundial y artesanía, juntos bajo un solo techo en San Miguel de Allende."
   },
   "shopByRoom": {
     "eyebrow": "Comprar por Categoría",
@@ -31,7 +31,7 @@
     "eyebrow": "Nuestra Historia",
     "title": "Donde Dos Mundos se Encuentran",
     "paragraph1": "En 2004, Roger Williams abrió un pequeño showroom en San Miguel de Allende con una idea radical: un solo destino donde los arquitectos pudieran especificar marcas de clase mundial como Kohler, TOTO y Brizo — y encargar piezas únicas de los mejores artesanos de México.",
-    "paragraph2": "Veinte años después, Counter Cultures sigue siendo el único showroom de la región que une la ingeniería de precisión internacional con el alma de la artesanía mexicana. Cada pieza es curada personalmente. Cada artesano es un socio, no un proveedor.",
+    "paragraph2": "Veinte años después, Counter Cultures sigue siendo el único showroom de la región que une la ingeniería de precisión internacional con el alma de la artesanía mexicana. Cada pieza es seleccionada personalmente. Cada artesano es un socio, no un proveedor.",
     "readMore": "Leer la Historia Completa",
     "meetArtisans": "Conocer a Nuestros Artesanos"
   },
@@ -51,10 +51,10 @@
   "tradeTeaser": {
     "badge": "Para Profesionales del Diseño",
     "title": "El Programa Trade",
-    "subtitle": "Arquitectos, diseñadores y constructores obtienen precios dedicados, soporte de especificación y cumplimiento prioritario en todas las marcas que ofrecemos.",
+    "subtitle": "Arquitectos, diseñadores y constructores obtienen precios profesionales, soporte de especificación y cumplimiento prioritario en las 19 marcas que ofrecemos.",
     "apply": "Solicitar Acceso Trade",
     "benefits": {
-      "pricing": "Precios trade en todas las marcas",
+      "pricing": "Precios profesionales en todas las marcas",
       "support": "Soporte dedicado de especificación",
       "priority": "Cumplimiento y envío prioritario",
       "presentations": "Presentaciones en showroom para clientes"
@@ -92,7 +92,7 @@
     "company": "Compañía",
     "contact": "Contacto",
     "follow": "Síguenos",
-    "curated": "Curado en San Miguel de Allende, México.",
+    "curated": "Importado del mundo. Entregado desde San Miguel de Allende, México.",
     "bathroomFixtures": "Accesorios de Baño",
     "kitchenFixtures": "Accesorios de Cocina",
     "doorHardware": "Chapas y Herrajes",
