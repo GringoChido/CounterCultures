@@ -1,3 +1,5 @@
+// DEPRECATED: Odoo integration is inactive. Retained for reference during
+// migration to Google Sheets CRM. Safe to remove after 2026-07-01.
 import { NextResponse } from "next/server";
 import { searchCount, authenticate, execute, isConfigured } from "@/app/lib/odoo";
 import type { OdooDashboardSummary } from "@/app/lib/odoo";
