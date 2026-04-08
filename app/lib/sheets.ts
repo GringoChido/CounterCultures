@@ -69,7 +69,7 @@ const appendSheetData = async (
   values: string[][]
 ): Promise<void> => {
   if (!isConfigured()) {
-    console.log("[Sheets] Not configured — skipping write:", range, values);
+    console.warn("[Sheets] Not configured — skipping write");
     return;
   }
 

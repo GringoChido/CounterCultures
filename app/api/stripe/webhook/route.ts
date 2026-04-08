@@ -144,7 +144,7 @@ export async function POST(request: Request): Promise<Response> {
         break;
       }
       default:
-        console.log(`[Stripe Webhook] Unhandled event type: ${event.type}`);
+        console.warn(`[Stripe Webhook] Unhandled event type: ${event.type}`);
     }
   } catch (err) {
     console.error(`[Stripe Webhook] Error processing ${event.type}:`, err);

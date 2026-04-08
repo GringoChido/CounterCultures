@@ -5,7 +5,7 @@ const getResend = () => {
   if (!_resend) {
     const key = process.env.RESEND_API_KEY;
     if (!key) {
-      console.log("[Email] RESEND_API_KEY not configured — emails will be skipped");
+      console.warn("[Email] RESEND_API_KEY not configured — emails will be skipped");
       return null;
     }
     _resend = new Resend(key);
@@ -22,7 +22,7 @@ const WHATSAPP_NUMBER = process.env.WHATSAPP_NOTIFY_NUMBER || "";
 export const notifyWhatsApp = async (message: string): Promise<void> => {
   const token = process.env.WHATSAPP_API_TOKEN;
   if (!token || !WHATSAPP_NUMBER) {
-    console.log("[WhatsApp] Not configured — skipping:", message);
+    console.warn("[WhatsApp] Not configured — skipping");
     return;
   }
 
