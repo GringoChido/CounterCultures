@@ -77,7 +77,7 @@ const ContactPage = async ({ params }: ContactPageProps) => {
       "@type": "Organization",
       "@id": `${BASE_URL}/#organization`,
       name: "Counter Cultures",
-      telephone: "+52-415-000-0000",
+      telephone: "+52-415-154-8375",
       email: "info@countercultures.mx",
       address: {
         "@type": "PostalAddress",
@@ -90,7 +90,7 @@ const ContactPage = async ({ params }: ContactPageProps) => {
       contactPoint: [
         {
           "@type": "ContactPoint",
-          telephone: "+52-415-000-0000",
+          telephone: "+52-415-154-8375",
           contactType: "customer service",
           availableLanguage: ["English", "Spanish"],
           areaServed: "MX",

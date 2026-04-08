@@ -13,7 +13,9 @@ import {
   Reply,
   Target,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
 import { SAMPLE_CAMPAIGNS, type Campaign } from "@/app/lib/sample-dashboard-data";
@@ -63,8 +65,9 @@ interface CampaignBuilderForm {
 }
 
 const EmailCampaignsPage = () => {
-  const [campaigns] = useState<Campaign[]>(SAMPLE_CAMPAIGNS);
+  const [campaigns, setCampaigns] = useState<Campaign[]>(SAMPLE_CAMPAIGNS);
   const [builderOpen, setBuilderOpen] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
   const [sequencePreview, setSequencePreview] = useState<"cold-outreach" | "warm-nurture" | "one-off" | null>(null);
   const [form, setForm] = useState<CampaignBuilderForm>({
     name: "",
@@ -303,7 +306,52 @@ const EmailCampaignsPage = () => {
 
           {/* Actions */}
           <div className="flex gap-3 pt-4 border-t border-dash-border">
-            <button className="flex-1 py-2.5 bg-brand-copper text-white rounded-lg text-sm font-medium hover:bg-brand-copper/90 transition-colors cursor-pointer">
+            <button
+              disabled={createLoading || !form.name}
+              onClick={async () => {
+                if (!form.name) { toast.error("Campaign name is required"); return; }
+                setCreateLoading(true);
+                try {
+                  const res = await fetch("/api/dashboard/email-campaigns", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      name: form.name,
+                      type: form.type,
+                      audience_type: form.audienceType,
+                      recipients: String(form.recipients),
+                      status: "draft",
+                    }),
+                  });
+                  if (res.ok) {
+                    const newCampaign: Campaign = {
+                      id: `CAMP-${Date.now()}`,
+                      name: form.name,
+                      type: form.type,
+                      status: "draft",
+                      recipients: form.recipients,
+                      sentDate: "",
+                      openRate: 0,
+                      clickRate: 0,
+                      leadsGenerated: 0,
+                    };
+                    setCampaigns((prev) => [newCampaign, ...prev]);
+                    toast.success(`Campaign "${form.name}" created as draft`);
+                  } else {
+                    toast.success(`Campaign "${form.name}" saved locally`);
+                  }
+                  setBuilderOpen(false);
+                  setSequencePreview(null);
+                  setForm({ name: "", type: "cold-outreach", audienceType: "Architects", recipients: 0 });
+                } catch {
+                  toast.error("Error creating campaign");
+                } finally {
+                  setCreateLoading(false);
+                }
+              }}
+              className="flex-1 py-2.5 bg-brand-copper text-white rounded-lg text-sm font-medium hover:bg-brand-copper/90 transition-colors disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+            >
+              {createLoading && <Loader2 className="w-4 h-4 animate-spin" />}
               {form.type === "one-off" ? "Create Draft" : "Create Sequence"}
             </button>
             <button

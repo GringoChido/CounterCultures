@@ -67,7 +67,7 @@ const ReturnsWarrantyPage = async ({ params }: PageProps) => {
             </a>
             {" o "}
             <a href="tel:4151548375" className="text-brand-terracotta hover:underline">
-              (415) 154 8375
+              415.154.8375
             </a>
           </p>
 

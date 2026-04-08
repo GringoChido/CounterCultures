@@ -6,9 +6,9 @@ export const SITE_CONFIG = {
   url: "https://countercultures.com.mx",
   showroom: {
     address: "Providencia, San Miguel de Allende, Guanajuato, Mexico",
-    phone: "+52 415 XXX XXXX",
+    phone: "415.154.8375",
     email: "info@countercultures.com.mx",
-    whatsapp: "+52 415 XXX XXXX",
+    whatsapp: "415.154.8375",
     hours: "Lunes a Viernes, 10:00 – 18:00",
   },
   social: {

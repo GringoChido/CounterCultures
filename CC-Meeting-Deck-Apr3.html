@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Counter Cultures × Untold Works — Platform Presentation</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,600;1,400&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-dark: #0f0f0f;
+            --card-bg: #1a1a18;
+            --card-alt: #161614;
+            --text-primary: #e8e4df;
+            --text-secondary: #9a9590;
+            --text-muted: #6a6560;
+            --accent-warm: #d4a574;
+            --accent-pink: #e8b4b8;
+            --accent-gold: #c9b896;
+            --accent-green: #8faa7b;
+            --accent-blue: #7b9aaa;
+            --accent-red: #c47a6a;
+            --border-light: rgba(200, 190, 180, 0.1);
+            --border-medium: rgba(200, 190, 180, 0.2);
+        }
+
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            background: var(--bg-dark); color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif; line-height: 1.5;
+        }
+        body { scroll-snap-type: y mandatory; }
+
+        .deck {
+            position: relative; width: 100%;
+            height: 100vh; height: 100dvh;
+            overflow-y: scroll; overflow-x: hidden;
+            scroll-snap-type: y mandatory; scroll-behavior: smooth;
+        }
+
+        .slide {
+            width: 100%; height: 100vh; height: 100dvh;
+            min-height: 100vh; min-height: 100dvh;
+            scroll-snap-align: start; scroll-snap-stop: always;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #141412 50%, var(--bg-dark) 100%);
+            padding: clamp(2rem, 5vw, 4rem);
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            position: relative; overflow: hidden;
+        }
+
+        @media (max-height: 700px) { .slide { padding: clamp(1.5rem, 3vw, 2.5rem); } }
+        @media (max-height: 600px) { .slide { padding: clamp(1rem, 2vw, 1.5rem); } }
+
+        @media (prefers-reduced-motion: reduce) {
+            .deck, .slide { scroll-behavior: auto; }
+            .reveal { animation: none !important; opacity: 1 !important; }
+        }
+
+        .slide::before {
+            content: ''; position: absolute;
+            width: clamp(200px, 30vw, 600px); height: clamp(200px, 30vw, 600px);
+            background: radial-gradient(circle, rgba(212, 165, 116, 0.05) 0%, transparent 70%);
+            border-radius: 50%; top: -20%; left: -10%; pointer-events: none;
+        }
+        .slide::after {
+            content: ''; position: absolute;
+            width: clamp(150px, 20vw, 400px); height: clamp(150px, 20vw, 400px);
+            background: radial-gradient(circle, rgba(139, 170, 123, 0.04) 0%, transparent 70%);
+            border-radius: 50%; bottom: -15%; right: -5%; pointer-events: none;
+        }
+
+        .slide-content {
+            position: relative; z-index: 2; width: 100%; max-width: 1200px;
+            height: 100%; display: flex; flex-direction: column;
+            justify-content: center; gap: clamp(0.75rem, 2vw, 1.5rem);
+        }
+
+        .slide-header {
+            display: flex; align-items: flex-start;
+            gap: clamp(0.75rem, 2vw, 1.5rem);
+            margin-bottom: clamp(0.25rem, 0.5vw, 0.5rem);
+        }
+
+        .section-number {
+            font-family: 'Cormorant', serif;
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            font-weight: 600; color: var(--accent-warm); line-height: 1;
+        }
+        .section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(0.65rem, 1vw, 0.85rem);
+            letter-spacing: 0.15em; color: var(--text-secondary);
+            text-transform: uppercase; align-self: center;
+        }
+
+        .slide-title {
+            font-family: 'Cormorant', serif;
+            font-size: clamp(2.2rem, 4.5vw, 3.5rem);
+            font-weight: 600; line-height: 1.1;
+            margin-bottom: clamp(0.5rem, 1vw, 1rem);
+        }
+
+        .accent-warm { color: var(--accent-warm); }
+        .accent-pink { color: var(--accent-pink); }
+        .accent-gold { color: var(--accent-gold); }
+        .accent-green { color: var(--accent-green); }
+        .accent-blue { color: var(--accent-blue); }
+
+        .slide-text {
+            font-size: clamp(0.85rem, 1.6vw, 1.05rem);
+            color: var(--text-primary); line-height: 1.6; max-width: 900px;
+        }
+        .slide-subtitle {
+            font-size: clamp(0.8rem, 1.4vw, 0.95rem);
+            color: var(--text-secondary);
+        }
+
+        .card {
+            background: var(--card-bg); border: 1px solid var(--border-light);
+            border-radius: clamp(0.5rem, 1vw, 1rem);
+            padding: clamp(0.75rem, 1.5vw, 1.25rem);
+        }
+        .card-title {
+            font-family: 'Cormorant', serif;
+            font-size: clamp(0.95rem, 1.8vw, 1.2rem);
+            font-weight: 600; color: var(--accent-warm);
+            margin-bottom: clamp(0.4rem, 0.8vw, 0.6rem);
+        }
+        .card-text {
+            font-size: clamp(0.7rem, 1.2vw, 0.85rem);
+            color: var(--text-secondary); line-height: 1.5;
+        }
+
+        .flow-container {
+            display: flex; flex-direction: column;
+            gap: clamp(0.5rem, 1vw, 0.75rem); width: 100%;
+        }
+        .flow-step {
+            display: flex; gap: clamp(0.75rem, 1.5vw, 1.25rem);
+            align-items: flex-start;
+        }
+        .step-number {
+            font-family: 'JetBrains Mono', monospace; font-weight: 600;
+            font-size: clamp(0.9rem, 1.5vw, 1.1rem); color: var(--accent-warm);
+            min-width: clamp(1.5rem, 3vw, 2.5rem); text-align: center;
+        }
+        .step-content { flex: 1; }
+        .step-title {
+            font-family: 'Cormorant', serif;
+            font-size: clamp(0.9rem, 1.6vw, 1.05rem);
+            font-weight: 600; color: var(--text-primary);
+            margin-bottom: clamp(0.15rem, 0.3vw, 0.3rem);
+        }
+        .step-description {
+            font-size: clamp(0.7rem, 1.2vw, 0.85rem);
+            color: var(--text-secondary); line-height: 1.45;
+        }
+        .step-connector {
+            display: flex; justify-content: center;
+            color: var(--border-medium); font-size: clamp(0.8rem, 1.5vw, 1rem);
+            margin: clamp(-0.4rem, -0.8vw, -0.5rem) 0;
+        }
+
+        .two-column {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: clamp(1.25rem, 2.5vw, 2rem); width: 100%; align-items: flex-start;
+        }
+        @media (max-width: 900px) { .two-column { grid-template-columns: 1fr; } }
+
+        .three-column {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(clamp(180px, 22vw, 320px), 1fr));
+            gap: clamp(0.75rem, 1.5vw, 1.25rem); width: 100%;
+        }
+
+        .column-title {
+            font-family: 'Cormorant', serif;
+            font-size: clamp(1rem, 2vw, 1.3rem);
+            font-weight: 600; color: var(--accent-warm);
+            margin-bottom: clamp(0.5rem, 1vw, 0.75rem);
+        }
+
+        /* Hub */
+        .hub-diagram {
+            display: flex; flex-direction: column; align-items: center;
+            gap: clamp(0.75rem, 1.5vw, 1.25rem); width: 100%;
+        }
+        .hub {
+            background: linear-gradient(135deg, var(--accent-warm) 0%, #d4a574 100%);
+            color: #000; padding: clamp(0.5rem, 1vw, 1rem) clamp(1.25rem, 2vw, 1.75rem);
+            border-radius: clamp(2rem, 4vw, 3rem);
+            font-family: 'Cormorant', serif;
+            font-size: clamp(1rem, 1.8vw, 1.3rem); font-weight: 600; text-align: center;
+        }
+        .spokes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(clamp(90px, 14vw, 160px), 1fr));
+            gap: clamp(0.5rem, 1vw, 1rem); width: 100%;
+        }
+        .spoke {
+            background: var(--card-bg); border: 2px solid var(--border-medium);
+            border-radius: clamp(0.5rem, 1vw, 0.75rem);
+            padding: clamp(0.5rem, 1vw, 0.75rem);
+            text-align: center; font-size: clamp(0.7rem, 1.2vw, 0.85rem);
+            color: var(--text-secondary); transition: all 0.3s ease;
+        }
+        .spoke:hover { border-color: var(--accent-warm); background: var(--card-alt); }
+        .hub-subtitle {
+            font-size: clamp(0.75rem, 1.3vw, 0.9rem); color: var(--text-secondary);
+            font-style: italic; text-align: center; max-width: 800px;
+        }
+
+        /* Cost table */
+        .cost-table { width: 100%; border-collapse: collapse; font-size: clamp(0.7rem, 1.2vw, 0.85rem); }
+        .cost-table th, .cost-table td {
+            padding: clamp(0.4rem, 0.8vw, 0.6rem); text-align: left; border: 1px solid var(--border-light);
+        }
+        .cost-table th {
+            background: var(--card-alt); font-weight: 600; color: var(--accent-warm);
+            font-family: 'Cormorant', serif; font-size: clamp(0.8rem, 1.4vw, 0.95rem);
+        }
+        .cost-table tr:hover { background: var(--card-alt); }
+        .cost-table td { color: var(--text-secondary); }
+        .cost-table .total-row { background: var(--card-alt); font-weight: 600; color: var(--accent-gold); }
+
+        /* Phases */
+        .phases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(clamp(140px, 18vw, 240px), 1fr));
+            gap: clamp(0.75rem, 1.5vw, 1.25rem); width: 100%;
+        }
+        .phase-card {
+            background: var(--card-bg); border-left: 4px solid var(--accent-warm);
+            padding: clamp(0.75rem, 1.5vw, 1.25rem);
+            border-radius: clamp(0.5rem, 1vw, 0.75rem);
+        }
+        .phase-title {
+            font-family: 'Cormorant', serif;
+            font-size: clamp(0.9rem, 1.6vw, 1.1rem);
+            font-weight: 600; color: var(--accent-warm);
+            margin-bottom: clamp(0.4rem, 0.8vw, 0.6rem);
+        }
+        .phase-text {
+            font-size: clamp(0.7rem, 1.2vw, 0.82rem);
+            color: var(--text-secondary); line-height: 1.5;
+        }
+
+        /* Highlights */
+        .highlight-box {
+            background: rgba(212, 165, 116, 0.08);
+            border: 1px solid rgba(212, 165, 116, 0.2);
+            padding: clamp(0.75rem, 1.5vw, 1.25rem);
+            border-radius: clamp(0.5rem, 1vw, 0.75rem);
+            border-left: 4px solid var(--accent-warm);
+        }
+        .highlight-text {
+            font-size: clamp(0.8rem, 1.4vw, 0.95rem);
+            color: var(--text-primary); line-height: 1.6;
+        }
+
+        /* Features */
+        .feature-list { display: flex; flex-direction: column; gap: clamp(0.35rem, 0.7vw, 0.5rem); }
+        .feature-item {
+            display: flex; gap: clamp(0.5rem, 1vw, 0.75rem);
+            align-items: flex-start; font-size: clamp(0.75rem, 1.3vw, 0.88rem);
+        }
+        .feature-icon { color: var(--accent-gold); font-weight: 600; min-width: fit-content; margin-top: 0.15em; }
+        .feature-text { color: var(--text-secondary); line-height: 1.45; }
+
+        /* Nav */
+        .nav-dots {
+            position: fixed; right: clamp(1rem, 3vw, 2rem); top: 50%;
+            transform: translateY(-50%); display: flex; flex-direction: column;
+            gap: clamp(0.35rem, 0.6vw, 0.5rem); z-index: 100;
+        }
+        .dot {
+            width: clamp(6px, 1vw, 9px); height: clamp(6px, 1vw, 9px);
+            border: 2px solid var(--border-medium); border-radius: 50%;
+            cursor: pointer; transition: all 0.3s ease; background: transparent;
+        }
+        .dot:hover { border-color: var(--accent-warm); background: rgba(212, 165, 116, 0.2); }
+        .dot.active { background: var(--accent-warm); border-color: var(--accent-warm); }
+
+        .progress-bar {
+            position: fixed; bottom: 0; left: 0; height: 3px;
+            background: linear-gradient(90deg, var(--accent-warm) 0%, var(--accent-gold) 50%, var(--accent-warm) 100%);
+            z-index: 100; width: 0%; transition: width 0.3s ease;
+        }
+
+        /* Title slide */
+        .title-slide {
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: center; text-align: center; gap: clamp(1rem, 3vw, 2rem);
+        }
+        .title-company {
+            font-family: 'Cormorant', serif; font-size: clamp(2rem, 5vw, 4rem);
+            font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+        }
+        .title-main {
+            font-family: 'Cormorant', serif; font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 400; line-height: 1.2;
+        }
+        .title-accent-word { color: var(--accent-warm); font-style: italic; }
+        .title-platform-list {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(0.75rem, 1.5vw, 1rem); letter-spacing: 0.1em;
+            color: var(--text-secondary); text-transform: uppercase;
+        }
+        .title-footer { font-size: clamp(0.8rem, 1.3vw, 0.95rem); color: var(--text-muted); margin-top: clamp(1rem, 3vw, 2rem); }
+
+        .reveal { opacity: 0; transform: translateY(20px); animation: reveal 0.6s ease-out forwards; }
+        @keyframes reveal { to { opacity: 1; transform: translateY(0); } }
+        .reveal:nth-child(1) { animation-delay: 0s; }
+        .reveal:nth-child(2) { animation-delay: 0.1s; }
+        .reveal:nth-child(3) { animation-delay: 0.2s; }
+
+        .divider { height: 1px; background: var(--border-light); width: 100%; margin: clamp(0.4rem, 0.8vw, 0.75rem) 0; }
+        .small-caps { font-variant: small-caps; letter-spacing: 0.05em; }
+
+        @media (max-width: 768px) {
+            .nav-dots { display: none; }
+            .slide { padding: clamp(1rem, 4vw, 2rem); }
+        }
+        @media (max-height: 500px) {
+            .slide { padding: 1rem; justify-content: flex-start; padding-top: clamp(1rem, 10vh, 2rem); }
+            .slide-content { gap: 0.5rem; }
+            .section-number { font-size: 1.5rem; }
+            .slide-title { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        }
+
+        /* Backend flow */
+        .backend-flow {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(clamp(130px, 16vw, 200px), 1fr));
+            gap: clamp(0.5rem, 1vw, 0.75rem); width: 100%;
+        }
+        .backend-step {
+            background: var(--card-bg); border: 1px solid var(--border-light);
+            border-radius: clamp(0.4rem, 0.8vw, 0.6rem);
+            padding: clamp(0.6rem, 1.2vw, 1rem); text-align: center;
+            position: relative;
+        }
+        .backend-step-num {
+            font-family: 'JetBrains Mono', monospace; font-weight: 600;
+            font-size: clamp(0.7rem, 1.2vw, 0.85rem); color: var(--accent-warm);
+            margin-bottom: 0.3rem;
+        }
+        .backend-step-title {
+            font-family: 'Cormorant', serif; font-weight: 600;
+            font-size: clamp(0.8rem, 1.4vw, 0.95rem); color: var(--text-primary);
+            margin-bottom: 0.2rem;
+        }
+        .backend-step-desc {
+            font-size: clamp(0.65rem, 1.1vw, 0.78rem);
+            color: var(--text-secondary); line-height: 1.4;
+        }
+        .backend-step:nth-child(1)::after,
+        .backend-step:nth-child(2)::after {
+            content: '→'; position: absolute; right: clamp(-0.6rem, -1vw, -0.8rem);
+            top: 50%; transform: translateY(-50%);
+            color: var(--accent-warm); font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+        }
+        @media (max-width: 900px) { .backend-step:nth-child(1)::after, .backend-step:nth-child(2)::after { content: ''; } }
+
+        /* Tag badges for auto vs manual */
+        .tag {
+            display: inline-block; font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(0.55rem, 0.9vw, 0.68rem); letter-spacing: 0.05em;
+            padding: 0.15em 0.5em; border-radius: 0.3em; margin-top: 0.35rem;
+            text-transform: uppercase; font-weight: 600;
+        }
+        .tag-auto {
+            background: rgba(143, 170, 123, 0.2); color: var(--accent-green);
+            border: 1px solid rgba(143, 170, 123, 0.3);
+        }
+        .tag-manual {
+            background: rgba(212, 165, 116, 0.15); color: var(--accent-warm);
+            border: 1px solid rgba(212, 165, 116, 0.25);
+        }
+
+        /* Deep-dive system slide */
+        .system-hero {
+            display: flex; align-items: center; gap: clamp(0.75rem, 1.5vw, 1.25rem);
+            margin-bottom: clamp(0.25rem, 0.5vw, 0.5rem);
+        }
+        .system-hero-icon {
+            font-size: clamp(2.5rem, 5vw, 4rem); line-height: 1;
+        }
+        .system-hero-text {
+            font-size: clamp(0.85rem, 1.5vw, 1rem); color: var(--text-secondary);
+            line-height: 1.6; max-width: 700px;
+        }
+    </style>
+</head>
+<body>
+    <div class="deck" id="deck">
+
+        <!-- ============================================================ -->
+        <!-- SLIDE 1: TITLE -->
+        <!-- ============================================================ -->
+        <section class="slide title-slide reveal">
+            <div class="slide-content">
+                <div class="title-company small-caps">Counter Cultures</div>
+                <div class="title-main">
+                    Your Business, <span class="title-accent-word">Fully Connected</span>
+                </div>
+                <div class="title-platform-list">Website · Dashboard · CRM · AI</div>
+                <div class="title-footer">Untold Works × Counter Cultures</div>
+                <div class="title-footer" style="margin-top: 0;">April 3, 2026</div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SLIDE 2: WHERE THINGS ARE NOW -->
+        <!-- ============================================================ -->
+        <section class="slide reveal">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <div class="section-number">01</div>
+                    <div class="section-label">TODAY</div>
+                </div>
+                <h1 class="slide-title">Where Things Are Now</h1>
+
+                <div class="two-column">
+                    <div>
+                        <div class="column-title" style="color: var(--accent-red);">What Happens Now</div>
+                        <div class="feature-list">
+                            <div class="feature-item">
+                                <span class="feature-icon" style="color: var(--accent-red);">→</span>
+                                <span class="feature-text"><strong>Squarespace</strong> works as a digital brochure — people see products, but inquiries don't feed anywhere.</span>
+                            </div>
+                            <div class="feature-item">
+                                <span class="feature-icon" style="color: var(--accent-red);">→</span>
+                                <span class="feature-text"><strong>WhatsApp, email, walk-ins</strong> come in separately — no central place to track them.</span>
+                            </div>
+                            <div class="feature-item">
+                                <span class="feature-icon" style="color: var(--accent-red);">→</span>
+                                <span class="feature-text"><strong>Odoo</strong> has customer data and sales history, but it's disconnected from the website and messaging.</span>
+                            </div>
+                            <div class="feature-item">
+                                <span class="feature-icon" style="color: var(--accent-red);">→</span>
+                                <span class="feature-text"><strong>Orders and deliveries</strong> tracked in Roger's head and WhatsApp threads — no status tracking.</span>
+                            </div>
+                            <div class="feature-item">
+                                <span class="feature-icon" style="color: var(--accent-red);">→</span>
+                                <span class="feature-text"><strong>No marketing:</strong> no SEO, no blog, no social media, no way for new people to discover you.</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="column-title" style="color: var(--accent-red);">What Gets Lost</div>
+                        <div class="highlight-box" style="border-left-color: var(--accent-red); background: rgba(196, 122, 106, 0.08); border-color: rgba(196, 122, 106, 0.2);">
+                            <div class="highlight-text">
+                                <strong>The problem isn't the tools — it's that they don't talk to each other.</strong><br><br>
+                                A customer inquires on WhatsApp at 2am. Roger doesn't see it until morning. Someone fills a form on Squarespace and it vanishes into email. An order ships from the manufacturer but nobody updates the customer. Valuable leads, data, and relationships slip through the cracks.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SLIDE 6: AI + VISION (Combined) -->
+        <!-- ============================================================ -->
+        <section class="slide reveal">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <div class="section-number">02</div>
+                    <div class="section-label">INTELLIGENCE + VISION</div>
+                </div>
+                <h1 class="slide-title">One Platform, <span class="accent-warm">AI-Powered</span></h1>
+
+                <div class="two-column">
+                    <div>
+                        <div class="column-title" style="color: var(--accent-blue);">Website Chatbot</div>
+                        <div class="highlight-box" style="border-left-color: var(--accent-blue); background: rgba(123, 154, 170, 0.06); border-color: rgba(123, 154, 170, 0.15);">
+                            <div class="highlight-text">
+                                A customer visits at 11pm looking for a TOTO toilet. The AI knows your entire catalog — products, prices, brands. It answers in Spanish, suggests alternatives, asks about their budget, and captures their contact info.<br><br>
+                                Monday morning, that lead is in your dashboard, warm and qualified.
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="column-title" style="color: var(--accent-pink);">Dashboard Assistant</div>
+                        <div class="highlight-box" style="border-left-color: var(--accent-pink); background: rgba(232, 180, 184, 0.06); border-color: rgba(232, 180, 184, 0.15);">
+                            <div class="highlight-text">
+                                Roger types: <em>"How did we do last month?"</em><br><br>
+                                The AI pulls from Stripe, CRM, and pipeline data. "12 new leads, 3 deals closed, $87,000 MXN in revenue. Most popular: bathroom faucets." It drafts posts, writes blog content, and helps compose quotes.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hub-diagram" style="margin-top: clamp(0.5rem, 1vw, 0.75rem);">
+                    <div class="hub">Everything Connects to One Platform</div>
+                    <div class="spokes" style="grid-template-columns: repeat(4, 1fr);">
+                        <div class="spoke">Website<br><strong>Discovery + Leads</strong></div>
+                        <div class="spoke">Dashboard<br><strong>Command Center</strong></div>
+                        <div class="spoke">Google Drive<br><strong>Data Layer</strong></div>
+                        <div class="spoke">WhatsApp<br><strong>Conversations</strong></div>
+                        <div class="spoke">Stripe<br><strong>Payments</strong></div>
+                        <div class="spoke">AI<br><strong>Chatbot + Assistant</strong></div>
+                        <div class="spoke">Social<br><strong>IG + Facebook</strong></div>
+                        <div class="spoke">Blog + SEO<br><strong>Organic Growth</strong></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SLIDE 3: THE WEBSITE (Deep Dive) -->
+        <!-- ============================================================ -->
+        <section class="slide reveal">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <div class="section-number">03</div>
+                    <div class="section-label">SYSTEM 1 OF 3</div>
+                </div>
+                <h1 class="slide-title">The <span class="accent-green">Website</span></h1>
+
+                <div class="system-hero">
+                    <div class="system-hero-text">
+                        <strong>What the customer sees and interacts with.</strong> This replaces Squarespace with a custom-built, bilingual platform that actually captures leads and drives sales — not just looks pretty.
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <div>
+                        <div class="column-title" style="color: var(--accent-green);">What's On It</div>
+                        <div class="feature-list">
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">→</span><span class="feature-text"><strong>20+ bilingual pages</strong> — EN/ES, professional design, Dark Botanical aesthetic</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">→</span><span class="feature-text"><strong>491 real products</strong> with 1,019 images, filterable by brand, category, price, finish</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">→</span><span class="feature-text"><strong>Product configurator</strong> — show all available finishes, sizes, variants. "This faucet comes in 14 finishes."</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">→</span><span class="feature-text"><strong>Brand showcase pages</strong> — Kohler, TOTO, BRIZO, California Faucets, etc.</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">→</span><span class="feature-text"><strong>Blog</strong> for SEO content — guides, brand stories, project showcases</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="column-title" style="color: var(--accent-green);">How It Captures Leads</div>
+                        <div class="feature-list">
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">→</span><span class="feature-text"><strong>WhatsApp button</strong> — one tap from any page, their preferred channel</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">→</span><span class="feature-text"><strong>Contact forms</strong> — general inquiry, project-specific, all feed CRM</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">→</span><span class="feature-text"><strong>Showroom booking</strong> — schedule a visit, auto-confirmed</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">→</span><span class="feature-text"><strong>Trade program application</strong> — architects, designers, contractors</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">→</span><span class="feature-text"><strong>AI chatbot</strong> — answers questions 24/7 in EN/ES, captures contact info automatically</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: clamp(0.25rem, 0.5vw, 0.5rem); border-left-color: var(--accent-green); background: rgba(143, 170, 123, 0.06); border-color: rgba(143, 170, 123, 0.15);">
+                    <div class="highlight-text" style="text-align: center;">Every form, every chat, every WhatsApp tap → a lead in Google Sheets → visible in the Dashboard.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SLIDE 4: THE DASHBOARD (Deep Dive) -->
+        <!-- ============================================================ -->
+        <section class="slide reveal">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <div class="section-number">04</div>
+                    <div class="section-label">SYSTEM 2 OF 3</div>
+                </div>
+                <h1 class="slide-title">The <span class="accent-warm">Dashboard</span></h1>
+
+                <div class="system-hero">
+                    <div class="system-hero-text">
+                        <strong>Where Roger runs the business.</strong> One login, one screen. See your leads, respond to customers, track orders, manage payments, publish content, and get AI-powered insights — all without leaving the dashboard.
+                    </div>
+                </div>
+
+                <div class="three-column">
+                    <div class="card">
+                        <div class="card-title" style="color: var(--accent-warm);">Sales & Leads</div>
+                        <div class="feature-list">
+                            <div class="feature-item"><span class="feature-icon">→</span><span class="feature-text">All leads in one place (website, WhatsApp, walk-in)</span></div>
+                            <div class="feature-item"><span class="feature-icon">→</span><span class="feature-text">Pipeline: Inquiry → Quoted → Paid → Ordered → Delivered</span></div>
+                            <div class="feature-item"><span class="feature-icon">→</span><span class="feature-text">Contact history and notes per customer</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title" style="color: var(--accent-gold);">Finance & Payments</div>
+                        <div class="feature-list">
+                            <div class="feature-item"><span class="feature-icon">→</span><span class="feature-text">Stripe invoices and payment links</span></div>
+                            <div class="feature-item"><span class="feature-icon">→</span><span class="feature-text">Track payments received, outstanding, overdue</span></div>
+                            <div class="feature-item"><span class="feature-icon">→</span><span class="feature-text">Finance person sees everything they need</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title" style="color: var(--accent-green);">Content & Marketing</div>
+                        <div class="feature-list">
+                            <div class="feature-item"><span class="feature-icon">→</span><span class="feature-text">Publish blog posts (bilingual, SEO-ready)</span></div>
+                            <div class="feature-item"><span class="feature-icon">→</span><span class="feature-text">Post to Instagram + Facebook directly</span></div>
+                            <div class="feature-item"><span class="feature-icon">→</span><span class="feature-text">Manage products, prices, and catalog</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title" style="color: var(--accent-blue);">Order Tracking</div>
+                        <div class="feature-list">
+                            <div class="feature-item"><span class="feature-icon">→</span><span class="feature-text">Status per order: Ordered → In Transit → Delivered</span></div>
+                            <div class="feature-item"><span class="feature-icon">→</span><span class="feature-text">Manufacturer notes, tracking numbers, dates</span></div>
+                            <div class="feature-item"><span class="feature-icon">→</span><span class="feature-text">One-click WhatsApp update to customer</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title" style="color: var(--accent-pink);">AI Assistant</div>
+                        <div class="feature-list">
+                            <div class="feature-item"><span class="feature-icon">→</span><span class="feature-text">"How did we do last month?" → instant answer</span></div>
+                            <div class="feature-item"><span class="feature-icon">→</span><span class="feature-text">Draft social posts, blog content, quotes</span></div>
+                            <div class="feature-item"><span class="feature-icon">→</span><span class="feature-text">Weekly summary reports, auto-generated</span></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Files & Documents</div>
+                        <div class="feature-list">
+                            <div class="feature-item"><span class="feature-icon">→</span><span class="feature-text">Google Drive browser built in</span></div>
+                            <div class="feature-item"><span class="feature-icon">→</span><span class="feature-text">Product images, invoices, contracts</span></div>
+                            <div class="feature-item"><span class="feature-icon">→</span><span class="feature-text">Master Price List for dealer pricing</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SLIDE 5: GOOGLE DRIVE (Deep Dive) -->
+        <!-- ============================================================ -->
+        <section class="slide reveal">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <div class="section-number">05</div>
+                    <div class="section-label">SYSTEM 3 OF 3</div>
+                </div>
+                <h1 class="slide-title"><span class="accent-blue">Google Drive</span> — The Data Layer</h1>
+
+                <div class="system-hero">
+                    <div class="system-hero-text">
+                        <strong>The database underneath everything.</strong> Google Sheets acts as your CRM. Google Drive stores your files. The website reads from it. The dashboard writes to it. It's the source of truth — and you already know how to use Sheets.
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <div>
+                        <div class="column-title" style="color: var(--accent-blue);">Google Sheets = Your CRM</div>
+                        <div class="feature-list">
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-blue);">→</span><span class="feature-text"><strong>Products tab:</strong> All 491 products — name, brand, price, category, images. Edit here, website updates instantly.</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-blue);">→</span><span class="feature-text"><strong>Leads tab:</strong> Every inquiry from every channel. Name, email, phone, source, date, status.</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-blue);">→</span><span class="feature-text"><strong>Pipeline tab:</strong> Active deals — customer, products, amount, status (Quoted → Paid → Ordered → Delivered).</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-blue);">→</span><span class="feature-text"><strong>Contacts tab:</strong> Customer database. History, notes, purchase history. Migrated from Odoo.</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-blue);">→</span><span class="feature-text"><strong>Trade Applications, Newsletter, Bookings</strong> — all separate tabs, all connected.</span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="column-title" style="color: var(--accent-blue);">Google Drive = Your Files</div>
+                        <div class="feature-list">
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-blue);">→</span><span class="feature-text"><strong>Product images</strong> organized by category and brand</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-blue);">→</span><span class="feature-text"><strong>Invoices and quotes</strong> from Stripe, stored automatically</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-blue);">→</span><span class="feature-text"><strong>Master Price List</strong> — dealer costs, margins, MAP pricing across 11 brands</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-blue);">→</span><span class="feature-text"><strong>Contracts, specs, manufacturer docs</strong></span></div>
+                        </div>
+
+                        <div class="highlight-box" style="margin-top: clamp(0.5rem, 1vw, 0.75rem); border-left-color: var(--accent-blue); background: rgba(123, 154, 170, 0.08); border-color: rgba(123, 154, 170, 0.15);">
+                            <div class="highlight-text">
+                                <strong>Why Sheets?</strong> It's free, Roger already knows it, it's easy to view/edit manually if needed, and it connects to everything via Google APIs. No extra CRM subscription.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SLIDE 12: HOW YOU BUILD YOUR BRAND (Content Output) -->
+        <!-- ============================================================ -->
+        <section class="slide reveal">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <div class="section-number">06</div>
+                    <div class="section-label">CONTENT & MARKETING</div>
+                </div>
+                <h1 class="slide-title">How You Build Your <span class="accent-green">Brand</span></h1>
+                <div class="slide-subtitle">Right now Counter Cultures has zero online presence beyond Squarespace. This is how that changes — and how content becomes a lead engine.</div>
+
+                <div class="two-column">
+                    <div>
+                        <div class="column-title" style="color: var(--accent-green);">The Content Loop</div>
+                        <div class="flow-container">
+                            <div class="flow-step">
+                                <div class="step-number">①</div>
+                                <div class="step-content">
+                                    <div class="step-title">Create in the Dashboard</div>
+                                    <div class="step-description">Blog post, Instagram photo, product showcase — write and compose directly in the dashboard. AI assistant helps draft content, suggest topics, write captions. Roger approves.</div>
+                                </div>
+                            </div>
+                            <div class="step-connector">↓</div>
+                            <div class="flow-step">
+                                <div class="step-number">②</div>
+                                <div class="step-content">
+                                    <div class="step-title">Publish Everywhere</div>
+                                    <div class="step-description"><strong>Blog:</strong> bilingual EN/ES, published to website. <strong>Social:</strong> Instagram + Facebook via Meta API (free). <strong>Newsletter:</strong> monthly email to subscribers via Resend. One piece of content, three channels.</div>
+                                </div>
+                            </div>
+                            <div class="step-connector">↓</div>
+                            <div class="flow-step">
+                                <div class="step-number">③</div>
+                                <div class="step-content">
+                                    <div class="step-title">People Discover You</div>
+                                    <div class="step-description"><strong>SEO:</strong> Blog posts rank for "luxury bathroom San Miguel." <strong>AEO:</strong> AI assistants (ChatGPT, Gemini, Claude) recommend Counter Cultures because your content exists. <strong>Social:</strong> Instagram followers click through to your site. This is the discovery engine from slide 6 — it runs on content.</div>
+                                </div>
+                            </div>
+                            <div class="step-connector">↓</div>
+                            <div class="flow-step">
+                                <div class="step-number">④</div>
+                                <div class="step-content">
+                                    <div class="step-title">They Become Leads</div>
+                                    <div class="step-description">Visitor reads blog → browses catalog → WhatsApp or chatbot → lead in CRM. The same pipeline you saw in slides 8–10 kicks in. Content isn't marketing for marketing's sake — it's the top of your sales funnel.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="column-title" style="color: var(--accent-pink);">Content Types</div>
+                        <div class="card" style="margin-bottom: clamp(0.4rem, 0.8vw, 0.6rem);">
+                            <div class="card-title" style="color: var(--accent-green);">Blog Posts (SEO + AEO)</div>
+                            <div class="card-text">"Best kitchen faucets for Mexican homes" · Brand stories · Product guides · Project showcases · Design trend roundups. Written in dashboard, AI-assisted, published bilingual.</div>
+                        </div>
+                        <div class="card" style="margin-bottom: clamp(0.4rem, 0.8vw, 0.6rem);">
+                            <div class="card-title" style="color: var(--accent-pink);">Social Media (IG + FB)</div>
+                            <div class="card-text">Product photos from your 1,019-image catalog. Before/after project shots. New arrival announcements. "Just installed" customer stories. Posted from dashboard → Meta API → live.</div>
+                        </div>
+                        <div class="card" style="margin-bottom: clamp(0.4rem, 0.8vw, 0.6rem);">
+                            <div class="card-title" style="color: var(--accent-blue);">Newsletter (Resend)</div>
+                            <div class="card-text">Monthly email to subscribers: new products, completed projects, promotions. Captured from website footer + trade program. Free up to 3,000/month.</div>
+                        </div>
+                        <div class="card">
+                            <div class="card-title" style="color: var(--accent-warm);">Website Updates</div>
+                            <div class="card-text">New collection pages, updated brand showcases, seasonal promotions. Edit in Sheets or dashboard → website updates instantly. No developer.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SLIDE 7: HOW CUSTOMERS FIND YOU (starts with Discovery) -->
+        <!-- ============================================================ -->
+        <section class="slide reveal">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <div class="section-number">07</div>
+                    <div class="section-label">CUSTOMER JOURNEY</div>
+                </div>
+                <h1 class="slide-title">How Customers Find You <span class="accent-green">and Buy</span></h1>
+
+                <div class="flow-container">
+                    <div class="flow-step">
+                        <div class="step-number">①</div>
+                        <div class="step-content">
+                            <div class="step-title">They Discover You</div>
+                            <div class="step-description"><strong>SEO:</strong> "luxury faucets San Miguel de Allende" — your blog and product pages rank. <strong>Social:</strong> They see your kitchen remodel post on Instagram. <strong>AEO:</strong> An AI assistant recommends Counter Cultures when asked about premium showrooms in Mexico. <strong>Referral:</strong> An architect from your trade program tells a client.</div>
+                        </div>
+                    </div>
+                    <div class="step-connector">↓</div>
+                    <div class="flow-step">
+                        <div class="step-number">②</div>
+                        <div class="step-content">
+                            <div class="step-title">They Land on the Website</div>
+                            <div class="step-description">Bilingual, professional, custom-built. 491 products filterable by category, brand, price, finish. Not a template — this is Counter Cultures' aesthetic.</div>
+                        </div>
+                    </div>
+                    <div class="step-connector">↓</div>
+                    <div class="flow-step">
+                        <div class="step-number">③</div>
+                        <div class="step-content">
+                            <div class="step-title">They Find a Product They Love</div>
+                            <div class="step-description">Product page shows all finishes and sizes. Or the AI chatbot at 2am in Spanish helps them find exactly what they need and captures their info.</div>
+                        </div>
+                    </div>
+                    <div class="step-connector">↓</div>
+                    <div class="flow-step">
+                        <div class="step-number">④</div>
+                        <div class="step-content">
+                            <div class="step-title">They Reach Out</div>
+                            <div class="step-description">WhatsApp button (one tap), contact form, showroom booking, trade application, or chatbot auto-capture. Multiple paths, same destination.</div>
+                        </div>
+                    </div>
+                    <div class="step-connector">↓</div>
+                    <div class="flow-step">
+                        <div class="step-number">⑤</div>
+                        <div class="step-content">
+                            <div class="step-title">They Become a Lead</div>
+                            <div class="step-description">Contact info flows into Google Sheets CRM automatically. Shows in the Dashboard. Roger gets notified. Nothing lost, nothing forgotten.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SLIDE 9: FROM INQUIRY TO PAYMENT (More Context) -->
+        <!-- ============================================================ -->
+        <section class="slide reveal">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <div class="section-number">08</div>
+                    <div class="section-label">SALES PROCESS</div>
+                </div>
+                <h1 class="slide-title">From Inquiry to <span class="accent-gold">Payment</span></h1>
+                <div class="slide-subtitle">What happens once a lead comes in — step by step, from Roger's perspective.</div>
+
+                <div class="flow-container">
+                    <div class="flow-step">
+                        <div class="step-number">①</div>
+                        <div class="step-content">
+                            <div class="step-title">New Inquiry Arrives</div>
+                            <div class="step-description">Contact form, WhatsApp, walk-in, or chatbot capture — it appears in the dashboard immediately. The system tags the source so Roger knows how they found him. If it came from the AI chatbot, it already includes the customer's project details and product interests.</div>
+                        </div>
+                    </div>
+                    <div class="step-connector">↓</div>
+                    <div class="flow-step">
+                        <div class="step-number">②</div>
+                        <div class="step-content">
+                            <div class="step-title">Roger Reviews + Responds</div>
+                            <div class="step-description">Dashboard shows who they are, what they want, how they found you, their full message, and any chatbot conversation history. Roger responds via WhatsApp — their preferred channel in Mexico — or by email. He discusses the project, walks through options, maybe suggests a showroom visit.</div>
+                        </div>
+                    </div>
+                    <div class="step-connector">↓</div>
+                    <div class="flow-step">
+                        <div class="step-number">③</div>
+                        <div class="step-content">
+                            <div class="step-title">Build the Quote</div>
+                            <div class="step-description">Roger pulls products from the catalog, checks dealer pricing from the Master Price List, and builds a quote. The AI assistant can help: "Draft a quote for 2 BRIZO faucets and a TOTO toilet." Pipeline status: <strong>Quoting</strong>.</div>
+                        </div>
+                    </div>
+                    <div class="step-connector">↓</div>
+                    <div class="flow-step">
+                        <div class="step-number">④</div>
+                        <div class="step-content">
+                            <div class="step-title">Send Invoice via Stripe</div>
+                            <div class="step-description">Roger creates a Stripe invoice or payment link from the dashboard. Customer receives it via WhatsApp or email — professional, branded, trackable. They can pay with card or bank transfer. Pipeline status: <strong>Quoted</strong>.</div>
+                        </div>
+                    </div>
+                    <div class="step-connector">↓</div>
+                    <div class="flow-step">
+                        <div class="step-number">⑤</div>
+                        <div class="step-content">
+                            <div class="step-title">Customer Pays</div>
+                            <div class="step-description">Stripe processes the payment (3.6% + $3 MXN per transaction). Finance person sees it immediately in the Stripe dashboard. Pipeline auto-updates to <strong>Paid</strong>. Confirmation email/WhatsApp sent. Now it's time to fulfill the order.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SLIDE 11: FROM ORDER TO DOORSTEP (Automated vs Manual) -->
+        <!-- ============================================================ -->
+        <section class="slide reveal">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <div class="section-number">09</div>
+                    <div class="section-label">BACKEND OPERATIONS</div>
+                </div>
+                <h1 class="slide-title">From Order to <span class="accent-pink">Doorstep</span></h1>
+                <div class="slide-subtitle">The full fulfillment process. <span class="tag tag-auto">AUTOMATED</span> = the platform handles it. <span class="tag tag-manual">MANUAL</span> = Roger or team does it.</div>
+
+                <div class="backend-flow" style="grid-template-columns: repeat(3, 1fr);">
+                    <!-- Row 1: Roger's side -->
+                    <div class="backend-step">
+                        <div class="backend-step-num">01</div>
+                        <div class="backend-step-title">Order from Manufacturer</div>
+                        <div class="backend-step-desc">Roger places order with the brand (Kohler, TOTO, BRIZO) via their dealer portal or email. Logs it in the pipeline.</div>
+                        <div class="tag tag-manual">Manual — Roger places order</div>
+                    </div>
+                    <div class="backend-step">
+                        <div class="backend-step-num">02</div>
+                        <div class="backend-step-title">Confirm with Dealer</div>
+                        <div class="backend-step-desc">Manufacturer confirms availability, lead time, pricing. Roger updates expected delivery date in pipeline.</div>
+                        <div class="tag tag-manual">Manual — Roger tracks emails</div>
+                    </div>
+                    <div class="backend-step">
+                        <div class="backend-step-num">03</div>
+                        <div class="backend-step-title">Track Shipment</div>
+                        <div class="backend-step-desc">Product ships. Roger enters tracking number and shipping company. Status auto-updates to <strong>In Transit</strong> in dashboard.</div>
+                        <div class="tag tag-manual">Manual entry</div> <div class="tag tag-auto">Auto status update</div>
+                    </div>
+                    <!-- Row 2: Customer-facing + close -->
+                    <div class="backend-step">
+                        <div class="backend-step-num">06</div>
+                        <div class="backend-step-title">Follow-Up</div>
+                        <div class="backend-step-desc">Auto follow-up after 7 days: "How does it look?" Request for review/photo. Marketing content. Ask for referrals.</div>
+                        <div class="tag tag-auto">Automated follow-up</div>
+                    </div>
+                    <div class="backend-step" style="border-color: rgba(143, 170, 123, 0.3);">
+                        <div class="backend-step-num">04</div>
+                        <div class="backend-step-title">Update the Customer</div>
+                        <div class="backend-step-desc">WhatsApp message: "Your BRIZO faucet has shipped — expected Thursday." Template message, one click to send.</div>
+                        <div class="tag tag-auto">Auto template — one click</div>
+                    </div>
+                    <div class="backend-step" style="border-color: rgba(143, 170, 123, 0.3);">
+                        <div class="backend-step-num">05</div>
+                        <div class="backend-step-title">Delivery + Handoff</div>
+                        <div class="backend-step-desc">Product arrives. Roger confirms receipt, checks quality. Sends WhatsApp: "Your order is ready!" Pipeline → <strong>Delivered</strong>.</div>
+                        <div class="tag tag-manual">Manual confirm</div> <div class="tag tag-auto">Auto notify</div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: clamp(0.25rem, 0.5vw, 0.5rem);">
+                    <div class="highlight-text" style="text-align: center;">
+                        <strong>Roger does the human work</strong> (manufacturer relationships, quality checks). <strong>The platform handles the rest</strong> (status tracking, customer notifications, follow-ups, reporting).
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SLIDE 8: KEEPING THE CATALOG ALIVE -->
+        <!-- ============================================================ -->
+        <section class="slide reveal">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <div class="section-number">10</div>
+                    <div class="section-label">PRODUCT OPERATIONS</div>
+                </div>
+                <h1 class="slide-title">Keeping 491 Products <span class="accent-gold">Current</span></h1>
+                <div class="slide-subtitle">11 brands. Prices change. Collections launch. SKUs get discontinued. Here's how updates flow from manufacturer to customer's screen.</div>
+
+                <div class="two-column">
+                    <div>
+                        <div class="column-title" style="color: var(--accent-warm);">The Update Flow</div>
+                        <div class="flow-container">
+                            <div class="flow-step">
+                                <div class="step-number">①</div>
+                                <div class="step-content">
+                                    <div class="step-title">Manufacturer Sends Update</div>
+                                    <div class="step-description">New price list PDF, new collection launch, discontinuation notice — arrives via email. Roger uploads it to Google Drive. <span class="tag tag-manual">Manual</span></div>
+                                </div>
+                            </div>
+                            <div class="step-connector">↓</div>
+                            <div class="flow-step">
+                                <div class="step-number">②</div>
+                                <div class="step-content">
+                                    <div class="step-title">AI Parses + Compares</div>
+                                    <div class="step-description">Dashboard AI reads the price list, compares against the Master Price List (SKU, MSRP, Dealer Cost, Status). Flags what changed: <em>"BRIZO updated 23 prices. 5 increased, 2 new SKUs, 1 discontinued."</em> <span class="tag tag-auto">Automated</span></div>
+                                </div>
+                            </div>
+                            <div class="step-connector">↓</div>
+                            <div class="flow-step">
+                                <div class="step-number">③</div>
+                                <div class="step-content">
+                                    <div class="step-title">Roger Reviews + Approves</div>
+                                    <div class="step-description">Dashboard shows a clear diff: old price vs. new, margin impact, new products to add. Roger approves or adjusts retail pricing. <span class="tag tag-manual">Manual decision</span></div>
+                                </div>
+                            </div>
+                            <div class="step-connector">↓</div>
+                            <div class="flow-step">
+                                <div class="step-number">④</div>
+                                <div class="step-content">
+                                    <div class="step-title">Google Sheets Updates → Website Updates</div>
+                                    <div class="step-description">Approved changes write to Google Sheets. Products tab and Master Price List sync. Website reflects new prices, new products, removed items — <strong>instantly, no developer needed.</strong> <span class="tag tag-auto">Automated</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="column-title" style="color: var(--accent-pink);">What the Dashboard Flags</div>
+                        <div class="feature-list" style="margin-bottom: clamp(0.75rem, 1.5vw, 1rem);">
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-red);">!</span><span class="feature-text"><strong>Price changes:</strong> Dealer cost went up but retail price hasn't been updated — your margin is shrinking</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-red);">!</span><span class="feature-text"><strong>Discontinued:</strong> TOTO stopped making this model — 2 active quotes reference it</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">+</span><span class="feature-text"><strong>New products:</strong> California Faucets launched a new collection — 8 SKUs ready to add</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-blue);">↻</span><span class="feature-text"><strong>New finishes:</strong> Kohler added Matte Black to 12 existing faucets — update variants</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-gold);">$</span><span class="feature-text"><strong>Below MAP:</strong> 3 products priced below Minimum Advertised Price — compliance risk</span></div>
+                        </div>
+
+                        <div class="highlight-box" style="border-left-color: var(--accent-gold); background: rgba(201, 184, 150, 0.08); border-color: rgba(201, 184, 150, 0.15);">
+                            <div class="highlight-text">
+                                <strong>The Master Price List</strong> already exists — SKU, MSRP, MAP, Dealer Cost, Margin % across all brands. It's the backbone. Manufacturer updates sync against it. Roger always knows his real margins.
+                            </div>
+                        </div>
+
+                        <div class="highlight-box" style="margin-top: clamp(0.5rem, 1vw, 0.5rem);">
+                            <div class="highlight-text">
+                                <strong>One edit, everywhere at once.</strong> Change a price in Sheets → website updates, dashboard reflects it, active quotes get flagged if affected. No more "the website says one price but we quoted another."
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SLIDE 10: THE MONEY — FINANCE OPERATIONS -->
+        <!-- ============================================================ -->
+        <section class="slide reveal">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <div class="section-number">11</div>
+                    <div class="section-label">FINANCE OPERATIONS</div>
+                </div>
+                <h1 class="slide-title">Following the <span class="accent-gold">Money</span></h1>
+                <div class="slide-subtitle">Money in from customers. Money out to manufacturers. The spread is your profit — and now you can actually see it.</div>
+
+                <div class="two-column">
+                    <div>
+                        <div class="column-title" style="color: var(--accent-gold);">Money In — What the Platform Tracks</div>
+                        <div class="flow-container">
+                            <div class="flow-step">
+                                <div class="step-number" style="color: var(--accent-green);">$</div>
+                                <div class="step-content">
+                                    <div class="step-title">Customer Payments via Stripe</div>
+                                    <div class="step-description">Every invoice, every deposit, every final payment — logged automatically. Finance sees it the second it clears. No checking the bank and cross-referencing WhatsApp. <span class="tag tag-auto">Automated</span></div>
+                                </div>
+                            </div>
+                            <div class="flow-step">
+                                <div class="step-number" style="color: var(--accent-green);">$</div>
+                                <div class="step-content">
+                                    <div class="step-title">Deposits + Partial Payments</div>
+                                    <div class="step-description">Large projects get split: 50% deposit, 50% on delivery. Stripe tracks both. Pipeline shows balance remaining per deal. No mental math. <span class="tag tag-auto">Automated</span></div>
+                                </div>
+                            </div>
+                            <div class="flow-step">
+                                <div class="step-number" style="color: var(--accent-green);">$</div>
+                                <div class="step-content">
+                                    <div class="step-title">Stripe → Bank Payouts</div>
+                                    <div class="step-description">Stripe deposits to your Mexico bank account on schedule. Dashboard shows pending payouts, completed payouts, and payout history. <span class="tag tag-auto">Automated</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="divider" style="margin: clamp(0.5rem, 1vw, 0.75rem) 0;"></div>
+
+                        <div class="column-title" style="color: var(--accent-red); font-size: clamp(0.9rem, 1.6vw, 1.1rem);">Money Out — Manufacturer Payments</div>
+                        <div class="flow-container">
+                            <div class="flow-step">
+                                <div class="step-number" style="color: var(--accent-red);">$</div>
+                                <div class="step-content">
+                                    <div class="step-title">Pay Dealer Cost to Manufacturer</div>
+                                    <div class="step-description">When Roger orders from Kohler or BRIZO, he pays the dealer cost. He logs the amount in the pipeline. The system calculates: customer paid $15,000 – dealer cost $9,200 = <strong>$5,800 gross profit</strong>. <span class="tag tag-manual">Manual — Roger logs cost</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="column-title" style="color: var(--accent-warm);">The Finance Dashboard</div>
+                        <div class="feature-list" style="margin-bottom: clamp(0.75rem, 1.5vw, 1rem);">
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text"><strong>Revenue this month:</strong> Total collected via Stripe — real-time, not end-of-month surprise</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-gold);">✓</span><span class="feature-text"><strong>Outstanding invoices:</strong> Who owes what, how overdue, one-click WhatsApp reminder</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-blue);">✓</span><span class="feature-text"><strong>Pipeline value:</strong> Total deals in progress — quoted, paid, awaiting delivery</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-pink);">✓</span><span class="feature-text"><strong>Real margins per deal:</strong> Sale price vs. dealer cost from Master Price List — not guesswork</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-warm);">✓</span><span class="feature-text"><strong>Margins by brand:</strong> Which manufacturers are most profitable? Ruvati at 45%? BRIZO at 28%?</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-red);">!</span><span class="feature-text"><strong>Cash flow gap alerts:</strong> Customer deposit received but manufacturer payment due — how much runway do you have?</span></div>
+                        </div>
+
+                        <div class="highlight-box" style="border-left-color: var(--accent-gold); background: rgba(201, 184, 150, 0.08); border-color: rgba(201, 184, 150, 0.15);">
+                            <div class="highlight-text">
+                                <strong>What Finance does manually:</strong> Verify bank deposits match Stripe payouts. Log manufacturer payments. Approve refunds. Handle tax reporting. Everything else — revenue tracking, invoice status, margin calculation, overdue alerts — is <strong>automatic</strong>.
+                            </div>
+                        </div>
+
+                        <div class="highlight-box" style="margin-top: clamp(0.4rem, 0.8vw, 0.5rem);">
+                            <div class="highlight-text">
+                                <strong>The big unlock:</strong> Right now, nobody knows the real profit on a deal until weeks later. With dealer costs in the Master Price List and payments in Stripe, the dashboard shows margin <em>the moment a deal closes</em>. Roger knows which brands, which deal sizes, and which customer types are actually making money.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SLIDE 13: ROGER'S MONDAY MORNING -->
+        <!-- ============================================================ -->
+        <section class="slide reveal">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <div class="section-number">12</div>
+                    <div class="section-label">A DAY IN THE LIFE</div>
+
+                </div>
+                <h1 class="slide-title">Roger's Monday Morning</h1>
+
+                <div class="highlight-box" style="margin-bottom: clamp(0.4rem, 0.8vw, 0.5rem);">
+                    <div class="highlight-text">You open the dashboard with coffee. <strong>Everything that happened over the weekend — and everything that needs your attention this week — is on one screen.</strong></div>
+                </div>
+
+                <div class="three-column">
+                    <div class="card" style="border-color: rgba(143, 170, 123, 0.3);">
+                        <div class="card-title" style="color: var(--accent-green);">Sales + Leads</div>
+                        <div class="flow-container" style="gap: clamp(0.3rem, 0.6vw, 0.5rem);">
+                            <div class="flow-step">
+                                <div class="step-number" style="font-size: clamp(0.75rem, 1.2vw, 0.85rem);">1</div>
+                                <div class="step-content">
+                                    <div class="step-description">3 new inquiries over the weekend. 1 from chatbot (already qualified), 1 WhatsApp, 1 contact form.</div>
+                                </div>
+                            </div>
+                            <div class="flow-step">
+                                <div class="step-number" style="font-size: clamp(0.75rem, 1.2vw, 0.85rem);">2</div>
+                                <div class="step-content">
+                                    <div class="step-description">Maria — architect, boutique hotel project. Reply via WhatsApp, share BRIZO collection link.</div>
+                                </div>
+                            </div>
+                            <div class="flow-step">
+                                <div class="step-number" style="font-size: clamp(0.75rem, 1.2vw, 0.85rem);">3</div>
+                                <div class="step-content">
+                                    <div class="step-description">Pipeline: $45,000 MXN across 8 active projects. 2 quotes need follow-up (sent 5+ days ago).</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="border-color: rgba(201, 184, 150, 0.3);">
+                        <div class="card-title" style="color: var(--accent-gold);">Money + Orders</div>
+                        <div class="flow-container" style="gap: clamp(0.3rem, 0.6vw, 0.5rem);">
+                            <div class="flow-step">
+                                <div class="step-number" style="font-size: clamp(0.75rem, 1.2vw, 0.85rem);">4</div>
+                                <div class="step-content">
+                                    <div class="step-description">Lopez paid $15,000 MXN deposit on Friday. Finance sees it. Time to order from Kohler.</div>
+                                </div>
+                            </div>
+                            <div class="flow-step">
+                                <div class="step-number" style="font-size: clamp(0.75rem, 1.2vw, 0.85rem);">5</div>
+                                <div class="step-content">
+                                    <div class="step-description">Hernandez faucets shipped — in transit, arriving Wednesday. One click → WhatsApp: "Your order is on its way!"</div>
+                                </div>
+                            </div>
+                            <div class="flow-step">
+                                <div class="step-number" style="font-size: clamp(0.75rem, 1.2vw, 0.85rem);">6</div>
+                                <div class="step-content">
+                                    <div class="step-description">1 overdue invoice: Garcia, $8,500 MXN, 7 days late. One-click WhatsApp payment reminder.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="border-color: rgba(232, 180, 184, 0.3);">
+                        <div class="card-title" style="color: var(--accent-pink);">Catalog + Content</div>
+                        <div class="flow-container" style="gap: clamp(0.3rem, 0.6vw, 0.5rem);">
+                            <div class="flow-step">
+                                <div class="step-number" style="font-size: clamp(0.75rem, 1.2vw, 0.85rem);">7</div>
+                                <div class="step-content">
+                                    <div class="step-description">BRIZO updated prices on 12 SKUs. Dashboard flagged: 3 margins dropped below 25%. Review + approve.</div>
+                                </div>
+                            </div>
+                            <div class="flow-step">
+                                <div class="step-number" style="font-size: clamp(0.75rem, 1.2vw, 0.85rem);">8</div>
+                                <div class="step-content">
+                                    <div class="step-description">AI drafted an Instagram post: Sun Valley Bronze collection showcase. Review. Approve. Goes live.</div>
+                                </div>
+                            </div>
+                            <div class="flow-step">
+                                <div class="step-number" style="font-size: clamp(0.75rem, 1.2vw, 0.85rem);">9</div>
+                                <div class="step-content">
+                                    <div class="step-description">AI weekly report: 5 leads, 2 quotes, 1 closed deal, $32K collected, gross margin 38%, 2 deliveries this week.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: clamp(0.25rem, 0.5vw, 0.4rem);">
+                    <div class="highlight-text" style="text-align: center;"><strong>30 minutes with coffee.</strong> Every lead answered, every order tracked, every payment visible, every margin checked. Then Roger goes to the showroom and does what he does best — talk to customers about beautiful products.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SLIDE 12: WHERE WE ARE TODAY -->
+        <!-- ============================================================ -->
+        <section class="slide reveal">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <div class="section-number">13</div>
+                    <div class="section-label">PROGRESS</div>
+                </div>
+                <h1 class="slide-title">Where We Are Today</h1>
+                <div class="slide-subtitle">Everything you just saw? The structure is built. Here's exactly what's ready and what needs your real data.</div>
+
+                <div class="three-column">
+                    <div class="card" style="border-color: rgba(143, 170, 123, 0.3);">
+                        <div class="card-title" style="color: var(--accent-green);">Website — Built ✓</div>
+                        <div class="feature-list">
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text">20+ bilingual pages (EN/ES)</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text">491 products, 1,019 images, faceted filters</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text">AI chatbot (catalog-trained, bilingual)</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text">Contact, booking, trade forms → CRM</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text">Blog engine + SEO structure</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text">WhatsApp buttons on every page</span></div>
+                        </div>
+                    </div>
+                    <div class="card" style="border-color: rgba(212, 165, 116, 0.3);">
+                        <div class="card-title" style="color: var(--accent-warm);">Dashboard — Built ✓</div>
+                        <div class="feature-list">
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text">Leads + Pipeline management</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text">Stripe finance hub (invoices, payments)</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text">Product catalog management</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text">Social media + blog publishing</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text">Google Drive file browser</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text">AI assistant (reports, content, queries)</span></div>
+                        </div>
+                    </div>
+                    <div class="card" style="border-color: rgba(123, 154, 170, 0.3);">
+                        <div class="card-title" style="color: var(--accent-blue);">Google Drive — Structured ✓</div>
+                        <div class="feature-list">
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text">CRM Sheets: Products, Leads, Pipeline</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text">Contacts, Trade Apps, Newsletter, Bookings</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text">Master Price List (SKU, cost, margins)</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text">Service account API connected</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-gold);">~</span><span class="feature-text">Currently mock data — needs Odoo extract</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="margin-top: clamp(0.5rem, 1vw, 0.75rem); border-left-color: var(--accent-pink); background: rgba(232, 180, 184, 0.06); border-color: rgba(232, 180, 184, 0.15);">
+                    <div class="column-title" style="color: var(--accent-pink); margin-bottom: 0.4rem; font-size: clamp(0.85rem, 1.4vw, 1rem);">What We Need to Flip the Switch</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: clamp(0.5rem, 1vw, 0.75rem);">
+                        <div class="feature-item"><span class="feature-icon" style="color: var(--accent-pink);">→</span><span class="feature-text"><strong>Odoo URL</strong> — extract contacts, sales, invoices into Sheets CRM</span></div>
+                        <div class="feature-item"><span class="feature-icon" style="color: var(--accent-pink);">→</span><span class="feature-text"><strong>Stripe Mexico</strong> — connect bank, enable live invoicing + payouts</span></div>
+                        <div class="feature-item"><span class="feature-icon" style="color: var(--accent-pink);">→</span><span class="feature-text"><strong>WhatsApp Business API</strong> — register number with Meta (~1 week)</span></div>
+                        <div class="feature-item"><span class="feature-icon" style="color: var(--accent-pink);">→</span><span class="feature-text"><strong>Meta Business Suite</strong> — IG + FB accounts for social posting</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SLIDE 6: HOW WE GET THERE (Roadmap — after systems overview) -->
+        <!-- ============================================================ -->
+        <section class="slide reveal">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <div class="section-number">14</div>
+                    <div class="section-label">THE PLAN</div>
+                </div>
+                <h1 class="slide-title">How We Get There</h1>
+
+                <div class="phases-grid">
+                    <div class="phase-card" style="border-left-color: var(--accent-green);">
+                        <div class="phase-title" style="color: var(--accent-green);">Phase 1: Data + Deploy<br><span style="font-size: 0.8em; font-weight: normal; color: var(--text-secondary);">Weeks 1–2</span></div>
+                        <div class="phase-text">Extract Odoo → Google Sheets CRM (contacts, sales history, invoices). Import Master Price List with real dealer costs across all 11 brands. Wire 491 products with confirmed pricing. Connect Stripe Mexico to bank. Deploy live to countercultures.com.mx.</div>
+                    </div>
+                    <div class="phase-card" style="border-left-color: var(--accent-warm);">
+                        <div class="phase-title">Phase 2: Operations Live<br><span style="font-size: 0.8em; font-weight: normal; color: var(--text-secondary);">Weeks 3–4</span></div>
+                        <div class="phase-text">Sales pipeline operational: leads → quotes → Stripe invoices → payment tracking. WhatsApp Business API live for customer messaging. Order fulfillment pipeline active (Ordered → In Transit → Delivered). Finance dashboard showing real revenue, margins, and payouts. AI chatbot trained on live catalog.</div>
+                    </div>
+                    <div class="phase-card" style="border-left-color: var(--accent-blue);">
+                        <div class="phase-title" style="color: var(--accent-blue);">Phase 3: Discovery + Growth<br><span style="font-size: 0.8em; font-weight: normal; color: var(--text-secondary);">Weeks 5–8</span></div>
+                        <div class="phase-text">First 10 blog posts published (bilingual) for SEO + AEO. Instagram + Facebook connected for social posting from dashboard. Trade program accepting applications. Newsletter capture via Resend. Organic search traffic starts building — the discovery engine turns on.</div>
+                    </div>
+                    <div class="phase-card" style="border-left-color: var(--accent-pink);">
+                        <div class="phase-title" style="color: var(--accent-pink);">Phase 4: Automate + Compound<br><span style="font-size: 0.8em; font-weight: normal; color: var(--text-secondary);">Ongoing</span></div>
+                        <div class="phase-text">AI handles first-response 24/7. Automated shipping notifications via WhatsApp. 7-day post-delivery follow-ups. Price change detection on manufacturer updates. Margin alerts. Weekly AI-generated business reports. SEO compounds — more content = more traffic = more leads = more revenue.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SLIDE 12: WHAT IT COSTS (moved here — after content/brand) -->
+        <!-- ============================================================ -->
+        <section class="slide reveal">
+            <div class="slide-content">
+                <div class="slide-header">
+                    <div class="section-number">15</div>
+                    <div class="section-label">INVESTMENT</div>
+                </div>
+                <h1 class="slide-title">What It Costs to Run</h1>
+
+                <div class="two-column">
+                    <div>
+                        <table class="cost-table">
+                            <thead>
+                                <tr><th>Platform</th><th>What It Does</th><th>Cost</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><strong>Google Workspace</strong></td><td>Email, Drive, Sheets CRM (2 users)</td><td>~$14/mo</td></tr>
+                                <tr><td><strong>Netlify</strong></td><td>Website hosting (Pro)</td><td>$19/mo</td></tr>
+                                <tr><td><strong>Stripe</strong></td><td>Payment processing</td><td>3.6% + $3 MXN/txn</td></tr>
+                                <tr><td><strong>WhatsApp Business API</strong></td><td>Customer messaging</td><td>~$15/mo + per-msg</td></tr>
+                                <tr><td><strong>Claude AI (Haiku)</strong></td><td>Chatbot + AI assistant</td><td>~$10-20/mo</td></tr>
+                                <tr><td><strong>Resend</strong></td><td>Email + newsletters</td><td>Free (3k/mo)</td></tr>
+                                <tr><td><strong>Meta Graph API</strong></td><td>IG + Facebook posting</td><td>Free</td></tr>
+                                <tr><td><strong>Domain</strong></td><td>countercultures.com.mx</td><td>~$1.25/mo</td></tr>
+                                <tr class="total-row"><td colspan="2"><strong>TOTAL (without Stripe %)</strong></td><td><strong>~$60-80/mo</strong></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <div class="column-title" style="color: var(--accent-warm);">What This Replaces</div>
+                        <div class="feature-list" style="margin-bottom: clamp(0.5rem, 1vw, 0.75rem);">
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-red);">✕</span><span class="feature-text"><strong>Squarespace ($33/mo)</strong> — static brochure, no lead capture, no CRM</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-red);">✕</span><span class="feature-text"><strong>Odoo</strong> — disconnected CRM, no website integration</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-red);">✕</span><span class="feature-text"><strong>Manual tracking</strong> — leads in WhatsApp, orders in Roger's head, margins on a calculator</span></div>
+                        </div>
+
+                        <div class="column-title" style="color: var(--accent-green);">What You Get</div>
+                        <div class="feature-list" style="margin-bottom: clamp(0.5rem, 1vw, 0.75rem);">
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text">Lead capture that actually works (24/7 chatbot, forms, WhatsApp)</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text">Real-time financial visibility (revenue, margins, payouts)</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text">Automated order tracking + customer updates</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text">A discovery engine (SEO, AEO, social) that grows over time</span></div>
+                            <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text">One dashboard for everything — not 5 disconnected tools</span></div>
+                        </div>
+
+                        <div class="highlight-box">
+                            <div class="highlight-text"><strong>~$60-80/mo</strong> for a complete business platform. Every dollar in Stripe fees = a deal that closed itself.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SLIDE 15: NEXT STEPS + CLOSE -->
+        <!-- ============================================================ -->
+        <section class="slide reveal">
+            <div class="slide-content" style="text-align: center; gap: clamp(1.25rem, 3vw, 2.5rem);">
+                <div style="font-size: clamp(1rem, 2vw, 1.3rem); color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em;">Counter Cultures × Untold Works</div>
+
+                <h1 class="slide-title" style="font-size: clamp(3rem, 7vw, 5rem);">
+                    Let's <span class="accent-warm">Build This</span>
+                </h1>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1rem, 2vw, 1.5rem); max-width: 850px; margin: 0 auto; text-align: left;">
+                    <!-- Roger's side -->
+                    <div style="background: var(--card-bg); border: 1px solid var(--border-medium); border-radius: 12px; padding: clamp(0.75rem, 2vw, 1.25rem);">
+                        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-warm); margin-bottom: 0.75rem;">Roger's to-do</div>
+                        <div class="feature-item" style="margin-bottom: 0.5rem;"><span class="feature-icon" style="color: var(--accent-warm);">1.</span><span class="feature-text"><strong>Product image review</strong> — 64 products live, many using stock/duplicate photos. We need real product shots or manufacturer images for each SKU</span></div>
+                        <div class="feature-item" style="margin-bottom: 0.5rem;"><span class="feature-icon" style="color: var(--accent-warm);">2.</span><span class="feature-text"><strong>Walk the site</strong> — review copy, pricing, brand descriptions, and categories at <em>countercultures.netlify.app</em>. Flag anything that doesn't feel right</span></div>
+                        <div class="feature-item" style="margin-bottom: 0.5rem;"><span class="feature-icon" style="color: var(--accent-warm);">3.</span><span class="feature-text"><strong>Connect Google Workspace</strong> — give us access so Drive CRM, email, and calendar sync go live</span></div>
+                        <div class="feature-item" style="margin-bottom: 0.5rem;"><span class="feature-icon" style="color: var(--accent-warm);">4.</span><span class="feature-text"><strong>Confirm contact details</strong> — phone number and email are placeholders right now. Lock in the real showroom number + correct domain (countercultures.mx vs .com.mx)</span></div>
+                        <div class="feature-item"><span class="feature-icon" style="color: var(--accent-warm);">5.</span><span class="feature-text"><strong>Review the Master Price List</strong> — confirm dealer costs + margins for all 491 products</span></div>
+                    </div>
+                    <!-- Untold Works side -->
+                    <div style="background: var(--card-bg); border: 1px solid var(--border-medium); border-radius: 12px; padding: clamp(0.75rem, 2vw, 1.25rem);">
+                        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-green); margin-bottom: 0.75rem;">We handle</div>
+                        <div class="feature-item" style="margin-bottom: 0.5rem;"><span class="feature-icon" style="color: var(--accent-green);">✓</span><span class="feature-text"><strong>Stripe is connected</strong> — payments + finance dashboard wired up</span></div>
+                        <div class="feature-item" style="margin-bottom: 0.5rem;"><span class="feature-icon" style="color: var(--accent-green);">→</span><span class="feature-text">Replace stock photography with real product images across all 19 brand pages + 64 product cards</span></div>
+                        <div class="feature-item" style="margin-bottom: 0.5rem;"><span class="feature-icon" style="color: var(--accent-green);">→</span><span class="feature-text">Copy polish — tighten hero messaging, fix spec gaps, deduplicate language, add missing product details</span></div>
+                        <div class="feature-item" style="margin-bottom: 0.5rem;"><span class="feature-icon" style="color: var(--accent-green);">→</span><span class="feature-text">Wire Google Workspace into CRM, activate AI chatbot + order tracking</span></div>
+                        <div class="feature-item"><span class="feature-icon" style="color: var(--accent-green);">→</span><span class="feature-text">Launch SEO, AEO & content engine for discovery</span></div>
+                    </div>
+                </div>
+
+                <!-- Site scan callout -->
+                <div style="max-width: 850px; margin: 0 auto; background: rgba(212, 165, 116, 0.06); border: 1px solid rgba(212, 165, 116, 0.15); border-radius: 10px; padding: clamp(0.6rem, 1.5vw, 1rem) clamp(1rem, 2vw, 1.5rem);">
+                    <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-warm); margin-bottom: 0.4rem;">From our site scan</div>
+                    <div style="font-size: clamp(0.8rem, 1.3vw, 0.9rem); color: var(--text-secondary); line-height: 1.6;">
+                        19 brands listed, 64 products live, Stripe connected. <strong>Biggest gap:</strong> stock images on brand pages + duplicate product photos. <strong>Quick wins:</strong> real phone number, email domain consistency, hero copy refresh, product spec completion.
+                    </div>
+                </div>
+
+                <div class="highlight-box" style="max-width: 700px; margin: 0 auto;">
+                    <div class="highlight-text" style="text-align: center;">
+                        <strong>The platform is built. Your inputs are what make it yours.</strong>
+                    </div>
+                </div>
+
+                <div style="font-size: clamp(0.85rem, 1.5vw, 1rem); color: var(--text-muted); margin-top: clamp(0.5rem, 1vw, 1rem);">
+                    Questions? Let's talk through them now.
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="progress-bar" id="progressBar"></div>
+    <!-- Navigation dots -->
+    <div class="nav-dots" id="navDots"></div>
+
+    <script>
+        const deck = document.getElementById('deck');
+        const progressBar = document.getElementById('progressBar');
+        const navDots = document.getElementById('navDots');
+        const slides = document.querySelectorAll('.slide');
+        let currentSlide = 0;
+
+        slides.forEach((_, index) => {
+            const dot = document.createElement('div');
+            dot.className = 'dot';
+            if (index === 0) dot.classList.add('active');
+            dot.addEventListener('click', () => scrollToSlide(index));
+            navDots.appendChild(dot);
+        });
+
+        const dots = document.querySelectorAll('.dot');
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.querySelectorAll('.reveal').forEach(child => {
+                        if (!child.style.opacity) {
+                            child.style.opacity = '0';
+                            child.style.animation = 'none';
+                            setTimeout(() => { child.style.animation = ''; }, 10);
+                        }
+                    });
+                }
+            });
+        }, { threshold: 0.3 });
+
+        slides.forEach(slide => observer.observe(slide));
+
+        let scrollTimeout;
+        deck.addEventListener('scroll', () => {
+            clearTimeout(scrollTimeout);
+            const scrollPercent = (deck.scrollTop / (deck.scrollHeight - deck.clientHeight)) * 100;
+            progressBar.style.width = scrollPercent + '%';
+            scrollTimeout = setTimeout(() => {
+                const scrollPosition = deck.scrollTop + deck.clientHeight / 2;
+                slides.forEach((slide, index) => {
+                    if (scrollPosition >= slide.offsetTop && scrollPosition < slide.offsetTop + slide.offsetHeight) {
+                        currentSlide = index;
+                        dots.forEach(dot => dot.classList.remove('active'));
+                        dots[index].classList.add('active');
+                    }
+                });
+            }, 100);
+        });
+
+        function scrollToSlide(index) {
+            slides[index].scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                if (currentSlide < slides.length - 1) scrollToSlide(currentSlide + 1);
+            } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                e.preventDefault();
+                if (currentSlide > 0) scrollToSlide(currentSlide - 1);
+            }
+        });
+
+        let touchStartY = 0;
+        deck.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; });
+        deck.addEventListener('touchend', (e) => {
+            const diff = touchStartY - e.changedTouches[0].clientY;
+            if (diff > 50 && currentSlide < slides.length - 1) scrollToSlide(currentSlide + 1);
+            else if (diff < -50 && currentSlide > 0) scrollToSlide(currentSlide - 1);
+        });
+    </script>
+</body>
+</html>

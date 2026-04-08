@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Counter Cultures - Google Workspace Setup</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #0a0a0a; color: #e5e5e5; line-height: 1.6; }
+    .container { max-width: 720px; margin: 0 auto; padding: 40px 24px; }
+    h1 { font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .subtitle { color: #888; font-size: 15px; margin-bottom: 40px; }
+    .status-bar { background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 12px; padding: 20px; margin-bottom: 32px; }
+    .status-bar h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #666; margin-bottom: 12px; }
+    .status-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 14px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .dot.green { background: #22c55e; }
+    .dot.red { background: #ef4444; }
+    .dot.yellow { background: #eab308; }
+    .step { background: #111; border: 1px solid #222; border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
+    .step-header { padding: 20px; cursor: pointer; display: flex; align-items: center; gap: 14px; }
+    .step-num { background: #2563eb; color: #fff; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+    .step-title { font-weight: 600; font-size: 16px; color: #fff; }
+    .step-time { margin-left: auto; font-size: 12px; color: #666; white-space: nowrap; }
+    .step-body { padding: 0 20px 20px 66px; }
+    .step-body p { margin-bottom: 12px; color: #aaa; font-size: 14px; }
+    .step-body ol { padding-left: 20px; }
+    .step-body li { margin-bottom: 10px; color: #ccc; font-size: 14px; }
+    .step-body li strong { color: #fff; }
+    a { color: #60a5fa; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .code { background: #1e1e2e; border: 1px solid #333; border-radius: 8px; padding: 14px 16px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; color: #a5f3fc; margin: 12px 0; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+    .code .label { color: #666; font-size: 11px; display: block; margin-bottom: 6px; }
+    .highlight { background: #2563eb22; border: 1px solid #2563eb44; border-radius: 8px; padding: 14px 16px; margin: 12px 0; }
+    .highlight p { color: #93c5fd !important; margin: 0 !important; }
+    .note { background: #422006; border: 1px solid #854d0e; border-radius: 8px; padding: 14px 16px; margin: 12px 0; }
+    .note p { color: #fbbf24 !important; margin: 0 !important; font-size: 13px !important; }
+    .section-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #555; margin: 32px 0 16px; font-weight: 600; }
+    .what-it-enables { background: #111; border: 1px solid #222; border-radius: 12px; padding: 20px; margin-top: 24px; }
+    .what-it-enables h3 { font-size: 16px; color: #fff; margin-bottom: 16px; }
+    .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .feature { background: #1a1a1a; border-radius: 8px; padding: 14px; }
+    .feature-name { font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+    .feature-desc { font-size: 12px; color: #888; }
+    @media (max-width: 600px) { .feature-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Counter Cultures Google Workspace</h1>
+    <p class="subtitle">CRM + Website Backend Setup &mdash; April 2026</p>
+
+    <div class="status-bar">
+      <h3>Current Status</h3>
+      <div class="status-row"><span class="dot green"></span> Service account created</div>
+      <div class="status-row"><span class="dot green"></span> Google Drive folder exists</div>
+      <div class="status-row"><span class="dot green"></span> Website code integration ready</div>
+      <div class="status-row"><span class="dot green"></span> Shared Drive for price lists connected</div>
+      <div class="status-row"><span class="dot red"></span> Google Sheets API not enabled on project</div>
+      <div class="status-row"><span class="dot red"></span> CRM spreadsheet not shared with service account</div>
+      <div class="status-row"><span class="dot yellow"></span> Master Price List sheet not created</div>
+    </div>
+
+    <div class="section-label">3 steps to go live</div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">1</div>
+        <div class="step-title">Enable Google Sheets API</div>
+        <div class="step-time">~2 min</div>
+      </div>
+      <div class="step-body">
+        <p>The service account's Google Cloud project needs the Sheets API turned on.</p>
+        <ol>
+          <li>Go to <a href="https://console.cloud.google.com/apis/library/sheets.googleapis.com?project=gen-lang-client-0620971024" target="_blank"><strong>Google Cloud Console &rarr; Sheets API</strong></a></li>
+          <li>Sign in with <strong>arisuccibusiness@gmail.com</strong> (the project owner)</li>
+          <li>Click <strong>"Enable"</strong></li>
+          <li>Also enable <a href="https://console.cloud.google.com/apis/library/drive.googleapis.com?project=gen-lang-client-0620971024" target="_blank"><strong>Google Drive API</strong></a> if not already enabled</li>
+        </ol>
+        <div class="note">
+          <p>If the project "gen-lang-client-0620971024" doesn't appear, check that you're signed into the right Google account in the top-right corner.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">2</div>
+        <div class="step-title">Share CRM Spreadsheet with Service Account</div>
+        <div class="step-time">~1 min</div>
+      </div>
+      <div class="step-body">
+        <p>The CRM spreadsheet needs to be shared with the service account so the website can read/write data.</p>
+        <ol>
+          <li>Open the <a href="https://docs.google.com/spreadsheets/d/1iXG4A6bzrRSodbendoi-IVy6gi1cqiKbDado_bH7Yt0/edit" target="_blank"><strong>Counter Cultures CRM spreadsheet</strong></a></li>
+          <li>If this sheet doesn't exist yet, <a href="https://sheets.new" target="_blank"><strong>create a new Google Sheet</strong></a> and name it "Counter Cultures CRM"</li>
+          <li>Click <strong>Share</strong> (top right)</li>
+          <li>Paste this service account email:</li>
+        </ol>
+        <div class="code">
+          <span class="label">Service Account Email (copy this):</span>counter-cultures-website@gen-lang-client-0620971024.iam.gserviceaccount.com
+        </div>
+        <ol start="5">
+          <li>Set permission to <strong>Editor</strong></li>
+          <li>Uncheck "Notify people" &rarr; Click <strong>Share</strong></li>
+        </ol>
+        <div class="highlight">
+          <p>If you created a NEW sheet, copy the Sheet ID from the URL (the long string between /d/ and /edit) and send it to Joshua to update the environment variables.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">3</div>
+        <div class="step-title">Share Drive Folder (if not done)</div>
+        <div class="step-time">~1 min</div>
+      </div>
+      <div class="step-body">
+        <p>Make sure the main Counter Cultures Drive folder is shared with the service account too.</p>
+        <ol>
+          <li>Open the <a href="https://drive.google.com/drive/folders/1-TER_FOffabcfkugHwr4FtMqLsAVKgs8" target="_blank"><strong>Counter Cultures Drive folder</strong></a></li>
+          <li>Click <strong>Share</strong> (or right-click &rarr; Share)</li>
+          <li>Paste the same service account email:</li>
+        </ol>
+        <div class="code">
+          <span class="label">Service Account Email:</span>counter-cultures-website@gen-lang-client-0620971024.iam.gserviceaccount.com
+        </div>
+        <ol start="4">
+          <li>Set to <strong>Editor</strong> &rarr; <strong>Share</strong></li>
+        </ol>
+        <div class="note">
+          <p>If it says "already has access" that's fine &mdash; skip this step.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">After these steps</div>
+
+    <p style="color: #aaa; font-size: 14px; margin-bottom: 16px;">
+      Once the above is done, tell Joshua (or come back to the Cowork session) and the automated setup script will run to create all 16 CRM tabs with headers:
+    </p>
+
+    <div class="code" style="font-size: 12px; line-height: 1.8;">Products &bull; Leads &bull; Pipeline &bull; Contacts &bull; Activity_Log &bull; Reps
+Trade_Applications &bull; Content_Calendar &bull; Email_Campaigns &bull; Social_Posts
+Newsletter &bull; Bookings &bull; Website_Analytics &bull; Sales_Metrics
+Marketing_Metrics &bull; Settings</div>
+
+    <div class="what-it-enables">
+      <h3>What This Powers</h3>
+      <div class="feature-grid">
+        <div class="feature">
+          <div class="feature-name">Product Catalog</div>
+          <div class="feature-desc">Website pulls products from the Products sheet</div>
+        </div>
+        <div class="feature">
+          <div class="feature-name">Lead Capture</div>
+          <div class="feature-desc">Contact forms write directly to Leads sheet</div>
+        </div>
+        <div class="feature">
+          <div class="feature-name">Trade Applications</div>
+          <div class="feature-desc">Architect/designer applications tracked in Sheets</div>
+        </div>
+        <div class="feature">
+          <div class="feature-name">Showroom Bookings</div>
+          <div class="feature-desc">Booking requests saved to Bookings sheet</div>
+        </div>
+        <div class="feature">
+          <div class="feature-name">Newsletter Signups</div>
+          <div class="feature-desc">Email captures stored in Newsletter sheet</div>
+        </div>
+        <div class="feature">
+          <div class="feature-name">Sales Pipeline</div>
+          <div class="feature-desc">Dashboard tracks deals through Pipeline sheet</div>
+        </div>
+        <div class="feature">
+          <div class="feature-name">Drive File Browser</div>
+          <div class="feature-desc">Dashboard browses/uploads to the CRM Drive folder</div>
+        </div>
+        <div class="feature">
+          <div class="feature-name">Marketing Metrics</div>
+          <div class="feature-desc">Track campaigns, social, and analytics in one place</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #222;">
+      <p style="font-size: 12px; color: #555;">
+        <strong style="color: #888;">Accounts involved:</strong><br>
+        Owner: arisuccibusiness@gmail.com<br>
+        Business: roger@countercultures.com.mx / info@countercultures.com.mx<br>
+        Service Account: counter-cultures-website@gen-lang-client-0620971024.iam.gserviceaccount.com<br>
+        Project: gen-lang-client-0620971024
+      </p>
+    </div>
+  </div>
+</body>
+</html>

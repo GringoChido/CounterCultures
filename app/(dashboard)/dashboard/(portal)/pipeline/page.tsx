@@ -532,7 +532,47 @@ const PipelinePage = () => {
             Operations
           </button>
         </div>
-        <button className="flex items-center gap-2 px-4 py-1.5 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer">
+        <button
+          onClick={() => {
+            const newDeal: PipelineDeal = {
+              id: `DEAL-${Date.now()}`,
+              name: "New Deal",
+              contactName: "",
+              contactCompany: "",
+              value: 0,
+              currency: "MXN",
+              stage: "discovery" as PipelineStage,
+              probability: 50,
+              expectedClose: new Date(Date.now() + 30 * 86400000).toISOString(),
+              assignedRep: "Roger",
+              products: "",
+              createdAt: new Date().toISOString(),
+              notes: "",
+            };
+            setDeals((prev) => [newDeal, ...prev]);
+            setSelectedDeal(newDeal);
+            setDealTab("details");
+            // Persist to CRM
+            fetch("/api/dashboard/pipeline", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                id: newDeal.id,
+                name: newDeal.name,
+                company: "",
+                stage: newDeal.stage,
+                value: "0",
+                probability: "50",
+                expected_close: newDeal.expectedClose,
+                owner: "Roger",
+                source: "",
+                created_at: newDeal.createdAt,
+                last_activity: newDeal.createdAt,
+              }),
+            }).catch(() => {});
+          }}
+          className="flex items-center gap-2 px-4 py-1.5 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer"
+        >
           <Plus className="w-4 h-4" />
           New Deal
         </button>

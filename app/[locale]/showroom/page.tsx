@@ -72,7 +72,7 @@ const ShowroomPage = async ({ params }: ShowroomPageProps) => {
       ? "El showroom principal de San Miguel de Allende para accesorios de lujo de baño, cocina y herrajes. Distribuidor autorizado de Kohler, TOTO, Brizo, BLANCO y más."
       : "San Miguel de Allende's premier showroom for luxury bath, kitchen, and hardware fixtures. Authorized dealer for Kohler, TOTO, Brizo, BLANCO, and more.",
     url: `${BASE_URL}/${locale}/showroom`,
-    telephone: "+52-415-000-0000",
+    telephone: "+52-415-154-8375",
     email: "info@countercultures.mx",
     address: {
       "@type": "PostalAddress",

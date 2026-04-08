@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
 import { format, differenceInDays, isPast, parseISO } from "date-fns";
-import { Plus, Filter, Download, Mail, MessageCircle, ClipboardList, Loader2 } from "lucide-react";
+import { Plus, Filter, Download, Mail, MessageCircle, ClipboardList, Loader2, Save, X, ChevronDown } from "lucide-react";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
@@ -64,6 +64,249 @@ const statusVariants: Record<string, BadgeVariant> = {
 
 const statusOptions = ["all", "new", "contacted", "qualified", "proposal", "won", "lost"] as const;
 const sourceOptions = ["all", "Showroom Walk-in", "Website Contact Form", "Instagram", "WhatsApp", "Trade Program", "Referral"] as const;
+const contactTypeOptions = ["Homeowner", "Architect", "Interior Designer", "Builder/Contractor", "Developer", "Hotel/Hospitality", "Trade Program", "Other"] as const;
+
+// ── Lead Form ────────────────────────────────────────────────────────
+interface LeadFormProps {
+  open: boolean;
+  onClose: () => void;
+  onSaved: () => void;
+  editLead?: Lead | null;
+}
+
+const emptyForm = {
+  name: "",
+  email: "",
+  phone: "",
+  source: "Website Contact Form",
+  status: "new",
+  contact_type: "",
+  interest: "",
+  value: "",
+  next_followup: "",
+};
+
+const LeadForm = ({ open, onClose, onSaved, editLead }: LeadFormProps) => {
+  const [form, setForm] = useState(emptyForm);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (editLead) {
+      setForm({
+        name: editLead.name,
+        email: editLead.email,
+        phone: editLead.phone,
+        source: editLead.source,
+        status: editLead.status,
+        contact_type: editLead.contactType,
+        interest: editLead.interest,
+        value: editLead.value,
+        next_followup: editLead.nextFollowUp,
+      });
+    } else {
+      setForm(emptyForm);
+    }
+    setError(null);
+  }, [editLead, open]);
+
+  const handleChange = (field: string, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async () => {
+    if (!form.name.trim()) {
+      setError("Name is required.");
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
+
+    try {
+      const method = editLead ? "PATCH" : "POST";
+      const body = editLead ? { id: editLead.id, ...form } : form;
+
+      const res = await fetch("/api/dashboard/leads", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) throw new Error("Failed to save lead");
+      onSaved();
+      onClose();
+    } catch (err) {
+      console.error(err);
+      setError("Failed to save lead. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const inputClass =
+    "w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30 placeholder:text-dash-text-secondary/50";
+  const labelClass = "block text-xs font-medium text-dash-text-secondary mb-1.5";
+
+  return (
+    <SlideOut
+      open={open}
+      onClose={onClose}
+      title={editLead ? "Edit Lead" : "New Lead"}
+      width="w-[520px]"
+    >
+      <div className="space-y-5">
+        {error && (
+          <div className="text-sm text-red-400 bg-red-400/10 rounded-lg px-3 py-2">
+            {error}
+          </div>
+        )}
+
+        {/* Name */}
+        <div>
+          <label className={labelClass}>
+            Name <span className="text-red-400">*</span>
+          </label>
+          <input
+            type="text"
+            value={form.name}
+            onChange={(e) => handleChange("name", e.target.value)}
+            placeholder="Full name"
+            className={inputClass}
+            autoFocus
+          />
+        </div>
+
+        {/* Email & Phone */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelClass}>Email</label>
+            <input
+              type="email"
+              value={form.email}
+              onChange={(e) => handleChange("email", e.target.value)}
+              placeholder="email@example.com"
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Phone</label>
+            <input
+              type="tel"
+              value={form.phone}
+              onChange={(e) => handleChange("phone", e.target.value)}
+              placeholder="+52 415 123 4567"
+              className={inputClass}
+            />
+          </div>
+        </div>
+
+        {/* Source & Status */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelClass}>Source</label>
+            <select
+              value={form.source}
+              onChange={(e) => handleChange("source", e.target.value)}
+              className={inputClass}
+            >
+              {sourceOptions.filter((s) => s !== "all").map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className={labelClass}>Status</label>
+            <select
+              value={form.status}
+              onChange={(e) => handleChange("status", e.target.value)}
+              className={inputClass}
+            >
+              {statusOptions.filter((s) => s !== "all").map((s) => (
+                <option key={s} value={s}>
+                  {s.charAt(0).toUpperCase() + s.slice(1)}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Contact Type */}
+        <div>
+          <label className={labelClass}>Contact Type</label>
+          <select
+            value={form.contact_type}
+            onChange={(e) => handleChange("contact_type", e.target.value)}
+            className={inputClass}
+          >
+            <option value="">Select type...</option>
+            {contactTypeOptions.map((t) => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Interest */}
+        <div>
+          <label className={labelClass}>Interest / Product</label>
+          <input
+            type="text"
+            value={form.interest}
+            onChange={(e) => handleChange("interest", e.target.value)}
+            placeholder="e.g. Smart Toilet, Rainfall Shower System"
+            className={inputClass}
+          />
+        </div>
+
+        {/* Value & Follow-up */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelClass}>Estimated Value</label>
+            <input
+              type="text"
+              value={form.value}
+              onChange={(e) => handleChange("value", e.target.value)}
+              placeholder="$5,000 USD"
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Next Follow-Up</label>
+            <input
+              type="date"
+              value={form.next_followup}
+              onChange={(e) => handleChange("next_followup", e.target.value)}
+              className={inputClass}
+            />
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-3 pt-4 border-t border-dash-border">
+          <button
+            onClick={handleSubmit}
+            disabled={saving}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors disabled:opacity-50 cursor-pointer"
+          >
+            {saving ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            {saving ? "Saving..." : editLead ? "Update Lead" : "Create Lead"}
+          </button>
+          <button
+            onClick={onClose}
+            disabled={saving}
+            className="px-4 py-2.5 text-sm border border-dash-border rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </SlideOut>
+  );
+};
 
 const columnHelper = createColumnHelper<Lead>();
 
@@ -193,6 +436,8 @@ const LeadsPage = () => {
   const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [contactTypeFilter, setContactTypeFilter] = useState<string>("all");
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingLead, setEditingLead] = useState<Lead | null>(null);
 
   const fetchLeads = useCallback(async () => {
     try {
@@ -320,7 +565,13 @@ const LeadsPage = () => {
             <Download className="w-4 h-4" />
             Export
           </button>
-          <button className="flex items-center gap-2 px-4 py-1.5 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer">
+          <button
+            onClick={() => {
+              setEditingLead(null);
+              setFormOpen(true);
+            }}
+            className="flex items-center gap-2 px-4 py-1.5 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer"
+          >
             <Plus className="w-4 h-4" />
             Add Lead
           </button>
@@ -376,10 +627,36 @@ const LeadsPage = () => {
               <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary mb-3">
                 Status
               </h4>
-              <StatusBadge
-                label={selectedLead.status}
-                variant={statusVariants[selectedLead.status] ?? "new"}
-              />
+              <div className="flex items-center gap-2">
+                <StatusBadge
+                  label={selectedLead.status}
+                  variant={statusVariants[selectedLead.status] ?? "new"}
+                />
+                <select
+                  value={selectedLead.status}
+                  onChange={async (e) => {
+                    const newStatus = e.target.value;
+                    try {
+                      await fetch("/api/dashboard/leads", {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ id: selectedLead.id, status: newStatus }),
+                      });
+                      setSelectedLead({ ...selectedLead, status: newStatus });
+                      fetchLeads();
+                    } catch (err) {
+                      console.error("Failed to update status:", err);
+                    }
+                  }}
+                  className="text-xs bg-dash-bg border border-dash-border rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
+                >
+                  {statusOptions.filter((s) => s !== "all").map((s) => (
+                    <option key={s} value={s}>
+                      {s.charAt(0).toUpperCase() + s.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div>
@@ -418,7 +695,14 @@ const LeadsPage = () => {
             </div>
 
             <div className="flex gap-2 pt-4 border-t border-dash-border">
-              <button className="flex-1 px-4 py-2 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer">
+              <button
+                onClick={() => {
+                  setEditingLead(selectedLead);
+                  setSelectedLead(null);
+                  setFormOpen(true);
+                }}
+                className="flex-1 px-4 py-2 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer"
+              >
                 Edit Lead
               </button>
               <button className="flex-1 px-4 py-2 text-sm border border-dash-border rounded-lg hover:bg-dash-bg transition-colors cursor-pointer">
@@ -428,6 +712,17 @@ const LeadsPage = () => {
           </div>
         )}
       </SlideOut>
+
+      {/* New / Edit Lead Form */}
+      <LeadForm
+        open={formOpen}
+        onClose={() => {
+          setFormOpen(false);
+          setEditingLead(null);
+        }}
+        onSaved={fetchLeads}
+        editLead={editingLead}
+      />
     </div>
   );
 };

@@ -22,8 +22,12 @@ import {
   CheckCircle2,
   AlertTriangle,
   X,
+  Save,
+  Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
 import { StatusBadge } from "@/app/(dashboard)/components/status-badge";
+import { SlideOut } from "@/app/(dashboard)/components/slide-out";
 import { sampleScheduledPosts, samplePosts } from "@/app/lib/social/sample-data";
 import type { SocialPlatform } from "@/app/lib/social/types";
 
@@ -54,10 +58,19 @@ interface CalendarEvent {
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+const CONTENT_TYPES = ["blog-post", "social-post", "email-newsletter", "product-spotlight", "project-showcase", "press-release"] as const;
+const PLATFORMS = ["instagram", "facebook", "website", "email"] as const;
+const CONTENT_STATUSES = ["draft", "scheduled", "published", "failed"] as const;
+
 const ContentCalendarPage = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date(2026, 2, 1));
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createSaving, setCreateSaving] = useState(false);
+  const [newPost, setNewPost] = useState({
+    title: "", type: "social-post" as string, platform: "instagram" as string,
+    scheduled_date: "", status: "draft" as string, author: "Roger", notes: "",
+  });
 
   // Merge scheduled + published posts into calendar events
   const calendarEvents: CalendarEvent[] = [
@@ -114,18 +127,20 @@ const ContentCalendarPage = () => {
               {publishedCount} published
             </span>
           </div>
-          <a
-            href="/dashboard/social"
-            onClick={(e) => {
-              e.preventDefault();
-              // Navigate to social page, create tab
-              window.location.href = "/dashboard/social";
+          <button
+            onClick={() => {
+              setNewPost({
+                title: "", type: "social-post", platform: "instagram",
+                scheduled_date: selectedDay ? format(selectedDay, "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
+                status: "draft", author: "Roger", notes: "",
+              });
+              setShowCreateModal(true);
             }}
             className="flex items-center gap-2 px-4 py-2 bg-brand-copper text-white rounded-lg text-sm font-medium hover:bg-brand-copper/90 transition-colors cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             Create Post
-          </a>
+          </button>
         </div>
       </div>
 
@@ -293,12 +308,15 @@ const ContentCalendarPage = () => {
                 <p className="text-xs text-dash-text-secondary">
                   No posts on this day
                 </p>
-                <a
-                  href="/dashboard/social"
-                  className="text-xs text-brand-copper hover:text-brand-copper/80 mt-2 inline-block"
+                <button
+                  onClick={() => {
+                    setNewPost((p) => ({ ...p, scheduled_date: selectedDay ? format(selectedDay, "yyyy-MM-dd") : "" }));
+                    setShowCreateModal(true);
+                  }}
+                  className="text-xs text-brand-copper hover:text-brand-copper/80 mt-2 inline-block cursor-pointer"
                 >
                   + Schedule a post
-                </a>
+                </button>
               </div>
             ) : (
               <div className="text-center py-6">
@@ -383,6 +401,75 @@ const ContentCalendarPage = () => {
           </div>
         </div>
       </div>
+      {/* Create Post SlideOut */}
+      <SlideOut open={showCreateModal} onClose={() => setShowCreateModal(false)} title="Create Content">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-dash-text-secondary mb-1">Title *</label>
+            <input className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper" value={newPost.title} onChange={(e) => setNewPost((p) => ({ ...p, title: e.target.value }))} placeholder="e.g. Spring Collection Spotlight" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-dash-text-secondary mb-1">Content Type</label>
+              <select className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper" value={newPost.type} onChange={(e) => setNewPost((p) => ({ ...p, type: e.target.value }))}>
+                {CONTENT_TYPES.map((t) => <option key={t} value={t}>{t.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-dash-text-secondary mb-1">Platform</label>
+              <select className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper" value={newPost.platform} onChange={(e) => setNewPost((p) => ({ ...p, platform: e.target.value }))}>
+                {PLATFORMS.map((pl) => <option key={pl} value={pl}>{pl.charAt(0).toUpperCase() + pl.slice(1)}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-dash-text-secondary mb-1">Scheduled Date</label>
+              <input type="date" className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper" value={newPost.scheduled_date} onChange={(e) => setNewPost((p) => ({ ...p, scheduled_date: e.target.value }))} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-dash-text-secondary mb-1">Status</label>
+              <select className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper" value={newPost.status} onChange={(e) => setNewPost((p) => ({ ...p, status: e.target.value }))}>
+                {CONTENT_STATUSES.map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-dash-text-secondary mb-1">Notes</label>
+            <textarea className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper h-24 resize-none" value={newPost.notes} onChange={(e) => setNewPost((p) => ({ ...p, notes: e.target.value }))} placeholder="Content brief, talking points, hashtags..." />
+          </div>
+          <div className="flex gap-3 pt-2">
+            <button
+              disabled={createSaving || !newPost.title}
+              onClick={async () => {
+                setCreateSaving(true);
+                try {
+                  const res = await fetch("/api/dashboard/content-calendar", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(newPost),
+                  });
+                  if (!res.ok) throw new Error("Failed");
+                  toast.success("Content added to calendar");
+                  setShowCreateModal(false);
+                } catch {
+                  toast.error("Error saving content");
+                } finally {
+                  setCreateSaving(false);
+                }
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-brand-copper text-white rounded-lg text-sm font-medium hover:bg-brand-copper/90 transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              {createSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Save
+            </button>
+            <button onClick={() => setShowCreateModal(false)} className="flex items-center gap-2 px-4 py-2 text-dash-text-secondary border border-dash-border rounded-lg text-sm hover:bg-dash-bg transition-colors cursor-pointer">
+              <X className="w-4 h-4" />
+              Cancel
+            </button>
+          </div>
+        </div>
+      </SlideOut>
     </div>
   );
 };
