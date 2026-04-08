@@ -120,7 +120,7 @@ const OurStoryPage = async ({ params }: OurStoryPageProps) => {
 
   return (
     <>
-      <script
+        <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(aboutPageJsonLd) }}
       />

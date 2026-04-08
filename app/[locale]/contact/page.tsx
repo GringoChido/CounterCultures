@@ -133,7 +133,7 @@ const ContactPage = async ({ params }: ContactPageProps) => {
 
   return (
     <>
-      <script
+        <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(contactJsonLd) }}
       />

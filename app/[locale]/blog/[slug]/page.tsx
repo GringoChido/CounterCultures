@@ -90,7 +90,7 @@ const BlogPostPage = async ({ params }: BlogPostPageProps) => {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
         />
-        <article className="pt-32 pb-20 md:pt-40 md:pb-28">
+      <article className="pt-32 pb-20 md:pt-40 md:pb-28">
           <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
             <Link
               href="/blog"

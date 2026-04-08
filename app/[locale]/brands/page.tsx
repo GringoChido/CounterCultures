@@ -345,7 +345,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
 
   return (
     <>
-      <script
+        <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(brandListJsonLd) }}
       />

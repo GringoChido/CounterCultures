@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ChevronDown, ChevronRight, MessageCircle, Sparkles } from "lucide-react";
@@ -15,15 +15,9 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
   const lang = locale as "en" | "es";
   const pathname = usePathname();
 
-  const getLocalePath = (targetLocale: "en" | "es") => {
-    const segments = pathname.split("/");
-    if (segments[1] === "en" || segments[1] === "es") {
-      segments[1] = targetLocale;
-    } else {
-      segments.splice(1, 0, targetLocale);
-    }
-    return segments.join("/") || `/${targetLocale}`;
-  };
+  const pathWithoutLocale = pathname.replace(/^\/(en|es)/, "") || "/";
+  const getLocalePath = (targetLocale: "en" | "es") =>
+    `/${targetLocale}${pathWithoutLocale}`;
 
   const categories = Object.entries(PRODUCT_CATEGORIES);
 
@@ -32,14 +26,14 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link href="/" className="flex flex-col leading-none shrink-0">
+          <NextLink href="/" className="flex flex-col leading-none shrink-0">
             <span className="font-display text-xl md:text-2xl font-light tracking-wider text-brand-charcoal whitespace-nowrap">
               Counter Cultures
             </span>
             <span className="hidden sm:block font-body text-[10px] md:text-[11px] tracking-[0.2em] text-brand-copper uppercase mt-0.5">
               San Miguel de Allende, MX
             </span>
-          </Link>
+          </NextLink>
 
           {/* Desktop Nav */}
           <div className="hidden lg:flex items-center gap-6">
@@ -54,25 +48,25 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                     onMouseEnter={() => setMegaMenuOpen(true)}
                     onMouseLeave={() => setMegaMenuOpen(false)}
                   >
-                    <Link
-                      href={link.href}
+                    <NextLink
+                      href={`/${locale}${link.href}`}
                       className="font-body text-sm font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors duration-300 flex items-center gap-1 py-2"
                     >
                       {link.label[lang]}
                       <ChevronDown className={`w-3 h-3 transition-transform ${megaMenuOpen ? "rotate-180" : ""}`} />
-                    </Link>
+                    </NextLink>
                   </div>
                 );
               }
 
               return (
-                <Link
+                <NextLink
                   key={link.href}
-                  href={link.href}
+                  href={`/${locale}${link.href}`}
                   className="font-body text-sm font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors duration-300 py-2"
                 >
                   {link.label[lang]}
-                </Link>
+                </NextLink>
               );
             })}
           </div>
@@ -91,7 +85,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
 
             {/* Language toggle */}
             <div className="flex items-center font-body text-xs tracking-wider">
-              <Link
+              <NextLink
                 href={getLocalePath("en")}
                 className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors ${
                   lang === "en"
@@ -101,9 +95,9 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               >
                 <span className="sm:hidden">EN</span>
                 <span className="hidden sm:inline">English</span>
-              </Link>
+              </NextLink>
               <span className="text-brand-stone/40">|</span>
-              <Link
+              <NextLink
                 href={getLocalePath("es")}
                 className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors ${
                   lang === "es"
@@ -113,15 +107,15 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               >
                 <span className="sm:hidden">ES</span>
                 <span className="hidden sm:inline">Español</span>
-              </Link>
+              </NextLink>
             </div>
 
-            <Link
+            <NextLink
               href="/dashboard"
               className="hidden md:inline-flex font-body text-sm font-medium px-5 py-2.5 bg-brand-copper text-white hover:bg-brand-terracotta transition-colors duration-300"
             >
               Portal
-            </Link>
+            </NextLink>
 
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -150,39 +144,39 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               <div className="grid grid-cols-3 gap-10">
                 {categories.map(([key, cat]) => (
                   <div key={key}>
-                    <Link
+                    <NextLink
                       href={`/${locale}/shop/${key}`}
                       className="font-display text-lg font-light tracking-wide text-brand-charcoal hover:text-brand-terracotta transition-colors"
                     >
                       {cat.label[lang]}
-                    </Link>
+                    </NextLink>
                     <div className="mt-1 mb-4 w-8 h-px bg-brand-terracotta" />
                     <ul className="space-y-2">
                       {cat.subcategories.map((sub) => (
                         <li key={sub.slug}>
-                          <Link
+                          <NextLink
                             href={`/${locale}/shop/${key}/${sub.slug}`}
                             className="font-body text-sm text-brand-stone hover:text-brand-terracotta transition-colors duration-200"
                           >
                             {sub.label[lang]}
-                          </Link>
+                          </NextLink>
                         </li>
                       ))}
                     </ul>
-                    <Link
+                    <NextLink
                       href={`/${locale}/shop/${key}`}
                       className="inline-flex items-center gap-1 mt-4 font-body text-xs font-medium text-brand-terracotta hover:text-brand-copper transition-colors"
                     >
                       {lang === "en" ? "View All" : "Ver Todo"}
                       <ChevronRight className="w-3 h-3" />
-                    </Link>
+                    </NextLink>
                   </div>
                 ))}
               </div>
 
               {/* Featured bar */}
               <div className="mt-8 pt-6 border-t border-brand-stone/10">
-                <Link
+                <NextLink
                   href={`/${locale}/brands`}
                   className="flex items-center gap-3 group"
                 >
@@ -196,7 +190,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                       : "Explora piezas hechas a mano por los maestros artesanos de México"}
                   </span>
                   <ChevronRight className="w-3 h-3 text-brand-stone ml-auto group-hover:text-brand-terracotta transition-colors" />
-                </Link>
+                </NextLink>
               </div>
             </div>
           </motion.div>
@@ -220,13 +214,13 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                 if (isShop) {
                   return (
                     <div key={link.href}>
-                      <Link
-                        href={link.href}
+                      <NextLink
+                        href={`/${locale}${link.href}`}
                         onClick={() => setMobileOpen(false)}
                         className="block py-3.5 font-body text-base font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors border-b border-brand-stone/5"
                       >
                         {link.label[lang]}
-                      </Link>
+                      </NextLink>
                       {/* Mobile category accordion */}
                       <div className="pl-3">
                         {categories.map(([key, cat]) => (
@@ -259,22 +253,22 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                                 >
                                   <div className="pl-3 pb-2 space-y-0">
                                     {cat.subcategories.map((sub) => (
-                                      <Link
+                                      <NextLink
                                         key={sub.slug}
                                         href={`/${locale}/shop/${key}/${sub.slug}`}
                                         onClick={() => setMobileOpen(false)}
                                         className="flex items-center py-2.5 min-h-[44px] text-sm text-brand-stone hover:text-brand-terracotta transition-colors"
                                       >
                                         {sub.label[lang]}
-                                      </Link>
+                                      </NextLink>
                                     ))}
-                                    <Link
+                                    <NextLink
                                       href={`/${locale}/shop/${key}`}
                                       onClick={() => setMobileOpen(false)}
                                       className="flex items-center py-2.5 min-h-[44px] text-sm font-medium text-brand-terracotta"
                                     >
                                       {lang === "en" ? `View All ${cat.label[lang]}` : `Ver Todo ${cat.label[lang]}`}
-                                    </Link>
+                                    </NextLink>
                                   </div>
                                 </motion.div>
                               )}
@@ -287,14 +281,14 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                 }
 
                 return (
-                  <Link
+                  <NextLink
                     key={link.href}
-                    href={link.href}
+                    href={`/${locale}${link.href}`}
                     onClick={() => setMobileOpen(false)}
                     className="flex items-center py-3.5 min-h-[44px] font-body text-base font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors border-b border-brand-stone/5"
                   >
                     {link.label[lang]}
-                  </Link>
+                  </NextLink>
                 );
               })}
 
@@ -310,13 +304,13 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               </a>
 
               <div className="pt-4 pb-2 flex flex-col gap-3">
-                <Link
+                <NextLink
                   href="/dashboard"
                   onClick={() => setMobileOpen(false)}
                   className="block text-center py-3.5 bg-brand-copper text-white font-body font-medium text-sm hover:bg-brand-terracotta transition-colors"
                 >
                   Counter Portal
-                </Link>
+                </NextLink>
               </div>
             </div>
           </motion.div>

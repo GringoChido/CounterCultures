@@ -173,7 +173,7 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
 
   return (
     <>
-      <script
+        <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />

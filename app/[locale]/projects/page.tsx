@@ -105,7 +105,7 @@ const ProjectsPage = async ({ params }: ProjectsPageProps) => {
 
   return (
     <>
-      <script
+        <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
       />

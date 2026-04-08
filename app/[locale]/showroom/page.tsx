@@ -190,7 +190,7 @@ const ShowroomPage = async ({ params }: ShowroomPageProps) => {
 
   return (
     <>
-      <script
+        <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(showroomJsonLd) }}
       />

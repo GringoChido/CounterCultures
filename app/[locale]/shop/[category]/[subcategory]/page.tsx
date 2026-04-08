@@ -134,7 +134,7 @@ const SubcategoryPage = async ({ params }: SubcategoryPageProps) => {
 
   return (
     <>
-      <script
+        <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />

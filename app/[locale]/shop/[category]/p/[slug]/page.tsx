@@ -185,7 +185,7 @@ const ProductPage = async ({ params }: PDPProps) => {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
         />
-        <ProductDetail
+      <ProductDetail
           product={product}
           crossSells={crossSells}
           locale={lang}

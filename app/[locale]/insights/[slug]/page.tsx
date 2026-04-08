@@ -180,7 +180,7 @@ const ArticlePage = async ({ params }: ArticlePageProps) => {
 
   return (
     <>
-      <script
+        <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
       />

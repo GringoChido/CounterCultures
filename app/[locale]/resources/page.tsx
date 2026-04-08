@@ -183,7 +183,7 @@ const ResourcesPage = async ({ params }: ResourcesPageProps) => {
 
   return (
     <>
-      <script
+        <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />

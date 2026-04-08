@@ -1,4 +1,472 @@
 {
+  "cocina/mezcladoras": [
+    {
+      "name": "Brizo-Litze-Angular",
+      "file": "Brizo-Litze-Angular.png",
+      "size_kb": 12.1,
+      "url": ""
+    },
+    {
+      "name": "Brizo-Litze-Puente",
+      "file": "Brizo-Litze-Puente.png",
+      "size_kb": 15.6,
+      "url": ""
+    },
+    {
+      "name": "Brizo-Litze-SmartTouch",
+      "file": "Brizo-Litze-SmartTouch.png",
+      "size_kb": 12.7,
+      "url": ""
+    },
+    {
+      "name": "CF-Bridge-Cuadruple",
+      "file": "CF-Bridge-Cuadruple.png",
+      "size_kb": 13.3,
+      "url": ""
+    },
+    {
+      "name": "CF-Corsano-Bar",
+      "file": "CF-Corsano-Bar.jpg",
+      "size_kb": 14.7,
+      "url": ""
+    },
+    {
+      "name": "CF-Corsano-Bridge",
+      "file": "CF-Corsano-Bridge.jpg",
+      "size_kb": 15.4,
+      "url": ""
+    },
+    {
+      "name": "CF-Davoli-Bridge",
+      "file": "CF-Davoli-Bridge.jpg",
+      "size_kb": 17.5,
+      "url": ""
+    },
+    {
+      "name": "CF-Davoli-Pulldown",
+      "file": "CF-Davoli-Pulldown.jpg",
+      "size_kb": 16.5,
+      "url": ""
+    },
+    {
+      "name": "CF-Davoli",
+      "file": "CF-Davoli.jpg",
+      "size_kb": 13.7,
+      "url": ""
+    },
+    {
+      "name": "CF-DelMar-Mono",
+      "file": "CF-DelMar-Mono.jpg",
+      "size_kb": 17.0,
+      "url": ""
+    },
+    {
+      "name": "CF-DelMar",
+      "file": "CF-DelMar.jpg",
+      "size_kb": 16.7,
+      "url": ""
+    },
+    {
+      "name": "CF-Descanso-Kitchen",
+      "file": "CF-Descanso-Kitchen.jpg",
+      "size_kb": 12.5,
+      "url": ""
+    },
+    {
+      "name": "CF-Descanso-Pulldown",
+      "file": "CF-Descanso-Pulldown.jpg",
+      "size_kb": 12.5,
+      "url": ""
+    },
+    {
+      "name": "CF-Poetto-Culinary",
+      "file": "CF-Poetto-Culinary.jpg",
+      "size_kb": 13.8,
+      "url": ""
+    },
+    {
+      "name": "CF-Poetto",
+      "file": "CF-Poetto.jpg",
+      "size_kb": 12.6,
+      "url": ""
+    },
+    {
+      "name": "CF-ZeroDrain",
+      "file": "CF-ZeroDrain.jpg",
+      "size_kb": 24.7,
+      "url": ""
+    },
+    {
+      "name": "Delta-Trinsic",
+      "file": "Delta-Trinsic.jpg",
+      "size_kb": 188.8,
+      "url": ""
+    },
+    {
+      "name": "Delta-Trinsic",
+      "file": "Delta-Trinsic.png",
+      "size_kb": 15.5,
+      "url": ""
+    },
+    {
+      "name": "Kohler-Edalyn",
+      "file": "Kohler-Edalyn.png",
+      "size_kb": 15.2,
+      "url": ""
+    },
+    {
+      "name": "Rohl-Bridge-Nickel",
+      "file": "Rohl-Bridge-Nickel.jpg",
+      "size_kb": 396.4,
+      "url": ""
+    },
+    {
+      "name": "Rohl-Georgiana",
+      "file": "Rohl-Georgiana.png",
+      "size_kb": 25.6,
+      "url": ""
+    },
+    {
+      "name": "Rohl-Puente",
+      "file": "Rohl-Puente.png",
+      "size_kb": 36.6,
+      "url": ""
+    }
+  ],
+  "cocina/electrodomesticos": [
+    {
+      "name": "Bluestar-Platinum-36",
+      "file": "Bluestar-Platinum-36.jpg",
+      "size_kb": 183.8,
+      "url": ""
+    },
+    {
+      "name": "Bluestar-UltraNova",
+      "file": "Bluestar-UltraNova.jpg",
+      "size_kb": 13.1,
+      "url": ""
+    },
+    {
+      "name": "SMEG-Horno",
+      "file": "SMEG-Horno.jpg",
+      "size_kb": 43.4,
+      "url": ""
+    },
+    {
+      "name": "Teka-Cafetera",
+      "file": "Teka-Cafetera.jpg",
+      "size_kb": 911.1,
+      "url": ""
+    },
+    {
+      "name": "Teka-Calientaplatos",
+      "file": "Teka-Calientaplatos.jpg",
+      "size_kb": 49.2,
+      "url": ""
+    },
+    {
+      "name": "Teka-Estufa",
+      "file": "Teka-Estufa.jpg",
+      "size_kb": 186.4,
+      "url": ""
+    },
+    {
+      "name": "Teka-Parrilla-Gas",
+      "file": "Teka-Parrilla-Gas.jpg",
+      "size_kb": 2367.6,
+      "url": ""
+    },
+    {
+      "name": "electrodomesticos-2",
+      "file": "electrodomesticos-2.png",
+      "size_kb": 2.3,
+      "url": ""
+    },
+    {
+      "name": "electrodomesticos-3",
+      "file": "electrodomesticos-3.png",
+      "size_kb": 22.4,
+      "url": ""
+    },
+    {
+      "name": "product-1",
+      "file": "product-1.jpg",
+      "size_kb": 1.4,
+      "url": ""
+    },
+    {
+      "name": "product-2",
+      "file": "product-2.png",
+      "size_kb": 22.4,
+      "url": ""
+    },
+    {
+      "name": "product-3",
+      "file": "product-3.png",
+      "size_kb": 2.3,
+      "url": ""
+    },
+    {
+      "name": "product-4",
+      "file": "product-4.png",
+      "size_kb": 6.9,
+      "url": ""
+    },
+    {
+      "name": "product-5",
+      "file": "product-5.png",
+      "size_kb": 12.4,
+      "url": ""
+    },
+    {
+      "name": "product-6",
+      "file": "product-6.png",
+      "size_kb": 22.4,
+      "url": ""
+    },
+    {
+      "name": "product-7",
+      "file": "product-7.png",
+      "size_kb": 21.8,
+      "url": ""
+    },
+    {
+      "name": "product-8",
+      "file": "product-8.png",
+      "size_kb": 21.8,
+      "url": ""
+    },
+    {
+      "name": "product-9",
+      "file": "product-9.png",
+      "size_kb": 21.8,
+      "url": ""
+    }
+  ],
+  "cocina/tarjas-doble": [
+    {
+      "name": "Coral-Cobre-Mandil-Doble",
+      "file": "Coral-Cobre-Mandil-Doble.jpg",
+      "size_kb": 8.3,
+      "url": ""
+    },
+    {
+      "name": "Rafael-Cobre-Mandil-Doble",
+      "file": "Rafael-Cobre-Mandil-Doble.jpg",
+      "size_kb": 21.2,
+      "url": ""
+    },
+    {
+      "name": "Siena-Cobre-Doble",
+      "file": "Siena-Cobre-Doble.jpg",
+      "size_kb": 144.5,
+      "url": ""
+    },
+    {
+      "name": "Tarja-Laton-Doble",
+      "file": "Tarja-Laton-Doble.jpg",
+      "size_kb": 434.1,
+      "url": ""
+    }
+  ],
+  "cocina/tarjas": [
+    {
+      "name": "Bante-Duetto-Fireclay",
+      "file": "Bante-Duetto-Fireclay.png",
+      "size_kb": 24.5,
+      "url": ""
+    },
+    {
+      "name": "Bante-Duetto",
+      "file": "Bante-Duetto.jpg",
+      "size_kb": 83.8,
+      "url": ""
+    },
+    {
+      "name": "Bante-Duo",
+      "file": "Bante-Duo.jpg",
+      "size_kb": 70.7,
+      "url": ""
+    },
+    {
+      "name": "Bante-Marea-FarmHouse",
+      "file": "Bante-Marea-FarmHouse.jpg",
+      "size_kb": 31.6,
+      "url": ""
+    },
+    {
+      "name": "Bante-Marea",
+      "file": "Bante-Marea.jpg",
+      "size_kb": 100.6,
+      "url": ""
+    },
+    {
+      "name": "Bante-Tarja-Duo",
+      "file": "Bante-Tarja-Duo.png",
+      "size_kb": 24.8,
+      "url": ""
+    },
+    {
+      "name": "Blanco-Diamond-Doble",
+      "file": "Blanco-Diamond-Doble.jpg",
+      "size_kb": 2.4,
+      "url": ""
+    },
+    {
+      "name": "Blanco-Diamond-Double",
+      "file": "Blanco-Diamond-Double.jpg",
+      "size_kb": 4.3,
+      "url": ""
+    },
+    {
+      "name": "Blanco-Ikon-30",
+      "file": "Blanco-Ikon-30.jpg",
+      "size_kb": 29.4,
+      "url": ""
+    },
+    {
+      "name": "Blanco-Ikon-33",
+      "file": "Blanco-Ikon-33.jpg",
+      "size_kb": 43.1,
+      "url": ""
+    },
+    {
+      "name": "Blanco-Ikon-Silgranit",
+      "file": "Blanco-Ikon-Silgranit.jpg",
+      "size_kb": 19.1,
+      "url": ""
+    },
+    {
+      "name": "Kohler-Brockway-36",
+      "file": "Kohler-Brockway-36.jpg",
+      "size_kb": 104.6,
+      "url": ""
+    },
+    {
+      "name": "Kohler-Brockway-36",
+      "file": "Kohler-Brockway-36.png",
+      "size_kb": 36.7,
+      "url": ""
+    },
+    {
+      "name": "Kohler-Strive-24",
+      "file": "Kohler-Strive-24.jpg",
+      "size_kb": 298.4,
+      "url": ""
+    },
+    {
+      "name": "Kohler-Strive-24",
+      "file": "Kohler-Strive-24.png",
+      "size_kb": 35.5,
+      "url": ""
+    },
+    {
+      "name": "Tarja-Laton-Martillado",
+      "file": "Tarja-Laton-Martillado.jpg",
+      "size_kb": 88.4,
+      "url": ""
+    }
+  ],
+  "cocina/campanas": [
+    {
+      "name": "Campana-Isla-Touch",
+      "file": "Campana-Isla-Touch.jpg",
+      "size_kb": 12.6,
+      "url": ""
+    },
+    {
+      "name": "Teka-DEP90-70-60",
+      "file": "Teka-DEP90-70-60.jpg",
+      "size_kb": 2.3,
+      "url": ""
+    },
+    {
+      "name": "Teka-DEP90",
+      "file": "Teka-DEP90.jpg",
+      "size_kb": 1.9,
+      "url": ""
+    },
+    {
+      "name": "Teka-DG980",
+      "file": "Teka-DG980.jpg",
+      "size_kb": 113.4,
+      "url": ""
+    },
+    {
+      "name": "Teka-GFH73",
+      "file": "Teka-GFH73.jpg",
+      "size_kb": 46.1,
+      "url": ""
+    }
+  ],
+  "drenajes": [
+    {
+      "name": "drenajes-2",
+      "file": "drenajes-2.png",
+      "size_kb": 2.3,
+      "url": ""
+    },
+    {
+      "name": "drenajes-3",
+      "file": "drenajes-3.png",
+      "size_kb": 22.4,
+      "url": ""
+    },
+    {
+      "name": "product-1",
+      "file": "product-1.jpg",
+      "size_kb": 1.4,
+      "url": ""
+    },
+    {
+      "name": "product-2",
+      "file": "product-2.png",
+      "size_kb": 22.4,
+      "url": ""
+    },
+    {
+      "name": "product-3",
+      "file": "product-3.png",
+      "size_kb": 2.3,
+      "url": ""
+    },
+    {
+      "name": "product-4",
+      "file": "product-4.png",
+      "size_kb": 6.9,
+      "url": ""
+    },
+    {
+      "name": "product-5",
+      "file": "product-5.png",
+      "size_kb": 12.4,
+      "url": ""
+    },
+    {
+      "name": "product-6",
+      "file": "product-6.png",
+      "size_kb": 22.4,
+      "url": ""
+    },
+    {
+      "name": "product-7",
+      "file": "product-7.png",
+      "size_kb": 21.8,
+      "url": ""
+    },
+    {
+      "name": "product-8",
+      "file": "product-8.png",
+      "size_kb": 21.8,
+      "url": ""
+    },
+    {
+      "name": "product-9",
+      "file": "product-9.png",
+      "size_kb": 21.8,
+      "url": ""
+    }
+  ],
   "accesorios": [
     {
       "name": "accesorios-2",
@@ -64,6 +532,282 @@
       "name": "product-9",
       "file": "product-9.png",
       "size_kb": 21.8,
+      "url": ""
+    }
+  ],
+  "herrajes/artesanales": [
+    {
+      "name": "Jaladera-De-Bronce-Cuadrada",
+      "file": "Jaladera-De-Bronce-Cuadrada.jpg",
+      "size_kb": 2.3,
+      "url": ""
+    },
+    {
+      "name": "Jaladera-De-Bronce-Tipo-L",
+      "file": "Jaladera-De-Bronce-Tipo-L.jpg",
+      "size_kb": 2.3,
+      "url": ""
+    },
+    {
+      "name": "Jaladera-De-Bronce-Tubular",
+      "file": "Jaladera-De-Bronce-Tubular.jpg",
+      "size_kb": 2.3,
+      "url": ""
+    },
+    {
+      "name": "artesanales-2",
+      "file": "artesanales-2.png",
+      "size_kb": 2.3,
+      "url": ""
+    },
+    {
+      "name": "artesanales-3",
+      "file": "artesanales-3.png",
+      "size_kb": 22.4,
+      "url": ""
+    },
+    {
+      "name": "product-1",
+      "file": "product-1.jpg",
+      "size_kb": 1.4,
+      "url": ""
+    },
+    {
+      "name": "product-2",
+      "file": "product-2.png",
+      "size_kb": 22.4,
+      "url": ""
+    },
+    {
+      "name": "product-3",
+      "file": "product-3.png",
+      "size_kb": 2.3,
+      "url": ""
+    },
+    {
+      "name": "product-4",
+      "file": "product-4.png",
+      "size_kb": 6.9,
+      "url": ""
+    },
+    {
+      "name": "product-5",
+      "file": "product-5.png",
+      "size_kb": 12.4,
+      "url": ""
+    },
+    {
+      "name": "product-6",
+      "file": "product-6.png",
+      "size_kb": 22.4,
+      "url": ""
+    },
+    {
+      "name": "product-7",
+      "file": "product-7.png",
+      "size_kb": 21.8,
+      "url": ""
+    },
+    {
+      "name": "product-8",
+      "file": "product-8.png",
+      "size_kb": 21.8,
+      "url": ""
+    },
+    {
+      "name": "product-9",
+      "file": "product-9.png",
+      "size_kb": 21.8,
+      "url": ""
+    }
+  ],
+  "herrajes/chapas-cerrojos": [
+    {
+      "name": "chapas-y-cerrojos-2",
+      "file": "chapas-y-cerrojos-2.png",
+      "size_kb": 2.3,
+      "url": ""
+    },
+    {
+      "name": "chapas-y-cerrojos-3",
+      "file": "chapas-y-cerrojos-3.png",
+      "size_kb": 22.4,
+      "url": ""
+    },
+    {
+      "name": "product-1",
+      "file": "product-1.jpg",
+      "size_kb": 1.4,
+      "url": ""
+    },
+    {
+      "name": "product-2",
+      "file": "product-2.png",
+      "size_kb": 22.4,
+      "url": ""
+    },
+    {
+      "name": "product-3",
+      "file": "product-3.png",
+      "size_kb": 2.3,
+      "url": ""
+    },
+    {
+      "name": "product-4",
+      "file": "product-4.png",
+      "size_kb": 6.9,
+      "url": ""
+    },
+    {
+      "name": "product-5",
+      "file": "product-5.png",
+      "size_kb": 12.4,
+      "url": ""
+    },
+    {
+      "name": "product-6",
+      "file": "product-6.png",
+      "size_kb": 22.4,
+      "url": ""
+    },
+    {
+      "name": "product-7",
+      "file": "product-7.png",
+      "size_kb": 21.8,
+      "url": ""
+    },
+    {
+      "name": "product-8",
+      "file": "product-8.png",
+      "size_kb": 21.8,
+      "url": ""
+    },
+    {
+      "name": "product-9",
+      "file": "product-9.png",
+      "size_kb": 21.8,
+      "url": ""
+    }
+  ],
+  "bano/grifos": [
+    {
+      "name": "Brizo-Siderna-Pared",
+      "file": "Brizo-Siderna-Pared.jpg",
+      "size_kb": 13.0,
+      "url": ""
+    },
+    {
+      "name": "CF-Christopher",
+      "file": "CF-Christopher.jpg",
+      "size_kb": 23.2,
+      "url": ""
+    },
+    {
+      "name": "CF-DStreet-Cobre",
+      "file": "CF-DStreet-Cobre.png",
+      "size_kb": 168.0,
+      "url": ""
+    },
+    {
+      "name": "CF-DStreet",
+      "file": "CF-DStreet.jpg",
+      "size_kb": 7.2,
+      "url": ""
+    },
+    {
+      "name": "CF-Descanso-Mango",
+      "file": "CF-Descanso-Mango.jpg",
+      "size_kb": 37.1,
+      "url": ""
+    },
+    {
+      "name": "CF-Descanso-Pared",
+      "file": "CF-Descanso-Pared.png",
+      "size_kb": 29.3,
+      "url": ""
+    },
+    {
+      "name": "CF-ManijaLisa",
+      "file": "CF-ManijaLisa.jpg",
+      "size_kb": 13.1,
+      "url": ""
+    },
+    {
+      "name": "CF-Marimar",
+      "file": "CF-Marimar.jpg",
+      "size_kb": 18.3,
+      "url": ""
+    },
+    {
+      "name": "CF-Monomando-Pared",
+      "file": "CF-Monomando-Pared.jpg",
+      "size_kb": 16.9,
+      "url": ""
+    },
+    {
+      "name": "CF-RinconBay",
+      "file": "CF-RinconBay.jpg",
+      "size_kb": 27.0,
+      "url": ""
+    },
+    {
+      "name": "CF-Salinas-Extenso",
+      "file": "CF-Salinas-Extenso.png",
+      "size_kb": 31.3,
+      "url": ""
+    },
+    {
+      "name": "CF-Salinas",
+      "file": "CF-Salinas.png",
+      "size_kb": 119.3,
+      "url": ""
+    },
+    {
+      "name": "CF-SanClemente",
+      "file": "CF-SanClemente.jpg",
+      "size_kb": 34.3,
+      "url": ""
+    },
+    {
+      "name": "CF-SanElijo",
+      "file": "CF-SanElijo.jpg",
+      "size_kb": 18.9,
+      "url": ""
+    },
+    {
+      "name": "CF-Solimar",
+      "file": "CF-Solimar.jpg",
+      "size_kb": 29.2,
+      "url": ""
+    },
+    {
+      "name": "CF-SteampunkBay",
+      "file": "CF-SteampunkBay.jpg",
+      "size_kb": 14.8,
+      "url": ""
+    },
+    {
+      "name": "CF-Tiburon",
+      "file": "CF-Tiburon.jpg",
+      "size_kb": 32.5,
+      "url": ""
+    },
+    {
+      "name": "CF-WallMount",
+      "file": "CF-WallMount.jpg",
+      "size_kb": 12.4,
+      "url": ""
+    },
+    {
+      "name": "Kohler-Georgeson",
+      "file": "Kohler-Georgeson.jpg",
+      "size_kb": 17.0,
+      "url": ""
+    },
+    {
+      "name": "SVB-Cascada-Caballo",
+      "file": "SVB-Cascada-Caballo.png",
+      "size_kb": 29.3,
       "url": ""
     }
   ],
@@ -171,6 +915,18 @@
       "url": ""
     },
     {
+      "name": "Tina-De-Isla-De-Resina",
+      "file": "Tina-De-Isla-De-Resina.jpg",
+      "size_kb": 2.3,
+      "url": ""
+    },
+    {
+      "name": "Tina-Freestanding-Badeloft-Bw-02",
+      "file": "Tina-Freestanding-Badeloft-Bw-02.jpg",
+      "size_kb": 2.3,
+      "url": ""
+    },
+    {
       "name": "Tina-Resina-Mineral",
       "file": "Tina-Resina-Mineral.jpg",
       "size_kb": 46.3,
@@ -189,221 +945,81 @@
       "url": ""
     }
   ],
-  "bano/grifos": [
+  "bano/llenadores": [
     {
-      "name": "CF-Christopher",
-      "file": "CF-Christopher.jpg",
-      "size_kb": 23.2,
+      "name": "Brizo-Litze-TubFiller",
+      "file": "Brizo-Litze-TubFiller.jpg",
+      "size_kb": 65.2,
       "url": ""
     },
     {
-      "name": "CF-DStreet-Cobre",
-      "file": "CF-DStreet-Cobre.png",
-      "size_kb": 168.0,
+      "name": "Brizo-Virage-Romana",
+      "file": "Brizo-Virage-Romana.jpg",
+      "size_kb": 19.6,
       "url": ""
     },
     {
-      "name": "CF-DStreet",
-      "file": "CF-DStreet.jpg",
-      "size_kb": 7.2,
+      "name": "Brizo-Virage-TubFiller",
+      "file": "Brizo-Virage-TubFiller.jpg",
+      "size_kb": 114.4,
       "url": ""
     },
     {
-      "name": "CF-Descanso-Mango",
-      "file": "CF-Descanso-Mango.jpg",
-      "size_kb": 37.1,
+      "name": "CF-Balboa-TubSet",
+      "file": "CF-Balboa-TubSet.jpg",
+      "size_kb": 114.4,
       "url": ""
     },
     {
-      "name": "CF-Descanso-Pared",
-      "file": "CF-Descanso-Pared.png",
-      "size_kb": 29.3,
+      "name": "CF-Bolsa-Wall",
+      "file": "CF-Bolsa-Wall.jpg",
+      "size_kb": 24.0,
       "url": ""
     },
     {
-      "name": "CF-ManijaLisa",
-      "file": "CF-ManijaLisa.jpg",
-      "size_kb": 13.1,
+      "name": "CF-Descanso-TubFiller",
+      "file": "CF-Descanso-TubFiller.jpg",
+      "size_kb": 80.8,
       "url": ""
     },
     {
-      "name": "CF-Marimar",
-      "file": "CF-Marimar.jpg",
-      "size_kb": 18.3,
+      "name": "CF-Hermosa-Traditional",
+      "file": "CF-Hermosa-Traditional.jpg",
+      "size_kb": 17.7,
       "url": ""
     },
     {
-      "name": "CF-Monomando-Pared",
-      "file": "CF-Monomando-Pared.jpg",
-      "size_kb": 16.9,
+      "name": "CF-Steampunk-TubFiller",
+      "file": "CF-Steampunk-TubFiller.jpg",
+      "size_kb": 93.9,
       "url": ""
     },
     {
-      "name": "CF-Salinas-Extenso",
-      "file": "CF-Salinas-Extenso.png",
-      "size_kb": 31.3,
+      "name": "Delta-TubFiller",
+      "file": "Delta-TubFiller.jpg",
+      "size_kb": 67.9,
       "url": ""
     },
     {
-      "name": "CF-Salinas",
-      "file": "CF-Salinas.png",
-      "size_kb": 119.3,
+      "name": "Kohler-TubFiller",
+      "file": "Kohler-TubFiller.jpg",
+      "size_kb": 98.4,
       "url": ""
     },
     {
-      "name": "CF-SanClemente",
-      "file": "CF-SanClemente.jpg",
-      "size_kb": 34.3,
-      "url": ""
-    },
-    {
-      "name": "CF-SanElijo",
-      "file": "CF-SanElijo.jpg",
-      "size_kb": 18.9,
-      "url": ""
-    },
-    {
-      "name": "CF-Solimar",
-      "file": "CF-Solimar.jpg",
-      "size_kb": 29.2,
-      "url": ""
-    },
-    {
-      "name": "CF-SteampunkBay",
-      "file": "CF-SteampunkBay.jpg",
-      "size_kb": 14.8,
-      "url": ""
-    },
-    {
-      "name": "CF-Tiburon",
-      "file": "CF-Tiburon.jpg",
-      "size_kb": 32.5,
-      "url": ""
-    },
-    {
-      "name": "CF-WallMount",
-      "file": "CF-WallMount.jpg",
-      "size_kb": 12.4,
-      "url": ""
-    },
-    {
-      "name": "Kohler-Georgeson",
-      "file": "Kohler-Georgeson.jpg",
-      "size_kb": 17.0,
-      "url": ""
-    },
-    {
-      "name": "SVB-Cascada-Caballo",
-      "file": "SVB-Cascada-Caballo.png",
-      "size_kb": 29.3,
-      "url": ""
-    }
-  ],
-  "bano/lavabos": [
-    {
-      "name": "Aurora-Cubeta-Niquelado",
-      "file": "Aurora-Cubeta-Niquelado.jpg",
-      "size_kb": 22.3,
-      "url": ""
-    },
-    {
-      "name": "Cindi-Lavabo-Cobre",
-      "file": "Cindi-Lavabo-Cobre.jpg",
-      "size_kb": 24.2,
-      "url": ""
-    },
-    {
-      "name": "Cobre-1914-Ovalado",
-      "file": "Cobre-1914-Ovalado.png",
-      "size_kb": 133.3,
-      "url": ""
-    },
-    {
-      "name": "Eloy-Lavabo-Cobre",
-      "file": "Eloy-Lavabo-Cobre.png",
-      "size_kb": 85.6,
-      "url": ""
-    },
-    {
-      "name": "FlorDePlata-Ovalin",
-      "file": "FlorDePlata-Ovalin.jpg",
-      "size_kb": 63.0,
-      "url": ""
-    },
-    {
-      "name": "FlorDePlata-Petit",
-      "file": "FlorDePlata-Petit.jpg",
-      "size_kb": 11.3,
-      "url": ""
-    },
-    {
-      "name": "Lavabo-Piedra",
-      "file": "Lavabo-Piedra.jpg",
-      "size_kb": 66.3,
-      "url": ""
-    },
-    {
-      "name": "Michelle-Vessel-Cobre",
-      "file": "Michelle-Vessel-Cobre.jpg",
-      "size_kb": 38.8,
-      "url": ""
-    },
-    {
-      "name": "Mistoa-Baru",
-      "file": "Mistoa-Baru.jpg",
-      "size_kb": 24.5,
-      "url": ""
-    },
-    {
-      "name": "Mistoa-Musa",
-      "file": "Mistoa-Musa.jpg",
-      "size_kb": 24.9,
-      "url": ""
-    },
-    {
-      "name": "Mistoa-Poas",
-      "file": "Mistoa-Poas.jpg",
-      "size_kb": 30.7,
-      "url": ""
-    },
-    {
-      "name": "Mistoa-Sisa",
-      "file": "Mistoa-Sisa.jpg",
-      "size_kb": 16.0,
-      "url": ""
-    },
-    {
-      "name": "Mistoa-Surco",
-      "file": "Mistoa-Surco.jpg",
-      "size_kb": 43.6,
-      "url": ""
-    },
-    {
-      "name": "TOTO-Aimes-Lavabo",
-      "file": "TOTO-Aimes-Lavabo.png",
-      "size_kb": 125.2,
-      "url": ""
-    },
-    {
-      "name": "VB-Architectura-Ovalado",
-      "file": "VB-Architectura-Ovalado.png",
-      "size_kb": 54.5,
-      "url": ""
-    },
-    {
-      "name": "VB-Architectura-Rectangular",
-      "file": "VB-Architectura-Rectangular.png",
-      "size_kb": 48.7,
-      "url": ""
-    },
-    {
-      "name": "VilleroyBoch-Twist",
-      "file": "VilleroyBoch-Twist.jpg",
-      "size_kb": 64.8,
+      "name": "Llenador-De-Baneras-De-Islas",
+      "file": "Llenador-De-Baneras-De-Islas.jpg",
+      "size_kb": 2.3,
       "url": ""
     }
   ],
   "bano/regaderas": [
+    {
+      "name": "Regadera-Trim-Tempassure-Thermostatico",
+      "file": "Regadera-Trim-Tempassure-Thermostatico.jpg",
+      "size_kb": 2.3,
+      "url": ""
+    },
     {
       "name": "product-1",
       "file": "product-1.jpg",
@@ -607,429 +1223,107 @@
       "url": ""
     }
   ],
-  "cocina/electrodomesticos": [
+  "bano/lavabos": [
     {
-      "name": "electrodomesticos-2",
-      "file": "electrodomesticos-2.png",
-      "size_kb": 2.3,
+      "name": "Aurora-Cubeta-Niquelado",
+      "file": "Aurora-Cubeta-Niquelado.jpg",
+      "size_kb": 22.3,
       "url": ""
     },
     {
-      "name": "electrodomesticos-3",
-      "file": "electrodomesticos-3.png",
-      "size_kb": 22.4,
+      "name": "Cindi-Lavabo-Cobre",
+      "file": "Cindi-Lavabo-Cobre.jpg",
+      "size_kb": 24.2,
       "url": ""
     },
     {
-      "name": "product-1",
-      "file": "product-1.jpg",
-      "size_kb": 1.4,
+      "name": "Cobre-1914-Ovalado",
+      "file": "Cobre-1914-Ovalado.png",
+      "size_kb": 133.3,
       "url": ""
     },
     {
-      "name": "product-2",
-      "file": "product-2.png",
-      "size_kb": 22.4,
+      "name": "Eloy-Lavabo-Cobre",
+      "file": "Eloy-Lavabo-Cobre.png",
+      "size_kb": 85.6,
       "url": ""
     },
     {
-      "name": "product-3",
-      "file": "product-3.png",
-      "size_kb": 2.3,
+      "name": "FlorDePlata-Ovalin",
+      "file": "FlorDePlata-Ovalin.jpg",
+      "size_kb": 63.0,
       "url": ""
     },
     {
-      "name": "product-4",
-      "file": "product-4.png",
-      "size_kb": 6.9,
+      "name": "FlorDePlata-Petit",
+      "file": "FlorDePlata-Petit.jpg",
+      "size_kb": 11.3,
       "url": ""
     },
     {
-      "name": "product-5",
-      "file": "product-5.png",
-      "size_kb": 12.4,
+      "name": "Lavabo-Piedra",
+      "file": "Lavabo-Piedra.jpg",
+      "size_kb": 66.3,
       "url": ""
     },
     {
-      "name": "product-6",
-      "file": "product-6.png",
-      "size_kb": 22.4,
+      "name": "Michelle-Vessel-Cobre",
+      "file": "Michelle-Vessel-Cobre.jpg",
+      "size_kb": 38.8,
       "url": ""
     },
     {
-      "name": "product-7",
-      "file": "product-7.png",
-      "size_kb": 21.8,
-      "url": ""
-    },
-    {
-      "name": "product-8",
-      "file": "product-8.png",
-      "size_kb": 21.8,
-      "url": ""
-    },
-    {
-      "name": "product-9",
-      "file": "product-9.png",
-      "size_kb": 21.8,
-      "url": ""
-    }
-  ],
-  "cocina/mezcladoras": [
-    {
-      "name": "Brizo-Litze-Angular",
-      "file": "Brizo-Litze-Angular.png",
-      "size_kb": 12.1,
-      "url": ""
-    },
-    {
-      "name": "Brizo-Litze-Puente",
-      "file": "Brizo-Litze-Puente.png",
-      "size_kb": 15.6,
-      "url": ""
-    },
-    {
-      "name": "Brizo-Litze-SmartTouch",
-      "file": "Brizo-Litze-SmartTouch.png",
-      "size_kb": 12.7,
-      "url": ""
-    },
-    {
-      "name": "CF-Bridge-Cuadruple",
-      "file": "CF-Bridge-Cuadruple.png",
-      "size_kb": 13.3,
-      "url": ""
-    },
-    {
-      "name": "CF-Corsano-Bar",
-      "file": "CF-Corsano-Bar.jpg",
-      "size_kb": 14.7,
-      "url": ""
-    },
-    {
-      "name": "CF-Corsano-Bridge",
-      "file": "CF-Corsano-Bridge.jpg",
-      "size_kb": 15.4,
-      "url": ""
-    },
-    {
-      "name": "CF-Davoli-Bridge",
-      "file": "CF-Davoli-Bridge.jpg",
-      "size_kb": 17.5,
-      "url": ""
-    },
-    {
-      "name": "CF-Davoli",
-      "file": "CF-Davoli.jpg",
-      "size_kb": 13.7,
-      "url": ""
-    },
-    {
-      "name": "CF-DelMar",
-      "file": "CF-DelMar.jpg",
-      "size_kb": 16.7,
-      "url": ""
-    },
-    {
-      "name": "CF-Descanso-Kitchen",
-      "file": "CF-Descanso-Kitchen.jpg",
-      "size_kb": 12.5,
-      "url": ""
-    },
-    {
-      "name": "CF-Poetto-Culinary",
-      "file": "CF-Poetto-Culinary.jpg",
-      "size_kb": 13.8,
-      "url": ""
-    },
-    {
-      "name": "CF-Poetto",
-      "file": "CF-Poetto.jpg",
-      "size_kb": 12.6,
-      "url": ""
-    },
-    {
-      "name": "CF-ZeroDrain",
-      "file": "CF-ZeroDrain.jpg",
-      "size_kb": 24.7,
-      "url": ""
-    },
-    {
-      "name": "Delta-Trinsic",
-      "file": "Delta-Trinsic.png",
-      "size_kb": 15.5,
-      "url": ""
-    },
-    {
-      "name": "Kohler-Edalyn",
-      "file": "Kohler-Edalyn.png",
-      "size_kb": 15.2,
-      "url": ""
-    },
-    {
-      "name": "Rohl-Georgiana",
-      "file": "Rohl-Georgiana.png",
-      "size_kb": 25.6,
-      "url": ""
-    },
-    {
-      "name": "Rohl-Puente",
-      "file": "Rohl-Puente.png",
-      "size_kb": 36.6,
-      "url": ""
-    }
-  ],
-  "cocina/tarjas": [
-    {
-      "name": "Bante-Duetto-Fireclay",
-      "file": "Bante-Duetto-Fireclay.png",
+      "name": "Mistoa-Baru",
+      "file": "Mistoa-Baru.jpg",
       "size_kb": 24.5,
       "url": ""
     },
     {
-      "name": "Bante-Marea-FarmHouse",
-      "file": "Bante-Marea-FarmHouse.jpg",
-      "size_kb": 31.6,
+      "name": "Mistoa-Musa",
+      "file": "Mistoa-Musa.jpg",
+      "size_kb": 24.9,
       "url": ""
     },
     {
-      "name": "Bante-Tarja-Duo",
-      "file": "Bante-Tarja-Duo.png",
-      "size_kb": 24.8,
+      "name": "Mistoa-Poas",
+      "file": "Mistoa-Poas.jpg",
+      "size_kb": 30.7,
       "url": ""
     },
     {
-      "name": "Blanco-Diamond-Doble",
-      "file": "Blanco-Diamond-Doble.jpg",
-      "size_kb": 2.4,
+      "name": "Mistoa-Sisa",
+      "file": "Mistoa-Sisa.jpg",
+      "size_kb": 16.0,
       "url": ""
     },
     {
-      "name": "Blanco-Ikon-Silgranit",
-      "file": "Blanco-Ikon-Silgranit.jpg",
-      "size_kb": 19.1,
+      "name": "Mistoa-Surco",
+      "file": "Mistoa-Surco.jpg",
+      "size_kb": 43.6,
       "url": ""
     },
     {
-      "name": "Kohler-Brockway-36",
-      "file": "Kohler-Brockway-36.png",
-      "size_kb": 36.7,
+      "name": "TOTO-Aimes-Lavabo",
+      "file": "TOTO-Aimes-Lavabo.png",
+      "size_kb": 125.2,
       "url": ""
     },
     {
-      "name": "Kohler-Strive-24",
-      "file": "Kohler-Strive-24.png",
-      "size_kb": 35.5,
+      "name": "VB-Architectura-Ovalado",
+      "file": "VB-Architectura-Ovalado.png",
+      "size_kb": 54.5,
       "url": ""
     },
     {
-      "name": "Tarja-Laton-Martillado",
-      "file": "Tarja-Laton-Martillado.jpg",
-      "size_kb": 88.4,
-      "url": ""
-    }
-  ],
-  "drenajes": [
-    {
-      "name": "drenajes-2",
-      "file": "drenajes-2.png",
-      "size_kb": 2.3,
+      "name": "VB-Architectura-Rectangular",
+      "file": "VB-Architectura-Rectangular.png",
+      "size_kb": 48.7,
       "url": ""
     },
     {
-      "name": "drenajes-3",
-      "file": "drenajes-3.png",
-      "size_kb": 22.4,
-      "url": ""
-    },
-    {
-      "name": "product-1",
-      "file": "product-1.jpg",
-      "size_kb": 1.4,
-      "url": ""
-    },
-    {
-      "name": "product-2",
-      "file": "product-2.png",
-      "size_kb": 22.4,
-      "url": ""
-    },
-    {
-      "name": "product-3",
-      "file": "product-3.png",
-      "size_kb": 2.3,
-      "url": ""
-    },
-    {
-      "name": "product-4",
-      "file": "product-4.png",
-      "size_kb": 6.9,
-      "url": ""
-    },
-    {
-      "name": "product-5",
-      "file": "product-5.png",
-      "size_kb": 12.4,
-      "url": ""
-    },
-    {
-      "name": "product-6",
-      "file": "product-6.png",
-      "size_kb": 22.4,
-      "url": ""
-    },
-    {
-      "name": "product-7",
-      "file": "product-7.png",
-      "size_kb": 21.8,
-      "url": ""
-    },
-    {
-      "name": "product-8",
-      "file": "product-8.png",
-      "size_kb": 21.8,
-      "url": ""
-    },
-    {
-      "name": "product-9",
-      "file": "product-9.png",
-      "size_kb": 21.8,
-      "url": ""
-    }
-  ],
-  "herrajes/artesanales": [
-    {
-      "name": "artesanales-2",
-      "file": "artesanales-2.png",
-      "size_kb": 2.3,
-      "url": ""
-    },
-    {
-      "name": "artesanales-3",
-      "file": "artesanales-3.png",
-      "size_kb": 22.4,
-      "url": ""
-    },
-    {
-      "name": "product-1",
-      "file": "product-1.jpg",
-      "size_kb": 1.4,
-      "url": ""
-    },
-    {
-      "name": "product-2",
-      "file": "product-2.png",
-      "size_kb": 22.4,
-      "url": ""
-    },
-    {
-      "name": "product-3",
-      "file": "product-3.png",
-      "size_kb": 2.3,
-      "url": ""
-    },
-    {
-      "name": "product-4",
-      "file": "product-4.png",
-      "size_kb": 6.9,
-      "url": ""
-    },
-    {
-      "name": "product-5",
-      "file": "product-5.png",
-      "size_kb": 12.4,
-      "url": ""
-    },
-    {
-      "name": "product-6",
-      "file": "product-6.png",
-      "size_kb": 22.4,
-      "url": ""
-    },
-    {
-      "name": "product-7",
-      "file": "product-7.png",
-      "size_kb": 21.8,
-      "url": ""
-    },
-    {
-      "name": "product-8",
-      "file": "product-8.png",
-      "size_kb": 21.8,
-      "url": ""
-    },
-    {
-      "name": "product-9",
-      "file": "product-9.png",
-      "size_kb": 21.8,
-      "url": ""
-    }
-  ],
-  "herrajes/chapas-cerrojos": [
-    {
-      "name": "chapas-y-cerrojos-2",
-      "file": "chapas-y-cerrojos-2.png",
-      "size_kb": 2.3,
-      "url": ""
-    },
-    {
-      "name": "chapas-y-cerrojos-3",
-      "file": "chapas-y-cerrojos-3.png",
-      "size_kb": 22.4,
-      "url": ""
-    },
-    {
-      "name": "product-1",
-      "file": "product-1.jpg",
-      "size_kb": 1.4,
-      "url": ""
-    },
-    {
-      "name": "product-2",
-      "file": "product-2.png",
-      "size_kb": 22.4,
-      "url": ""
-    },
-    {
-      "name": "product-3",
-      "file": "product-3.png",
-      "size_kb": 2.3,
-      "url": ""
-    },
-    {
-      "name": "product-4",
-      "file": "product-4.png",
-      "size_kb": 6.9,
-      "url": ""
-    },
-    {
-      "name": "product-5",
-      "file": "product-5.png",
-      "size_kb": 12.4,
-      "url": ""
-    },
-    {
-      "name": "product-6",
-      "file": "product-6.png",
-      "size_kb": 22.4,
-      "url": ""
-    },
-    {
-      "name": "product-7",
-      "file": "product-7.png",
-      "size_kb": 21.8,
-      "url": ""
-    },
-    {
-      "name": "product-8",
-      "file": "product-8.png",
-      "size_kb": 21.8,
-      "url": ""
-    },
-    {
-      "name": "product-9",
-      "file": "product-9.png",
-      "size_kb": 21.8,
+      "name": "VilleroyBoch-Twist",
+      "file": "VilleroyBoch-Twist.jpg",
+      "size_kb": 64.8,
       "url": ""
     }
   ],
