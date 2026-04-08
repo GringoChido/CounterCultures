@@ -268,6 +268,11 @@ const LocaleLayout = async ({ children, params }: LocaleLayoutProps) => {
       className="min-h-screen flex flex-col antialiased"
     >
       <script
+        dangerouslySetInnerHTML={{
+          __html: `document.documentElement.lang="${locale}"`,
+        }}
+      />
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(organizationJsonLd),
