@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { BRANDS, PRODUCT_CATEGORIES } from "@/app/lib/constants";
 import { articles } from "@/app/lib/articles";
 import { PROJECTS } from "@/app/lib/projects";
+import { getProducts } from "@/app/lib/sheets";
 
 const BASE_URL = "https://countercultures.mx";
 const LAST_MODIFIED = new Date("2026-03-30");
@@ -28,7 +29,7 @@ function localizedEntry(
   }));
 }
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     ...localizedEntry("", "monthly", 1.0),
     ...localizedEntry("/shop", "weekly", 0.9),
@@ -70,10 +71,21 @@ export default function sitemap(): MetadataRoute.Sitemap {
     localizedEntry(`/projects/${slug}`, "monthly", 0.7)
   );
 
+  // Product detail pages
+  const products = await getProducts();
+  const productRoutes: MetadataRoute.Sitemap = products.flatMap((product) =>
+    localizedEntry(
+      `/shop/${product.category}/p/${product.slug}`,
+      "monthly",
+      0.6
+    )
+  );
+
   return [
     ...staticRoutes,
     ...brandRoutes,
     ...subcategoryRoutes,
+    ...productRoutes,
     ...articleRoutes,
     ...projectRoutes,
   ];
