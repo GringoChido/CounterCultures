@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 interface ProductCardProps {
   brand: string;
@@ -32,9 +33,13 @@ const ProductCard = ({
   subcategory,
   slug,
   artisanal,
-}: ProductCardProps) => (
+}: ProductCardProps) => {
+  const pathname = usePathname();
+  const locale = pathname.startsWith("/es") ? "es" : "en";
+
+  return (
   <Link
-    href={`/shop/${category}/p/${slug}`}
+    href={`/${locale}/shop/${category}/p/${slug}`}
     className="group block"
   >
     <div className="relative overflow-hidden aspect-square bg-brand-sand/20">
@@ -82,6 +87,7 @@ const ProductCard = ({
       )}
     </div>
   </Link>
-);
+  );
+};
 
 export { ProductCard, formatPrice };

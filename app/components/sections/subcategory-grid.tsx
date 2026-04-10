@@ -111,32 +111,6 @@ const DESCRIPTIONS: Record<string, Record<string, { en: string; es: string }>> =
   },
 };
 
-// Editorial layout definitions — varied col-span for magazine feel
-const GRID_LAYOUTS: Record<string, number[][]> = {
-  bathroom: [
-    [6, 6],       // 2 large: Sinks, Bathtubs
-    [4, 4, 4],    // 3 medium: Faucets, Showers, Tub Fillers
-    [5, 4, 3],    // 2 medium + 1 small: Spa, Toilets, Accessories
-    [6, 6],       // 2 equal: Drains, Valves
-  ],
-  kitchen: [
-    [6, 6],       // 2 large: Sinks, Faucets
-    [4, 4, 4],    // 3 medium: Range Hoods, Appliances, Double Sinks
-    [4, 4, 4],    // 3 small: Pot Fillers, Soap Dispensers, Water Dispensers
-  ],
-  hardware: [
-    [12],         // 1 massive hero: Door Locks
-    [6, 6],       // 2 equal: Deadbolts, Pulls & Hooks
-  ],
-};
-
-// Reorder subcategories for the editorial layout
-const SUBCATEGORY_ORDER: Record<string, string[]> = {
-  bathroom: ["sinks", "bathtubs", "faucets", "showers", "tub-fillers", "spa", "toilets", "accessories", "drains", "valves"],
-  kitchen: ["sinks", "faucets", "range-hoods", "appliances", "double-sinks", "pot-fillers", "soap-dispensers", "water-dispensers"],
-  hardware: ["door-locks", "deadbolts", "pulls-hooks"],
-};
-
 const cardVariants = {
   hidden: { opacity: 0, y: 30, scale: 0.97 },
   visible: (i: number) => ({
@@ -152,16 +126,7 @@ const cardVariants = {
 };
 
 const SubcategoryGrid = ({ category, subcategories, locale }: SubcategoryGridProps) => {
-  const layout = GRID_LAYOUTS[category] ?? [[12]];
-  const order = SUBCATEGORY_ORDER[category] ?? subcategories.map((s) => s.slug);
   const descriptions = DESCRIPTIONS[category] ?? {};
-
-  const ordered = order
-    .map((slug) => subcategories.find((s) => s.slug === slug))
-    .filter(Boolean) as SubcategoryCard[];
-
-  let idx = 0;
-  let globalIdx = 0;
 
   return (
     <section id="subcategories" className="py-16 md:py-24 bg-brand-linen">
@@ -175,109 +140,51 @@ const SubcategoryGrid = ({ category, subcategories, locale }: SubcategoryGridPro
           </h2>
         </div>
 
-        <div className="space-y-3 md:space-y-4">
-          {layout.map((row, rowIdx) => {
-            const rowItems = ordered.slice(idx, idx + row.length);
-            idx += row.length;
-
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          {subcategories.map((sub, i) => {
+            const desc = descriptions[sub.slug];
             return (
-              <div key={rowIdx} className="grid grid-cols-12 gap-3 md:gap-4">
-                {rowItems.map((sub, colIdx) => {
-                  const colSpan = row[colIdx];
-                  const isLarge = colSpan >= 6 && row.length <= 2;
-                  const isHero = colSpan === 12;
-                  const desc = descriptions[sub.slug];
-                  const currentGlobalIdx = globalIdx++;
+              <motion.div
+                key={sub.slug}
+                variants={cardVariants}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-60px" }}
+                custom={i}
+              >
+                <NextLink
+                  href={`/${locale}/shop/${category}/${sub.slug}`}
+                  className="group relative block overflow-hidden rounded-lg"
+                >
+                  <div className="relative w-full aspect-[4/5] overflow-hidden">
+                    <Image
+                      src={sub.heroImage}
+                      alt={sub.label[locale]}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-brand-charcoal/80 via-brand-charcoal/30 to-transparent transition-colors duration-500 group-hover:from-brand-charcoal/70 group-hover:via-brand-charcoal/20" />
 
-                  return (
-                    <motion.div
-                      key={sub.slug}
-                      className={`col-span-12 ${
-                        colSpan === 12
-                          ? ""
-                          : colSpan === 6
-                            ? "sm:col-span-6"
-                            : colSpan === 5
-                              ? "sm:col-span-6 lg:col-span-5"
-                              : colSpan === 4
-                                ? "sm:col-span-6 lg:col-span-4"
-                                : colSpan === 3
-                                  ? "sm:col-span-6 lg:col-span-3"
-                                  : `sm:col-span-6 lg:col-span-${colSpan}`
-                      }`}
-                      variants={cardVariants}
-                      initial="hidden"
-                      whileInView="visible"
-                      viewport={{ once: true, margin: "-60px" }}
-                      custom={currentGlobalIdx}
-                    >
-                      <NextLink
-                        href={`/${locale}/shop/${category}/${sub.slug}`}
-                        className="group relative block overflow-hidden"
-                      >
-                        <div
-                          className={`relative w-full overflow-hidden ${
-                            isHero
-                              ? "aspect-[21/9] md:aspect-[3/1]"
-                              : isLarge
-                                ? "aspect-[4/5] md:aspect-[3/4]"
-                                : "aspect-[4/5] md:aspect-[4/5]"
-                          }`}
-                        >
-                          <Image
-                            src={sub.heroImage}
-                            alt={sub.label[locale]}
-                            fill
-                            sizes={
-                              colSpan === 12
-                                ? "100vw"
-                                : colSpan >= 6
-                                  ? "(max-width: 640px) 100vw, 50vw"
-                                  : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                            }
-                            className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                          />
-                          {/* Gradient overlay */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-brand-charcoal/80 via-brand-charcoal/30 to-transparent transition-colors duration-500 group-hover:from-brand-charcoal/70 group-hover:via-brand-charcoal/20" />
-
-                          {/* Content */}
-                          <div className="absolute inset-0 flex flex-col justify-end p-5 md:p-7 lg:p-8">
-                            {/* Product count badge */}
-                            <span className="self-start mb-3 px-2.5 py-1 bg-white/10 backdrop-blur-sm text-white/80 font-body text-[11px] uppercase tracking-wider">
-                              {sub.productCount} {locale === "en" ? "pieces" : "piezas"}
-                            </span>
-
-                            {/* Title with terracotta underline on hover */}
-                            <h3
-                              className={`font-display font-light text-white ${
-                                isHero
-                                  ? "text-3xl md:text-5xl"
-                                  : isLarge
-                                    ? "text-2xl md:text-3xl"
-                                    : "text-xl md:text-2xl"
-                              }`}
-                            >
-                              <span className="relative">
-                                {sub.label[locale]}
-                                <span className="absolute -bottom-1 left-0 w-0 h-px bg-brand-terracotta transition-all duration-500 ease-out group-hover:w-full" />
-                              </span>
-                            </h3>
-
-                            {/* Description */}
-                            {desc && (
-                              <p className={`font-body text-white/70 mt-2 leading-relaxed ${
-                                isHero ? "text-sm md:text-base max-w-2xl" : "text-xs md:text-sm"
-                              }`}>
-                                {desc[locale]}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </NextLink>
-                    </motion.div>
-                  );
-                })}
-              </div>
+                    <div className="absolute inset-0 flex flex-col justify-end p-5 md:p-7">
+                      <span className="self-start mb-3 px-2.5 py-1 bg-white/10 backdrop-blur-sm text-white/80 font-body text-[11px] uppercase tracking-wider rounded-sm">
+                        {sub.productCount} {locale === "en" ? "pieces" : "piezas"}
+                      </span>
+                      <h3 className="font-display text-xl md:text-2xl font-light text-white">
+                        <span className="relative">
+                          {sub.label[locale]}
+                          <span className="absolute -bottom-1 left-0 w-0 h-px bg-brand-terracotta transition-all duration-500 ease-out group-hover:w-full" />
+                        </span>
+                      </h3>
+                      {desc && (
+                        <p className="font-body text-xs md:text-sm text-white/70 mt-2 leading-relaxed">
+                          {desc[locale]}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </NextLink>
+              </motion.div>
             );
           })}
         </div>
