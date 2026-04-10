@@ -3,6 +3,7 @@
 import { useState } from "react";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
+import { useRouter as useIntlRouter, usePathname as useIntlPathname } from "@/app/i18n/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ChevronDown, ChevronRight, MessageCircle, Sparkles } from "lucide-react";
 import { NAV_LINKS, SITE_CONFIG, PRODUCT_CATEGORIES } from "@/app/lib/constants";
@@ -14,6 +15,8 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
   const [mobileCategoryOpen, setMobileCategoryOpen] = useState<string | null>(null);
   const lang = locale as "en" | "es";
   const pathname = usePathname();
+  const intlRouter = useIntlRouter();
+  const intlPathname = useIntlPathname();
 
   // Strip locale prefix to get the bare path, then rebuild with target locale
   const pathWithoutLocale = pathname.replace(/^\/(en|es)/, "") || "/";
@@ -87,11 +90,11 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               <MessageCircle className="w-5 h-5" />
             </a>
 
-            {/* Language toggle — uses <a> for full navigation to ensure middleware handles locale cookie */}
+            {/* Language toggle — uses next-intl router to properly switch locale + cookie */}
             <div className="flex items-center font-body text-xs tracking-wider">
-              <a
-                href={getLocalePath("en")}
-                className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors ${
+              <button
+                onClick={() => intlRouter.replace(intlPathname, { locale: "en" })}
+                className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors cursor-pointer ${
                   lang === "en"
                     ? "text-brand-terracotta font-bold"
                     : "text-brand-stone hover:text-brand-charcoal"
@@ -99,11 +102,11 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               >
                 <span className="sm:hidden">EN</span>
                 <span className="hidden sm:inline">English</span>
-              </a>
+              </button>
               <span className="text-brand-stone/40">|</span>
-              <a
-                href={getLocalePath("es")}
-                className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors ${
+              <button
+                onClick={() => intlRouter.replace(intlPathname, { locale: "es" })}
+                className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors cursor-pointer ${
                   lang === "es"
                     ? "text-brand-terracotta font-bold"
                     : "text-brand-stone hover:text-brand-charcoal"
@@ -111,7 +114,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               >
                 <span className="sm:hidden">ES</span>
                 <span className="hidden sm:inline">Español</span>
-              </a>
+              </button>
             </div>
 
             <NextLink
