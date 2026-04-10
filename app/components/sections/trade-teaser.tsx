@@ -73,7 +73,7 @@ const TradeTeaser = ({ locale = "en" }: { locale?: string }) => {
           <AnimatedSection delay={0.2} className="lg:col-span-5">
             <div className="relative aspect-[4/5] rounded-lg overflow-hidden">
               <Image
-                src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=600&q=75&auto=format"
+                src="/products/herrajes/artesanales/artesanales-2.png"
                 alt="Architect reviewing fixture specifications at Counter Cultures showroom"
                 fill
                 sizes="(max-width: 1024px) 100vw, 40vw"

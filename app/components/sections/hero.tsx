@@ -29,7 +29,7 @@ const slides: HeroSlide[] = [
     },
     cta: {
       label: { en: "Explore the Collection", es: "Explorar la Colección" },
-      href: "/shop",
+      href: "#browse",
     },
     image: "/images/hero/smart-toilet.webp",
   },

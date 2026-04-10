@@ -15,9 +15,13 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
   const lang = locale as "en" | "es";
   const pathname = usePathname();
 
+  // Strip locale prefix to get the bare path, then rebuild with target locale
   const pathWithoutLocale = pathname.replace(/^\/(en|es)/, "") || "/";
   const getLocalePath = (targetLocale: "en" | "es") =>
     `/${targetLocale}${pathWithoutLocale}`;
+
+  // Build locale-aware hrefs for nav links
+  const localizedHref = (path: string) => `/${locale}${path}`;
 
   const categories = Object.entries(PRODUCT_CATEGORIES);
 
@@ -26,7 +30,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <NextLink href="/" className="flex flex-col leading-none shrink-0">
+          <NextLink href={localizedHref("/")} className="flex flex-col leading-none shrink-0">
             <span className="font-display text-xl md:text-2xl font-light tracking-wider text-brand-charcoal whitespace-nowrap">
               Counter Cultures
             </span>
@@ -49,7 +53,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                     onMouseLeave={() => setMegaMenuOpen(false)}
                   >
                     <NextLink
-                      href={`/${locale}${link.href}`}
+                      href={localizedHref(link.href)}
                       className="font-body text-sm font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors duration-300 flex items-center gap-1 py-2"
                     >
                       {link.label[lang]}
@@ -62,7 +66,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               return (
                 <NextLink
                   key={link.href}
-                  href={`/${locale}${link.href}`}
+                  href={localizedHref(link.href)}
                   className="font-body text-sm font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors duration-300 py-2"
                 >
                   {link.label[lang]}
@@ -83,9 +87,9 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               <MessageCircle className="w-5 h-5" />
             </a>
 
-            {/* Language toggle */}
+            {/* Language toggle — uses <a> for full navigation to ensure middleware handles locale cookie */}
             <div className="flex items-center font-body text-xs tracking-wider">
-              <NextLink
+              <a
                 href={getLocalePath("en")}
                 className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors ${
                   lang === "en"
@@ -95,9 +99,9 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               >
                 <span className="sm:hidden">EN</span>
                 <span className="hidden sm:inline">English</span>
-              </NextLink>
+              </a>
               <span className="text-brand-stone/40">|</span>
-              <NextLink
+              <a
                 href={getLocalePath("es")}
                 className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors ${
                   lang === "es"
@@ -107,7 +111,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               >
                 <span className="sm:hidden">ES</span>
                 <span className="hidden sm:inline">Español</span>
-              </NextLink>
+              </a>
             </div>
 
             <NextLink
@@ -145,7 +149,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                 {categories.map(([key, cat]) => (
                   <div key={key}>
                     <NextLink
-                      href={`/${locale}/shop/${key}`}
+                      href={localizedHref(`/shop/${key}`)}
                       className="font-display text-lg font-light tracking-wide text-brand-charcoal hover:text-brand-terracotta transition-colors"
                     >
                       {cat.label[lang]}
@@ -155,7 +159,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                       {cat.subcategories.map((sub) => (
                         <li key={sub.slug}>
                           <NextLink
-                            href={`/${locale}/shop/${key}/${sub.slug}`}
+                            href={localizedHref(`/shop/${key}/${sub.slug}`)}
                             className="font-body text-sm text-brand-stone hover:text-brand-terracotta transition-colors duration-200"
                           >
                             {sub.label[lang]}
@@ -164,7 +168,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                       ))}
                     </ul>
                     <NextLink
-                      href={`/${locale}/shop/${key}`}
+                      href={localizedHref(`/shop/${key}`)}
                       className="inline-flex items-center gap-1 mt-4 font-body text-xs font-medium text-brand-terracotta hover:text-brand-copper transition-colors"
                     >
                       {lang === "en" ? "View All" : "Ver Todo"}
@@ -177,7 +181,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               {/* Featured bar */}
               <div className="mt-8 pt-6 border-t border-brand-stone/10">
                 <NextLink
-                  href={`/${locale}/brands`}
+                  href={localizedHref("/brands")}
                   className="flex items-center gap-3 group"
                 >
                   <Sparkles className="w-4 h-4 text-brand-copper" />
@@ -215,7 +219,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                   return (
                     <div key={link.href}>
                       <NextLink
-                        href={`/${locale}${link.href}`}
+                        href={localizedHref(link.href)}
                         onClick={() => setMobileOpen(false)}
                         className="block py-3.5 font-body text-base font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors border-b border-brand-stone/5"
                       >
@@ -255,7 +259,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                                     {cat.subcategories.map((sub) => (
                                       <NextLink
                                         key={sub.slug}
-                                        href={`/${locale}/shop/${key}/${sub.slug}`}
+                                        href={localizedHref(`/shop/${key}/${sub.slug}`)}
                                         onClick={() => setMobileOpen(false)}
                                         className="flex items-center py-2.5 min-h-[44px] text-sm text-brand-stone hover:text-brand-terracotta transition-colors"
                                       >
@@ -263,7 +267,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                                       </NextLink>
                                     ))}
                                     <NextLink
-                                      href={`/${locale}/shop/${key}`}
+                                      href={localizedHref(`/shop/${key}`)}
                                       onClick={() => setMobileOpen(false)}
                                       className="flex items-center py-2.5 min-h-[44px] text-sm font-medium text-brand-terracotta"
                                     >
@@ -283,7 +287,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                 return (
                   <NextLink
                     key={link.href}
-                    href={`/${locale}${link.href}`}
+                    href={localizedHref(link.href)}
                     onClick={() => setMobileOpen(false)}
                     className="flex items-center py-3.5 min-h-[44px] font-body text-base font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors border-b border-brand-stone/5"
                   >

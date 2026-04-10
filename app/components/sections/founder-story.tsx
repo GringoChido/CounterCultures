@@ -34,7 +34,7 @@ const FounderStory = ({ locale = "en" }: { locale?: string }) => {
           <AnimatedSection>
             <div className="relative aspect-[3/4] overflow-hidden rounded-lg">
               <Image
-                src="https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800&q=75&auto=format"
+                src="/products/bano/baneras/Alisia-Niquelado.jpg"
                 alt="Counter Cultures showroom interior featuring luxury bathroom and kitchen fixtures"
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"

@@ -2,10 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { ArrowRight } from "lucide-react";
-import { Button } from "@/app/components/ui/button";
 
 const categories = [
   {
@@ -13,31 +11,28 @@ const categories = [
     eyebrow: { en: "Explore", es: "Explorar" },
     count: { en: "120+ curated pieces", es: "120+ piezas curadas" },
     href: "/shop/bathroom",
-    image:
-      "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&q=75&auto=format",
+    image: "/products/bano/baneras/Alisia-Niquelado.jpg",
   },
   {
     title: { en: "Kitchen Fixtures", es: "Accesorios de Cocina" },
     eyebrow: { en: "Explore", es: "Explorar" },
     count: { en: "85+ curated pieces", es: "85+ piezas curadas" },
     href: "/shop/kitchen",
-    image:
-      "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=800&q=75&auto=format",
+    image: "/products/cocina/mezcladoras/CF-Corsano-Bridge.jpg",
   },
   {
     title: { en: "Door & Cabinet Hardware", es: "Chapas y Herrajes" },
     eyebrow: { en: "Explore", es: "Explorar" },
     count: { en: "60+ curated pieces", es: "60+ piezas curadas" },
     href: "/shop/hardware",
-    image:
-      "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&q=75&auto=format",
+    image: "/products/herrajes/artesanales/artesanales-2.png",
   },
 ];
 
 const ShopByRoom = ({ locale: localeProp = "en" }: { locale?: string }) => {
   const locale = localeProp as "en" | "es";
   return (
-  <section className="py-14 md:py-32 bg-brand-linen">
+  <section id="browse" className="py-14 md:py-32 bg-brand-linen scroll-mt-20">
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <AnimatedSection>
         <h2 className="text-center font-display text-3xl md:text-5xl font-normal tracking-wide text-brand-charcoal mb-4">
@@ -83,12 +78,6 @@ const ShopByRoom = ({ locale: localeProp = "en" }: { locale?: string }) => {
             </Link>
           </AnimatedSection>
         ))}
-      </div>
-
-      <div className="mt-12 text-center">
-        <Button variant="secondary" href="/shop">
-          {locale === "en" ? "View All Collections" : "Ver Todas las Colecciones"}
-        </Button>
       </div>
     </div>
   </section>
