@@ -7,6 +7,7 @@ import {
   getBreadcrumbs,
   createFolder,
   trashFile,
+  listSharedDrives,
 } from "@/app/lib/google-drive";
 
 // GET /api/dashboard/drive
@@ -37,6 +38,11 @@ export const GET = async (request: NextRequest) => {
 
   try {
     switch (action) {
+      case "drives": {
+        const drives = await listSharedDrives();
+        return NextResponse.json({ drives });
+      }
+
       case "folders": {
         const folders = await listFolders(folderId);
         return NextResponse.json({ folders });

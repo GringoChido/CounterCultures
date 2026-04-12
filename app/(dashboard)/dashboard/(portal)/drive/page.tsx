@@ -22,6 +22,9 @@ import {
   Eye,
   DollarSign,
   Send,
+  HardDrive,
+  Database,
+  Package,
 } from "lucide-react";
 import { PreviewPanel, type PreviewFile } from "@/app/(dashboard)/components/preview-panel";
 import { SendDialog } from "@/app/(dashboard)/components/send-dialog";
@@ -123,6 +126,12 @@ const DrivePage = () => {
   // Preview state
   const [previewFile, setPreviewFile] = useState<PreviewFile | null>(null);
 
+  // Shared drives
+  const [sharedDrives, setSharedDrives] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [activeDriveLabel, setActiveDriveLabel] = useState<string | null>(null);
+
   // View toggle: files vs documents
   const [viewMode, setViewMode] = useState<"files" | "documents">("files");
   const [documents, setDocuments] = useState<DocumentRecord[]>([]);
@@ -212,6 +221,22 @@ const DrivePage = () => {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  // Fetch shared drives on mount
+  useEffect(() => {
+    const fetchDrives = async () => {
+      try {
+        const res = await fetch("/api/dashboard/drive?action=drives");
+        if (res.ok) {
+          const data = await res.json();
+          setSharedDrives(data.drives ?? []);
+        }
+      } catch {
+        // Silently fail - shared drives are optional
+      }
+    };
+    fetchDrives();
   }, []);
 
   useEffect(() => {
@@ -316,8 +341,14 @@ const DrivePage = () => {
     setCurrentFolderId(folderId);
   };
 
+  const navigateToDrive = (driveId: string, driveName: string) => {
+    setActiveDriveLabel(driveName);
+    setCurrentFolderId(driveId);
+  };
+
   const navigateToRoot = () => {
     setCurrentFolderId(null);
+    setActiveDriveLabel(null);
   };
 
   // ── Not configured state ──────────────────────────────────────────
@@ -373,7 +404,9 @@ const DrivePage = () => {
         <div>
           <h2 className="text-2xl font-bold text-dash-text">Drive</h2>
           <p className="text-sm text-dash-text-secondary mt-1">
-            Counter Cultures CRM file hub
+            {activeDriveLabel
+              ? `Browsing ${activeDriveLabel}`
+              : "All Counter Cultures drives & files"}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -442,40 +475,102 @@ const DrivePage = () => {
         </button>
       </div>
 
-      {/* Breadcrumbs + Quick Nav */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-1 text-sm overflow-x-auto">
-          <button
-            onClick={navigateToRoot}
-            className="flex items-center gap-1 text-dash-text-secondary hover:text-brand-copper transition-colors shrink-0 cursor-pointer"
-          >
-            <Home className="w-3.5 h-3.5" />
-            <span>CRM Drive</span>
-          </button>
-          {breadcrumbs.map((crumb) => (
-            <div key={crumb.id} className="flex items-center gap-1 shrink-0">
-              <ChevronRight className="w-3 h-3 text-dash-text-secondary" />
-              <button
-                onClick={() => navigateToFolder(crumb.id)}
-                className="text-dash-text-secondary hover:text-brand-copper transition-colors cursor-pointer"
-              >
-                {crumb.name}
-              </button>
-            </div>
-          ))}
-        </div>
-
-        {/* Quick nav to Price List Shared Drive */}
-        {process.env.NEXT_PUBLIC_PRICE_LIST_DRIVE_ID && (
-          <button
-            onClick={() => navigateToFolder(process.env.NEXT_PUBLIC_PRICE_LIST_DRIVE_ID!)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-brand-copper/10 text-brand-copper border border-brand-copper/20 rounded-lg hover:bg-brand-copper/20 transition-colors shrink-0 cursor-pointer"
-          >
-            <DollarSign className="w-3.5 h-3.5" />
-            Price Lists
-          </button>
+      {/* Breadcrumbs */}
+      <div className="flex items-center gap-1 text-sm overflow-x-auto">
+        <button
+          onClick={navigateToRoot}
+          className="flex items-center gap-1 text-dash-text-secondary hover:text-brand-copper transition-colors shrink-0 cursor-pointer"
+        >
+          <Home className="w-3.5 h-3.5" />
+          <span>All Drives</span>
+        </button>
+        {activeDriveLabel && !breadcrumbs.length && (
+          <div className="flex items-center gap-1 shrink-0">
+            <ChevronRight className="w-3 h-3 text-dash-text-secondary" />
+            <span className="text-dash-text font-medium">{activeDriveLabel}</span>
+          </div>
         )}
+        {breadcrumbs.map((crumb, i) => (
+          <div key={crumb.id} className="flex items-center gap-1 shrink-0">
+            <ChevronRight className="w-3 h-3 text-dash-text-secondary" />
+            <button
+              onClick={() => navigateToFolder(crumb.id)}
+              className="text-dash-text-secondary hover:text-brand-copper transition-colors cursor-pointer"
+            >
+              {crumb.name}
+            </button>
+          </div>
+        ))}
       </div>
+
+      {/* Shared Drives + CRM root (shown at root level) */}
+      {!currentFolderId && !loading && sharedDrives.length > 0 && (
+        <div>
+          <h3 className="text-xs font-semibold text-dash-text-secondary uppercase tracking-wider mb-3">
+            Shared Drives
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {/* CRM Drive (regular folder) */}
+            <button
+              onClick={() => {
+                setActiveDriveLabel("CRM Drive");
+                setCurrentFolderId(null);
+                // Fetch CRM root specifically
+                fetchFolder(undefined);
+              }}
+              className="bg-dash-surface rounded-xl border border-dash-border p-5 hover:border-brand-copper/30 hover:shadow-sm transition-all cursor-pointer group text-left"
+            >
+              <div className="w-11 h-11 rounded-xl bg-brand-copper/10 text-brand-copper flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                <Database className="w-5 h-5" />
+              </div>
+              <h3 className="text-sm font-semibold text-dash-text group-hover:text-brand-copper transition-colors truncate">
+                CRM Drive
+              </h3>
+              <p className="text-[10px] text-dash-text-secondary mt-1">
+                Sales, Leads, Templates, Marketing
+              </p>
+            </button>
+
+            {/* Shared Drives from Google */}
+            {sharedDrives.map((drive) => {
+              const driveIcons: Record<string, typeof HardDrive> = {
+                CLIENTES: Folder,
+                IMAGES: Image,
+                "PRICE LIST": DollarSign,
+                "PAGES Required for Website": FileText,
+                "WEBSITE PRODUCTS": Package,
+              };
+              const driveDescriptions: Record<string, string> = {
+                CLIENTES: "Client folders & documents",
+                IMAGES: "Product & brand images",
+                "PRICE LIST": "Supplier price lists",
+                "PAGES Required for Website": "Website page content",
+                "WEBSITE PRODUCTS": "Product data & catalogs",
+              };
+              const DriveIcon = driveIcons[drive.name] || HardDrive;
+              const desc = driveDescriptions[drive.name] || "Shared drive";
+
+              return (
+                <button
+                  key={drive.id}
+                  onClick={() => navigateToDrive(drive.id, drive.name)}
+                  className="bg-dash-surface rounded-xl border border-dash-border p-5 hover:border-brand-copper/30 hover:shadow-sm transition-all cursor-pointer group text-left"
+                >
+                  <div className="w-11 h-11 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+                    <DriveIcon className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-sm font-semibold text-dash-text group-hover:text-brand-copper transition-colors truncate">
+                    {drive.name}
+                  </h3>
+                  <p className="text-[10px] text-dash-text-secondary mt-1">
+                    {desc}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* New Folder Modal */}
       {showNewFolder && (

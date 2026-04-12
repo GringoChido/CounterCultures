@@ -172,7 +172,21 @@ export const getBreadcrumbs = async (
   const crumbs: { id: string; name: string }[] = [];
   let currentId = folderId;
 
+  // Get list of shared drive IDs to know when to stop
+  let sharedDriveIds: Set<string> = new Set();
+  try {
+    const drivesRes = await drive.drives.list({ pageSize: 50 });
+    sharedDriveIds = new Set(
+      (drivesRes.data.drives ?? []).map((d) => d.id ?? "")
+    );
+  } catch {
+    // ignore
+  }
+
   while (currentId && currentId !== ROOT_FOLDER_ID) {
+    // Stop if we've reached a shared drive root
+    if (sharedDriveIds.has(currentId)) break;
+
     try {
       const res = await drive.files.get({
         fileId: currentId,
@@ -272,6 +286,29 @@ export const setSharePermission = async (fileId: string): Promise<string> => {
     supportsAllDrives: true,
   });
   return file.data.webViewLink ?? "";
+};
+
+// ── Shared Drives ────────────────────────────────────────────────────
+
+export interface SharedDrive {
+  id: string;
+  name: string;
+  kind: string;
+}
+
+/** List all shared drives accessible by the service account */
+export const listSharedDrives = async (): Promise<SharedDrive[]> => {
+  const drive = getDrive();
+
+  const res = await drive.drives.list({
+    pageSize: 50,
+  });
+
+  return (res.data.drives ?? []).map((d) => ({
+    id: d.id ?? "",
+    name: d.name ?? "",
+    kind: d.kind ?? "drive#drive",
+  }));
 };
 
 // ── Utility ───────────────────────────────────────────────────────────
