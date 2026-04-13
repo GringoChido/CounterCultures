@@ -7,46 +7,47 @@ import {
   findRowIndex,
 } from "@/app/lib/dashboard-sheets";
 
+// Must match the actual Products sheet headers exactly
 type ProductRecord = {
-  slug: string;
-  name: string;
+  id: string;
+  sku: string;
   brand: string;
+  name: string;
+  nameEn: string;
   category: string;
   subcategory: string;
-  price_mxn: string;
-  price_usd: string;
+  price: string;
+  tradePrice: string;
+  currency: string;
+  finishes: string;
+  images: string;
+  artisanal: string;
   description: string;
-  features: string;
-  dimensions: string;
-  materials: string;
-  finish: string;
+  descriptionEn: string;
   availability: string;
-  image_url: string;
-  gallery_urls: string;
   featured: string;
-  lead_time: string;
-  sku: string;
+  slug: string;
 };
 
 const PRODUCT_COLUMNS: (keyof ProductRecord)[] = [
-  "slug",
-  "name",
+  "id",
+  "sku",
   "brand",
+  "name",
+  "nameEn",
   "category",
   "subcategory",
-  "price_mxn",
-  "price_usd",
+  "price",
+  "tradePrice",
+  "currency",
+  "finishes",
+  "images",
+  "artisanal",
   "description",
-  "features",
-  "dimensions",
-  "materials",
-  "finish",
+  "descriptionEn",
   "availability",
-  "image_url",
-  "gallery_urls",
   "featured",
-  "lead_time",
-  "sku",
+  "slug",
 ];
 
 // GET — list all products

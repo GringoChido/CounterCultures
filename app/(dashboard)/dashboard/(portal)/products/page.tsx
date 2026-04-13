@@ -8,25 +8,26 @@ import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 
+// Maps 1:1 to the actual Products sheet headers
 interface SheetProduct {
-  slug: string;
-  name: string;
+  id: string;
+  sku: string;
   brand: string;
+  name: string;
+  nameEn: string;
   category: string;
   subcategory: string;
-  price_mxn: string;
-  price_usd: string;
+  price: string;
+  tradePrice: string;
+  currency: string;
+  finishes: string;
+  images: string;
+  artisanal: string;
   description: string;
-  features: string;
-  dimensions: string;
-  materials: string;
-  finish: string;
+  descriptionEn: string;
   availability: string;
-  image_url: string;
-  gallery_urls: string;
   featured: string;
-  lead_time: string;
-  sku: string;
+  slug: string;
 }
 
 interface Product {
@@ -40,12 +41,12 @@ interface Product {
 }
 
 const mapProduct = (s: SheetProduct): Product => ({
-  id: s.slug || s.sku,
+  id: s.slug || s.id || s.sku,
   sku: s.sku,
   name: s.name,
   brand: s.brand,
   category: s.category,
-  price: parseFloat(s.price_mxn) || 0,
+  price: parseFloat(s.price) || 0,
   availability: (s.availability as Product["availability"]) || "in-stock",
 });
 
@@ -100,10 +101,11 @@ const columns = [
 ];
 
 const EMPTY_PRODUCT: SheetProduct = {
-  slug: "", name: "", brand: "", category: "", subcategory: "",
-  price_mxn: "", price_usd: "", description: "", features: "",
-  dimensions: "", materials: "", finish: "", availability: "in-stock",
-  image_url: "", gallery_urls: "", featured: "false", lead_time: "", sku: "",
+  id: "", sku: "", brand: "", name: "", nameEn: "",
+  category: "", subcategory: "", price: "", tradePrice: "",
+  currency: "MXN", finishes: "", images: "", artisanal: "false",
+  description: "", descriptionEn: "", availability: "in-stock",
+  featured: "false", slug: "",
 };
 
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -166,17 +168,26 @@ const ProductForm = ({ initial, onSave, onCancel }: { initial: SheetProduct; onS
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className={labelClass}>Price (MXN)</label>
-          <input className={fieldClass} type="number" value={form.price_mxn} onChange={(e) => set("price_mxn", e.target.value)} placeholder="0" />
+          <label className={labelClass}>Price</label>
+          <input className={fieldClass} type="number" value={form.price} onChange={(e) => set("price", e.target.value)} placeholder="0" />
         </div>
         <div>
-          <label className={labelClass}>Price (USD)</label>
-          <input className={fieldClass} type="number" value={form.price_usd} onChange={(e) => set("price_usd", e.target.value)} placeholder="0" />
+          <label className={labelClass}>Trade Price</label>
+          <input className={fieldClass} type="number" value={form.tradePrice} onChange={(e) => set("tradePrice", e.target.value)} placeholder="0" />
         </div>
       </div>
-      <div>
-        <label className={labelClass}>Finish</label>
-        <input className={fieldClass} value={form.finish} onChange={(e) => set("finish", e.target.value)} placeholder="e.g. Luxe Gold" />
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className={labelClass}>Currency</label>
+          <select className={fieldClass} value={form.currency} onChange={(e) => set("currency", e.target.value)}>
+            <option value="MXN">MXN</option>
+            <option value="USD">USD</option>
+          </select>
+        </div>
+        <div>
+          <label className={labelClass}>Finishes</label>
+          <input className={fieldClass} value={form.finishes} onChange={(e) => set("finishes", e.target.value)} placeholder="e.g. Brass, Chrome" />
+        </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
@@ -186,24 +197,28 @@ const ProductForm = ({ initial, onSave, onCancel }: { initial: SheetProduct; onS
             <option value="low-stock">Low Stock</option>
             <option value="out-of-stock">Out of Stock</option>
             <option value="made-to-order">Made to Order</option>
+            <option value="contact">Contact for Pricing</option>
           </select>
         </div>
         <div>
-          <label className={labelClass}>Lead Time</label>
-          <input className={fieldClass} value={form.lead_time} onChange={(e) => set("lead_time", e.target.value)} placeholder="e.g. 3-4 weeks" />
+          <label className={labelClass}>Artisanal</label>
+          <select className={fieldClass} value={form.artisanal} onChange={(e) => set("artisanal", e.target.value)}>
+            <option value="false">No</option>
+            <option value="true">Yes</option>
+          </select>
         </div>
       </div>
       <div>
-        <label className={labelClass}>Description</label>
-        <textarea className={`${fieldClass} h-20 resize-none`} value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Product description..." />
+        <label className={labelClass}>Description (ES)</label>
+        <textarea className={`${fieldClass} h-20 resize-none`} value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="Descripción del producto..." />
       </div>
       <div>
-        <label className={labelClass}>Dimensions</label>
-        <input className={fieldClass} value={form.dimensions} onChange={(e) => set("dimensions", e.target.value)} />
+        <label className={labelClass}>Description (EN)</label>
+        <textarea className={`${fieldClass} h-20 resize-none`} value={form.descriptionEn} onChange={(e) => set("descriptionEn", e.target.value)} placeholder="Product description..." />
       </div>
       <div>
-        <label className={labelClass}>Materials</label>
-        <input className={fieldClass} value={form.materials} onChange={(e) => set("materials", e.target.value)} />
+        <label className={labelClass}>Image URL</label>
+        <input className={fieldClass} value={form.images} onChange={(e) => set("images", e.target.value)} placeholder="https://..." />
       </div>
       <div className="flex gap-3 pt-2">
         <button onClick={handleSubmit} disabled={saving} className="flex items-center gap-2 px-4 py-2 bg-brand-copper text-white rounded-lg text-sm font-medium hover:bg-brand-copper/90 transition-colors disabled:opacity-50 cursor-pointer">
