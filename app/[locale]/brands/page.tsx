@@ -47,120 +47,139 @@ const artisans = [
 /*  Brand descriptions                                                 */
 /* ------------------------------------------------------------------ */
 
-const brandDescriptions: Record<string, { tagline: string; description: string; origin: string; image: string }> = {
+const brandDescriptions: Record<string, { tagline: string; description: string; origin: string; image: string; alt: string }> = {
   kohler: {
     tagline: "Bold Looks. Lasting Quality.",
     description: "Since 1873, Kohler has defined kitchen and bath innovation — from precision-engineered faucets to their iconic cast iron sinks.",
     origin: "Wisconsin, USA",
-    image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&q=80&auto=format",
+    image: "/Assets/BRANDS/kohler-hero.webp",
+    alt: "Kohler — Bold Looks. Lasting Quality. Kitchen and bath fixtures from Wisconsin, USA",
   },
   toto: {
     tagline: "People-First Innovation.",
     description: "Japan's leading fixture manufacturer, known for CEFIONTECT glaze technology and the world's most advanced toilet engineering.",
     origin: "Kitakyushu, Japan",
-    image: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800&q=80&auto=format",
+    image: "/Assets/BRANDS/toto-hero.jpg",
+    alt: "TOTO — People-First Innovation. Advanced toilet and bath technology from Kitakyushu, Japan",
   },
   brizo: {
     tagline: "Fashion for the Home.",
     description: "Brizo brings fashion-forward design to kitchen and bath — the Litze collection's industrial precision is a kitchen centerpiece.",
     origin: "Indianapolis, USA",
-    image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80&auto=format",
+    image: "/Assets/BRANDS/brizo-hero.jpg",
+    alt: "Brizo — Fashion for the Home. Designer kitchen and bath faucets from Indianapolis, USA",
   },
   blanco: {
     tagline: "The Kitchen Sink Experts.",
     description: "German engineering meets kitchen design. BLANCO's patented Silgranit material is heat, scratch, and stain resistant.",
     origin: "Oberderdingen, Germany",
-    image: "https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=800&q=80&auto=format",
+    image: "/Assets/BRANDS/blanco-hero.webp",
+    alt: "BLANCO — The Kitchen Sink Experts. German-engineered Silgranit sinks from Oberderdingen, Germany",
   },
   "california-faucets": {
     tagline: "Handcrafted in Huntington Beach.",
     description: "Over 30 finish options, made to order in California. Bridge-style faucets and custom configurations for architects.",
     origin: "Huntington Beach, USA",
-    image: "https://images.unsplash.com/photo-1585412727339-54e4bae3bbf9?w=800&q=80&auto=format",
+    image: "/Assets/BRANDS/california-faucets-hero.jpg",
+    alt: "California Faucets — Handcrafted in Huntington Beach. Custom bridge faucets from Huntington Beach, USA",
   },
   "sun-valley-bronze": {
     tagline: "Hand-Cast. Hand-Finished. Idaho-Made.",
     description: "Each Sun Valley Bronze lock set is individually sand-cast in silicon bronze and hand-finished — functional sculpture for your door.",
     origin: "Bellevue, Idaho, USA",
-    image: "https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?w=800&q=80&auto=format",
+    image: "/Assets/BRANDS/sun-valley-bronze-hero.jpg",
+    alt: "Sun Valley Bronze — Hand-Cast. Hand-Finished. Idaho-Made. Bronze entry hardware from Bellevue, Idaho",
   },
   emtek: {
     tagline: "Hardware for Every Style.",
     description: "Solid brass door hardware with designs spanning modern to traditional — Hampton, Ribbon & Reed, T-Bar, and more.",
     origin: "City of Industry, USA",
-    image: "https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?w=600&q=80&auto=format",
+    image: "/Assets/BRANDS/emtek-hero.avif",
+    alt: "Emtek — Hardware for Every Style. Solid brass door hardware from City of Industry, USA",
   },
   badeloft: {
     tagline: "Modern Bathing Reimagined.",
     description: "Freestanding tubs in seamless mineral casting — sculptural forms with ergonomic comfort and easy-clean surfaces.",
     origin: "Berlin, Germany",
-    image: "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=600&q=80&auto=format",
+    image: "/Assets/BRANDS/badeloft-hero.webp",
+    alt: "Badeloft — Modern Bathing Reimagined. Freestanding mineral-cast tubs from Berlin, Germany",
   },
   bante: {
     tagline: "Farmhouse Refined.",
     description: "Fireclay and ceramic farmhouse sinks — the Duetto, Marea, and Duo collections bring timeless style to the kitchen.",
     origin: "Mexico",
-    image: "https://images.unsplash.com/photo-1584622781564-1d987f7333c1?w=600&q=80&auto=format",
+    image: "/Assets/BRANDS/bante-hero.avif",
+    alt: "Banté — Farmhouse Refined. Fireclay and ceramic farmhouse sinks from Mexico",
   },
   mistoa: {
     tagline: "Mexican Artisanal Ceramics.",
     description: "Hand-shaped ceramic basins available in 10 curated colorways inspired by the Mexican landscape — Surco, Poas, Barú, Sisa, Musa.",
     origin: "Guanajuato, Mexico",
-    image: "https://images.unsplash.com/photo-1615529328331-f8917597711f?w=600&q=80&auto=format",
+    image: "/Assets/BRANDS/mistoa-hero.webp",
+    alt: "Mistoa — Mexican Artisanal Ceramics. Hand-shaped ceramic basins from Guanajuato, Mexico",
   },
   "villeroy-boch": {
     tagline: "European Craftsmanship Since 1748.",
     description: "The Architectura line brings German precision to the bathroom — undermount, vessel, and countertop basins in timeless white.",
     origin: "Mettlach, Germany",
-    image: "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=600&q=80&auto=format",
+    image: "/Assets/BRANDS/villeroy-boch-hero.jpg",
+    alt: "Villeroy & Boch — European Craftsmanship Since 1748. Precision bathroom basins from Mettlach, Germany",
   },
   aquaspa: {
     tagline: "Spa-Grade Shower Systems.",
     description: "Rain showers, body sprays, and complete spa systems — bringing the luxury spa experience into the home.",
     origin: "Mexico",
-    image: "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=600&q=80&auto=format",
+    image: "/Assets/BRANDS/aquaspa-hero.webp",
+    alt: "AquaSpa — Spa-Grade Shower Systems. Rain showers and spa systems from Mexico",
   },
   ebbe: {
     tagline: "Engineered Drain Solutions.",
     description: "Precision-machined linear and square shower drains — stainless steel construction with tile-insert and decorative grate options.",
     origin: "California, USA",
-    image: "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=600&q=80&auto=format",
+    image: "/Assets/BRANDS/ebbe-hero.webp",
+    alt: "Ebbe — Engineered Drain Solutions. Precision shower drains from California, USA",
   },
   delta: {
     tagline: "Innovation at Every Turn.",
     description: "Touch2O and ShieldSpray technologies across kitchen and bath. Delta's H2Okinetic showerheads sculpt water into a warmer, more powerful pattern.",
     origin: "Indianapolis, USA",
-    image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600&q=80&auto=format",
+    image: "/Assets/BRANDS/delta-hero.jpg",
+    alt: "Delta — Innovation at Every Turn. Touch2O kitchen and bath faucets from Indianapolis, USA",
   },
   rohl: {
     tagline: "Authentic Luxury Since 1983.",
     description: "Italian-made bridge faucets and fireclay farmhouse sinks — every piece reflects ROHL's commitment to European craftsmanship and heritage design.",
     origin: "Irvine, California, USA",
-    image: "https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=600&q=80&auto=format",
+    image: "/Assets/BRANDS/rohl-hero.jpg",
+    alt: "ROHL — Authentic Luxury Since 1983. Italian-made bridge faucets from Irvine, California",
   },
   teka: {
     tagline: "German Kitchen Technology.",
     description: "Built-in ovens, induction hobs, and stainless steel sinks — Teka brings 95 years of German-engineered kitchen innovation to Mexico.",
     origin: "Haiger, Germany",
-    image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80&auto=format",
+    image: "/Assets/BRANDS/teka-hero.webp",
+    alt: "Teka — German Kitchen Technology. Built-in ovens and induction hobs from Haiger, Germany",
   },
   smeg: {
     tagline: "Technology with Style.",
     description: "Iconic Italian design meets precision engineering — retro-style refrigerators, ranges, and small appliances that define the modern kitchen.",
     origin: "Guastalla, Italy",
-    image: "https://images.unsplash.com/photo-1574269909862-7e1d70bb8078?w=600&q=80&auto=format",
+    image: "/Assets/BRANDS/smeg-hero.webp",
+    alt: "SMEG — Technology with Style. Iconic Italian kitchen appliances from Guastalla, Italy",
   },
   bluestar: {
     tagline: "Restaurant Power. Residential Beauty.",
     description: "Open-burner ranges with 25,000 BTU and 750+ color options — the professional chef's choice, built by hand in Pennsylvania.",
     origin: "Pennsylvania, USA",
-    image: "https://images.unsplash.com/photo-1556909114-44e3e70034e2?w=600&q=80&auto=format",
+    image: "/Assets/BRANDS/bluestar-hero.jpg",
+    alt: "BlueStar — Restaurant Power. Residential Beauty. Professional ranges from Pennsylvania, USA",
   },
   baldwin: {
     tagline: "American Craftsmanship Since 1946.",
     description: "Forged brass door hardware with lifetime finishes — from estate rosettes to contemporary levers, each set is built to last generations.",
     origin: "Reading, Pennsylvania, USA",
-    image: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=600&q=80&auto=format",
+    image: "/Assets/BRANDS/baldwin-hero.webp",
+    alt: "Baldwin — American Craftsmanship Since 1946. Forged brass door hardware from Reading, Pennsylvania",
   },
 };
 
@@ -205,7 +224,7 @@ export const generateMetadata = async ({
       type: "website",
       images: [
         {
-          url: "https://images.unsplash.com/photo-1615529328331-f8917597711f?w=1200&q=80",
+          url: `${BASE_URL}/Assets/BRANDS/kohler-hero.webp`,
           width: 1200,
           height: 630,
           alt: isEs
@@ -433,7 +452,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
                       <div className="relative h-52 lg:h-64 overflow-hidden">
                         <Image
                           src={info.image}
-                          alt={`${brand.name} products`}
+                          alt={info.alt}
                           fill
                           sizes="(max-width: 768px) 100vw, 50vw"
                           className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
@@ -489,7 +508,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
                       <div className="relative h-36 overflow-hidden">
                         <Image
                           src={info.image}
-                          alt={`${brand.name} products`}
+                          alt={info.alt}
                           fill
                           sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                           className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
