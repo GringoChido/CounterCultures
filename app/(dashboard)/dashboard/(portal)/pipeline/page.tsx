@@ -67,6 +67,7 @@ import {
   checkOverduePayments,
 } from "@/app/lib/deal-automation";
 import { SAMPLE_TRAFICOS } from "@/app/lib/sample-customs-data";
+import { useActivityStore } from "@/app/lib/stores/activity-store";
 import { TRAFICO_STATUS_CONFIG, type Trafico, getDocumentChecklist } from "@/app/lib/customs-data";
 
 // ---------------------------------------------------------------------------
@@ -282,6 +283,10 @@ const PipelinePage = () => {
   const [activeDeal, setActiveDeal] = useState<PipelineDeal | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<PipelineDeal | null>(null);
   const [pipelineView, setPipelineView] = useState<PipelineView>("sales");
+  const [activityLogDeal, setActivityLogDeal] = useState<PipelineDeal | null>(null);
+  const [activityNote, setActivityNote] = useState("");
+  const [activityType, setActivityType] = useState<"call" | "email" | "meeting" | "note" | "whatsapp">("call");
+  const addActivity = useActivityStore((s) => s.addActivity);
 
   // Fetch pipeline deals from CRM — merge with sample data structure
   useEffect(() => {
@@ -796,7 +801,15 @@ const PipelinePage = () => {
                   <button className="flex-1 px-4 py-2 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer">
                     Edit Deal
                   </button>
-                  <button className="flex-1 px-4 py-2 text-sm border border-dash-border rounded-lg hover:bg-dash-bg transition-colors cursor-pointer">
+                  <button
+                    onClick={() => {
+                      setActivityLogDeal(selectedDeal);
+                      setActivityNote("");
+                      setActivityType("call");
+                      setSelectedDeal(null);
+                    }}
+                    className="flex-1 px-4 py-2 text-sm border border-dash-border rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
+                  >
                     Log Activity
                   </button>
                 </div>
@@ -1627,6 +1640,64 @@ const PipelinePage = () => {
           openSendDialog(docId);
         }}
       />
+
+      {/* Activity Logger SlideOut */}
+      <SlideOut
+        open={!!activityLogDeal}
+        onClose={() => setActivityLogDeal(null)}
+        title={`Log Activity — ${activityLogDeal?.name ?? ""}`}
+      >
+        {activityLogDeal && (
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              {(["call", "email", "whatsapp", "meeting", "note"] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setActivityType(t)}
+                  className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${
+                    activityType === t
+                      ? "bg-brand-copper/10 text-brand-copper border-brand-copper/30"
+                      : "border-dash-border text-dash-text-secondary hover:border-dash-text-secondary"
+                  }`}
+                >
+                  {t.charAt(0).toUpperCase() + t.slice(1)}
+                </button>
+              ))}
+            </div>
+            <textarea
+              value={activityNote}
+              onChange={(e) => setActivityNote(e.target.value)}
+              placeholder="What happened? Key takeaways, next steps..."
+              className="w-full h-24 px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder-dash-text-secondary/50 resize-none focus:outline-none focus:border-brand-copper/50"
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  if (!activityNote.trim()) return;
+                  addActivity({
+                    type: activityType,
+                    description: activityNote,
+                    contactName: activityLogDeal.contactName,
+                    dealId: activityLogDeal.id,
+                  });
+                  setActivityLogDeal(null);
+                }}
+                disabled={!activityNote.trim()}
+                className="flex-1 px-4 py-2 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                Log Activity
+              </button>
+              <button
+                onClick={() => setActivityLogDeal(null)}
+                className="px-4 py-2 text-sm border border-dash-border rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </SlideOut>
     </div>
   );
 };

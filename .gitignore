@@ -46,4 +46,9 @@ next-env.d.ts
 # Large binary files
 *.zip
 deploy-*.zip
-CC-Image-Library 2/
+CC-Image-Library*/
+EXPEDIENTE/
+.next-old/
+*.docx
+PROMPT-*.md
+CC-*.md

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { format } from "date-fns";
 import {
   Plus,
@@ -67,6 +67,25 @@ interface CampaignBuilderForm {
 const EmailCampaignsPage = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>(SAMPLE_CAMPAIGNS);
   const [builderOpen, setBuilderOpen] = useState(false);
+
+  // Fetch real campaigns from API, fall back to sample data
+  const fetchCampaigns = useCallback(async () => {
+    try {
+      const res = await fetch("/api/dashboard/email-campaigns");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.campaigns?.length > 0) {
+          setCampaigns(data.campaigns);
+        }
+      }
+    } catch {
+      // Keep sample data on error
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCampaigns();
+  }, [fetchCampaigns]);
   const [createLoading, setCreateLoading] = useState(false);
   const [sequencePreview, setSequencePreview] = useState<"cold-outreach" | "warm-nurture" | "one-off" | null>(null);
   const [form, setForm] = useState<CampaignBuilderForm>({

@@ -3,7 +3,8 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
 import { format, differenceInDays, isPast, parseISO } from "date-fns";
-import { Plus, Filter, Download, Mail, MessageCircle, ClipboardList, Loader2, Save, X, ChevronDown } from "lucide-react";
+import { Plus, Filter, Download, Mail, MessageCircle, ClipboardList, Loader2, Save, X, ChevronDown, AlertTriangle } from "lucide-react";
+import { useActivityStore } from "@/app/lib/stores/activity-store";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
@@ -22,6 +23,7 @@ interface SheetLead {
   value: string;
   created_at: string;
   next_followup: string;
+  last_contact_date: string;
 }
 
 // UI-friendly lead derived from sheet data
@@ -37,6 +39,7 @@ interface Lead {
   value: string;
   createdAt: string;
   nextFollowUp: string;
+  lastContactDate: string;
 }
 
 const mapSheetLead = (s: SheetLead): Lead => ({
@@ -51,6 +54,7 @@ const mapSheetLead = (s: SheetLead): Lead => ({
   value: s.value,
   createdAt: s.created_at,
   nextFollowUp: s.next_followup,
+  lastContactDate: s.last_contact_date,
 });
 
 const statusVariants: Record<string, BadgeVariant> = {
@@ -84,6 +88,7 @@ const emptyForm = {
   interest: "",
   value: "",
   next_followup: "",
+  last_contact_date: "",
 };
 
 const LeadForm = ({ open, onClose, onSaved, editLead }: LeadFormProps) => {
@@ -103,6 +108,7 @@ const LeadForm = ({ open, onClose, onSaved, editLead }: LeadFormProps) => {
         interest: editLead.interest,
         value: editLead.value,
         next_followup: editLead.nextFollowUp,
+        last_contact_date: editLead.lastContactDate,
       });
     } else {
       setForm(emptyForm);
@@ -310,6 +316,25 @@ const LeadForm = ({ open, onClose, onSaved, editLead }: LeadFormProps) => {
 
 const columnHelper = createColumnHelper<Lead>();
 
+const LastContactIndicator = ({ dateStr }: { dateStr?: string }) => {
+  if (!dateStr) return <span className="text-dash-text-secondary">&mdash;</span>;
+  try {
+    const date = parseISO(dateStr);
+    const days = differenceInDays(new Date(), date);
+    let colorClass = "text-emerald-400"; // contacted recently (< 14 days)
+    if (days > 60) colorClass = "text-red-400 font-medium"; // stale
+    else if (days > 30) colorClass = "text-amber-400"; // getting cold
+    else if (days > 14) colorClass = "text-dash-text-secondary"; // ok
+    return (
+      <span className={`text-xs ${colorClass}`}>
+        {days === 0 ? "Today" : days === 1 ? "Yesterday" : `${days}d ago`}
+      </span>
+    );
+  } catch {
+    return <span className="text-xs text-dash-text-secondary">{dateStr}</span>;
+  }
+};
+
 const FollowUpIndicator = ({ dateStr }: { dateStr?: string }) => {
   if (!dateStr) return <span className="text-dash-text-secondary">&mdash;</span>;
   try {
@@ -356,6 +381,10 @@ const columns = [
       const val = info.getValue();
       return val ? <span className="text-xs text-dash-text-secondary">{val}</span> : <span className="text-dash-text-secondary">&mdash;</span>;
     },
+  }),
+  columnHelper.accessor("lastContactDate", {
+    header: "Last Contact",
+    cell: (info) => <LastContactIndicator dateStr={info.getValue()} />,
   }),
   columnHelper.accessor("interest", {
     header: "Interest",
@@ -409,10 +438,10 @@ const columns = [
 ];
 
 function exportLeadsToCSV(leads: Lead[]) {
-  const headers = ["Name", "Email", "Phone", "Source", "Status", "Type", "Interest", "Value", "Follow-Up", "Created"];
+  const headers = ["Name", "Email", "Phone", "Source", "Status", "Type", "Last Contact", "Interest", "Value", "Follow-Up", "Created"];
   const rows = leads.map((l) => [
     l.name, l.email, l.phone, l.source, l.status,
-    l.contactType, l.interest, l.value, l.nextFollowUp, l.createdAt,
+    l.contactType, l.lastContactDate, l.interest, l.value, l.nextFollowUp, l.createdAt,
   ]);
 
   const csv = [headers, ...rows]
@@ -435,9 +464,14 @@ const LeadsPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [contactTypeFilter, setContactTypeFilter] = useState<string>("all");
+  const [viewFilter, setViewFilter] = useState<"all" | "stale">("all");
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
+  const [activityLogLead, setActivityLogLead] = useState<Lead | null>(null);
+  const [activityNote, setActivityNote] = useState("");
+  const [activityType, setActivityType] = useState<"call" | "email" | "meeting" | "note" | "whatsapp">("call");
+  const addActivity = useActivityStore((s) => s.addActivity);
 
   const fetchLeads = useCallback(async () => {
     try {
@@ -464,9 +498,28 @@ const LeadsPage = () => {
       if (statusFilter !== "all" && lead.status !== statusFilter) return false;
       if (sourceFilter !== "all" && lead.source !== sourceFilter) return false;
       if (contactTypeFilter !== "all" && lead.contactType !== contactTypeFilter) return false;
+      if (viewFilter === "stale") {
+        if (!lead.lastContactDate) return true; // no contact date = stale
+        try {
+          return differenceInDays(new Date(), parseISO(lead.lastContactDate)) > 60;
+        } catch {
+          return false;
+        }
+      }
       return true;
     });
-  }, [leads, statusFilter, sourceFilter, contactTypeFilter]);
+  }, [leads, statusFilter, sourceFilter, contactTypeFilter, viewFilter]);
+
+  const staleCount = useMemo(() => {
+    return leads.filter((l) => {
+      if (!l.lastContactDate) return true;
+      try {
+        return differenceInDays(new Date(), parseISO(l.lastContactDate)) > 60;
+      } catch {
+        return false;
+      }
+    }).length;
+  }, [leads]);
 
   // Derive unique contact types from data
   const contactTypes = useMemo(() => {
@@ -514,6 +567,36 @@ const LeadsPage = () => {
         <KPICard label="New" value={String(counts.new)} />
         <KPICard label="Qualified" value={String(counts.qualified)} />
         <KPICard label="Won" value={String(counts.won)} />
+      </div>
+
+      {/* View Tabs */}
+      <div className="flex items-center gap-1 border-b border-dash-border pb-0">
+        <button
+          onClick={() => setViewFilter("all")}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors cursor-pointer ${
+            viewFilter === "all"
+              ? "border-brand-copper text-brand-copper"
+              : "border-transparent text-dash-text-secondary hover:text-dash-text"
+          }`}
+        >
+          All Leads
+        </button>
+        <button
+          onClick={() => setViewFilter("stale")}
+          className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors cursor-pointer ${
+            viewFilter === "stale"
+              ? "border-red-400 text-red-400"
+              : "border-transparent text-dash-text-secondary hover:text-dash-text"
+          }`}
+        >
+          <AlertTriangle className="w-3.5 h-3.5" />
+          Stale Leads
+          {staleCount > 0 && (
+            <span className="ml-1 text-xs bg-red-400/15 text-red-400 px-1.5 py-0.5 rounded-full">
+              {staleCount}
+            </span>
+          )}
+        </button>
       </div>
 
       {/* Actions */}
@@ -679,12 +762,25 @@ const LeadsPage = () => {
               </div>
             </div>
 
-            {selectedLead.nextFollowUp && (
+            {(selectedLead.lastContactDate || selectedLead.nextFollowUp) && (
               <div>
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary mb-3">
-                  Follow-Up
+                  Activity
                 </h4>
-                <FollowUpIndicator dateStr={selectedLead.nextFollowUp} />
+                <div className="space-y-2 text-sm">
+                  {selectedLead.lastContactDate && (
+                    <p>
+                      <span className="text-dash-text-secondary">Last Contact:</span>{" "}
+                      <LastContactIndicator dateStr={selectedLead.lastContactDate} />
+                    </p>
+                  )}
+                  {selectedLead.nextFollowUp && (
+                    <p>
+                      <span className="text-dash-text-secondary">Next Follow-Up:</span>{" "}
+                      <FollowUpIndicator dateStr={selectedLead.nextFollowUp} />
+                    </p>
+                  )}
+                </div>
               </div>
             )}
 
@@ -705,8 +801,73 @@ const LeadsPage = () => {
               >
                 Edit Lead
               </button>
-              <button className="flex-1 px-4 py-2 text-sm border border-dash-border rounded-lg hover:bg-dash-bg transition-colors cursor-pointer">
+              <button
+                onClick={() => {
+                  setActivityLogLead(selectedLead);
+                  setActivityNote("");
+                  setActivityType("call");
+                  setSelectedLead(null);
+                }}
+                className="flex-1 px-4 py-2 text-sm border border-dash-border rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
+              >
                 Log Activity
+              </button>
+            </div>
+          </div>
+        )}
+      </SlideOut>
+
+      {/* Activity Logger SlideOut */}
+      <SlideOut
+        open={!!activityLogLead}
+        onClose={() => setActivityLogLead(null)}
+        title={`Log Activity — ${activityLogLead?.name ?? ""}`}
+      >
+        {activityLogLead && (
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              {(["call", "email", "whatsapp", "meeting", "note"] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setActivityType(t)}
+                  className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${
+                    activityType === t
+                      ? "bg-brand-copper/10 text-brand-copper border-brand-copper/30"
+                      : "border-dash-border text-dash-text-secondary hover:border-dash-text-secondary"
+                  }`}
+                >
+                  {t.charAt(0).toUpperCase() + t.slice(1)}
+                </button>
+              ))}
+            </div>
+            <textarea
+              value={activityNote}
+              onChange={(e) => setActivityNote(e.target.value)}
+              placeholder="What happened? Key takeaways, next steps..."
+              className="w-full h-24 px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder-dash-text-secondary/50 resize-none focus:outline-none focus:border-brand-copper/50"
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  if (!activityNote.trim()) return;
+                  addActivity({
+                    type: activityType,
+                    description: activityNote,
+                    contactName: activityLogLead.name,
+                  });
+                  setActivityLogLead(null);
+                }}
+                disabled={!activityNote.trim()}
+                className="flex-1 px-4 py-2 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                Log Activity
+              </button>
+              <button
+                onClick={() => setActivityLogLead(null)}
+                className="px-4 py-2 text-sm border border-dash-border rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
+              >
+                Cancel
               </button>
             </div>
           </div>

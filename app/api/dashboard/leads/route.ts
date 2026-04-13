@@ -18,6 +18,7 @@ type LeadRecord = {
   value: string;
   created_at: string;
   next_followup: string;
+  last_contact_date: string;
 };
 
 const LEAD_COLUMNS: (keyof LeadRecord)[] = [
@@ -32,6 +33,7 @@ const LEAD_COLUMNS: (keyof LeadRecord)[] = [
   "value",
   "created_at",
   "next_followup",
+  "last_contact_date",
 ];
 
 // GET — list all leads, optionally filter by status

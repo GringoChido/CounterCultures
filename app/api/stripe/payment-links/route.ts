@@ -14,6 +14,7 @@ export const GET = async () => {
       id: l.id,
       url: l.url,
       active: l.active,
+      created: l.created,
     }));
 
     return NextResponse.json({ links: formatted });

@@ -34,6 +34,8 @@ import Link from "next/link";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { ChartCard } from "@/app/(dashboard)/components/chart-card";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
+import { ActivityLogger } from "@/app/(dashboard)/components/activity-logger";
+import { useActivityStore } from "@/app/lib/stores/activity-store";
 import {
   SAMPLE_KPI,
   SAMPLE_LEADS,
@@ -127,28 +129,49 @@ const OverviewPage = () => {
         ? "Good afternoon"
         : "Good evening";
 
-  const recentLeads = SAMPLE_LEADS.slice(0, 5);
-  const topDeals = SAMPLE_PIPELINE.filter(
-    (d) => !["closed-won", "closed-lost", "won", "lost"].includes(d.stage)
-  ).slice(0, 4);
-  const recentActivity = SAMPLE_ACTIVITIES.slice(0, 6);
+  const loggedActivities = useActivityStore((s) => s.activities);
+  const addActivity = useActivityStore((s) => s.addActivity);
 
   // CRM overview data
   const [overview, setOverview] = useState<OverviewData | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [recentLeads, setRecentLeads] = useState<any[]>(SAMPLE_LEADS.slice(0, 5));
+  const [topDeals, setTopDeals] = useState(
+    SAMPLE_PIPELINE.filter((d) => !["closed-won", "closed-lost", "won", "lost"].includes(d.stage)).slice(0, 4)
+  );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [recentActivitiesData, setRecentActivitiesData] = useState<any[]>(SAMPLE_ACTIVITIES);
+
+  const recentActivity = [...loggedActivities, ...recentActivitiesData].slice(0, 6);
 
   useEffect(() => {
-    const fetchOverview = async () => {
-      try {
-        const res = await fetch("/api/dashboard/overview");
-        if (res.ok) {
-          const data = await res.json();
-          setOverview(data);
-        }
-      } catch {
-        // Keep sample data
+    const fetchAll = async () => {
+      // Fetch overview, leads, pipeline, activities in parallel
+      const [overviewRes, leadsRes, pipelineRes, activitiesRes] = await Promise.allSettled([
+        fetch("/api/dashboard/overview").then((r) => r.ok ? r.json() : null),
+        fetch("/api/dashboard/leads").then((r) => r.ok ? r.json() : null),
+        fetch("/api/dashboard/pipeline").then((r) => r.ok ? r.json() : null),
+        fetch("/api/dashboard/activities").then((r) => r.ok ? r.json() : null),
+      ]);
+
+      if (overviewRes.status === "fulfilled" && overviewRes.value) {
+        setOverview(overviewRes.value);
+      }
+      if (leadsRes.status === "fulfilled" && leadsRes.value?.leads?.length) {
+        setRecentLeads(leadsRes.value.leads.slice(0, 5));
+      }
+      if (pipelineRes.status === "fulfilled" && pipelineRes.value?.deals?.length) {
+        const active = pipelineRes.value.deals.filter(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (d: any) => !["closed-won", "closed-lost", "won", "lost"].includes(d.stage)
+        );
+        if (active.length) setTopDeals(active.slice(0, 4));
+      }
+      if (activitiesRes.status === "fulfilled" && activitiesRes.value?.activities?.length) {
+        setRecentActivitiesData(activitiesRes.value.activities);
       }
     };
-    fetchOverview();
+    fetchAll();
   }, []);
 
   // Stripe data
@@ -382,7 +405,21 @@ const OverviewPage = () => {
 
         {/* Recent Activity */}
         <div className="bg-dash-surface rounded-xl border border-dash-border p-5 lg:col-span-1">
-          <h3 className="text-sm font-semibold text-dash-text mb-4">Recent Activity</h3>
+          <div className="flex items-center justify-between mb-4 relative">
+            <h3 className="text-sm font-semibold text-dash-text">Recent Activity</h3>
+            <ActivityLogger
+              compact
+              onLog={(entry) =>
+                addActivity({
+                  type: entry.type,
+                  description: entry.description,
+                  contactName: entry.contactName,
+                  dealId: entry.dealId,
+                  followUpDate: entry.followUpDate,
+                })
+              }
+            />
+          </div>
           <div className="space-y-3">
             {recentActivity.map((activity) => {
               const Icon = activityIcons[activity.type] ?? MessageCircle;
