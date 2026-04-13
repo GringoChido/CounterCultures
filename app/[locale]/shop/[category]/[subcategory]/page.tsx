@@ -9,6 +9,8 @@ import { getProductsBySubcategory } from "@/app/lib/sheets";
 import { PRODUCT_CATEGORIES, SUBCATEGORY_META } from "@/app/lib/constants";
 import type { CategoryKey } from "@/app/lib/constants";
 
+export const revalidate = 300;
+
 interface SubcategoryPageProps {
   params: Promise<{ category: string; subcategory: string; locale: string }>;
 }

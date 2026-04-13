@@ -10,10 +10,13 @@ interface ShopCatalogProps {
   initialCategory?: string;
 }
 
+const PAGE_SIZE = 24;
+
 const ShopCatalog = ({ initialProducts, initialCategory }: ShopCatalogProps) => {
   const [activeBrand, setActiveBrand] = useState<string | null>(null);
   const [activeFinish, setActiveFinish] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState<[number, number] | null>(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const filtered = useMemo(() => {
     let result = initialProducts;
@@ -44,10 +47,14 @@ const ShopCatalog = ({ initialProducts, initialCategory }: ShopCatalogProps) => 
     return [...new Set(all)].sort();
   }, [initialProducts]);
 
+  const visibleProducts = filtered.slice(0, visibleCount);
+  const hasMore = visibleCount < filtered.length;
+
   const clearFilters = () => {
     setActiveBrand(null);
     setActiveFinish(null);
     setPriceRange(null);
+    setVisibleCount(PAGE_SIZE);
   };
 
   return (
@@ -56,9 +63,9 @@ const ShopCatalog = ({ initialProducts, initialCategory }: ShopCatalogProps) => 
         activeBrand={activeBrand}
         activeFinish={activeFinish}
         priceRange={priceRange}
-        onBrandChange={setActiveBrand}
-        onFinishChange={setActiveFinish}
-        onPriceChange={setPriceRange}
+        onBrandChange={(b) => { setActiveBrand(b); setVisibleCount(PAGE_SIZE); }}
+        onFinishChange={(f) => { setActiveFinish(f); setVisibleCount(PAGE_SIZE); }}
+        onPriceChange={(r) => { setPriceRange(r); setVisibleCount(PAGE_SIZE); }}
         onClear={clearFilters}
         availableFinishes={availableFinishes}
       />
@@ -70,24 +77,36 @@ const ShopCatalog = ({ initialProducts, initialCategory }: ShopCatalogProps) => 
           </p>
 
           {filtered.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
-              {filtered.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  brand={product.brand}
-                  name={product.name}
-                  nameEn={product.nameEn}
-                  price={product.price}
-                  currency={product.currency}
-                  finishes={product.finishes}
-                  image={product.images[0] || ""}
-                  category={product.category}
-                  subcategory={product.subcategory}
-                  slug={product.slug}
-                  artisanal={product.artisanal}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
+                {visibleProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    brand={product.brand}
+                    name={product.name}
+                    nameEn={product.nameEn}
+                    price={product.price}
+                    currency={product.currency}
+                    finishes={product.finishes}
+                    image={product.images[0] || ""}
+                    category={product.category}
+                    subcategory={product.subcategory}
+                    slug={product.slug}
+                    artisanal={product.artisanal}
+                  />
+                ))}
+              </div>
+              {hasMore && (
+                <div className="flex justify-center mt-12">
+                  <button
+                    onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+                    className="px-8 py-3 font-body font-medium text-sm tracking-wide border border-brand-stone/30 rounded-full text-brand-charcoal hover:border-brand-terracotta hover:text-brand-terracotta transition-colors"
+                  >
+                    Load More ({filtered.length - visibleCount} remaining)
+                  </button>
+                </div>
+              )}
+            </>
           ) : (
             <div className="text-center py-20">
               <p className="font-display text-2xl text-brand-stone">

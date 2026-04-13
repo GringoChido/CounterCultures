@@ -138,6 +138,35 @@ const sampleToProducts = (): Product[] =>
     }
   );
 
+// ── Product Cache ────────────────────────────────────────────────────
+
+let cachedProducts: Product[] | null = null;
+let cacheTimestamp = 0;
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+const getAllProducts = async (): Promise<Product[]> => {
+  const now = Date.now();
+  if (cachedProducts && now - cacheTimestamp < CACHE_TTL) {
+    return cachedProducts;
+  }
+
+  if (!isConfigured()) {
+    cachedProducts = sampleToProducts();
+    cacheTimestamp = now;
+    return cachedProducts;
+  }
+
+  const rows = await fetchSheetData("Products!A2:R");
+  if (rows.length === 0) {
+    console.warn("[Sheets] No product data returned — using sample data");
+    cachedProducts = sampleToProducts();
+  } else {
+    cachedProducts = rows.map(rowToProduct);
+  }
+  cacheTimestamp = now;
+  return cachedProducts;
+};
+
 // ── Public API ────────────────────────────────────────────────────────
 
 const applyFilters = (
@@ -171,16 +200,7 @@ const applyFilters = (
 export const getProducts = async (
   filter?: ProductFilter
 ): Promise<Product[]> => {
-  if (!isConfigured()) {
-    return applyFilters(sampleToProducts(), filter);
-  }
-
-  const rows = await fetchSheetData("Products!A2:R");
-  if (rows.length === 0) {
-    console.warn("[Sheets] No product data returned — using sample data");
-    return applyFilters(sampleToProducts(), filter);
-  }
-  const products = rows.map(rowToProduct);
+  const products = await getAllProducts();
   return applyFilters(products, filter);
 };
 

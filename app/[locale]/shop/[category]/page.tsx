@@ -6,9 +6,11 @@ import { Footer } from "@/app/components/layout/footer";
 import { SubcategoryGrid } from "@/app/components/sections/subcategory-grid";
 import { CategoryCinematicHero } from "./category-hero-client";
 import { BrandRibbon } from "./brand-ribbon-client";
-import { getProducts, getProductsBySubcategory } from "@/app/lib/sheets";
+import { getProducts } from "@/app/lib/sheets";
 import { PRODUCT_CATEGORIES, SUBCATEGORY_META, BRANDS } from "@/app/lib/constants";
 import type { CategoryKey } from "@/app/lib/constants";
+
+export const revalidate = 300;
 
 interface CategoryPageProps {
   params: Promise<{ category: string; locale: string }>;
@@ -130,14 +132,11 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
   const catConfig = PRODUCT_CATEGORIES[category as CategoryKey];
   const products = await getProducts({ category });
 
-  // Get product counts per subcategory
-  const subcategoryCounts = await Promise.all(
-    catConfig.subcategories.map(async (sub) => {
-      const subProducts = await getProductsBySubcategory(category, sub.slug);
-      return { slug: sub.slug, count: subProducts.length };
-    })
-  );
-  const countMap = Object.fromEntries(subcategoryCounts.map((s) => [s.slug, s.count]));
+  // Compute subcategory counts from already-fetched products (no extra API calls)
+  const countMap: Record<string, number> = {};
+  for (const sub of catConfig.subcategories) {
+    countMap[sub.slug] = products.filter((p) => p.subcategory === sub.slug).length;
+  }
 
   // Build subcategory data for the grid
   const subcategoryMeta = SUBCATEGORY_META[category] ?? {};

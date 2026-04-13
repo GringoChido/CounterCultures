@@ -3,9 +3,11 @@ import { notFound } from "next/navigation";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { ProductDetail } from "./product-detail";
-import { getProductBySlug, getProducts } from "@/app/lib/sheets";
+import { getProducts } from "@/app/lib/sheets";
 import { PRODUCT_CATEGORIES } from "@/app/lib/constants";
 import type { CategoryKey } from "@/app/lib/constants";
+
+export const revalidate = 300;
 
 interface PDPProps {
   params: Promise<{ category: string; slug: string; locale: string }>;
@@ -15,7 +17,8 @@ const BASE_URL = "https://countercultures.mx";
 
 export const generateMetadata = async ({ params }: PDPProps): Promise<Metadata> => {
   const { slug, locale, category } = await params;
-  const product = await getProductBySlug(slug);
+  const allProducts = await getProducts();
+  const product = allProducts.find((p) => p.slug === slug) ?? null;
   if (!product) return { title: "Product Not Found" };
 
   const isEs = locale === "es";
@@ -61,20 +64,23 @@ export const generateMetadata = async ({ params }: PDPProps): Promise<Metadata> 
 const ProductPage = async ({ params }: PDPProps) => {
   const { category, slug, locale } = await params;
   const lang = (locale as "en" | "es") || "en";
-  const product = await getProductBySlug(slug);
+  const allProducts = await getProducts();
+  const product = allProducts.find((p) => p.slug === slug) ?? null;
 
   if (!product) notFound();
 
-  // Cross-sells: same subcategory first, then same category
-  const related = await getProducts({ category: product.category, subcategory: product.subcategory });
-  let crossSells = related.filter((p) => p.id !== product.id).slice(0, 4);
-  if (crossSells.length < 4) {
-    const moreCrossSells = await getProducts({ category: product.category });
-    const additional = moreCrossSells
-      .filter((p) => p.id !== product.id && !crossSells.some((cs) => cs.id === p.id))
-      .slice(0, 4 - crossSells.length);
-    crossSells = [...crossSells, ...additional];
-  }
+  // Cross-sells from the single fetch: same subcategory first, then same category
+  const sameSubcategory = allProducts.filter(
+    (p) => p.category === product.category && p.subcategory === product.subcategory && p.id !== product.id
+  );
+  const crossSells = sameSubcategory.length >= 4
+    ? sameSubcategory.slice(0, 4)
+    : [
+        ...sameSubcategory,
+        ...allProducts
+          .filter((p) => p.category === product.category && p.id !== product.id && !sameSubcategory.some((s) => s.id === p.id))
+          .slice(0, 4 - sameSubcategory.length),
+      ];
 
   // Resolve subcategory label for breadcrumbs
   const catConfig = PRODUCT_CATEGORIES[category as CategoryKey];

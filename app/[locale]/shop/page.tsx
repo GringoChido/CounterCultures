@@ -4,6 +4,8 @@ import { Footer } from "@/app/components/layout/footer";
 import { ShopCatalog } from "./shop-catalog";
 import { getProducts } from "@/app/lib/sheets";
 
+export const revalidate = 300;
+
 const BASE_URL = "https://countercultures.mx";
 
 interface ShopPageProps {
