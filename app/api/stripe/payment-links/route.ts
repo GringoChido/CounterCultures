@@ -14,7 +14,7 @@ export const GET = async () => {
       id: l.id,
       url: l.url,
       active: l.active,
-      created: l.created,
+      created: (l as unknown as Record<string, unknown>).created ?? null,
     }));
 
     return NextResponse.json({ links: formatted });
