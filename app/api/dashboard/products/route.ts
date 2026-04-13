@@ -6,6 +6,31 @@ import {
   deleteRow,
   findRowIndex,
 } from "@/app/lib/dashboard-sheets";
+import { PRODUCT_CATEGORIES } from "@/app/lib/constants";
+import type { CategoryKey } from "@/app/lib/constants";
+
+const VALID_CATEGORIES = Object.keys(PRODUCT_CATEGORIES);
+
+const validateCategory = (
+  category: string,
+  subcategory: string
+): { valid: boolean; error?: string } => {
+  if (!VALID_CATEGORIES.includes(category)) {
+    return {
+      valid: false,
+      error: `Invalid category "${category}". Must be one of: ${VALID_CATEGORIES.join(", ")}`,
+    };
+  }
+  const catConfig = PRODUCT_CATEGORIES[category as CategoryKey];
+  const validSubs: string[] = catConfig.subcategories.map((s) => s.slug);
+  if (!validSubs.includes(subcategory)) {
+    return {
+      valid: false,
+      error: `Invalid subcategory "${subcategory}" for category "${category}". Must be one of: ${validSubs.join(", ")}`,
+    };
+  }
+  return { valid: true };
+};
 
 // Must match the actual Products sheet headers exactly
 type ProductRecord = {
@@ -76,6 +101,11 @@ export const POST = async (request: NextRequest) => {
   try {
     const body: ProductRecord = await request.json();
 
+    const validation = validateCategory(body.category, body.subcategory);
+    if (!validation.valid) {
+      return NextResponse.json({ error: validation.error }, { status: 400 });
+    }
+
     const values = PRODUCT_COLUMNS.map((col) => body[col] ?? "");
     await appendRow("Products", values);
 
@@ -112,6 +142,11 @@ export const PATCH = async (request: NextRequest) => {
     const existing = await readSheet<ProductRecord>("Products");
     const current = existing[rowIdx];
     const merged = { ...current, ...body };
+
+    const validation = validateCategory(merged.category, merged.subcategory);
+    if (!validation.valid) {
+      return NextResponse.json({ error: validation.error }, { status: 400 });
+    }
 
     const values = PRODUCT_COLUMNS.map((col) => merged[col] ?? "");
     await updateRow("Products", rowIdx, values);

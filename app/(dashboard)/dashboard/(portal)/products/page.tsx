@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
+import { PRODUCT_CATEGORIES } from "@/app/lib/constants";
+import type { CategoryKey } from "@/app/lib/constants";
 
 // Maps 1:1 to the actual Products sheet headers
 interface SheetProduct {
@@ -159,11 +161,21 @@ const ProductForm = ({ initial, onSave, onCancel }: { initial: SheetProduct; onS
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className={labelClass}>Category</label>
-          <input className={fieldClass} value={form.category} onChange={(e) => set("category", e.target.value)} placeholder="e.g. Faucets" />
+          <select className={fieldClass} value={form.category} onChange={(e) => { set("category", e.target.value); set("subcategory", ""); }}>
+            <option value="">Select category...</option>
+            <option value="bathroom">Bathroom</option>
+            <option value="kitchen">Kitchen</option>
+            <option value="hardware">Door Hardware</option>
+          </select>
         </div>
         <div>
           <label className={labelClass}>Subcategory</label>
-          <input className={fieldClass} value={form.subcategory} onChange={(e) => set("subcategory", e.target.value)} placeholder="e.g. Kitchen" />
+          <select className={fieldClass} value={form.subcategory} onChange={(e) => set("subcategory", e.target.value)}>
+            <option value="">Select subcategory...</option>
+            {form.category && PRODUCT_CATEGORIES[form.category as CategoryKey]?.subcategories.map((sub) => (
+              <option key={sub.slug} value={sub.slug}>{sub.label.en}</option>
+            ))}
+          </select>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">

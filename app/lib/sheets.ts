@@ -17,7 +17,8 @@
 
 import { google } from "googleapis";
 import type { Product, ProductFilter } from "./types";
-import { SAMPLE_PRODUCTS } from "./constants";
+import { SAMPLE_PRODUCTS, PRODUCT_CATEGORIES } from "./constants";
+import type { CategoryKey } from "./constants";
 
 // ── Config ────────────────────────────────────────────────────────────
 
@@ -84,26 +85,57 @@ const appendSheetData = async (
 
 // ── Product Helpers ───────────────────────────────────────────────────
 
-const rowToProduct = (row: string[], index: number): Product => ({
-  id: row[0] || String(index),
-  sku: row[1] || "",
-  brand: row[2] || "",
-  name: row[3] || "",
-  nameEn: row[4] || row[3] || "",
-  category: (row[5] as Product["category"]) || "bathroom",
-  subcategory: row[6] || "",
-  price: Number(row[7]) || 0,
-  tradePrice: row[8] ? Number(row[8]) : undefined,
-  currency: (row[9] as "MXN" | "USD") || "MXN",
-  finishes: row[10] ? row[10].split(",").map((f) => f.trim()) : [],
-  images: row[11] ? row[11].split(",").map((u) => u.trim()) : [],
-  artisanal: row[12] === "true",
-  description: row[13] || "",
-  descriptionEn: row[14] || row[13] || "",
-  availability: (row[15] as Product["availability"]) || "in-stock",
-  featured: row[16] === "true",
-  slug: row[17] || row[3]?.toLowerCase().replace(/\s+/g, "-") || "",
-});
+const VALID_CATEGORIES: Product["category"][] = ["bathroom", "kitchen", "hardware"];
+
+const inferCategoryFromName = (name: string): Product["category"] => {
+  const lower = name.toLowerCase();
+  if (/\b(cocina|kitchen|tarja|fregadero|campana|range.?hood|pot.?filler|llenador de ollas|estufa|stove|oven|horno|dishwasher)\b/.test(lower)) return "kitchen";
+  if (/\b(chapa|cerradura|deadbolt|cerrojo|entry.?set|door.?lock|handleset|jaladera|cabinet.?pull|door.?knocker|aldaba)\b/.test(lower)) return "hardware";
+  return "bathroom";
+};
+
+const isValidSubcategory = (category: string, subcategory: string): boolean => {
+  const catConfig = PRODUCT_CATEGORIES[category as CategoryKey];
+  if (!catConfig) return false;
+  return catConfig.subcategories.some((s) => s.slug === subcategory);
+};
+
+const rowToProduct = (row: string[], index: number): Product => {
+  let category = (row[5]?.trim().toLowerCase() || "bathroom") as Product["category"];
+  const subcategory = row[6]?.trim() || "";
+  const name = row[3] || "";
+
+  if (!VALID_CATEGORIES.includes(category)) {
+    const inferred = inferCategoryFromName(name);
+    console.warn(`[Products] Row ${index + 2}: "${name}" has invalid category "${row[5]}" — defaulting to "${inferred}"`);
+    category = inferred;
+  }
+
+  if (subcategory && !isValidSubcategory(category, subcategory)) {
+    console.warn(`[Products] Row ${index + 2}: "${name}" has invalid subcategory "${subcategory}" for category "${category}"`);
+  }
+
+  return {
+    id: row[0] || String(index),
+    sku: row[1] || "",
+    brand: row[2] || "",
+    name,
+    nameEn: row[4] || name,
+    category,
+    subcategory,
+    price: Number(row[7]) || 0,
+    tradePrice: row[8] ? Number(row[8]) : undefined,
+    currency: (row[9] as "MXN" | "USD") || "MXN",
+    finishes: row[10] ? row[10].split(",").map((f) => f.trim()) : [],
+    images: row[11] ? row[11].split(",").map((u) => u.trim()) : [],
+    artisanal: row[12] === "true",
+    description: row[13] || "",
+    descriptionEn: row[14] || row[13] || "",
+    availability: (row[15] as Product["availability"]) || "in-stock",
+    featured: row[16] === "true",
+    slug: row[17] || name.toLowerCase().replace(/\s+/g, "-") || "",
+  };
+};
 
 const sampleToProducts = (): Product[] =>
   (SAMPLE_PRODUCTS as ReadonlyArray<(typeof SAMPLE_PRODUCTS)[number]>).map(
@@ -162,6 +194,15 @@ const getAllProducts = async (): Promise<Product[]> => {
     cachedProducts = sampleToProducts();
   } else {
     cachedProducts = rows.map(rowToProduct);
+    // Warn about products with invalid categories/subcategories
+    cachedProducts.forEach((p, i) => {
+      if (!VALID_CATEGORIES.includes(p.category)) {
+        console.warn(`[Products] Row ${i + 2}: "${p.name}" has invalid category "${p.category}"`);
+      }
+      if (p.subcategory && !isValidSubcategory(p.category, p.subcategory)) {
+        console.warn(`[Products] Row ${i + 2}: "${p.name}" has invalid subcategory "${p.subcategory}" for "${p.category}"`);
+      }
+    });
   }
   cacheTimestamp = now;
   return cachedProducts;
