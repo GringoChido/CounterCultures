@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Plus, FileText, Eye, Save, X, Loader2 } from "lucide-react";
+import { Plus, FileText, Eye, Save, X, Loader2, Package } from "lucide-react";
 import { toast } from "sonner";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { articles } from "@/app/lib/articles";
+import { useProductInsert } from "@/app/(dashboard)/components/product-insert-context";
 
 interface BlogPost {
   id: string;
@@ -82,6 +83,19 @@ const BlogManagerPage = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [newPost, setNewPost] = useState({ title: "", pillar: BLOG_PILLARS[0] as string, author: "Roger Gonzalez", notes: "" });
+  const [linkedProducts, setLinkedProducts] = useState<{ name: string; slug: string; brand: string; image: string }[]>([]);
+  const { consumeInsert, pendingInsert, openCommandPalette } = useProductInsert();
+
+  useEffect(() => {
+    if (pendingInsert && formOpen) {
+      const inserted = consumeInsert();
+      if (inserted) {
+        setLinkedProducts((prev) => [...prev, { name: inserted.product, slug: inserted.slug, brand: inserted.brand, image: inserted.image }]);
+        setNewPost((p) => ({ ...p, notes: p.notes + (p.notes ? "\n" : "") + `{{product:${inserted.slug}}}` }));
+        toast.success(`Embedded: ${inserted.product}`);
+      }
+    }
+  }, [pendingInsert, formOpen, consumeInsert]);
 
   return (
     <div className="space-y-6">
@@ -159,6 +173,33 @@ const BlogManagerPage = () => {
               <label className="block text-xs font-medium text-dash-text-secondary mb-1">Author</label>
               <input className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper" value={newPost.author} onChange={(e) => setNewPost((p) => ({ ...p, author: e.target.value }))} />
             </div>
+          </div>
+          {/* Embedded Products */}
+          <div>
+            <label className="block text-xs font-medium text-dash-text-secondary mb-1">Embedded Products</label>
+            {linkedProducts.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {linkedProducts.map((lp) => (
+                  <div key={lp.slug} className="flex items-center gap-2 px-2 py-1 bg-dash-bg border border-dash-border rounded-lg text-xs text-dash-text">
+                    {lp.image && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={lp.image} alt="" className="w-5 h-5 rounded object-cover" />
+                    )}
+                    <span>{lp.name}</span>
+                    <button onClick={() => setLinkedProducts((prev) => prev.filter((p) => p.slug !== lp.slug))} className="text-dash-text-secondary hover:text-red-400 cursor-pointer">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <button
+              onClick={openCommandPalette}
+              className="flex items-center gap-1.5 text-xs text-brand-copper hover:text-brand-copper/80 transition-colors cursor-pointer"
+            >
+              <Package className="w-3.5 h-3.5" />
+              Embed Product
+            </button>
           </div>
           <div>
             <label className="block text-xs font-medium text-dash-text-secondary mb-1">Notes / Brief</label>

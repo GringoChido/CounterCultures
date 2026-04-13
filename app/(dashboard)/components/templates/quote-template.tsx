@@ -5,6 +5,9 @@ export interface LineItem {
   sku: string;
   quantity: number;
   unitPrice: number;
+  brand?: string;
+  image?: string;
+  slug?: string;
 }
 
 export interface QuoteData {

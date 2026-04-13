@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   X,
   Plus,
@@ -9,6 +9,7 @@ import {
   Send,
   Download,
   Loader2,
+  Search,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { PipelineDeal } from "@/app/lib/sample-dashboard-data";
@@ -21,6 +22,7 @@ import {
   DeliveryReceiptTemplate,
   type DeliveryReceiptData,
 } from "./templates/delivery-receipt-template";
+import { useProductInsert } from "./product-insert-context";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -110,6 +112,30 @@ export const DocumentGenerator = ({
 
   // Receipt-specific
   const [orderReference, setOrderReference] = useState("");
+
+  // Product insert context
+  const { consumeInsert, pendingInsert, openCommandPalette } = useProductInsert();
+
+  useEffect(() => {
+    if (pendingInsert) {
+      const inserted = consumeInsert();
+      if (inserted) {
+        setItems((prev) => [
+          ...prev,
+          {
+            product: inserted.product,
+            sku: inserted.sku,
+            quantity: 1,
+            unitPrice: docType === "po" ? (inserted.tradePrice || inserted.unitPrice) : inserted.unitPrice,
+            brand: inserted.brand,
+            image: inserted.image,
+            slug: inserted.slug,
+          },
+        ]);
+        toast.success(`Added: ${inserted.product}`);
+      }
+    }
+  }, [pendingInsert, consumeInsert, docType]);
 
   // Item management
   const addItem = () =>
@@ -370,27 +396,42 @@ export const DocumentGenerator = ({
               <p className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
                 {docType === "po" ? "Products to Order" : "Line Items"}
               </p>
-              <button
-                onClick={addItem}
-                className="flex items-center gap-1 text-xs text-brand-copper hover:text-brand-copper/80 transition-colors cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Add Item
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={openCommandPalette}
+                  className="flex items-center gap-1 text-xs text-brand-copper hover:text-brand-copper/80 transition-colors cursor-pointer"
+                >
+                  <Search className="w-3.5 h-3.5" />
+                  Search Catalog
+                </button>
+                <button
+                  onClick={addItem}
+                  className="flex items-center gap-1 text-xs text-dash-text-secondary hover:text-dash-text transition-colors cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Manual Entry
+                </button>
+              </div>
             </div>
             {items.map((item, i) => (
               <div
                 key={i}
                 className="grid grid-cols-12 gap-2 items-end bg-dash-bg/50 rounded-lg p-3"
               >
-                <div className="col-span-5">
-                  <label className={labelCls}>Product</label>
-                  <input
-                    className={inputCls}
-                    value={item.product}
-                    onChange={(e) => updateItem(i, "product", e.target.value)}
-                    placeholder="Product name"
-                  />
+                <div className="col-span-5 flex items-end gap-2">
+                  {item.image && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={item.image} alt="" className="w-8 h-8 rounded object-cover shrink-0 mb-0.5" />
+                  )}
+                  <div className="flex-1">
+                    <label className={labelCls}>Product</label>
+                    <input
+                      className={inputCls}
+                      value={item.product}
+                      onChange={(e) => updateItem(i, "product", e.target.value)}
+                      placeholder="Product name"
+                    />
+                  </div>
                 </div>
                 <div className="col-span-2">
                   <label className={labelCls}>SKU</label>

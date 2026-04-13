@@ -75,9 +75,11 @@ const PRODUCT_COLUMNS: (keyof ProductRecord)[] = [
   "slug",
 ];
 
-// GET — list all products
+// GET — list all products (supports ?category= and ?q= text search)
 export const GET = async (request: NextRequest) => {
   const category = request.nextUrl.searchParams.get("category");
+  const query = request.nextUrl.searchParams.get("q");
+  const limitParam = request.nextUrl.searchParams.get("limit");
 
   try {
     let products = await readSheet<ProductRecord>("Products");
@@ -86,7 +88,22 @@ export const GET = async (request: NextRequest) => {
       products = products.filter((p) => p.category === category);
     }
 
-    return NextResponse.json({ products });
+    if (query) {
+      const terms = query.toLowerCase().trim().split(/\s+/);
+      products = products.filter((p) => {
+        const searchable = [
+          p.name, p.nameEn, p.brand, p.sku,
+          p.category, p.subcategory, p.description, p.descriptionEn,
+          p.finishes,
+        ].join(" ").toLowerCase();
+        return terms.every((term) => searchable.includes(term));
+      });
+    }
+
+    const limit = limitParam ? parseInt(limitParam) : undefined;
+    const result = limit ? products.slice(0, limit) : products;
+
+    return NextResponse.json({ products: result });
   } catch (err) {
     console.error("[Products API] GET error:", err);
     return NextResponse.json(

@@ -14,11 +14,13 @@ import {
   Target,
   ChevronRight,
   Loader2,
+  Package,
 } from "lucide-react";
 import { toast } from "sonner";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
 import { SAMPLE_CAMPAIGNS, type Campaign } from "@/app/lib/sample-dashboard-data";
+import { useProductInsert } from "@/app/(dashboard)/components/product-insert-context";
 
 const statusVariants: Record<string, { bg: string; text: string }> = {
   draft: { bg: "bg-gray-500/10", text: "text-gray-400" },
@@ -67,6 +69,25 @@ interface CampaignBuilderForm {
 const EmailCampaignsPage = () => {
   const [campaigns, setCampaigns] = useState<Campaign[]>(SAMPLE_CAMPAIGNS);
   const [builderOpen, setBuilderOpen] = useState(false);
+  const [featuredProduct, setFeaturedProduct] = useState<{ name: string; brand: string; price: number; image: string; slug: string; category: string } | null>(null);
+  const { consumeInsert, pendingInsert, openCommandPalette } = useProductInsert();
+
+  useEffect(() => {
+    if (pendingInsert && builderOpen) {
+      const inserted = consumeInsert();
+      if (inserted) {
+        setFeaturedProduct({
+          name: inserted.product,
+          brand: inserted.brand,
+          price: inserted.unitPrice,
+          image: inserted.image,
+          slug: inserted.slug,
+          category: inserted.category,
+        });
+        toast.success(`Featured product: ${inserted.product}`);
+      }
+    }
+  }, [pendingInsert, builderOpen, consumeInsert]);
 
   // Fetch real campaigns from API, fall back to sample data
   const fetchCampaigns = useCallback(async () => {
@@ -322,6 +343,34 @@ const EmailCampaignsPage = () => {
               )}
             </div>
           )}
+
+          {/* Feature Product */}
+          <div>
+            <label className="block text-sm font-medium text-dash-text mb-1.5">Featured Product</label>
+            {featuredProduct ? (
+              <div className="flex items-center gap-3 p-3 bg-dash-bg border border-dash-border rounded-lg">
+                {featuredProduct.image && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={featuredProduct.image} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-dash-text truncate">{featuredProduct.name}</p>
+                  <p className="text-xs text-dash-text-secondary">{featuredProduct.brand} · ${featuredProduct.price.toLocaleString()} MXN</p>
+                </div>
+                <button onClick={() => setFeaturedProduct(null)} className="text-dash-text-secondary hover:text-red-400 cursor-pointer">
+                  <Plus className="w-4 h-4 rotate-45" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={openCommandPalette}
+                className="flex items-center gap-2 w-full px-3 py-2.5 bg-dash-bg border border-dashed border-dash-border rounded-lg text-sm text-dash-text-secondary hover:text-brand-copper hover:border-brand-copper/30 transition-colors cursor-pointer"
+              >
+                <Package className="w-4 h-4" />
+                Feature a Product
+              </button>
+            )}
+          </div>
 
           {/* Actions */}
           <div className="flex gap-3 pt-4 border-t border-dash-border">

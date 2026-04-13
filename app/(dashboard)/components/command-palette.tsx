@@ -25,19 +25,67 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { SAMPLE_LEADS, SAMPLE_PIPELINE } from "@/app/lib/sample-dashboard-data";
+import type { Product } from "@/app/lib/types";
+
+// ---------------------------------------------------------------------------
+// Product data type (as returned by the Sheet API — all strings)
+// ---------------------------------------------------------------------------
+
+interface SheetProduct {
+  sku: string;
+  brand: string;
+  name: string;
+  nameEn: string;
+  price: string;
+  tradePrice: string;
+  currency: string;
+  images: string;
+  finishes: string;
+  category: string;
+  subcategory: string;
+  availability: string;
+  slug: string;
+  description: string;
+  descriptionEn: string;
+  artisanal: string;
+  id: string;
+  featured: string;
+}
 
 // ---------------------------------------------------------------------------
 // Searchable items
 // ---------------------------------------------------------------------------
 
+interface ProductData {
+  sku: string;
+  brand: string;
+  name: string;
+  nameEn: string;
+  price: number;
+  tradePrice?: number;
+  currency: string;
+  images: string[];
+  finishes: string[];
+  category: string;
+  subcategory: string;
+  availability: string;
+  slug: string;
+  description: string;
+  descriptionEn: string;
+  artisanal: boolean;
+  id: string;
+  featured: boolean;
+}
+
 interface SearchItem {
   id: string;
   label: string;
   description?: string;
-  category: "page" | "lead" | "deal" | "action" | "document";
+  category: "page" | "lead" | "deal" | "action" | "document" | "product";
   href: string;
   icon: React.ElementType;
   keywords?: string[];
+  productData?: ProductData;
 }
 
 const pageItems: SearchItem[] = [
@@ -97,22 +145,82 @@ const categoryLabels: Record<string, string> = {
   deal: "Deals",
   document: "Documents",
   action: "Actions",
+  product: "Products",
 };
+
+// ---------------------------------------------------------------------------
+// Helper: convert sheet row to typed ProductData
+// ---------------------------------------------------------------------------
+
+const sheetToProductData = (p: SheetProduct): ProductData => ({
+  sku: p.sku,
+  brand: p.brand,
+  name: p.name,
+  nameEn: p.nameEn,
+  price: parseFloat(p.price) || 0,
+  tradePrice: p.tradePrice ? parseFloat(p.tradePrice) : undefined,
+  currency: p.currency || "MXN",
+  images: p.images ? p.images.split(",").map((u: string) => u.trim()) : [],
+  finishes: p.finishes ? p.finishes.split(",").map((f: string) => f.trim()) : [],
+  category: p.category,
+  subcategory: p.subcategory,
+  availability: p.availability || "in-stock",
+  slug: p.slug,
+  description: p.description || "",
+  descriptionEn: p.descriptionEn || "",
+  artisanal: p.artisanal === "true",
+  id: p.id,
+  featured: p.featured === "true",
+});
+
+/** Convert ProductData to the full Product type for the preview panel */
+export const productDataToProduct = (pd: ProductData): Product => ({
+  id: pd.id,
+  sku: pd.sku,
+  brand: pd.brand,
+  name: pd.name,
+  nameEn: pd.nameEn,
+  price: pd.price,
+  tradePrice: pd.tradePrice,
+  currency: pd.currency as "MXN" | "USD",
+  images: pd.images,
+  finishes: pd.finishes,
+  category: pd.category as Product["category"],
+  subcategory: pd.subcategory,
+  availability: pd.availability as Product["availability"],
+  slug: pd.slug,
+  description: pd.description,
+  descriptionEn: pd.descriptionEn,
+  artisanal: pd.artisanal,
+  featured: pd.featured,
+});
 
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
-export function CommandPalette() {
+interface CommandPaletteProps {
+  onProductSelect?: (product: Product) => void;
+  onProductInsert?: (product: Product) => void;
+  registerOpen?: (fn: () => void) => void;
+}
+
+export function CommandPalette({ onProductSelect, onProductInsert, registerOpen }: CommandPaletteProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [docItems, setDocItems] = useState<SearchItem[]>([]);
+  const [productItems, setProductItems] = useState<SearchItem[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   const allItems = useMemo(() => buildSearchItems(), []);
+
+  // Register the open function so external components can trigger ⌘K
+  useEffect(() => {
+    registerOpen?.(() => setOpen(true));
+  }, [registerOpen]);
 
   // Fetch documents when query changes
   useEffect(() => {
@@ -147,8 +255,44 @@ export function CommandPalette() {
     return () => clearTimeout(timer);
   }, [query, open]);
 
+  // Fetch products when query changes (debounced)
+  useEffect(() => {
+    if (!open || !query.trim() || query.length < 2) {
+      setProductItems([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `/api/dashboard/products?q=${encodeURIComponent(query)}&limit=8`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const items: SearchItem[] = ((data.products ?? []) as SheetProduct[])
+            .map((p) => {
+              const pd = sheetToProductData(p);
+              return {
+                id: `product-${p.slug || p.sku}`,
+                label: p.name,
+                description: `${p.brand} · ${p.category}/${p.subcategory.replace(/-/g, " ")} · $${parseInt(p.price).toLocaleString()} MXN`,
+                category: "product" as const,
+                href: "#",
+                icon: Package,
+                keywords: [p.brand, p.sku, p.nameEn],
+                productData: pd,
+              };
+            });
+          setProductItems(items);
+        }
+      } catch {
+        setProductItems([]);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query, open]);
+
   const filtered = useMemo(() => {
-    if (!query.trim()) return allItems.slice(0, 12); // show pages by default
+    if (!query.trim()) return allItems.slice(0, 12);
     const q = query.toLowerCase();
     const matched = allItems.filter((item) => {
       if (item.label.toLowerCase().includes(q)) return true;
@@ -156,8 +300,8 @@ export function CommandPalette() {
       if (item.keywords?.some((k) => k.toLowerCase().includes(q))) return true;
       return false;
     });
-    return [...matched, ...docItems];
-  }, [query, allItems, docItems]);
+    return [...matched, ...docItems, ...productItems];
+  }, [query, allItems, docItems, productItems]);
 
   // Group by category
   const grouped = useMemo(() => {
@@ -201,10 +345,25 @@ export function CommandPalette() {
 
   const navigate = useCallback(
     (item: SearchItem) => {
+      if (item.category === "product" && item.productData) {
+        setOpen(false);
+        onProductSelect?.(productDataToProduct(item.productData));
+        return;
+      }
       setOpen(false);
       router.push(item.href);
     },
-    [router]
+    [router, onProductSelect]
+  );
+
+  const insertProduct = useCallback(
+    (item: SearchItem) => {
+      if (item.category === "product" && item.productData) {
+        setOpen(false);
+        onProductInsert?.(productDataToProduct(item.productData));
+      }
+    },
+    [onProductInsert]
   );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -218,6 +377,12 @@ export function CommandPalette() {
       e.preventDefault();
       if (flatFiltered[selectedIndex]) {
         navigate(flatFiltered[selectedIndex]);
+      }
+    } else if (e.key === "Tab") {
+      const selected = flatFiltered[selectedIndex];
+      if (selected?.category === "product") {
+        e.preventDefault();
+        insertProduct(selected);
       }
     }
   };
@@ -257,7 +422,7 @@ export function CommandPalette() {
                 setSelectedIndex(0);
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Search pages, leads, deals..."
+              placeholder="Search products, pages, leads, deals..."
               className="flex-1 h-14 bg-transparent text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none"
             />
             <kbd className="hidden sm:inline-flex items-center gap-0.5 px-2 py-1 text-[10px] font-mono text-dash-text-secondary bg-dash-bg border border-dash-border rounded-md">
@@ -294,7 +459,17 @@ export function CommandPalette() {
                               : "text-dash-text hover:bg-dash-bg"
                           }`}
                         >
-                          <Icon className="w-4 h-4 shrink-0 opacity-60" />
+                          {/* Product thumbnail */}
+                          {item.category === "product" && item.productData?.images[0] ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={item.productData.images[0]}
+                              alt=""
+                              className="w-10 h-10 rounded-lg object-cover shrink-0"
+                            />
+                          ) : (
+                            <Icon className="w-4 h-4 shrink-0 opacity-60" />
+                          )}
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium truncate">{item.label}</p>
                             {item.description && (
@@ -327,6 +502,10 @@ export function CommandPalette() {
               <span className="flex items-center gap-1">
                 <kbd className="px-1.5 py-0.5 bg-dash-bg border border-dash-border rounded font-mono">↵</kbd>
                 open
+              </span>
+              <span className="flex items-center gap-1">
+                <kbd className="px-1.5 py-0.5 bg-dash-bg border border-dash-border rounded font-mono">TAB</kbd>
+                insert product
               </span>
             </div>
             <span className="flex items-center gap-1">

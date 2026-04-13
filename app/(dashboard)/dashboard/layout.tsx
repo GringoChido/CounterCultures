@@ -1,20 +1,39 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Sidebar } from "../components/sidebar";
 import { DashboardHeader } from "../components/dashboard-header";
 import { CommandPalette } from "../components/command-palette";
 import { AIChatWidget } from "../components/ai-chat-widget";
+import { ProductInsertProvider, useProductInsert } from "../components/product-insert-context";
+import { ProductPreview } from "../components/product-preview";
+import type { Product } from "@/app/lib/types";
 
-const DashboardLayout = ({ children }: { children: ReactNode }) => {
+const DashboardInner = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname();
   const router = useRouter();
   const isLoginPage = pathname === "/dashboard/login";
   const [authenticated, setAuthenticated] = useState(false);
   const [checking, setChecking] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  const { openPreview, requestInsert, setCommandPaletteOpener } = useProductInsert();
+
+  const handleProductSelect = useCallback(
+    (product: Product) => {
+      openPreview(product);
+    },
+    [openPreview]
+  );
+
+  const handleProductInsert = useCallback(
+    (product: Product) => {
+      requestInsert(product);
+    },
+    [requestInsert]
+  );
 
   useEffect(() => {
     const auth = sessionStorage.getItem("cc-portal-auth");
@@ -48,9 +67,22 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
         <DashboardHeader onMenuClick={() => setMobileSidebarOpen(true)} />
         <main className="p-4 md:p-6">{children}</main>
       </div>
-      <CommandPalette />
+      <CommandPalette
+        onProductSelect={handleProductSelect}
+        onProductInsert={handleProductInsert}
+        registerOpen={setCommandPaletteOpener}
+      />
+      <ProductPreview />
       <AIChatWidget />
     </div>
+  );
+};
+
+const DashboardLayout = ({ children }: { children: ReactNode }) => {
+  return (
+    <ProductInsertProvider>
+      <DashboardInner>{children}</DashboardInner>
+    </ProductInsertProvider>
   );
 };
 

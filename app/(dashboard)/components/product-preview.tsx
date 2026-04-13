@@ -1,0 +1,258 @@
+"use client";
+
+import { useState, useCallback } from "react";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  X,
+  Copy,
+  ExternalLink,
+  ShoppingCart,
+  Pencil,
+  ChevronDown,
+  ChevronUp,
+  Gem,
+} from "lucide-react";
+import { toast } from "sonner";
+import { useProductInsert } from "./product-insert-context";
+
+const availabilityConfig: Record<string, { label: string; bg: string; text: string }> = {
+  "in-stock": { label: "In Stock", bg: "bg-emerald-500/10", text: "text-emerald-400" },
+  "made-to-order": { label: "Made to Order", bg: "bg-amber-500/10", text: "text-amber-400" },
+  "special-order": { label: "Special Order", bg: "bg-blue-500/10", text: "text-blue-400" },
+};
+
+export const ProductPreview = () => {
+  const { previewProduct, closePreview, requestInsert } = useProductInsert();
+  const [descExpanded, setDescExpanded] = useState(false);
+  const [activeImage, setActiveImage] = useState(0);
+
+  const handleInsert = useCallback(() => {
+    if (!previewProduct) return;
+    requestInsert(previewProduct);
+    closePreview();
+    toast.success(`Ready to insert: ${previewProduct.name}`);
+  }, [previewProduct, requestInsert, closePreview]);
+
+  const handleCopySku = useCallback(() => {
+    if (!previewProduct) return;
+    navigator.clipboard.writeText(previewProduct.sku);
+    toast.success("SKU copied to clipboard");
+  }, [previewProduct]);
+
+  const open = !!previewProduct;
+  const p = previewProduct;
+
+  return (
+    <AnimatePresence>
+      {open && p && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={closePreview}
+            className="fixed inset-0 bg-black/30 z-50"
+          />
+          <motion.div
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            className="fixed top-0 right-0 h-screen w-[600px] max-w-[calc(100vw-2rem)] bg-dash-surface border-l border-dash-border z-50 flex flex-col"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 h-14 border-b border-dash-border shrink-0">
+              <h2 className="text-sm font-semibold text-dash-text">Product Preview</h2>
+              <button
+                onClick={closePreview}
+                className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
+              >
+                <X className="w-4.5 h-4.5 text-dash-text-secondary" />
+              </button>
+            </div>
+
+            {/* Scrollable content */}
+            <div className="flex-1 overflow-y-auto">
+              {/* Image gallery */}
+              {p.images.length > 0 && (
+                <div className="relative">
+                  <div className="aspect-[4/3] bg-dash-bg overflow-hidden">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={p.images[activeImage] || p.images[0]}
+                      alt={p.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  {p.images.length > 1 && (
+                    <div className="flex gap-2 px-6 py-3 overflow-x-auto">
+                      {p.images.map((img, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setActiveImage(i)}
+                          className={`w-14 h-14 rounded-lg overflow-hidden shrink-0 border-2 transition-colors cursor-pointer ${
+                            i === activeImage ? "border-brand-copper" : "border-transparent opacity-60 hover:opacity-100"
+                          }`}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={img} alt="" className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="px-6 py-5 space-y-5">
+                {/* Header section */}
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-copper mb-1">
+                    {p.brand}
+                  </p>
+                  <h3 className="text-lg font-bold text-dash-text leading-tight">{p.name}</h3>
+                  {p.nameEn && p.nameEn !== p.name && (
+                    <p className="text-sm text-dash-text-secondary mt-0.5">{p.nameEn}</p>
+                  )}
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="px-2 py-0.5 bg-dash-bg border border-dash-border rounded text-[11px] font-mono text-dash-text-secondary">
+                      {p.sku}
+                    </span>
+                    {p.artisanal && (
+                      <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-500/10 rounded text-[11px] text-amber-400 font-medium">
+                        <Gem className="w-3 h-3" /> Artisanal
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Category breadcrumb */}
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-dash-text-secondary mb-1">
+                    Category
+                  </p>
+                  <p className="text-sm text-dash-text capitalize">
+                    {p.category} <span className="text-dash-text-secondary mx-1">&rarr;</span> {p.subcategory.replace(/-/g, " ")}
+                  </p>
+                </div>
+
+                {/* Pricing */}
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-dash-text-secondary mb-1">
+                    Pricing
+                  </p>
+                  <div className="flex items-baseline gap-3">
+                    <span className="text-xl font-bold text-dash-text">
+                      ${p.price.toLocaleString()} {p.currency}
+                    </span>
+                    {p.tradePrice && (
+                      <span className="text-sm text-dash-text-secondary">
+                        Trade: ${p.tradePrice.toLocaleString()} {p.currency}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Availability */}
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-dash-text-secondary mb-1">
+                    Availability
+                  </p>
+                  {(() => {
+                    const config = availabilityConfig[p.availability] || availabilityConfig["in-stock"];
+                    return (
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
+                        {config.label}
+                      </span>
+                    );
+                  })()}
+                </div>
+
+                {/* Finishes */}
+                {p.finishes.length > 0 && p.finishes[0] !== "" && (
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-dash-text-secondary mb-2">
+                      Finishes
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {p.finishes.map((f) => (
+                        <span
+                          key={f}
+                          className="px-2.5 py-1 bg-dash-bg border border-dash-border rounded-lg text-xs text-dash-text"
+                        >
+                          {f}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Description */}
+                {(p.description || p.descriptionEn) && (
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-dash-text-secondary mb-1">
+                      Description
+                    </p>
+                    {p.description && (
+                      <p className="text-sm text-dash-text leading-relaxed">{p.description}</p>
+                    )}
+                    {p.descriptionEn && p.descriptionEn !== p.description && (
+                      <div className="mt-2">
+                        <button
+                          onClick={() => setDescExpanded(!descExpanded)}
+                          className="flex items-center gap-1 text-xs text-brand-copper hover:text-brand-copper/80 transition-colors cursor-pointer"
+                        >
+                          {descExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                          English description
+                        </button>
+                        {descExpanded && (
+                          <p className="text-sm text-dash-text-secondary leading-relaxed mt-1">
+                            {p.descriptionEn}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Sticky action bar */}
+            <div className="flex items-center gap-2 px-6 py-3 border-t border-dash-border bg-dash-bg/50 shrink-0">
+              <button
+                onClick={handleInsert}
+                className="flex items-center gap-2 px-4 py-2 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                Insert to Document
+              </button>
+              <a
+                href={`/en/shop/${p.category}/p/${p.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-3 py-2 text-sm border border-dash-border rounded-lg hover:bg-dash-bg transition-colors text-dash-text"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                View on Site
+              </a>
+              <button
+                onClick={handleCopySku}
+                className="flex items-center gap-1.5 px-3 py-2 text-sm border border-dash-border rounded-lg hover:bg-dash-bg transition-colors text-dash-text cursor-pointer"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                Copy SKU
+              </button>
+              <Link
+                href="/dashboard/products"
+                className="flex items-center gap-1.5 px-3 py-2 text-sm border border-dash-border rounded-lg hover:bg-dash-bg transition-colors text-dash-text ml-auto"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                Edit
+              </Link>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+};

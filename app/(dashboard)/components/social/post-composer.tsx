@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import {
   Send,
@@ -10,8 +10,11 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
+  Package,
 } from "lucide-react";
+import { toast } from "sonner";
 import type { SocialPlatform, CreatePostPayload } from "@/app/lib/social/types";
+import { useProductInsert } from "@/app/(dashboard)/components/product-insert-context";
 
 const CHAR_LIMITS: Record<SocialPlatform, number> = {
   facebook: 63206,
@@ -31,6 +34,19 @@ export function PostComposer({ onPublish }: PostComposerProps) {
   const [scheduleTime, setScheduleTime] = useState("10:00");
   const [publishing, setPublishing] = useState(false);
   const [result, setResult] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const { consumeInsert, pendingInsert, openCommandPalette } = useProductInsert();
+
+  useEffect(() => {
+    if (pendingInsert) {
+      const inserted = consumeInsert();
+      if (inserted) {
+        const productUrl = `https://countercultures.com.mx/en/shop/${inserted.category}/p/${inserted.slug}`;
+        setMessage((prev) => prev + (prev ? "\n\n" : "") + `${inserted.product} by ${inserted.brand}\n$${inserted.unitPrice.toLocaleString()} MXN\n${productUrl}`);
+        if (inserted.image && !mediaUrl) setMediaUrl(inserted.image);
+        toast.success(`Tagged: ${inserted.product}`);
+      }
+    }
+  }, [pendingInsert, consumeInsert, mediaUrl]);
 
   const togglePlatform = (p: SocialPlatform) => {
     setPlatforms((prev) =>
@@ -217,6 +233,17 @@ export function PostComposer({ onPublish }: PostComposerProps) {
                 </button>
               )}
             </div>
+          </div>
+
+          {/* Tag Product */}
+          <div>
+            <button
+              onClick={openCommandPalette}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium bg-dash-bg border border-dash-border text-dash-text-secondary hover:text-brand-copper hover:border-brand-copper/30 transition-all cursor-pointer"
+            >
+              <Package className="w-4 h-4" />
+              Tag Product
+            </button>
           </div>
 
           {/* Schedule Toggle */}

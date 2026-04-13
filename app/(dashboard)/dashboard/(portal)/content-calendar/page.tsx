@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   format,
   startOfMonth,
@@ -24,12 +24,14 @@ import {
   X,
   Save,
   Loader2,
+  Package,
 } from "lucide-react";
 import { toast } from "sonner";
 import { StatusBadge } from "@/app/(dashboard)/components/status-badge";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
 import { sampleScheduledPosts, samplePosts } from "@/app/lib/social/sample-data";
 import type { SocialPlatform } from "@/app/lib/social/types";
+import { useProductInsert } from "@/app/(dashboard)/components/product-insert-context";
 
 const platformColors: Record<SocialPlatform, string> = {
   instagram: "bg-pink-500",
@@ -71,6 +73,18 @@ const ContentCalendarPage = () => {
     title: "", type: "social-post" as string, platform: "instagram" as string,
     scheduled_date: "", status: "draft" as string, author: "Roger", notes: "",
   });
+  const [linkedProduct, setLinkedProduct] = useState<{ name: string; slug: string; image: string } | null>(null);
+  const { consumeInsert, pendingInsert, openCommandPalette } = useProductInsert();
+
+  useEffect(() => {
+    if (pendingInsert && showCreateModal) {
+      const inserted = consumeInsert();
+      if (inserted) {
+        setLinkedProduct({ name: inserted.product, slug: inserted.slug, image: inserted.image });
+        toast.success(`Linked: ${inserted.product}`);
+      }
+    }
+  }, [pendingInsert, showCreateModal, consumeInsert]);
 
   // Merge scheduled + published posts into calendar events
   const calendarEvents: CalendarEvent[] = [
@@ -433,6 +447,30 @@ const ContentCalendarPage = () => {
                 {CONTENT_STATUSES.map((s) => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
               </select>
             </div>
+          </div>
+          {/* Linked Product */}
+          <div>
+            <label className="block text-xs font-medium text-dash-text-secondary mb-1">Linked Product</label>
+            {linkedProduct ? (
+              <div className="flex items-center gap-2 p-2 bg-dash-bg border border-dash-border rounded-lg">
+                {linkedProduct.image && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={linkedProduct.image} alt="" className="w-8 h-8 rounded object-cover" />
+                )}
+                <span className="text-sm text-dash-text flex-1 truncate">{linkedProduct.name}</span>
+                <button onClick={() => setLinkedProduct(null)} className="text-dash-text-secondary hover:text-red-400 cursor-pointer">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={openCommandPalette}
+                className="flex items-center gap-1.5 text-xs text-brand-copper hover:text-brand-copper/80 transition-colors cursor-pointer"
+              >
+                <Package className="w-3.5 h-3.5" />
+                Link Product
+              </button>
+            )}
           </div>
           <div>
             <label className="block text-xs font-medium text-dash-text-secondary mb-1">Notes</label>

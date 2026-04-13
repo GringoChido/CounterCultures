@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { MessageCircle, Send, Phone, MoreVertical, Search, Check, CheckCheck } from "lucide-react";
+import { MessageCircle, Send, Phone, MoreVertical, Search, Check, CheckCheck, Package } from "lucide-react";
+import { toast } from "sonner";
+import { useProductInsert } from "@/app/(dashboard)/components/product-insert-context";
 
 interface Conversation {
   id: string;
@@ -91,6 +93,24 @@ const WhatsAppPage = () => {
   const [selectedConversation, setSelectedConversation] = useState<string>("1");
   const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const { consumeInsert, pendingInsert, openCommandPalette } = useProductInsert();
+
+  const handleSendProduct = () => {
+    openCommandPalette();
+  };
+
+  useEffect(() => {
+    if (pendingInsert && selectedConversation) {
+      const inserted = consumeInsert();
+      if (inserted) {
+        const productUrl = `https://countercultures.com.mx/en/shop/${inserted.category}/p/${inserted.slug}`;
+        const msg = `*${inserted.product}*\n${inserted.brand} | $${inserted.unitPrice.toLocaleString()} MXN\n${inserted.image ? inserted.image + "\n" : ""}View: ${productUrl}`;
+        // Defer to next frame to satisfy react-hooks/set-state-in-effect
+        requestAnimationFrame(() => setMessageInput(msg));
+        toast.success(`Product ready to send: ${inserted.product}`);
+      }
+    }
+  }, [pendingInsert, selectedConversation, consumeInsert]);
 
   const activeConversation = conversations.find((c) => c.id === selectedConversation);
   const messages = sampleMessages[selectedConversation] ?? [];
@@ -202,6 +222,13 @@ const WhatsAppPage = () => {
 
               <div className="p-4 border-t border-dash-border">
                 <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleSendProduct}
+                    className="p-2.5 rounded-lg border border-dash-border hover:bg-dash-bg hover:text-brand-copper transition-colors cursor-pointer text-dash-text-secondary"
+                    title="Send Product"
+                  >
+                    <Package className="w-4 h-4" />
+                  </button>
                   <input
                     type="text"
                     placeholder="Type a message..."
