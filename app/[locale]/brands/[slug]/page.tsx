@@ -186,6 +186,10 @@ const BrandPage = async ({ params }: BrandPageProps) => {
       : `${brand.name} — Authorized Dealer in San Miguel de Allende`,
     description: heroData.description,
     url: `${BASE_URL}/${locale}/brands/${slug}`,
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["h1", "h2", "[data-speakable='description']"],
+    },
     about: brandJsonLd,
     publisher: {
       "@type": "Organization",

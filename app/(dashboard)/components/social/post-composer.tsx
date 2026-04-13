@@ -40,7 +40,7 @@ export function PostComposer({ onPublish }: PostComposerProps) {
     if (pendingInsert) {
       const inserted = consumeInsert();
       if (inserted) {
-        const productUrl = `https://countercultures.com.mx/en/shop/${inserted.category}/p/${inserted.slug}`;
+        const productUrl = `https://countercultures.mx/en/shop/${inserted.category}/p/${inserted.slug}`;
         setMessage((prev) => prev + (prev ? "\n\n" : "") + `${inserted.product} by ${inserted.brand}\n$${inserted.unitPrice.toLocaleString()} MXN\n${productUrl}`);
         if (inserted.image && !mediaUrl) setMediaUrl(inserted.image);
         toast.success(`Tagged: ${inserted.product}`);

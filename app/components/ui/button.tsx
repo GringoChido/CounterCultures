@@ -1,6 +1,7 @@
 "use client";
 
 import { forwardRef, type ButtonHTMLAttributes } from "react";
+import Link from "next/link";
 
 type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "whatsapp";
 type ButtonSize = "sm" | "md" | "lg";
@@ -38,9 +39,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     if (href) {
       return (
-        <a href={href} className={classes}>
+        <Link href={href} className={classes}>
           {children}
-        </a>
+        </Link>
       );
     }
 

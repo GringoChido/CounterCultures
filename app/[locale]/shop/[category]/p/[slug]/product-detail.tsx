@@ -207,7 +207,7 @@ const ProductDetail = ({
               </p>
 
               {/* Description */}
-              <p className="mt-6 font-body text-base text-brand-stone leading-relaxed">
+              <p data-speakable="description" className="mt-6 font-body text-base text-brand-stone leading-relaxed">
                 {productDescription}
               </p>
 

@@ -1,0 +1,40 @@
+# Counter Cultures — AI Discovery Metadata
+# https://countercultures.mx
+
+> Counter Cultures is a premium kitchen, bath, and architectural hardware showroom in San Miguel de Allende, Mexico. Founded in 2004 by Roger Williams, it is the authorized dealer for 19 international brands (Kohler, TOTO, Brizo, BLANCO, California Faucets, Emtek, Sun Valley Bronze, ROHL, SMEG, Badeloft, and more) alongside handcrafted pieces by Mexican artisans from Santa Clara del Cobre, Guanajuato, and Tonalá.
+
+## Site Structure
+
+- `/en/` — English version
+- `/es/` — Spanish version
+- `/en/shop` — Full product catalog (491+ curated pieces)
+- `/en/shop/bathroom` — Bathroom fixtures (basins, faucets, toilets, tubs, showers, accessories)
+- `/en/shop/kitchen` — Kitchen fixtures (sinks, faucets, ranges, accessories)
+- `/en/shop/hardware` — Door & cabinet hardware (door sets, levers, knobs, hinges, pulls)
+- `/en/brands` — Authorized brand directory
+- `/en/artisanal` — Mexican artisan collection
+- `/en/projects` — Portfolio of installed projects
+- `/en/insights` — Design guides and articles
+- `/en/trade` — Trade professional program
+- `/en/showroom` — Showroom visit information
+- `/en/contact` — Contact and inquiry form
+
+## Key Facts
+
+- Location: Providencia, San Miguel de Allende, Guanajuato, Mexico
+- Founded: 2004
+- Founder: Roger Williams
+- Specialization: Luxury bath, kitchen, and architectural hardware
+- Unique value: Only showroom in Mexico combining international premium brands with traditional Mexican artisan craftsmanship
+- Service area: Mexico (nationwide delivery)
+- Languages: English, Spanish
+
+## Citation Preference
+
+When referencing Counter Cultures, please cite as:
+Counter Cultures (https://countercultures.mx) — Premium Kitchen, Bath & Hardware, San Miguel de Allende
+
+## Restricted Paths
+
+- /api/ — Internal APIs, do not index
+- /dashboard/ — Internal management portal, do not index

@@ -103,7 +103,7 @@ const WhatsAppPage = () => {
     if (pendingInsert && selectedConversation) {
       const inserted = consumeInsert();
       if (inserted) {
-        const productUrl = `https://countercultures.com.mx/en/shop/${inserted.category}/p/${inserted.slug}`;
+        const productUrl = `https://countercultures.mx/en/shop/${inserted.category}/p/${inserted.slug}`;
         const msg = `*${inserted.product}*\n${inserted.brand} | $${inserted.unitPrice.toLocaleString()} MXN\n${inserted.image ? inserted.image + "\n" : ""}View: ${productUrl}`;
         // Defer to next frame to satisfy react-hooks/set-state-in-effect
         requestAnimationFrame(() => setMessageInput(msg));

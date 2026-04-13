@@ -86,6 +86,17 @@ const SubcategoryPage = async ({ params }: SubcategoryPageProps) => {
   const heroDescription = meta?.description[lang] || "";
   const heroImage = meta?.heroImage || "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1920&q=80";
 
+  // Speakable — GEO: helps AI assistants extract key category info
+  const speakableJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["h1", "h2", "[data-speakable='description']"],
+    },
+    url: `${BASE_URL}/${locale}/shop/${category}/${subcategory}`,
+  };
+
   // BreadcrumbList JSON-LD
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -137,6 +148,10 @@ const SubcategoryPage = async ({ params }: SubcategoryPageProps) => {
   return (
     <>
         <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(speakableJsonLd) }}
+      />
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />

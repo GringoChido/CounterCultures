@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import NextLink from "next/link";
-import { usePathname } from "next/navigation";
-import { useRouter as useIntlRouter, usePathname as useIntlPathname } from "@/app/i18n/navigation";
+import { Link as IntlLink, usePathname as useIntlPathname } from "@/app/i18n/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ChevronDown, ChevronRight, MessageCircle, Sparkles } from "lucide-react";
 import { NAV_LINKS, SITE_CONFIG, PRODUCT_CATEGORIES } from "@/app/lib/constants";
@@ -14,14 +13,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const [mobileCategoryOpen, setMobileCategoryOpen] = useState<string | null>(null);
   const lang = locale as "en" | "es";
-  const pathname = usePathname();
-  const intlRouter = useIntlRouter();
   const intlPathname = useIntlPathname();
-
-  // Strip locale prefix to get the bare path, then rebuild with target locale
-  const pathWithoutLocale = pathname.replace(/^\/(en|es)/, "") || "/";
-  const getLocalePath = (targetLocale: "en" | "es") =>
-    `/${targetLocale}${pathWithoutLocale}`;
 
   // Build locale-aware hrefs for nav links
   const localizedHref = (path: string) => `/${locale}${path}`;
@@ -90,31 +82,35 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               <MessageCircle className="w-5 h-5" />
             </a>
 
-            {/* Language toggle — uses next-intl router to properly switch locale + cookie */}
+            {/* Language toggle — uses next-intl Link for instant prefetched locale switch */}
             <div className="flex items-center font-body text-xs tracking-wider">
-              <button
-                onClick={() => intlRouter.replace(intlPathname, { locale: "en" })}
-                className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors cursor-pointer ${
+              <IntlLink
+                href={intlPathname}
+                locale="en"
+                className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors ${
                   lang === "en"
-                    ? "text-brand-terracotta font-bold"
+                    ? "text-brand-terracotta font-bold pointer-events-none"
                     : "text-brand-stone hover:text-brand-charcoal"
                 }`}
+                aria-current={lang === "en" ? "true" : undefined}
               >
                 <span className="sm:hidden">EN</span>
                 <span className="hidden sm:inline">English</span>
-              </button>
+              </IntlLink>
               <span className="text-brand-stone/40">|</span>
-              <button
-                onClick={() => intlRouter.replace(intlPathname, { locale: "es" })}
-                className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors cursor-pointer ${
+              <IntlLink
+                href={intlPathname}
+                locale="es"
+                className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors ${
                   lang === "es"
-                    ? "text-brand-terracotta font-bold"
+                    ? "text-brand-terracotta font-bold pointer-events-none"
                     : "text-brand-stone hover:text-brand-charcoal"
                 }`}
+                aria-current={lang === "es" ? "true" : undefined}
               >
                 <span className="sm:hidden">ES</span>
                 <span className="hidden sm:inline">Español</span>
-              </button>
+              </IntlLink>
             </div>
 
             <NextLink

@@ -141,6 +141,17 @@ const ProductPage = async ({ params }: PDPProps) => {
     })),
   };
 
+  // Speakable — GEO: helps AI assistants extract key product info
+  const speakableJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["h1", "[data-speakable='description']"],
+    },
+    url: `${BASE_URL}/${lang}/shop/${category}/p/${product.slug}`,
+  };
+
   // BreadcrumbList JSON-LD
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -186,6 +197,10 @@ const ProductPage = async ({ params }: PDPProps) => {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(speakableJsonLd) }}
         />
         <script
           type="application/ld+json"

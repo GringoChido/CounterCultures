@@ -109,7 +109,7 @@ const organizationJsonLd = {
     height: 630,
   },
   telephone: "+52-415-154-8375",
-  email: "info@countercultures.mx",
+  email: "info@countercultures.com.mx",
   foundingDate: "2004",
   numberOfEmployees: { "@type": "QuantitativeValue", value: 10 },
   founder: {
