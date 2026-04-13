@@ -34,8 +34,8 @@ const FounderStory = ({ locale = "en" }: { locale?: string }) => {
           <AnimatedSection>
             <div className="relative aspect-[3/4] overflow-hidden rounded-lg">
               <Image
-                src="/products/bano/baneras/Alisia-Niquelado.jpg"
-                alt="Counter Cultures showroom interior featuring luxury bathroom and kitchen fixtures"
+                src="/images/home/twenty-years.webp"
+                alt="Roger Williams in the Counter Cultures showroom — twenty years of curating luxury fixtures in San Miguel de Allende"
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover"

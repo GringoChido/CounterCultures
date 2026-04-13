@@ -11,21 +11,21 @@ const categories = [
     eyebrow: { en: "Explore", es: "Explorar" },
     count: { en: "120+ curated pieces", es: "120+ piezas curadas" },
     href: "/shop/bathroom",
-    image: "/products/bano/baneras/Alisia-Niquelado.jpg",
+    image: "/images/home/browse-bathroom.webp",
   },
   {
     title: { en: "Kitchen Fixtures", es: "Accesorios de Cocina" },
     eyebrow: { en: "Explore", es: "Explorar" },
     count: { en: "85+ curated pieces", es: "85+ piezas curadas" },
     href: "/shop/kitchen",
-    image: "/products/cocina/mezcladoras/CF-Corsano-Bridge.jpg",
+    image: "/images/home/browse-kitchen.webp",
   },
   {
     title: { en: "Door & Cabinet Hardware", es: "Chapas y Herrajes" },
     eyebrow: { en: "Explore", es: "Explorar" },
     count: { en: "60+ curated pieces", es: "60+ piezas curadas" },
     href: "/shop/hardware",
-    image: "/products/herrajes/artesanales/artesanales-2.png",
+    image: "/images/home/browse-hardware.webp",
   },
 ];
 

@@ -73,8 +73,8 @@ const TradeTeaser = ({ locale = "en" }: { locale?: string }) => {
           <AnimatedSection delay={0.2} className="lg:col-span-5">
             <div className="relative aspect-[4/5] rounded-lg overflow-hidden">
               <Image
-                src="/products/herrajes/artesanales/artesanales-2.png"
-                alt="Architect reviewing fixture specifications at Counter Cultures showroom"
+                src="/images/home/specification-partner.webp"
+                alt="Premium marble vanity with wall-mounted faucets — specification-grade fixtures available through Counter Cultures trade program"
                 fill
                 sizes="(max-width: 1024px) 100vw, 40vw"
                 className="object-cover"

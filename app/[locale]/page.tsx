@@ -3,6 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { Hero } from "@/app/components/sections/hero";
+import { BrandStatement } from "@/app/components/sections/brand-statement";
 import { BrandBar } from "@/app/components/sections/brand-bar";
 import { ShopByRoom } from "@/app/components/sections/shop-by-room";
 import { FounderStory } from "@/app/components/sections/founder-story";
@@ -197,8 +198,9 @@ const HomePage = async ({ params }: HomePageProps) => {
       <Header locale={lang} />
       <main>
         <Hero locale={lang} />
-        <BrandBar locale={lang} />
+        <BrandStatement locale={lang} />
         <ShopByRoom locale={lang} />
+        <BrandBar locale={lang} />
         <FounderStory locale={lang} />
         <Testimonial locale={lang} />
         <ProjectGallery locale={lang} />
