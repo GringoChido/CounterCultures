@@ -389,8 +389,8 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
         <section className="relative py-32 lg:py-44 overflow-hidden">
           <div className="absolute inset-0">
             <Image
-              src="/Assets/Santa Clara del Cobre.webp"
-              alt="Hand-hammered copper basin by artisans of Santa Clara del Cobre"
+              src="/images/brands-hero.webp"
+              alt="Luxury kitchen with marble countertops, brass range, and farmhouse sink — brands carried by Counter Cultures"
               fill
               sizes="100vw"
               priority

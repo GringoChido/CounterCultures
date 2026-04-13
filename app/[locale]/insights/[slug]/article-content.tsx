@@ -164,7 +164,7 @@ export const ArticleContent = ({
               <div
                 className="w-full h-full"
                 style={{
-                  backgroundImage: `url('${article.image.replace("q=80", "q=75").replace(/&?auto=format/g, "")}&auto=format')`,
+                  backgroundImage: `url('${article.image.startsWith("http") ? article.image.replace("q=80", "q=75").replace(/&?auto=format/g, "") + "&auto=format" : article.image}')`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }}
@@ -288,7 +288,7 @@ export const ArticleContent = ({
                         <div
                           className="w-full h-full transition-transform duration-500 group-hover:scale-105"
                           style={{
-                            backgroundImage: `url('${related.image.replace("q=80", "q=75").replace(/&?auto=format/g, "")}&auto=format')`,
+                            backgroundImage: `url('${related.image.startsWith("http") ? related.image.replace("q=80", "q=75").replace(/&?auto=format/g, "") + "&auto=format" : related.image}')`,
                             backgroundSize: "cover",
                             backgroundPosition: "center",
                           }}

@@ -11,6 +11,7 @@ import {
   type ArticlePillar,
 } from "@/app/lib/articles";
 import { useLocale } from "next-intl";
+import Image from "next/image";
 import Link from "next/link";
 
 const INITIAL_COUNT = 6;
@@ -46,24 +47,36 @@ export const InsightsContent = () => {
     <>
       <Header locale={locale} />
       <main>
-        {/* Hero */}
-        <section className="pt-28 pb-12 md:pt-40 md:pb-20 bg-brand-charcoal">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <AnimatedSection>
-              <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
-                {locale === "es" ? "Insights" : "Insights"}
-              </span>
-              <h1 className="mt-4 font-display text-4xl sm:text-5xl md:text-7xl font-light text-white tracking-wide">
-                {locale === "es"
-                  ? "Diseño, Producto y Artesanía"
-                  : "Design, Product & Craft"}
-              </h1>
-              <p className="mt-6 font-body text-base text-white/60 max-w-2xl leading-relaxed">
-                {locale === "es"
-                  ? "Artículos editoriales del equipo de Counter Cultures — tendencias de diseño, comparaciones de productos, guías de especificación y el arte detrás de los accesorios artesanales."
-                  : "Editorial articles from the Counter Cultures team — design trends, product comparisons, specification guides, and the craft behind artisanal fixtures."}
-              </p>
-            </AnimatedSection>
+        {/* Full-Bleed Hero */}
+        <section className="relative h-[70vh] min-h-[500px] md:h-[85vh] md:min-h-[640px] w-full overflow-hidden bg-brand-charcoal">
+          <Image
+            src="https://images.unsplash.com/photo-1697729800872-866107ce82c4?w=2400&q=80"
+            alt="San Miguel de Allende church domes at twilight"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+          {/* Gradient overlay for text legibility */}
+          <div className="absolute inset-0 bg-gradient-to-b from-brand-charcoal/40 via-brand-charcoal/30 to-brand-charcoal/80" />
+          <div className="relative h-full flex items-end">
+            <div className="mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 pb-12 md:pb-20">
+              <AnimatedSection>
+                <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
+                  {locale === "es" ? "Insights" : "Insights"}
+                </span>
+                <h1 className="mt-4 font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-light text-white tracking-wide max-w-4xl">
+                  {locale === "es"
+                    ? "Diseño, Producto y Artesanía"
+                    : "Design, Product & Craft"}
+                </h1>
+                <p className="mt-6 font-body text-base md:text-lg text-white/80 max-w-2xl leading-relaxed">
+                  {locale === "es"
+                    ? "Tendencias de diseño, análisis de productos, guías de especificación y el arte detrás de los accesorios artesanales."
+                    : "Design trends, product deep-dives, specification guides, and the craft behind artisanal fixtures."}
+                </p>
+              </AnimatedSection>
+            </div>
           </div>
         </section>
 
@@ -80,7 +93,7 @@ export const InsightsContent = () => {
                     <div
                       className="w-full h-full transition-transform duration-500 group-hover:scale-105"
                       style={{
-                        backgroundImage: `url('${featured.image.replace("q=80", "q=75").replace(/&?auto=format/g, "")}&auto=format')`,
+                        backgroundImage: `url('${featured.image.startsWith("http") ? featured.image.replace("q=80", "q=75").replace(/&?auto=format/g, "") + "&auto=format" : featured.image}')`,
                         backgroundSize: "cover",
                         backgroundPosition: "center",
                       }}
@@ -135,7 +148,7 @@ export const InsightsContent = () => {
                         <div
                           className="w-full h-full transition-transform duration-500 group-hover:scale-105"
                           style={{
-                            backgroundImage: `url('${article.image.replace("q=80", "q=75").replace(/&?auto=format/g, "")}&auto=format')`,
+                            backgroundImage: `url('${article.image.startsWith("http") ? article.image.replace("q=80", "q=75").replace(/&?auto=format/g, "") + "&auto=format" : article.image}')`,
                             backgroundSize: "cover",
                             backgroundPosition: "center",
                           }}
@@ -210,7 +223,7 @@ export const InsightsContent = () => {
                       <div
                         className="w-full h-full transition-transform duration-500 group-hover:scale-105"
                         style={{
-                          backgroundImage: `url('${article.image.replace("q=80", "q=75").replace(/&?auto=format/g, "")}&auto=format')`,
+                          backgroundImage: `url('${article.image.startsWith("http") ? article.image.replace("q=80", "q=75").replace(/&?auto=format/g, "") + "&auto=format" : article.image}')`,
                           backgroundSize: "cover",
                           backgroundPosition: "center",
                         }}

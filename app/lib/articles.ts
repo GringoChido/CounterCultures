@@ -43,7 +43,7 @@ export const articles: Article[] = [
     pillar: "Craft",
     date: "2026-03-15",
     readTime: "8 min",
-    image: "https://images.unsplash.com/photo-1615529328331-f8917597711f?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1712374309372-6901e4aa65b7?w=1600&q=80",
     author: "Roger Williams",
     featured: true,
     editorsPick: true,
@@ -148,7 +148,7 @@ Eso no es un compromiso. Ese es el punto.`,
     pillar: "Design",
     date: "2026-03-08",
     readTime: "6 min",
-    image: "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1729638652129-ae17010946b6?w=1600&q=80",
     author: "Roger Williams",
     featured: false,
     editorsPick: true,
@@ -249,7 +249,7 @@ El hilo conductor en todas estas tendencias es la intencionalidad. La comunidad 
     pillar: "Product",
     date: "2026-02-28",
     readTime: "7 min",
-    image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80",
+    image: "/Assets/BRANDS/blanco-hero.webp",
     author: "Counter Cultures",
     editorsPick: false,
     body: {
@@ -349,7 +349,7 @@ Ambos están disponibles para ver en nuestro showroom.`,
     pillar: "Trade",
     date: "2026-02-20",
     readTime: "10 min",
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1646974400439-8472d58bb19e?w=1600&q=80",
     author: "Roger Williams",
     editorsPick: true,
     body: {
@@ -473,7 +473,7 @@ Para cada proyecto de hospitalidad, proporcionamos un paquete de especificación
     pillar: "Craft",
     date: "2026-02-12",
     readTime: "5 min",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1664300628088-bb2e317ea462?w=1600&q=80",
     author: "Roger Williams",
     body: {
       en: `## Silicon Bronze: The Material
@@ -552,7 +552,7 @@ Tiempo de entrega estándar es 8–10 semanas desde el pedido.`,
     pillar: "Trade",
     date: "2026-02-05",
     readTime: "4 min",
-    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1682145938720-261e5364fe5a?w=1600&q=80",
     author: "Counter Cultures",
     body: {
       en: `## Why a Trade Program Exists
@@ -686,7 +686,7 @@ El Programa Trade está abierto a arquitectos licenciados, diseñadores de inter
     pillar: "Product",
     date: "2026-01-28",
     readTime: "9 min",
-    image: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&q=80",
+    image: "/Assets/BRANDS/kohler-hero.webp",
     author: "Roger Williams",
     body: {
       en: `## Why This Comparison Matters
@@ -807,7 +807,7 @@ Para la mayoría de los proyectos en San Miguel de Allende, recomendamos una esp
     pillar: "Craft",
     date: "2026-01-15",
     readTime: "7 min",
-    image: "https://images.unsplash.com/photo-1590736969955-71cc94901144?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1768502233087-b9e9fa289b89?w=1600&q=80",
     author: "Roger Williams",
     body: {
       en: `## What Makes Talavera Authentic
@@ -906,7 +906,7 @@ Trabajamos con tres talleres con Denominación de Origen en Puebla. El tiempo de
     pillar: "Design",
     date: "2026-01-08",
     readTime: "6 min",
-    image: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c0?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1626252685663-64c6bf60afb1?w=1600&q=80",
     author: "Roger Williams",
     editorsPick: false,
     body: {
@@ -1002,7 +1002,7 @@ Esto es lo que Counter Cultures fue construido para habilitar: un showroom donde
     pillar: "Product",
     date: "2025-12-18",
     readTime: "5 min",
-    image: "https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=800&q=80",
+    image: "/Assets/BRANDS/brizo-hero.jpg",
     author: "Counter Cultures",
     body: {
       en: `## The Finish Decision
@@ -1107,7 +1107,7 @@ Todos los acabados están disponibles para ver y comparar en nuestro showroom.`,
     pillar: "Trade",
     date: "2025-12-05",
     readTime: "8 min",
-    image: "https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=800&q=80",
+    image: "https://images.unsplash.com/photo-1562069028-92f10e37ac9d?w=1600&q=80",
     author: "Roger Williams",
     body: {
       en: `## The Context

@@ -53,14 +53,14 @@ export const generateMetadata = async ({
       authors: [article.author],
       section: pillarLabels[article.pillar][isEs ? "es" : "en"],
       images: article.image
-        ? [{ url: article.image, width: 1200, height: 630, alt: title }]
+        ? [{ url: article.image.startsWith("http") ? article.image : `${BASE_URL}${article.image}`, width: 1200, height: 630, alt: title }]
         : [],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: article.image ? [article.image] : [],
+      images: article.image ? [article.image.startsWith("http") ? article.image : `${BASE_URL}${article.image}`] : [],
     },
   };
 };
@@ -87,7 +87,7 @@ const ArticlePage = async ({ params }: ArticlePageProps) => {
     description: article.excerpt[lang],
     image: {
       "@type": "ImageObject",
-      url: article.image,
+      url: article.image.startsWith("http") ? article.image : `${BASE_URL}${article.image}`,
       width: 1200,
       height: 630,
     },
