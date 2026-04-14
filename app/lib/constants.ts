@@ -191,56 +191,56 @@ export const SUBCATEGORY_META: Record<string, Record<string, {
   },
   kitchen: {
     sinks: {
-      heroImage: "/products/cocina/tarjas/Bante-Duetto-Fireclay.png",
+      heroImage: "/images/kitchen/sinks.webp",
       description: {
         en: "BLANCO Silgranit apron sinks, Kohler stainless steel undermounts, and hand-forged copper basins — built to work as hard as you cook.",
         es: "Tarjas con mandil BLANCO Silgranit, fregaderos de acero inoxidable Kohler y lavabos de cobre forjados a mano — hechos para trabajar tan duro como tú cocinas.",
       },
     },
     faucets: {
-      heroImage: "/products/cocina/mezcladoras/Brizo-Litze-Angular.png",
+      heroImage: "/images/kitchen/faucets.webp",
       description: {
         en: "Bridge faucets by California Faucets, pull-down designs from Brizo, and professional-grade mixers by ROHL and Delta.",
         es: "Grifos puente de California Faucets, diseños extraíbles de Brizo y mezcladoras de grado profesional de ROHL y Delta.",
       },
     },
     "range-hoods": {
-      heroImage: "/products/cocina/electrodomesticos/electrodomesticos-2.png",
+      heroImage: "/images/kitchen/range-hoods.webp",
       description: {
         en: "Teka German-engineered extraction and decorative island hoods — power and beauty above the cooktop.",
         es: "Extracción de ingeniería alemana Teka y campanas decorativas de isla — potencia y belleza sobre la estufa.",
       },
     },
     appliances: {
-      heroImage: "/products/cocina/electrodomesticos/electrodomesticos-2.png",
+      heroImage: "/images/kitchen/appliances.webp",
       description: {
         en: "Professional ranges by Bluestar, SMEG retro ovens, and Teka built-in cooktops — equip your kitchen with the best.",
         es: "Estufas profesionales Bluestar, hornos retro SMEG y parrillas empotradas Teka — equipa tu cocina con lo mejor.",
       },
     },
     "soap-dispensers": {
-      heroImage: "/products/accesorios/accesorios-2.png",
+      heroImage: "/images/kitchen/soap-dispensers.webp",
       description: {
         en: "Built-in and deck-mounted soap dispensers to match your faucet finish — a clean, seamless countertop.",
         es: "Dispensadores de jabón empotrados y de cubierta para combinar con el acabado de tu grifo — una cubierta limpia y sin interrupciones.",
       },
     },
     "water-dispensers": {
-      heroImage: "/products/cocina/mezcladoras/Brizo-Litze-Angular.png",
+      heroImage: "/images/kitchen/water-dispensers.webp",
       description: {
         en: "Hot and filtered water dispensers — instant boiling water at the point of use.",
         es: "Dispensadores de agua caliente y filtrada — agua hirviendo al instante en el punto de uso.",
       },
     },
     "double-sinks": {
-      heroImage: "/products/cocina/tarjas/Bante-Duetto-Fireclay.png",
+      heroImage: "/images/kitchen/double-sinks.webp",
       description: {
         en: "Double-basin configurations for the working kitchen — prep and wash without compromise.",
         es: "Configuraciones de doble tarja para la cocina activa — prepara y lava sin compromisos.",
       },
     },
     "pot-fillers": {
-      heroImage: "/products/cocina/mezcladoras/Brizo-Litze-Angular.png",
+      heroImage: "/images/kitchen/pot-fillers.webp",
       description: {
         en: "Wall-mounted pot fillers by California Faucets and Brizo — fill your stockpot right at the stove.",
         es: "Llenadores de ollas de pared de California Faucets y Brizo — llena tu olla directamente en la estufa.",
@@ -249,21 +249,21 @@ export const SUBCATEGORY_META: Record<string, Record<string, {
   },
   hardware: {
     "door-locks": {
-      heroImage: "/products/herrajes/chapas-cerrojos/chapas-y-cerrojos-2.png",
+      heroImage: "/images/hardware/lock-set.webp",
       description: {
         en: "Hand-cast silicon bronze entry sets by Sun Valley Bronze and precision-machined Emtek designs — every entrance deserves its own character.",
         es: "Cerraduras de entrada de bronce al silicio fundido a mano de Sun Valley Bronze y diseños de precisión Emtek — cada entrada merece su propio carácter.",
       },
     },
     deadbolts: {
-      heroImage: "/products/herrajes/chapas-cerrojos/chapas-y-cerrojos-2.png",
+      heroImage: "/images/hardware/deadbolt.webp",
       description: {
         en: "Bronze and brass deadbolts to match your entry set — security that doesn't sacrifice style.",
         es: "Cerrojos de bronce y latón para combinar con tu cerradura de entrada — seguridad que no sacrifica estilo.",
       },
     },
     "pulls-hooks": {
-      heroImage: "/products/herrajes/artesanales/artesanales-2.png",
+      heroImage: "/images/hardware/pulls-handles-hooks.webp",
       description: {
         en: "Door knockers, cabinet pulls, coat hooks, and robe hooks in hand-cast bronze and solid brass — the hardware that makes a home.",
         es: "Aldabas, jaladeras de gabinete, ganchos para abrigos y batas en bronce fundido a mano y latón sólido — los herrajes que hacen un hogar.",

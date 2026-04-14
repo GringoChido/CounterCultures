@@ -55,15 +55,13 @@ const brandHeroData: Record<
     tagline: "Hand-Cast, One at a Time",
     description:
       "Each Sun Valley Bronze piece is individually sand-cast in silicon bronze and hand-finished in Idaho. Entry sets that are as much sculpture as hardware.",
-    heroImage:
-      "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1920&q=80",
+    heroImage: "/images/hardware/brass-lever.webp",
   },
   emtek: {
     tagline: "Precision Door Hardware",
     description:
       "Solid brass construction meets contemporary and classic design. Emtek door knobs, levers, and deadbolts engineered to last generations.",
-    heroImage:
-      "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1920&q=80",
+    heroImage: "/images/hardware/lock-set.webp",
   },
   badeloft: {
     tagline: "Pure Form, Pure Material",

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import NextLink from "next/link";
-import { Link as IntlLink, usePathname as useIntlPathname } from "@/app/i18n/navigation";
+import { usePathname as useIntlPathname } from "@/app/i18n/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, ChevronDown, ChevronRight, MessageCircle, Sparkles } from "lucide-react";
 import { NAV_LINKS, SITE_CONFIG, PRODUCT_CATEGORIES } from "@/app/lib/constants";
@@ -82,11 +82,10 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               <MessageCircle className="w-5 h-5" />
             </a>
 
-            {/* Language toggle — uses next-intl Link for instant prefetched locale switch */}
+            {/* Language toggle — full page reload to bypass CDN/router cache */}
             <div className="flex items-center font-body text-xs tracking-wider">
-              <IntlLink
-                href={intlPathname}
-                locale="en"
+              <a
+                href={`/en${intlPathname}`}
                 className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors ${
                   lang === "en"
                     ? "text-brand-terracotta font-bold pointer-events-none"
@@ -96,11 +95,10 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               >
                 <span className="sm:hidden">EN</span>
                 <span className="hidden sm:inline">English</span>
-              </IntlLink>
+              </a>
               <span className="text-brand-stone/40">|</span>
-              <IntlLink
-                href={intlPathname}
-                locale="es"
+              <a
+                href={`/es${intlPathname}`}
                 className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors ${
                   lang === "es"
                     ? "text-brand-terracotta font-bold pointer-events-none"
@@ -110,7 +108,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               >
                 <span className="sm:hidden">ES</span>
                 <span className="hidden sm:inline">Español</span>
-              </IntlLink>
+              </a>
             </div>
 
             <NextLink

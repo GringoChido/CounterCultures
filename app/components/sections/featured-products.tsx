@@ -42,7 +42,7 @@ const featured = [
     price: "$76,100",
     finishes: ["Aged Bronze", "Dark Bronze", "Silicon Bronze"],
     href: "/shop/hardware/entry-locks/svb-contemporary",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=600&q=75&auto=format",
+    image: "/images/hardware/brass-lever.webp",
     badge: "Hardware",
     badgeColor: "bg-brand-charcoal",
   },

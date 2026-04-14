@@ -18,8 +18,8 @@ interface CategoryPageProps {
 
 const HERO_IMAGES: Record<string, string> = {
   bathroom: "/products/bano/baneras/Alisia-Niquelado.jpg",
-  kitchen: "/products/cocina/mezcladoras/CF-Corsano-Bridge.jpg",
-  hardware: "/products/herrajes/artesanales/artesanales-2.png",
+  kitchen: "/images/kitchen/kitchen-hero.webp",
+  hardware: "/images/hardware/hardware-hero.webp",
 };
 
 const HERO_COPY: Record<string, { en: string; es: string }> = {

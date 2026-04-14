@@ -190,7 +190,7 @@ export const PROJECTS: Project[] = [
         caption: { en: "Central courtyard with covered portales", es: "Patio central con portales cubiertos" },
       },
       {
-        src: "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1200&q=80",
+        src: "/images/hardware/brass-lever.webp",
         alt: { en: "Entry door hardware detail", es: "Detalle de herraje de puerta de entrada" },
         caption: { en: "Sun Valley Bronze Contemporary entry set in Silicon Bronze", es: "Cerradura Contemporary de Sun Valley Bronze en Bronce al Silicio" },
       },
@@ -336,7 +336,7 @@ export const PROJECTS: Project[] = [
         caption: { en: "Open living area with park views through steel-frame windows", es: "Sala abierta con vistas al parque a través de ventanas de acero" },
       },
       {
-        src: "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1200&q=80",
+        src: "/images/hardware/deadbolt.webp",
         alt: { en: "Emtek door hardware", es: "Herraje Emtek de puerta" },
         caption: { en: "Emtek Hampton Edition knobs in Flat Black", es: "Perillas Emtek Hampton Edition en Negro Mate" },
       },
