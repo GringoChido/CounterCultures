@@ -210,6 +210,10 @@ const getAllProducts = async (): Promise<Product[]> => {
 
 // ── Public API ────────────────────────────────────────────────────────
 
+/** Normalize for brand matching: strip diacritics, spaces, lowercase */
+const normalizeBrand = (s: string) =>
+  s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "").toLowerCase();
+
 const applyFilters = (
   products: Product[],
   filter?: ProductFilter
@@ -222,9 +226,8 @@ const applyFilters = (
     result = result.filter((p) => p.subcategory === filter.subcategory);
   }
   if (filter?.brand) {
-    result = result.filter(
-      (p) => p.brand.toLowerCase() === filter.brand?.toLowerCase()
-    );
+    const target = normalizeBrand(filter.brand);
+    result = result.filter((p) => normalizeBrand(p.brand) === target);
   }
   if (filter?.artisanal !== undefined) {
     result = result.filter((p) => p.artisanal === filter.artisanal);
