@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/app/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
 
 interface HeroSlide {
   eyebrow: { en: string; es: string };
@@ -138,13 +139,13 @@ const Hero = ({ locale = "en" }: { locale?: string }) => {
           transition={{ duration: 1, ease: "easeInOut" }}
           className="absolute inset-0"
         >
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `url('${slide.image}')`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
+          <Image
+            src={slide.image}
+            alt=""
+            fill
+            priority={current === 0}
+            sizes="100vw"
+            className="object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/30 to-black/10" />
         </motion.div>

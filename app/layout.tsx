@@ -4,7 +4,7 @@ import { Cormorant_Garamond, DM_Sans, JetBrains_Mono } from "next/font/google";
 const cormorantGaramond = Cormorant_Garamond({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["300", "400", "500"],
   display: "swap",
 });
 

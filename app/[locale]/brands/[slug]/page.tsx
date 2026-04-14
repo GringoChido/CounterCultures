@@ -20,83 +20,115 @@ const brandHeroData: Record<
     tagline: "Gracious Living, Since 1873",
     description:
       "From kitchen sinks to freestanding tubs, Kohler combines 150 years of American engineering with designs that define modern luxury.",
-    heroImage:
-      "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=1920&q=80",
+    heroImage: "/Assets/BRANDS/kohler-hero.webp",
   },
   toto: {
     tagline: "People-First Innovation",
     description:
       "Japanese precision meets bathroom perfection. TOTO's CEFIONTECT glaze and Washlet technology set the global standard for hygiene and comfort.",
-    heroImage:
-      "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=1920&q=80",
+    heroImage: "/Assets/BRANDS/toto-hero.webp",
   },
   brizo: {
     tagline: "Fashion-Forward Fixtures",
     description:
       "Brizo brings fashion sensibility to the kitchen and bath. The Litze collection's industrial aesthetic and SmartTouch technology redefine what a faucet can be.",
-    heroImage:
-      "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=1920&q=80",
+    heroImage: "/Assets/BRANDS/brizo-hero.webp",
   },
   blanco: {
     tagline: "The Kitchen Sink Perfected",
     description:
       "German-engineered Silgranit sinks that resist heat, scratches, and stains. BLANCO's Ikon apron front has become the centerpiece of Mexico's finest kitchens.",
-    heroImage:
-      "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1920&q=80",
+    heroImage: "/Assets/BRANDS/blanco-hero.webp",
   },
   "california-faucets": {
     tagline: "Handcrafted in Huntington Beach",
     description:
       "Over 30 artisan finishes, made to order in California. Bridge-style kitchen faucets and custom bath hardware that no factory can replicate.",
-    heroImage:
-      "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=1920&q=80",
+    heroImage: "/Assets/BRANDS/california-faucets-hero.webp",
   },
   "sun-valley-bronze": {
     tagline: "Hand-Cast, One at a Time",
     description:
       "Each Sun Valley Bronze piece is individually sand-cast in silicon bronze and hand-finished in Idaho. Entry sets that are as much sculpture as hardware.",
-    heroImage: "/images/hardware/brass-lever.webp",
+    heroImage: "/Assets/BRANDS/sun-valley-bronze-hero.webp",
   },
   emtek: {
     tagline: "Precision Door Hardware",
     description:
       "Solid brass construction meets contemporary and classic design. Emtek door knobs, levers, and deadbolts engineered to last generations.",
-    heroImage: "/images/hardware/lock-set.webp",
+    heroImage: "/Assets/BRANDS/emtek-hero.avif",
   },
   badeloft: {
     tagline: "Pure Form, Pure Material",
     description:
       "Badeloft freestanding tubs and basins in seamless mineral casting — organic shapes with an easy-clean surface that stays pristine.",
-    heroImage:
-      "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=1920&q=80",
+    heroImage: "/Assets/BRANDS/badeloft-hero.webp",
   },
   bante: {
     tagline: "Mexican Artisanal Craft",
     description:
       "Hand-finished bathroom accessories and fixtures that bring the spirit of Mexican craft into contemporary spaces.",
-    heroImage:
-      "https://images.unsplash.com/photo-1615529328331-f8917597711f?w=1920&q=80",
+    heroImage: "/Assets/BRANDS/bante-hero.avif",
   },
   mistoa: {
     tagline: "Color Inspired by the Landscape",
     description:
       "Artisanal basins in 10 curated colorways — from Rosa Crudo to Azul Profundo — each hand-shaped and finished by master artisans.",
-    heroImage:
-      "https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=1920&q=80",
+    heroImage: "/Assets/BRANDS/mistoa-hero.webp",
   },
   "villeroy-boch": {
     tagline: "European Elegance Since 1748",
     description:
       "Nearly three centuries of ceramic mastery. Villeroy & Boch brings timeless European design to bathrooms worldwide.",
-    heroImage:
-      "https://images.unsplash.com/photo-1620626011761-996317b8d101?w=1920&q=80",
+    heroImage: "/Assets/BRANDS/villeroy-boch-hero.webp",
   },
   aquaspa: {
     tagline: "Professional Spa Solutions",
     description:
       "Commercial and residential spa fixtures designed for the Mexican climate — durable, beautiful, and built for daily use.",
-    heroImage:
-      "https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=1920&q=80",
+    heroImage: "/Assets/BRANDS/aquaspa-hero.webp",
+  },
+  ebbe: {
+    tagline: "Engineered Drain Solutions",
+    description:
+      "Precision-machined linear and square shower drains — stainless steel construction with tile-insert and decorative grate options.",
+    heroImage: "/Assets/BRANDS/ebbe-hero.webp",
+  },
+  delta: {
+    tagline: "Innovation at Every Turn",
+    description:
+      "Touch2O and ShieldSpray technologies across kitchen and bath. Delta's H2Okinetic showerheads sculpt water into a warmer, more powerful pattern.",
+    heroImage: "/Assets/BRANDS/delta-hero.webp",
+  },
+  rohl: {
+    tagline: "Authentic Luxury Since 1983",
+    description:
+      "Italian-made bridge faucets and fireclay farmhouse sinks — every piece reflects ROHL's commitment to European craftsmanship and heritage design.",
+    heroImage: "/Assets/BRANDS/rohl-hero.webp",
+  },
+  teka: {
+    tagline: "German Kitchen Technology",
+    description:
+      "Built-in ovens, induction hobs, and stainless steel sinks — Teka brings 95 years of German-engineered kitchen innovation to Mexico.",
+    heroImage: "/Assets/BRANDS/teka-hero.webp",
+  },
+  smeg: {
+    tagline: "Technology with Style",
+    description:
+      "Iconic Italian design meets precision engineering — retro-style refrigerators, ranges, and small appliances that define the modern kitchen.",
+    heroImage: "/Assets/BRANDS/smeg-hero.webp",
+  },
+  bluestar: {
+    tagline: "Restaurant Power. Residential Beauty",
+    description:
+      "Open-burner ranges with 25,000 BTU and 750+ color options — the professional chef's choice, built by hand in Pennsylvania.",
+    heroImage: "/Assets/BRANDS/bluestar-hero.webp",
+  },
+  baldwin: {
+    tagline: "American Craftsmanship Since 1946",
+    description:
+      "Forged brass door hardware with lifetime finishes — from estate rosettes to contemporary levers, each set is built to last generations.",
+    heroImage: "/Assets/BRANDS/baldwin-hero.webp",
   },
 };
 

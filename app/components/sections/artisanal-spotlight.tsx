@@ -78,7 +78,7 @@ const ArtisanalSpotlight = ({ locale = "en" }: { locale?: string }) => {
             </div>
             <div className="relative aspect-[4/5] rounded-lg overflow-hidden">
               <Image
-                src="/Assets/Mistoa Studio.png"
+                src="/Assets/Mistoa Studio.webp"
                 alt="Mistoa Studio ceramic basin handcrafted in Guanajuato"
                 fill
                 sizes="(max-width: 1024px) 50vw, 280px"

@@ -50,8 +50,8 @@ export const InsightsContent = () => {
         {/* Full-Bleed Hero */}
         <section className="relative h-[70vh] min-h-[500px] md:h-[85vh] md:min-h-[640px] w-full overflow-hidden bg-brand-charcoal">
           <Image
-            src="https://images.unsplash.com/photo-1697729800872-866107ce82c4?w=2400&q=80"
-            alt="San Miguel de Allende church domes at twilight"
+            src="/images/insights-hero.webp"
+            alt="Luxury kitchen with sage green cabinetry, marble countertops, and stained glass pendant lights"
             fill
             priority
             sizes="100vw"

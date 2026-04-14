@@ -304,6 +304,33 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                 WhatsApp
               </a>
 
+              {/* Language toggle — mobile */}
+              <div className="flex items-center justify-center gap-4 py-3.5 border-b border-brand-stone/5">
+                <a
+                  href={`/en${intlPathname}`}
+                  onClick={() => setMobileOpen(false)}
+                  className={`font-body text-base font-medium transition-colors ${
+                    lang === "en"
+                      ? "text-brand-terracotta pointer-events-none"
+                      : "text-brand-stone hover:text-brand-charcoal"
+                  }`}
+                >
+                  English
+                </a>
+                <span className="text-brand-stone/40">|</span>
+                <a
+                  href={`/es${intlPathname}`}
+                  onClick={() => setMobileOpen(false)}
+                  className={`font-body text-base font-medium transition-colors ${
+                    lang === "es"
+                      ? "text-brand-terracotta pointer-events-none"
+                      : "text-brand-stone hover:text-brand-charcoal"
+                  }`}
+                >
+                  Español
+                </a>
+              </div>
+
               <div className="pt-4 pb-2 flex flex-col gap-3">
                 <NextLink
                   href="/dashboard"

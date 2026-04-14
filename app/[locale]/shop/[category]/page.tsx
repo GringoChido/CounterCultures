@@ -17,7 +17,7 @@ interface CategoryPageProps {
 }
 
 const HERO_IMAGES: Record<string, string> = {
-  bathroom: "/products/bano/baneras/Alisia-Niquelado.jpg",
+  bathroom: "/images/bathroom/bathroom-hero.webp",
   kitchen: "/images/kitchen/kitchen-hero.webp",
   hardware: "/images/hardware/hardware-hero.webp",
 };

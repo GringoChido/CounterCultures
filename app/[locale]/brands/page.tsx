@@ -18,7 +18,7 @@ const artisans = [
     name: "Mistoa Studio",
     location: "Guanajuato",
     specialty: "Ceramic basins in 10 colorways",
-    image: "/Assets/Mistoa Studio.png",
+    image: "/Assets/Mistoa Studio.webp",
     alt: "Mistoa Studio ceramic basin handcrafted in Guanajuato, Mexico",
     story:
       "Each Mistoa basin is hand-shaped on the wheel, dipped in small-batch glazes inspired by the Mexican landscape — from Arcilla clay to Azul Profundo.",
@@ -59,14 +59,14 @@ const brandDescriptions: Record<string, { tagline: string; description: string; 
     tagline: "People-First Innovation.",
     description: "Japan's leading fixture manufacturer, known for CEFIONTECT glaze technology and the world's most advanced toilet engineering.",
     origin: "Kitakyushu, Japan",
-    image: "/Assets/BRANDS/toto-hero.jpg",
+    image: "/Assets/BRANDS/toto-hero.webp",
     alt: "TOTO — People-First Innovation. Advanced toilet and bath technology from Kitakyushu, Japan",
   },
   brizo: {
     tagline: "Fashion for the Home.",
     description: "Brizo brings fashion-forward design to kitchen and bath — the Litze collection's industrial precision is a kitchen centerpiece.",
     origin: "Indianapolis, USA",
-    image: "/Assets/BRANDS/brizo-hero.jpg",
+    image: "/Assets/BRANDS/brizo-hero.webp",
     alt: "Brizo — Fashion for the Home. Designer kitchen and bath faucets from Indianapolis, USA",
   },
   blanco: {
@@ -80,14 +80,14 @@ const brandDescriptions: Record<string, { tagline: string; description: string; 
     tagline: "Handcrafted in Huntington Beach.",
     description: "Over 30 finish options, made to order in California. Bridge-style faucets and custom configurations for architects.",
     origin: "Huntington Beach, USA",
-    image: "/Assets/BRANDS/california-faucets-hero.jpg",
+    image: "/Assets/BRANDS/california-faucets-hero.webp",
     alt: "California Faucets — Handcrafted in Huntington Beach. Custom bridge faucets from Huntington Beach, USA",
   },
   "sun-valley-bronze": {
     tagline: "Hand-Cast. Hand-Finished. Idaho-Made.",
     description: "Each Sun Valley Bronze lock set is individually sand-cast in silicon bronze and hand-finished — functional sculpture for your door.",
     origin: "Bellevue, Idaho, USA",
-    image: "/Assets/BRANDS/sun-valley-bronze-hero.jpg",
+    image: "/Assets/BRANDS/sun-valley-bronze-hero.webp",
     alt: "Sun Valley Bronze — Hand-Cast. Hand-Finished. Idaho-Made. Bronze entry hardware from Bellevue, Idaho",
   },
   emtek: {
@@ -122,7 +122,7 @@ const brandDescriptions: Record<string, { tagline: string; description: string; 
     tagline: "European Craftsmanship Since 1748.",
     description: "The Architectura line brings German precision to the bathroom — undermount, vessel, and countertop basins in timeless white.",
     origin: "Mettlach, Germany",
-    image: "/Assets/BRANDS/villeroy-boch-hero.jpg",
+    image: "/Assets/BRANDS/villeroy-boch-hero.webp",
     alt: "Villeroy & Boch — European Craftsmanship Since 1748. Precision bathroom basins from Mettlach, Germany",
   },
   aquaspa: {
@@ -143,14 +143,14 @@ const brandDescriptions: Record<string, { tagline: string; description: string; 
     tagline: "Innovation at Every Turn.",
     description: "Touch2O and ShieldSpray technologies across kitchen and bath. Delta's H2Okinetic showerheads sculpt water into a warmer, more powerful pattern.",
     origin: "Indianapolis, USA",
-    image: "/Assets/BRANDS/delta-hero.jpg",
+    image: "/Assets/BRANDS/delta-hero.webp",
     alt: "Delta — Innovation at Every Turn. Touch2O kitchen and bath faucets from Indianapolis, USA",
   },
   rohl: {
     tagline: "Authentic Luxury Since 1983.",
     description: "Italian-made bridge faucets and fireclay farmhouse sinks — every piece reflects ROHL's commitment to European craftsmanship and heritage design.",
     origin: "Irvine, California, USA",
-    image: "/Assets/BRANDS/rohl-hero.jpg",
+    image: "/Assets/BRANDS/rohl-hero.webp",
     alt: "ROHL — Authentic Luxury Since 1983. Italian-made bridge faucets from Irvine, California",
   },
   teka: {
@@ -171,7 +171,7 @@ const brandDescriptions: Record<string, { tagline: string; description: string; 
     tagline: "Restaurant Power. Residential Beauty.",
     description: "Open-burner ranges with 25,000 BTU and 750+ color options — the professional chef's choice, built by hand in Pennsylvania.",
     origin: "Pennsylvania, USA",
-    image: "/Assets/BRANDS/bluestar-hero.jpg",
+    image: "/Assets/BRANDS/bluestar-hero.webp",
     alt: "BlueStar — Restaurant Power. Residential Beauty. Professional ranges from Pennsylvania, USA",
   },
   baldwin: {

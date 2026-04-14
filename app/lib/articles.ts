@@ -473,7 +473,7 @@ Para cada proyecto de hospitalidad, proporcionamos un paquete de especificación
     pillar: "Craft",
     date: "2026-02-12",
     readTime: "5 min",
-    image: "https://images.unsplash.com/photo-1664300628088-bb2e317ea462?w=1600&q=80",
+    image: "/images/articles/svb-hardware-flatlay.webp",
     author: "Roger Williams",
     body: {
       en: `## Silicon Bronze: The Material
@@ -552,7 +552,7 @@ Tiempo de entrega estándar es 8–10 semanas desde el pedido.`,
     pillar: "Trade",
     date: "2026-02-05",
     readTime: "4 min",
-    image: "https://images.unsplash.com/photo-1682145938720-261e5364fe5a?w=1600&q=80",
+    image: "/images/articles/trade-program-kitchen.webp",
     author: "Counter Cultures",
     body: {
       en: `## Why a Trade Program Exists

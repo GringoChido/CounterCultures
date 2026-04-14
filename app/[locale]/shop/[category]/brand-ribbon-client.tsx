@@ -12,14 +12,14 @@ const BrandRibbon = ({ brands, locale }: BrandRibbonProps) => {
   if (brands.length === 0) return null;
 
   return (
-    <section className="py-16 md:py-20 bg-brand-linen border-t border-brand-stone/10">
+    <section className="py-16 md:py-20 bg-brand-charcoal">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="font-body text-xs uppercase tracking-[0.25em] text-brand-stone/60 mb-8 text-center"
+          className="font-body font-semibold text-xs uppercase tracking-[0.25em] text-brand-terracotta mb-8 text-center"
         >
           {locale === "en" ? "Trusted Brands" : "Marcas de Confianza"}
         </motion.p>
@@ -35,7 +35,7 @@ const BrandRibbon = ({ brands, locale }: BrandRibbonProps) => {
             <NextLink
               key={brand.slug}
               href={`/${locale}/brands/${brand.slug}`}
-              className="font-display text-lg md:text-xl text-brand-stone/50 hover:text-brand-charcoal transition-colors duration-300"
+              className="font-display text-lg md:text-xl text-white/80 hover:text-brand-terracotta transition-colors duration-300"
             >
               {brand.name}
             </NextLink>

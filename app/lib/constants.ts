@@ -119,70 +119,70 @@ export const SUBCATEGORY_META: Record<string, Record<string, {
 }>> = {
   bathroom: {
     sinks: {
-      heroImage: "/products/bano/lavabos/Aurora-Cubeta-Niquelado.jpg",
+      heroImage: "/images/bathroom/sinks.webp",
       description: {
         en: "From hand-hammered copper vessels by Mexican artisans to TOTO's precision-engineered undermounts — every basin tells a story.",
         es: "Desde lavabos de cobre martillado a mano por artesanos mexicanos hasta los lavabos de precisión de TOTO — cada pieza cuenta una historia.",
       },
     },
     faucets: {
-      heroImage: "/products/bano/grifos/CF-Christopher.jpg",
+      heroImage: "/images/bathroom/faucets.webp",
       description: {
         en: "California Faucets' 30+ artisan finishes, Brizo's industrial precision, and bronze cascades from local coppersmiths — find the perfect pour.",
         es: "Más de 30 acabados artesanales de California Faucets, la precisión industrial de Brizo y cascadas de bronce de artesanos locales — encuentra el grifo perfecto.",
       },
     },
     bathtubs: {
-      heroImage: "/products/bano/baneras/Alisia-Niquelado.jpg",
+      heroImage: "/images/bathroom/bathtubs.webp",
       description: {
         en: "Freestanding soakers by Badeloft, Japanese-depth TOTO designs, and custom stone vessels — the bathtub as sculpture.",
         es: "Bañeras independientes de Badeloft, diseños de profundidad japonesa de TOTO y recipientes de piedra personalizados — la bañera como escultura.",
       },
     },
     "tub-fillers": {
-      heroImage: "/products/bano/baneras/Alisia-Niquelado.jpg",
+      heroImage: "/images/bathroom/tub-fillers.webp",
       description: {
         en: "Floor-mounted and wall-mounted tub fillers from California Faucets and Brizo — the finishing touch for your freestanding tub.",
         es: "Llenadores de bañera de piso y pared de California Faucets y Brizo — el toque final para tu bañera independiente.",
       },
     },
     spa: {
-      heroImage: "/products/bano/spa/product-1.jpg",
+      heroImage: "/images/bathroom/spa.webp",
       description: {
         en: "AquaSpa hydrotherapy systems — from intimate two-person tubs to grand outdoor installations with hydrojet massage technology.",
         es: "Sistemas de hidroterapia AquaSpa — desde tinas íntimas para dos personas hasta grandes instalaciones exteriores con tecnología de hidromasaje.",
       },
     },
     toilets: {
-      heroImage: "/products/bano/sanitarios/product-1.jpg",
+      heroImage: "/images/bathroom/toilets.webp",
       description: {
         en: "TOTO's WASHLET bidet technology, wall-hung designs, and water-saving engineering — the throne reimagined.",
         es: "Tecnología de bidet WASHLET de TOTO, diseños de pared y ingeniería de ahorro de agua — el trono reimaginado.",
       },
     },
     showers: {
-      heroImage: "/products/bano/regaderas/product-1.jpg",
+      heroImage: "/images/bathroom/showers.webp",
       description: {
         en: "Complete shower systems, rain heads, hand showers, and body sprays from TOTO, California Faucets, and Brizo.",
         es: "Sistemas de ducha completos, regaderas de lluvia, duchas de mano y rociadores corporales de TOTO, California Faucets y Brizo.",
       },
     },
     accessories: {
-      heroImage: "/products/accesorios/accesorios-2.png",
+      heroImage: "/images/bathroom/accessories.webp",
       description: {
         en: "Towel bars, robe hooks, toilet paper holders, and hardware accents in 30+ finishes — the details that complete the room.",
         es: "Toalleros, ganchos para batas, portarrollos y acentos de herraje en más de 30 acabados — los detalles que completan la habitación.",
       },
     },
     drains: {
-      heroImage: "/products/drenajes/drenajes-2.png",
+      heroImage: "/images/bathroom/drains.webp",
       description: {
         en: "Ebbe square drains and California Faucets decorative StyleDrain covers — because every detail matters.",
         es: "Drenajes cuadrados Ebbe y cubiertas decorativas StyleDrain de California Faucets — porque cada detalle importa.",
       },
     },
     valves: {
-      heroImage: "/products/bano/grifos/CF-Christopher.jpg",
+      heroImage: "/images/bathroom/valves.webp",
       description: {
         en: "Thermostatic valves, pressure-balancing cartridges, and diverter systems — the precision behind the performance.",
         es: "Válvulas termostáticas, cartuchos de equilibrio de presión y sistemas desviadores — la precisión detrás del rendimiento.",

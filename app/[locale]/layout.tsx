@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { routing } from "@/app/i18n/routing";
-import { ChatWidget } from "@/app/components/ui/chat-widget";
+import { ChatWidgetLazy } from "@/app/components/ui/chat-widget-lazy";
 import "../globals.css";
 
 const BASE_URL = "https://countercultures.mx";
@@ -281,7 +281,7 @@ const LocaleLayout = async ({ children, params }: LocaleLayoutProps) => {
       />
       <NextIntlClientProvider messages={messages}>
         {children}
-        <ChatWidget locale={locale} />
+        <ChatWidgetLazy locale={locale} />
       </NextIntlClientProvider>
     </div>
   );
