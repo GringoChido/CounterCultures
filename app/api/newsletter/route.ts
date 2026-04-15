@@ -1,18 +1,25 @@
 import { NextResponse } from "next/server";
+import { z } from "zod/v4";
 import { submitNewsletter } from "@/app/lib/sheets";
 import { sendNewsletterWelcome } from "@/app/lib/email";
+
+const schema = z.object({
+  email: z.email(),
+});
 
 export const POST = async (request: Request) => {
   try {
     const body = await request.json();
-    const { email } = body as { email: string };
+    const result = schema.safeParse(body);
 
-    if (!email) {
+    if (!result.success) {
       return NextResponse.json(
-        { error: "Email is required" },
+        { error: "Valid email is required" },
         { status: 400 }
       );
     }
+
+    const { email } = result.data;
 
     await submitNewsletter(email);
 

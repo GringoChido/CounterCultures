@@ -25,6 +25,7 @@ const jetBrainsMono = JetBrains_Mono({
 const RootLayout = ({ children }: { children: ReactNode }) => {
   return (
     <html
+      lang="en"
       suppressHydrationWarning
       className={`${cormorantGaramond.variable} ${dmSans.variable} ${jetBrainsMono.variable}`}
     >

@@ -113,13 +113,14 @@ export const onPaymentReceived = (
   let newStage: PipelineStage | undefined;
 
   if (allPaid) {
-    newStage = "delivered"; // or "complete" if already delivered
-    if (
-      deal.stage === "delivered" ||
-      deal.stage === "balance-pending"
-    ) {
+    // Only advance to "delivered" if already in a late fulfillment stage
+    const lateStages: PipelineStage[] = ["shipping", "received", "delivered", "balance-pending"];
+    if (deal.stage === "delivered" || deal.stage === "balance-pending") {
       newStage = "complete";
+    } else if (lateStages.includes(deal.stage)) {
+      newStage = "delivered";
     }
+    // If in earlier stages (ordering, in-production), don't skip — payment is noted but stage stays
   } else if (depositPaid && deal.stage === "deposit-pending") {
     newStage = "deposit-received";
   }

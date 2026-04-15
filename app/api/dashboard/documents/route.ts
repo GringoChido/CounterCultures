@@ -123,7 +123,7 @@ export const POST = async (request: NextRequest) => {
 
       if (isConfigured()) {
         const existingDocs = await readSheet<DocumentRecord>("Documents");
-        docId = getNextDocumentNumber(type, existingDocs);
+        docId = await getNextDocumentNumber(type, existingDocs);
         const fileName = getDocumentFileName(docId);
 
         // Create a simple HTML file and upload as PDF placeholder
@@ -156,7 +156,7 @@ export const POST = async (request: NextRequest) => {
         ]);
       } else {
         // Demo mode — generate a doc number from sample data
-        docId = getNextDocumentNumber(type, SAMPLE_DOCUMENTS);
+        docId = await getNextDocumentNumber(type, SAMPLE_DOCUMENTS);
       }
 
       return NextResponse.json({ docId, driveFileId });

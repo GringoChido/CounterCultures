@@ -85,7 +85,10 @@ export function parseUrlParams(searchParams: Record<string, string | string[] | 
   }
 
   if (searchParams.sortBy) {
-    state.sortBy = searchParams.sortBy as FilterState["sortBy"];
+    const validSortValues = ["featured", "price-asc", "price-desc", "name-asc", "name-desc", "newest"];
+    if (validSortValues.includes(searchParams.sortBy as string)) {
+      state.sortBy = searchParams.sortBy as FilterState["sortBy"];
+    }
   }
 
   return state;
@@ -184,8 +187,9 @@ export function buildFilterFacets(products: Product[]) {
   const subcategories = new Set<string>();
   const colors = new Set<string>();
   const availability = new Set<string>();
-  const priceMin = Math.min(...products.map((p) => p.price));
-  const priceMax = Math.max(...products.map((p) => p.price));
+  const prices = products.map((p) => p.price);
+  const priceMin = prices.length > 0 ? Math.min(...prices) : 0;
+  const priceMax = prices.length > 0 ? Math.max(...prices) : 0;
 
   products.forEach((p) => {
     brands.add(p.brand);

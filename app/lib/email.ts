@@ -1,5 +1,13 @@
 import { Resend } from "resend";
 
+const escapeHtml = (str: string): string =>
+  str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
 let _resend: Resend | null = null;
 const getResend = () => {
   if (!_resend) {
@@ -57,7 +65,7 @@ export const sendContactConfirmation = async (to: string, name: string): Promise
     subject: "We received your message — Counter Cultures",
     html: `
       <div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; color: #2C2C2C;">
-        <h2 style="font-weight: 400; letter-spacing: 0.05em;">Thank you, ${name}</h2>
+        <h2 style="font-weight: 400; letter-spacing: 0.05em;">Thank you, ${escapeHtml(name)}</h2>
         <p style="line-height: 1.7; color: #6B6B6B;">
           We've received your message and will get back to you within 2 business hours during showroom hours (Mon–Fri, 10:00–18:00 CST).
         </p>
@@ -81,9 +89,9 @@ export const sendTradeConfirmation = async (to: string, name: string, company: s
     subject: "Trade Application Received — Counter Cultures",
     html: `
       <div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; color: #2C2C2C;">
-        <h2 style="font-weight: 400; letter-spacing: 0.05em;">Welcome, ${name}</h2>
+        <h2 style="font-weight: 400; letter-spacing: 0.05em;">Welcome, ${escapeHtml(name)}</h2>
         <p style="line-height: 1.7; color: #6B6B6B;">
-          We've received the trade application for <strong>${company}</strong>. Our team reviews applications within 48 hours.
+          We've received the trade application for <strong>${escapeHtml(company)}</strong>. Our team reviews applications within 48 hours.
         </p>
         <p style="line-height: 1.7; color: #6B6B6B;">
           Once approved, you'll receive your trade credentials with access to exclusive pricing, specification sheets, and your dedicated account manager.
@@ -129,13 +137,13 @@ export const sendBookingConfirmation = async (
     subject: "Showroom Visit Confirmed — Counter Cultures",
     html: `
       <div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; color: #2C2C2C;">
-        <h2 style="font-weight: 400; letter-spacing: 0.05em;">See you soon, ${name}</h2>
+        <h2 style="font-weight: 400; letter-spacing: 0.05em;">See you soon, ${escapeHtml(name)}</h2>
         <p style="line-height: 1.7; color: #6B6B6B;">
           Your showroom visit is confirmed:
         </p>
         <div style="background: #F5F0EB; padding: 20px; border-radius: 4px; margin: 20px 0;">
-          <p style="margin: 0; color: #2C2C2C;"><strong>Date:</strong> ${date}</p>
-          <p style="margin: 8px 0 0; color: #2C2C2C;"><strong>Time:</strong> ${time}</p>
+          <p style="margin: 0; color: #2C2C2C;"><strong>Date:</strong> ${escapeHtml(date)}</p>
+          <p style="margin: 8px 0 0; color: #2C2C2C;"><strong>Time:</strong> ${escapeHtml(time)}</p>
           <p style="margin: 8px 0 0; color: #2C2C2C;"><strong>Location:</strong> Providencia, San Miguel de Allende</p>
         </div>
         <p style="line-height: 1.7; color: #6B6B6B;">
@@ -187,7 +195,7 @@ export const notifyRoger = async (subject: string, body: string): Promise<void> 
     subject,
     html: `
       <div style="font-family: monospace; max-width: 560px; margin: 0 auto; color: #2C2C2C;">
-        <pre style="white-space: pre-wrap; line-height: 1.6;">${body}</pre>
+        <pre style="white-space: pre-wrap; line-height: 1.6;">${escapeHtml(body)}</pre>
       </div>
     `,
   });

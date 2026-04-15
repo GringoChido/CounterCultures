@@ -45,7 +45,7 @@ export const onPOShipped = (
   openTraficos: Trafico[]
 ): { action: "add-to-existing" | "create-new"; trafico?: Trafico; newItem: Partial<PedimentoItem> } => {
   const newItem: Partial<PedimentoItem> = {
-    id: `PI-${Date.now()}`,
+    id: `PI-${crypto.randomUUID()}`,
     dealId: po.dealId,
     poId: po.id,
     vendorName: po.manufacturerName,
@@ -190,7 +190,7 @@ export const onCalculoReceived = (
       amount: calculoTotal ?? 0,
       payee: "TGR Logistics / Gestores Aduanales del Noreste",
       bank: "BBVA Mexico",
-      clabe: "012821001951426792",
+      clabe: process.env.CUSTOMS_BROKER_CLABE ?? "",
       concept: "PED",
     },
     {
@@ -198,7 +198,7 @@ export const onCalculoReceived = (
       amount: 2668,
       payee: "Carlos Enrique Garza Roque",
       bank: "Banamex",
-      clabe: "002821700962028128",
+      clabe: process.env.CUSTOMS_TRUCK_CLABE ?? "",
       concept: "CRUZ",
     },
   ];
@@ -238,7 +238,7 @@ export const onPaymentSent = (
       reference: calculoPaymentRef ?? "",
       concept: "PED",
       payeeName: "TGR Logistics / Gestores Aduanales",
-      payeeClabe: "012821001951426792",
+      payeeClabe: process.env.CUSTOMS_BROKER_CLABE ?? "",
     },
     truckFeePayment: updated.truckFeePayment ?? {
       amount: trafico.truckCrossingFee ?? 2668,

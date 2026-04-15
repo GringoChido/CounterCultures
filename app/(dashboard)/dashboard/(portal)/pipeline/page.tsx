@@ -300,7 +300,7 @@ const PipelinePage = () => {
           const sheetDeals = data.deals as Array<Record<string, string>>;
           if (sheetDeals.length > 0) {
             const mapped: PipelineDeal[] = sheetDeals.map((d) => ({
-              id: d.id || `DEAL-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+              id: d.id || `DEAL-${crypto.randomUUID()}`,
               name: d.name || "Untitled Deal",
               contactName: d.company || "",
               contactCompany: d.company,

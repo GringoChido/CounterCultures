@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
+import { getStripe, isConfigured } from "@/app/lib/stripe";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ session_id?: string }>;
 }
 
 export const generateMetadata = async ({ params }: PageProps): Promise<Metadata> => {
@@ -16,10 +19,26 @@ export const generateMetadata = async ({ params }: PageProps): Promise<Metadata>
   };
 };
 
-const PaymentSuccessPage = async ({ params }: PageProps) => {
+const PaymentSuccessPage = async ({ params, searchParams }: PageProps) => {
   const { locale } = await params;
+  const { session_id } = await searchParams;
   const lang = (locale as "en" | "es") || "en";
   const isEs = lang === "es";
+
+  // Verify the Stripe session server-side
+  if (!session_id || !isConfigured()) {
+    redirect(`/${lang}/shop`);
+  }
+
+  try {
+    const stripe = getStripe();
+    const session = await stripe.checkout.sessions.retrieve(session_id);
+    if (session.payment_status !== "paid") {
+      redirect(`/${lang}/shop?payment=incomplete`);
+    }
+  } catch {
+    redirect(`/${lang}/shop?payment=error`);
+  }
 
   return (
     <>
@@ -38,31 +57,31 @@ const PaymentSuccessPage = async ({ params }: PageProps) => {
 
           <p className="font-body text-lg text-brand-stone leading-relaxed mb-8">
             {isEs
-              ? "Gracias por su compra. Hemos recibido su pago y le enviaremos una confirmacion por correo electronico en breve."
+              ? "Gracias por su compra. Hemos recibido su pago y le enviaremos una confirmación por correo electrónico en breve."
               : "Thank you for your purchase. We've received your payment and will send you an email confirmation shortly."}
           </p>
 
           <div className="bg-white border border-brand-stone/10 rounded-lg p-6 mb-8 text-left">
             <h2 className="font-display text-lg font-medium text-brand-charcoal mb-4">
-              {isEs ? "Proximos Pasos" : "What Happens Next"}
+              {isEs ? "Próximos Pasos" : "What Happens Next"}
             </h2>
             <ul className="font-body text-base text-brand-stone space-y-3">
               <li className="flex items-start gap-3">
                 <span className="w-6 h-6 rounded-full bg-brand-copper/10 text-brand-copper font-mono text-xs flex items-center justify-center shrink-0 mt-0.5">1</span>
                 {isEs
-                  ? "Recibira un correo de confirmacion con los detalles de su pedido."
+                  ? "Recibirá un correo de confirmación con los detalles de su pedido."
                   : "You'll receive a confirmation email with your order details."}
               </li>
               <li className="flex items-start gap-3">
                 <span className="w-6 h-6 rounded-full bg-brand-copper/10 text-brand-copper font-mono text-xs flex items-center justify-center shrink-0 mt-0.5">2</span>
                 {isEs
-                  ? "Nuestro equipo preparara su pedido y le notificara sobre el envio."
+                  ? "Nuestro equipo preparará su pedido y le notificará sobre el envío."
                   : "Our team will prepare your order and notify you about shipping."}
               </li>
               <li className="flex items-start gap-3">
                 <span className="w-6 h-6 rounded-full bg-brand-copper/10 text-brand-copper font-mono text-xs flex items-center justify-center shrink-0 mt-0.5">3</span>
                 {isEs
-                  ? "Para articulos especiales, el tiempo de entrega es de 4-8 semanas."
+                  ? "Para artículos especiales, el tiempo de entrega es de 4-8 semanas."
                   : "For special order items, delivery time is 4-8 weeks."}
               </li>
             </ul>
@@ -79,12 +98,12 @@ const PaymentSuccessPage = async ({ params }: PageProps) => {
               href={`/${lang}/contact`}
               className="px-8 py-3 border border-brand-charcoal text-brand-charcoal font-body text-sm font-medium tracking-wider hover:bg-brand-charcoal hover:text-white transition-colors"
             >
-              {isEs ? "Contactenos" : "Contact Us"}
+              {isEs ? "Contáctenos" : "Contact Us"}
             </Link>
           </div>
 
           <p className="font-body text-sm text-brand-stone mt-12">
-            {isEs ? "Preguntas?" : "Questions?"}{" "}
+            {isEs ? "¿Preguntas?" : "Questions?"}{" "}
             <a href="mailto:equipo@countercultures.com.mx" className="text-brand-terracotta hover:underline">
               equipo@countercultures.com.mx
             </a>

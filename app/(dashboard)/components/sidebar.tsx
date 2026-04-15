@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   Users,
@@ -73,6 +73,12 @@ interface SidebarProps {
 const Sidebar = ({ mobileOpen = false, onMobileClose }: SidebarProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/dashboard/login");
+  };
 
   const navContent = (
     <>
@@ -161,6 +167,7 @@ const Sidebar = ({ mobileOpen = false, onMobileClose }: SidebarProps) => {
       {/* Footer */}
       <div className="border-t border-white/10 p-3 shrink-0">
         <button
+          onClick={handleSignOut}
           className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-white/70 hover:bg-dash-sidebar-hover hover:text-white transition-colors cursor-pointer min-h-[44px] ${
             collapsed ? "justify-center" : ""
           }`}

@@ -90,25 +90,45 @@ export const detectDocumentType = (fileName: string): DocumentType | null => {
 /**
  * Generate the next sequential document number for a given type.
  * Scans existing records to find the highest number for the current year.
+ * Uses a per-type lock to prevent duplicate IDs from concurrent requests.
  */
-export const getNextDocumentNumber = (
+const locks = new Map<string, Promise<string>>();
+
+export const getNextDocumentNumber = async (
   type: DocumentType,
   existingDocs: DocumentRecord[]
-): string => {
-  const prefix = PREFIX_MAP[type];
-  const year = new Date().getFullYear();
-  const pattern = `CC-${prefix}-${year}-`;
+): Promise<string> => {
+  const lockKey = type;
 
-  let maxSeq = 0;
-  for (const doc of existingDocs) {
-    if (doc.Doc_ID.startsWith(pattern)) {
-      const seq = parseInt(doc.Doc_ID.slice(pattern.length), 10);
-      if (seq > maxSeq) maxSeq = seq;
-    }
+  // Wait for any in-flight generation of the same type to complete
+  while (locks.has(lockKey)) {
+    await locks.get(lockKey);
   }
 
-  const nextSeq = String(maxSeq + 1).padStart(3, "0");
-  return `CC-${prefix}-${year}-${nextSeq}`;
+  let resolve!: (value: string) => void;
+  const promise = new Promise<string>((r) => { resolve = r; });
+  locks.set(lockKey, promise);
+
+  try {
+    const prefix = PREFIX_MAP[type];
+    const year = new Date().getFullYear();
+    const pattern = `CC-${prefix}-${year}-`;
+
+    let maxSeq = 0;
+    for (const doc of existingDocs) {
+      if (doc.Doc_ID.startsWith(pattern)) {
+        const seq = parseInt(doc.Doc_ID.slice(pattern.length), 10);
+        if (seq > maxSeq) maxSeq = seq;
+      }
+    }
+
+    const nextSeq = String(maxSeq + 1).padStart(3, "0");
+    const docNumber = `CC-${prefix}-${year}-${nextSeq}`;
+    resolve(docNumber);
+    return docNumber;
+  } finally {
+    locks.delete(lockKey);
+  }
 };
 
 /**

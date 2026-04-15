@@ -17,14 +17,22 @@ const LoginPage = () => {
     setError("");
     setLoading(true);
 
-    if (
-      email === "joshua@untold.works" &&
-      password === "GringoChido1!"
-    ) {
-      sessionStorage.setItem("cc-portal-auth", "true");
-      router.push("/dashboard/overview");
-    } else {
-      setError("Invalid email or password.");
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (res.ok) {
+        router.push("/dashboard/overview");
+      } else {
+        const data = await res.json();
+        setError(data.error || "Invalid email or password.");
+        setLoading(false);
+      }
+    } catch {
+      setError("Connection error. Please try again.");
       setLoading(false);
     }
   };

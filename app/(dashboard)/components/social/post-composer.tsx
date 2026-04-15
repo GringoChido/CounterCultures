@@ -66,7 +66,8 @@ export function PostComposer({ onPublish }: PostComposerProps) {
     platforms.length > 0 &&
     !charOver &&
     !publishing &&
-    (platforms.includes("instagram") ? mediaUrl.trim().length > 0 : true);
+    (platforms.includes("instagram") ? mediaUrl.trim().length > 0 : true) &&
+    (!scheduleMode || scheduleDate.trim().length > 0);
 
   async function handlePublish() {
     if (!canPublish) return;

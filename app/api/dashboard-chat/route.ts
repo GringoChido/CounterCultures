@@ -276,7 +276,15 @@ async function executeTool(
       }
 
       case "add_crm_row": {
+        const ALLOWED_WRITE_TABS: SheetTab[] = [
+          "Products", "Leads", "Pipeline", "Contacts", "Activity_Log",
+          "Trade_Applications", "Content_Calendar", "Documents",
+          "Purchase_Orders", "Shipments", "Deal_Payments",
+        ];
         const tab = input.tab as SheetTab;
+        if (!ALLOWED_WRITE_TABS.includes(tab)) {
+          return `Cannot write to tab "${tab}". Allowed tabs: ${ALLOWED_WRITE_TABS.join(", ")}`;
+        }
         const values = input.values as string[];
         await appendRow(tab, values);
         return `Successfully added a new row to "${tab}" with ${values.length} values.`;

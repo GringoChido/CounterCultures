@@ -9,8 +9,10 @@ export const GET = async (req: NextRequest) => {
   try {
     const stripe = getStripe();
     const params = req.nextUrl.searchParams;
-    const limit = Number(params.get("limit") ?? "25");
-    const search = params.get("search") ?? "";
+    const limit = Math.min(Number(params.get("limit") ?? "25"), 100);
+    const rawSearch = params.get("search") ?? "";
+    // Sanitize search for Stripe's query syntax — strip chars that could manipulate the query
+    const search = rawSearch.replace(/["\\\/:()~]/g, "").slice(0, 100);
 
     let customers;
     if (search) {

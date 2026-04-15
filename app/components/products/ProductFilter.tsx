@@ -12,6 +12,7 @@ interface ProductFilterProps {
   filters: FilterState;
   onFilterChange: (newFilters: FilterState) => void;
   onRemoveFilter: (filterKey: string, value: string) => void;
+  locale?: string;
 }
 
 interface ExpandedSections {
@@ -23,6 +24,7 @@ const ProductFilter = ({
   filters,
   onFilterChange,
   onRemoveFilter,
+  locale,
 }: ProductFilterProps) => {
   const [expanded, setExpanded] = useState<ExpandedSections>({
     brands: true,
@@ -215,14 +217,11 @@ const ProductFilter = ({
               {facets.categories.map((category) => {
                 const count = getCountForFilter("category", category);
                 const isChecked = filters.categories.includes(category);
-                const categoryLabel =
-                  category === "bathroom"
-                    ? "Baño"
-                    : category === "kitchen"
-                      ? "Cocina"
-                      : category === "hardware"
-                        ? "Herrajes"
-                        : category;
+                const categoryLabels: Record<string, Record<string, string>> = {
+                  en: { bathroom: "Bathroom", kitchen: "Kitchen", hardware: "Hardware" },
+                  es: { bathroom: "Baño", kitchen: "Cocina", hardware: "Herrajes" },
+                };
+                const categoryLabel = categoryLabels[locale ?? "en"]?.[category] ?? category;
                 return (
                   <label
                     key={category}

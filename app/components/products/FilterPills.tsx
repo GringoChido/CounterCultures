@@ -7,21 +7,38 @@ interface FilterPillsProps {
   filters: FilterState;
   onRemove: (filterKey: string, value: string) => void;
   onClearAll: () => void;
+  locale?: string;
   facetLabels?: Record<string, Record<string, string>>;
 }
 
-const defaultLabels: Record<string, Record<string, string>> = {
-  brands: {},
-  categories: {
-    bathroom: "Baño",
-    kitchen: "Cocina",
-    hardware: "Herrajes",
+const labelsByLocale: Record<string, Record<string, Record<string, string>>> = {
+  en: {
+    brands: {},
+    categories: {
+      bathroom: "Bathroom",
+      kitchen: "Kitchen",
+      hardware: "Hardware",
+    },
+    colors: {},
+    availability: {
+      "in-stock": "In Stock",
+      "made-to-order": "Made to Order",
+      "special-order": "Special Order",
+    },
   },
-  colors: {},
-  availability: {
-    "in-stock": "En Stock",
-    "made-to-order": "Por Encargo",
-    "special-order": "Orden Especial",
+  es: {
+    brands: {},
+    categories: {
+      bathroom: "Baño",
+      kitchen: "Cocina",
+      hardware: "Herrajes",
+    },
+    colors: {},
+    availability: {
+      "in-stock": "En Stock",
+      "made-to-order": "Por Encargo",
+      "special-order": "Orden Especial",
+    },
   },
 };
 
@@ -29,7 +46,8 @@ const FilterPills = ({
   filters,
   onRemove,
   onClearAll,
-  facetLabels = defaultLabels,
+  locale = "en",
+  facetLabels = labelsByLocale[locale] ?? labelsByLocale.en,
 }: FilterPillsProps) => {
   const getLabel = (filterKey: string, value: string): string => {
     return facetLabels[filterKey]?.[value] || value;

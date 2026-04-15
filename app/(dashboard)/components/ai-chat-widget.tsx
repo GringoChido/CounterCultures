@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import DOMPurify from "dompurify";
 import {
   MessageCircle,
   X,
@@ -32,8 +33,13 @@ const SUGGESTIONS = [
 
 // Minimal markdown renderer for assistant messages
 function RichText({ text }: { text: string }) {
-  // Process the text into segments
   const lines = text.split("\n");
+
+  const sanitize = (html: string) =>
+    DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ["strong", "a"],
+      ALLOWED_ATTR: ["href", "target", "rel", "class"],
+    });
 
   return (
     <div className="space-y-1.5">
@@ -51,7 +57,7 @@ function RichText({ text }: { text: string }) {
               <span className="text-brand-copper mt-0.5 shrink-0">•</span>
               <span
                 dangerouslySetInnerHTML={{
-                  __html: processed.replace(/^[-•]\s*/, ""),
+                  __html: sanitize(processed.replace(/^[-•]\s*/, "")),
                 }}
               />
             </div>
@@ -73,7 +79,7 @@ function RichText({ text }: { text: string }) {
           <p
             key={i}
             className="leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: withLinks }}
+            dangerouslySetInnerHTML={{ __html: sanitize(withLinks) }}
           />
         );
       })}
@@ -89,6 +95,8 @@ export function AIChatWidget() {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -116,7 +124,7 @@ export function AIChatWidget() {
       setLoading(true);
 
       try {
-        const apiMessages = [...messages, userMsg].map((m) => ({
+        const apiMessages = [...messagesRef.current, userMsg].map((m) => ({
           role: m.role,
           content: m.content,
         }));
@@ -152,7 +160,7 @@ export function AIChatWidget() {
         setLoading(false);
       }
     },
-    [messages, loading]
+    [loading]
   );
 
   const clearChat = () => {

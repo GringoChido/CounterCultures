@@ -265,7 +265,9 @@ const LocaleLayout = async ({ children, params }: LocaleLayoutProps) => {
   return (
     <div
       lang={locale}
+      dir="ltr"
       className="min-h-screen flex flex-col antialiased"
+      suppressHydrationWarning
     >
       <script
         type="application/ld+json"

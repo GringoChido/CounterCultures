@@ -5,6 +5,7 @@ import { Bell, Search, Menu, Command } from "lucide-react";
 
 const pageTitles: Record<string, string> = {
   "/dashboard/overview": "Overview",
+  "/dashboard/weekly-review": "Weekly Review",
   "/dashboard/leads": "Leads",
   "/dashboard/pipeline": "Pipeline",
   "/dashboard/whatsapp": "WhatsApp",
@@ -16,6 +17,11 @@ const pageTitles: Record<string, string> = {
   "/dashboard/sales-analytics": "Sales Analytics",
   "/dashboard/marketing-analytics": "Marketing Analytics",
   "/dashboard/reports": "Reports",
+  "/dashboard/odoo": "Odoo",
+  "/dashboard/finance": "Finance",
+  "/dashboard/stripe": "Stripe",
+  "/dashboard/shipments": "Shipments",
+  "/dashboard/customs": "Customs",
   "/dashboard/products": "Products",
   "/dashboard/trade-program": "Trade Program",
   "/dashboard/drive": "Drive",
@@ -66,9 +72,8 @@ const DashboardHeader = ({ onMenuClick, onSearchClick }: DashboardHeaderProps) =
         </button>
 
         {/* Notifications */}
-        <button className="relative w-10 h-10 flex items-center justify-center rounded-lg hover:bg-dash-bg transition-colors cursor-pointer">
+        <button className="relative w-10 h-10 flex items-center justify-center rounded-lg hover:bg-dash-bg transition-colors cursor-pointer" aria-label="Notifications">
           <Bell className="w-5 h-5 text-dash-text-secondary" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-brand-terracotta rounded-full" />
         </button>
 
         {/* User avatar */}

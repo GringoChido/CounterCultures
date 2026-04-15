@@ -8,16 +8,17 @@ import type { Product } from "@/app/lib/types";
 
 interface ProductCardProps {
   product: Product;
+  locale?: string;
 }
 
 const formatPrice = (price: number) =>
   new Intl.NumberFormat("es-MX", { style: "decimal", maximumFractionDigits: 0 }).format(price);
 
-const ProductCard = ({ product }: ProductCardProps) => {
+const ProductCard = ({ product, locale = "en" }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <Link href={`/shop/${product.category}/p/${product.slug}`} className="group block h-full">
+    <Link href={`/${locale}/shop/${product.category}/p/${product.slug}`} className="group block h-full">
       <div
         className="relative overflow-hidden aspect-square bg-brand-sand/20 rounded-sm"
         onMouseEnter={() => setIsHovered(true)}

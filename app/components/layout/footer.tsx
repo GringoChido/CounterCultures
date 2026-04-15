@@ -76,7 +76,7 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
               {footerNav.collections.map((link) => (
                 <li key={link.href}>
                   <Link
-                    href={link.href}
+                    href={`/${lang}${link.href}`}
                     className="inline-flex items-center min-h-[36px] font-body text-sm text-brand-stone hover:text-brand-terracotta transition-colors"
                   >
                     {link.label[lang]}
@@ -95,7 +95,7 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
               {footerNav.company.map((link) => (
                 <li key={link.href}>
                   <Link
-                    href={link.href}
+                    href={link.href === "/dashboard" ? link.href : `/${lang}${link.href}`}
                     className="inline-flex items-center min-h-[36px] font-body text-sm text-brand-stone hover:text-brand-terracotta transition-colors"
                   >
                     {link.label[lang]}

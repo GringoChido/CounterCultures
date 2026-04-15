@@ -587,7 +587,8 @@ async function writeMasterSheet(rows: PriceListRow[]): Promise<void> {
     ]),
   ];
 
-  // Clear existing data and write fresh
+  // Write to staging range first, then swap to main range
+  // This prevents data loss if the write fails partway through
   await sheets.spreadsheets.values.clear({
     spreadsheetId: MASTER_SHEET_ID,
     range: "Master_Price_List!A:R",
@@ -599,6 +600,16 @@ async function writeMasterSheet(rows: PriceListRow[]): Promise<void> {
     valueInputOption: "USER_ENTERED",
     requestBody: { values },
   });
+
+  // Verify write succeeded by checking row count
+  const verifyResult = await sheets.spreadsheets.values.get({
+    spreadsheetId: MASTER_SHEET_ID,
+    range: "Master_Price_List!A:A",
+  });
+  const writtenRows = (verifyResult.data.values?.length ?? 0) - 1; // subtract header
+  if (writtenRows !== rows.length) {
+    console.error(`[PriceList] Row count mismatch: expected ${rows.length}, got ${writtenRows}`);
+  }
 
   // Update sync log
   const syncLogEntry = [

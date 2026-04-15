@@ -11,6 +11,7 @@
  */
 
 import { google, type drive_v3 } from "googleapis";
+import { Readable } from "stream";
 
 // ── Auth ──────────────────────────────────────────────────────────────
 
@@ -138,7 +139,7 @@ export const searchFiles = async (
   const drive = getDrive();
 
   const res = await drive.files.list({
-    q: `fullText contains '${query.replace(/'/g, "\\'")}' and trashed = false`,
+    q: `fullText contains '${query.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}' and trashed = false`,
     fields:
       "files(id, name, mimeType, size, modifiedTime, createdTime, webViewLink, iconLink, thumbnailLink, parents)",
     pageSize,
@@ -328,7 +329,6 @@ const mapFile = (f: drive_v3.Schema$File): DriveFile => ({
 });
 
 const bufferToStream = (buffer: Buffer) => {
-  const { Readable } = require("stream");
   const stream = new Readable();
   stream.push(buffer);
   stream.push(null);

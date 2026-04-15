@@ -72,13 +72,19 @@ export const POST = async (request: Request) => {
       return Response.json({ error: "No messages" }, { status: 400 });
     }
 
+    // Limit message count and individual message length to control costs
+    const trimmedMessages = messages.slice(-20).map((m) => ({
+      role: m.role,
+      content: typeof m.content === "string" ? m.content.slice(0, 4000) : "",
+    }));
+
     const client = new Anthropic({ apiKey });
 
     const response = await client.messages.create({
       model: "claude-haiku-4-5-20251001",
       max_tokens: 512,
       system: SYSTEM_PROMPT,
-      messages,
+      messages: trimmedMessages,
     });
 
     const text =

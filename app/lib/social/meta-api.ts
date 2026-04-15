@@ -39,11 +39,14 @@ async function graphFetch<T>(
   token: string,
   options?: RequestInit
 ): Promise<T> {
-  const separator = endpoint.includes("?") ? "&" : "?";
-  const url = `${GRAPH_API_BASE}${endpoint}${separator}access_token=${token}`;
+  const url = `${GRAPH_API_BASE}${endpoint}`;
 
   const res = await fetch(url, {
     ...options,
+    headers: {
+      ...options?.headers,
+      Authorization: `Bearer ${token}`,
+    },
     cache: "no-store",
   });
 
