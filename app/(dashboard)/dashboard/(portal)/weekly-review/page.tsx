@@ -21,6 +21,7 @@ import {
   startOfWeek,
   endOfWeek,
 } from "date-fns";
+import { CLOSED_STAGES, WON_STAGES, LOST_STAGES } from "@/app/lib/sample-dashboard-data";
 
 // ---------------------------------------------------------------------------
 // Types (matching API record shapes)
@@ -93,15 +94,9 @@ const formatCurrency = (value: number) => {
   return `$${value.toLocaleString("en-US", { minimumFractionDigits: 0 })}`;
 };
 
-const closedStages = [
-  "closed-won",
-  "closed-lost",
-  "won",
-  "lost",
-  "complete",
-];
-const wonStages = ["closed-won", "won", "complete"];
-const lostStages = ["closed-lost", "lost"];
+const closedStages: string[] = CLOSED_STAGES;
+const wonStages: string[] = WON_STAGES;
+const lostStages: string[] = LOST_STAGES;
 
 // ---------------------------------------------------------------------------
 // Component

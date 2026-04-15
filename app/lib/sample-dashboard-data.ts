@@ -18,24 +18,83 @@ export type PipelineStage =
   | "complete" | "post-delivery-issue";
 
 // ---------------------------------------------------------------------------
-// Fulfillment & Operations Types
+// Stage Classification Constants
 // ---------------------------------------------------------------------------
 
-export type FulfillmentStage =
-  | "quote-approved"
-  | "deposit-invoiced"
-  | "deposit-received"
-  | "pos-placed"
-  | "in-production"
-  | "shipping"
-  | "received-at-cc"
-  | "quality-checked"
-  | "delivery-scheduled"
-  | "delivered"
-  | "balance-invoiced"
-  | "fully-paid"
-  | "complete"
-  | "issue";
+export const WON_STAGES: PipelineStage[] = ["closed-won", "won", "complete"];
+export const LOST_STAGES: PipelineStage[] = ["closed-lost", "lost"];
+export const CLOSED_STAGES: PipelineStage[] = [
+  "closed-won", "closed-lost", "won", "lost", "complete",
+  "delivered", "balance-pending",
+];
+export const TERMINAL_STAGES: PipelineStage[] = [
+  ...CLOSED_STAGES, "post-delivery-issue",
+];
+
+// ---------------------------------------------------------------------------
+// Pipeline Journey Phase Mapping (5 phases from the animated visualization)
+// ---------------------------------------------------------------------------
+
+export type JourneyPhase = "discovery" | "design" | "close" | "fulfillment" | "delivered";
+
+const STAGE_TO_PHASE: Record<PipelineStage, JourneyPhase> = {
+  "target-identified": "discovery",
+  "contacted": "discovery",
+  "conversation-started": "discovery",
+  "discovery": "discovery",
+  "qualified-project": "design",
+  "design-scope": "design",
+  "proposal": "design",
+  "proposal-sent": "design",
+  "follow-up-negotiation": "close",
+  "negotiation": "close",
+  "verbal-yes": "close",
+  "closed-won": "close",
+  "won": "close",
+  "closed-lost": "close",
+  "lost": "close",
+  "quote-approved": "fulfillment",
+  "deposit-pending": "fulfillment",
+  "deposit-received": "fulfillment",
+  "ordering": "fulfillment",
+  "in-production": "fulfillment",
+  "shipping": "fulfillment",
+  "received": "fulfillment",
+  "delivery-scheduled": "delivered",
+  "delivered": "delivered",
+  "balance-pending": "delivered",
+  "complete": "delivered",
+  "post-delivery-issue": "delivered",
+};
+
+export const JOURNEY_PHASE_INDEX: Record<JourneyPhase, number> = {
+  discovery: 0,
+  design: 1,
+  close: 2,
+  fulfillment: 3,
+  delivered: 4,
+};
+
+export function getJourneyPhase(stage: PipelineStage): JourneyPhase {
+  return STAGE_TO_PHASE[stage];
+}
+
+export function getJourneyPhaseIndex(stage: PipelineStage): number {
+  return JOURNEY_PHASE_INDEX[STAGE_TO_PHASE[stage]];
+}
+
+// ---------------------------------------------------------------------------
+// Shared Chart Data
+// ---------------------------------------------------------------------------
+
+export const SAMPLE_REVENUE_TREND = [
+  { month: "Oct", revenue: 280000 },
+  { month: "Nov", revenue: 420000 },
+  { month: "Dec", revenue: 350000 },
+  { month: "Jan", revenue: 480000 },
+  { month: "Feb", revenue: 520000 },
+  { month: "Mar", revenue: 320000 },
+];
 
 export type PaymentStructure = "full-upfront" | "fifty-fifty" | "net-30" | "custom";
 
@@ -196,7 +255,6 @@ export interface PipelineDeal {
   taxRate?: number;
 
   // Fulfillment
-  fulfillmentStage?: FulfillmentStage;
   purchaseOrders?: PurchaseOrder[];
   shipments?: DealShipment[];
   deliveryStrategy?: "as-available" | "consolidate";
@@ -623,7 +681,6 @@ export const SAMPLE_PIPELINE: PipelineDeal[] = [
     deliveryStrategy: "consolidate",
     deliveryAddress: "Calle Aldama 42, Centro, San Miguel de Allende",
     deliveryNotes: "Ring bell at main gate. Ask for housekeeper Maria.",
-    fulfillmentStage: "in-production",
     lineItems: [
       { id: "LI-001", productName: "Litze Pull-Down Faucet", sku: "63054LF-GL", brand: "Brizo", finish: "Luxe Gold", quantity: 1, dealerCost: 22000, quotedPrice: 35000, msrp: 42000, shippingCost: 1500, leadTime: "3-4 weeks", status: "current", marginAmount: 13000, marginPercent: 37.1 },
       { id: "LI-002", productName: "Litze Pot Filler", sku: "62174LF-GL", brand: "Brizo", finish: "Luxe Gold", quantity: 1, dealerCost: 16000, quotedPrice: 25000, msrp: 30000, shippingCost: 1200, leadTime: "3-4 weeks", status: "current", marginAmount: 9000, marginPercent: 36.0 },
@@ -713,7 +770,6 @@ export const SAMPLE_PIPELINE: PipelineDeal[] = [
     paymentStructure: "custom",
     deliveryStrategy: "as-available",
     deliveryAddress: "Calle Ancha de San Antonio 15, San Miguel de Allende",
-    fulfillmentStage: "pos-placed",
     lineItems: [
       { id: "LI-010", productName: "Neorest NX2 Intelligent Toilet", sku: "MS903CUMFG#01", brand: "TOTO", quantity: 12, dealerCost: 18000, quotedPrice: 28000, msrp: 35000, shippingCost: 3000, leadTime: "4-6 weeks", status: "current", marginAmount: 10000, marginPercent: 35.7 },
       { id: "LI-011", productName: "Odin Pull-Down Faucet", sku: "63075LF-PC", brand: "Brizo", finish: "Polished Chrome", quantity: 12, dealerCost: 8500, quotedPrice: 14000, msrp: 16500, shippingCost: 800, leadTime: "3-4 weeks", status: "current", marginAmount: 5500, marginPercent: 39.3 },
@@ -779,7 +835,6 @@ export const SAMPLE_PIPELINE: PipelineDeal[] = [
     deliveryStrategy: "consolidate",
     deliveryDate: "2026-03-28",
     deliveryAddress: "Privada de la Aurora 8, San Miguel de Allende",
-    fulfillmentStage: "complete",
     lineItems: [
       { id: "LI-020", productName: "Memoirs Stately Toilet", sku: "K-6669-0", brand: "Kohler", quantity: 1, dealerCost: 14000, quotedPrice: 25000, msrp: 30000, shippingCost: 2500, leadTime: "2-3 weeks", status: "current", marginAmount: 11000, marginPercent: 44.0 },
       { id: "LI-021", productName: "Memoirs Pedestal Sink", sku: "K-2258-8-0", brand: "Kohler", quantity: 1, dealerCost: 12000, quotedPrice: 22000, msrp: 26000, shippingCost: 2000, leadTime: "2-3 weeks", status: "current", marginAmount: 10000, marginPercent: 45.5 },
@@ -841,7 +896,6 @@ export const SAMPLE_PIPELINE: PipelineDeal[] = [
     paymentStructure: "fifty-fifty",
     deliveryStrategy: "consolidate",
     deliveryAddress: "Calle Correo 18, San Miguel de Allende",
-    fulfillmentStage: "issue",
     lineItems: [
       { id: "LI-030", productName: "Litze Single Handle Faucet", sku: "65035LF-NK", brand: "Brizo", finish: "Brilliance Luxe Nickel", quantity: 1, dealerCost: 12000, quotedPrice: 20000, msrp: 24000, shippingCost: 1200, leadTime: "3-4 weeks", status: "current", marginAmount: 8000, marginPercent: 40.0 },
       { id: "LI-031", productName: "Drake Elongated Toilet", sku: "CST776CEG#01", brand: "TOTO", quantity: 1, dealerCost: 10000, quotedPrice: 17000, msrp: 20000, shippingCost: 2500, leadTime: "2-3 weeks", status: "current", marginAmount: 7000, marginPercent: 41.2 },

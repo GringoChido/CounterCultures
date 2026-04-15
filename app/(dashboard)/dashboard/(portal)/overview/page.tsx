@@ -42,16 +42,11 @@ import {
   SAMPLE_PIPELINE,
   SAMPLE_ACTIVITIES,
   SAMPLE_CAMPAIGNS,
+  SAMPLE_REVENUE_TREND,
+  CLOSED_STAGES,
 } from "@/app/lib/sample-dashboard-data";
 
-const revenueData = [
-  { month: "Oct", revenue: 280000 },
-  { month: "Nov", revenue: 420000 },
-  { month: "Dec", revenue: 350000 },
-  { month: "Jan", revenue: 480000 },
-  { month: "Feb", revenue: 520000 },
-  { month: "Mar", revenue: 320000 },
-];
+const revenueData = SAMPLE_REVENUE_TREND;
 
 const leadSourceData = [
   { name: "Showroom", value: 35, color: "#B87333" },
@@ -137,7 +132,7 @@ const OverviewPage = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [recentLeads, setRecentLeads] = useState<any[]>(SAMPLE_LEADS.slice(0, 5));
   const [topDeals, setTopDeals] = useState(
-    SAMPLE_PIPELINE.filter((d) => !["closed-won", "closed-lost", "won", "lost"].includes(d.stage)).slice(0, 4)
+    SAMPLE_PIPELINE.filter((d) => !CLOSED_STAGES.includes(d.stage)).slice(0, 4)
   );
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [recentActivitiesData, setRecentActivitiesData] = useState<any[]>(SAMPLE_ACTIVITIES);
@@ -205,7 +200,7 @@ const OverviewPage = () => {
       {/* Greeting */}
       <div>
         <h2 className="text-2xl font-bold text-dash-text">
-          {greeting}, Roger
+          {greeting}
         </h2>
         <p className="text-sm text-dash-text-secondary mt-1">{today}</p>
       </div>

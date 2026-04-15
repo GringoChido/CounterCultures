@@ -1,18 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, DollarSign, Mail, Share2, Loader2 } from "lucide-react";
+import { Eye, BarChart3, Clock, Share2, Loader2 } from "lucide-react";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from "recharts";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { ChartCard } from "@/app/(dashboard)/components/chart-card";
 
-const fallbackLeadsOverTime = [
-  { month: "Oct", leads: 42 },
-  { month: "Nov", leads: 58 },
-  { month: "Dec", leads: 35 },
-  { month: "Jan", leads: 67 },
-  { month: "Feb", leads: 72 },
-  { month: "Mar", leads: 64 },
+const fallbackVisitorsOverTime = [
+  { month: "Oct", visitors: 4200 },
+  { month: "Nov", visitors: 5800 },
+  { month: "Dec", visitors: 3500 },
+  { month: "Jan", visitors: 6700 },
+  { month: "Feb", visitors: 7200 },
+  { month: "Mar", visitors: 6400 },
 ];
 
 const channelPerformance = [
@@ -32,8 +32,8 @@ const campaignMetrics = [
 ];
 
 const MarketingAnalyticsPage = () => {
-  const [leadsOverTime, setLeadsOverTime] = useState(fallbackLeadsOverTime);
-  const [kpis, setKpis] = useState({ leadsGenerated: "72", costPerLead: "$32.80", emailOpenRate: "49.3%", socialEngagement: "4.8%" });
+  const [visitorsOverTime, setVisitorsOverTime] = useState(fallbackVisitorsOverTime);
+  const [kpis, setKpis] = useState({ uniqueVisitors: "6,400", bounceRate: "42.3%", avgSession: "2:45", conversionRate: "4.8%" });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -46,18 +46,18 @@ const MarketingAnalyticsPage = () => {
           if (metrics.length > 0) {
             const chartData = metrics.map((m) => ({
               month: m.date || "",
-              leads: parseInt(m.unique_visitors) || 0,
+              visitors: parseInt(m.unique_visitors) || 0,
             }));
-            if (chartData.some((d) => d.leads > 0)) {
-              setLeadsOverTime(chartData);
+            if (chartData.some((d) => d.visitors > 0)) {
+              setVisitorsOverTime(chartData);
             }
             const latest = metrics[metrics.length - 1];
             if (latest.website_visits) {
               setKpis({
-                leadsGenerated: latest.unique_visitors || "0",
-                costPerLead: "$" + (parseFloat(latest.bounce_rate) || 0).toFixed(1),
-                emailOpenRate: latest.avg_session || "0",
-                socialEngagement: latest.conversion_rate ? `${latest.conversion_rate}%` : "0%",
+                uniqueVisitors: parseInt(latest.unique_visitors || "0").toLocaleString(),
+                bounceRate: latest.bounce_rate ? `${latest.bounce_rate}%` : "0%",
+                avgSession: latest.avg_session || "0:00",
+                conversionRate: latest.conversion_rate ? `${latest.conversion_rate}%` : "0%",
               });
             }
           }
@@ -87,16 +87,16 @@ const MarketingAnalyticsPage = () => {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KPICard label="Leads Generated" value={kpis.leadsGenerated} icon={Users} accentColor="bg-brand-copper" />
-        <KPICard label="Cost per Lead" value={kpis.costPerLead} icon={DollarSign} accentColor="bg-status-won" />
-        <KPICard label="Email Open Rate" value={kpis.emailOpenRate} icon={Mail} accentColor="bg-brand-sage" />
-        <KPICard label="Social Engagement" value={kpis.socialEngagement} icon={Share2} accentColor="bg-brand-terracotta" />
+        <KPICard label="Unique Visitors" value={kpis.uniqueVisitors} icon={Eye} accentColor="bg-brand-copper" />
+        <KPICard label="Bounce Rate" value={kpis.bounceRate} icon={BarChart3} accentColor="bg-status-won" />
+        <KPICard label="Avg Session" value={kpis.avgSession} icon={Clock} accentColor="bg-brand-sage" />
+        <KPICard label="Conversion Rate" value={kpis.conversionRate} icon={Share2} accentColor="bg-brand-terracotta" />
       </div>
 
-      <ChartCard title="Leads Over Time" subtitle="Monthly lead generation">
+      <ChartCard title="Website Visitors" subtitle="Monthly unique visitors">
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={leadsOverTime}>
+            <LineChart data={visitorsOverTime}>
               <XAxis
                 dataKey="month"
                 axisLine={false}
@@ -109,12 +109,12 @@ const MarketingAnalyticsPage = () => {
                 tick={{ fontSize: 11, fill: "#6B7280" }}
               />
               <Tooltip
-                formatter={(value) => [value, "Leads"]}
+                formatter={(value) => [Number(value).toLocaleString(), "Visitors"]}
                 contentStyle={{ borderRadius: "8px", border: "1px solid #E5E7EB", fontSize: "12px" }}
               />
               <Line
                 type="monotone"
-                dataKey="leads"
+                dataKey="visitors"
                 stroke="#B87333"
                 strokeWidth={2}
                 dot={{ fill: "#B87333", r: 4 }}

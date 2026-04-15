@@ -42,12 +42,16 @@ import {
   Shield,
 } from "lucide-react";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
+import { PipelineJourneyPlayer } from "@/app/(dashboard)/components/pipeline-journey-player";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
 import { DocumentGenerator } from "@/app/(dashboard)/components/document-generator";
 import { SendDialog } from "@/app/(dashboard)/components/send-dialog";
 import { PreviewPanel, type PreviewFile } from "@/app/(dashboard)/components/preview-panel";
 import {
   SAMPLE_PIPELINE,
+  LOST_STAGES,
+  CLOSED_STAGES,
+  getJourneyPhaseIndex,
   type PipelineDeal,
   type PipelineStage,
   type LostReason,
@@ -63,8 +67,6 @@ import {
   calculateDealFinancials,
   calculateStripeFees,
   getDealCompletionChecklist,
-  generatePOsFromLineItems,
-  checkOverduePayments,
 } from "@/app/lib/deal-automation";
 import { SAMPLE_TRAFICOS } from "@/app/lib/sample-customs-data";
 import { useActivityStore } from "@/app/lib/stores/activity-store";
@@ -128,7 +130,7 @@ const opsStages: PipelineStage[] = [
 
 const stages: PipelineStage[] = [...salesStages, ...opsStages];
 
-const lostStages: PipelineStage[] = ["closed-lost", "lost"];
+const lostStages: PipelineStage[] = LOST_STAGES;
 
 const lostReasonOptions: { value: LostReason; label: string }[] = [
   { value: "price", label: "Price too high" },
@@ -363,19 +365,17 @@ const PipelinePage = () => {
   const stageValue = (stage: PipelineStage) =>
     dealsByStage(stage).reduce((sum, d) => sum + d.value, 0);
 
-  const totalPipeline = deals
-    .filter(
-      (d) => !["closed-won", "closed-lost", "won", "lost"].includes(d.stage)
-    )
-    .reduce((sum, d) => sum + d.value, 0);
+  const activeDeals = deals.filter((d) => !CLOSED_STAGES.includes(d.stage));
+  const totalPipeline = activeDeals.reduce((sum, d) => sum + d.value, 0);
   const wonValue = deals
     .filter((d) => d.stage === "closed-won" || d.stage === "won")
     .reduce((sum, d) => sum + d.value, 0);
-  const weightedValue = deals
-    .filter(
-      (d) => !["closed-won", "closed-lost", "won", "lost"].includes(d.stage)
-    )
-    .reduce((sum, d) => sum + d.value * (d.probability / 100), 0);
+  const weightedValue = activeDeals.reduce(
+    (sum, d) => sum + d.value * (d.probability / 100), 0
+  );
+
+  // Top deal for Pipeline Journey — selected deal takes priority, else highest-value active deal
+  const journeyDeal = selectedDeal ?? activeDeals.sort((a, b) => b.value - a.value)[0] ?? null;
 
   // Fetch documents for selected deal
   const fetchDealDocs = useCallback(async (dealId: string) => {
@@ -430,21 +430,27 @@ const PipelinePage = () => {
       return;
     }
 
+    const movedDeal = deals.find((d) => d.id === active.id);
+    const oldStage = movedDeal?.stage;
     setDeals((prev) =>
       prev.map((d) => {
         if (d.id !== active.id) return d;
-        const updated = { ...d, stage: targetStage };
-        // When a deal is won, also set its fulfillment stage
-        if (targetStage === "won" || targetStage === "closed-won") {
-          updated.fulfillmentStage = "quote-approved";
-        }
-        return updated;
+        return { ...d, stage: targetStage };
       })
     );
+    if (movedDeal && oldStage && oldStage !== targetStage) {
+      addActivity({
+        type: "deal",
+        description: `Moved "${movedDeal.name}" from ${stageConfig[oldStage].label} → ${stageConfig[targetStage].label}`,
+        contactName: movedDeal.contactName,
+        dealId: movedDeal.id,
+      });
+    }
   };
 
   const confirmLostDeal = () => {
     if (!pendingLostDeal || !selectedLostReason) return;
+    const lostDeal = deals.find((d) => d.id === pendingLostDeal.dealId);
     setDeals((prev) =>
       prev.map((d) =>
         d.id === pendingLostDeal.dealId
@@ -457,6 +463,14 @@ const PipelinePage = () => {
           : d
       )
     );
+    if (lostDeal) {
+      addActivity({
+        type: "deal",
+        description: `Marked "${lostDeal.name}" as ${stageConfig[pendingLostDeal.targetStage].label} — ${selectedLostReason}`,
+        contactName: lostDeal.contactName,
+        dealId: lostDeal.id,
+      });
+    }
     setLostModalOpen(false);
     setPendingLostDeal(null);
     setSelectedLostReason(null);
@@ -504,14 +518,18 @@ const PipelinePage = () => {
         />
         <KPICard
           label="Active Deals"
-          value={String(
-            deals.filter(
-              (d) =>
-                !["closed-won", "closed-lost", "won", "lost"].includes(d.stage)
-            ).length
-          )}
+          value={String(activeDeals.length)}
         />
       </div>
+
+      {/* Deal Journey — animated pipeline visualization */}
+      <PipelineJourneyPlayer
+        dealLabel={journeyDeal?.name}
+        dealId={journeyDeal?.id}
+        clientName={journeyDeal?.contactName}
+        dealValue={journeyDeal ? formatCurrency(journeyDeal.value) : undefined}
+        targetPhase={journeyDeal ? getJourneyPhaseIndex(journeyDeal.stage) : undefined}
+      />
 
       {/* View Toggle + Add Deal */}
       <div className="flex items-center justify-between">
@@ -1619,7 +1637,15 @@ const PipelinePage = () => {
         customerEmail=""
         dealName={selectedDeal?.name}
         onSent={() => {
-          if (selectedDeal) fetchDealDocs(selectedDeal.id);
+          if (selectedDeal) {
+            fetchDealDocs(selectedDeal.id);
+            addActivity({
+              type: "email",
+              description: `Sent ${sendDocType || "document"} (${sendDocId}) to ${selectedDeal.contactName}`,
+              contactName: selectedDeal.contactName,
+              dealId: selectedDeal.id,
+            });
+          }
         }}
       />
 

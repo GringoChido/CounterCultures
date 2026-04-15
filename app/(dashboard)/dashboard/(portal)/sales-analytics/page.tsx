@@ -5,15 +5,9 @@ import { DollarSign, Target, TrendingUp, Award, Loader2 } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { ChartCard } from "@/app/(dashboard)/components/chart-card";
+import { SAMPLE_REVENUE_TREND } from "@/app/lib/sample-dashboard-data";
 
-const fallbackMonthlyRevenue = [
-  { month: "Oct", revenue: 285000 },
-  { month: "Nov", revenue: 420000 },
-  { month: "Dec", revenue: 355000 },
-  { month: "Jan", revenue: 490000 },
-  { month: "Feb", revenue: 530000 },
-  { month: "Mar", revenue: 340000 },
-];
+const fallbackMonthlyRevenue = SAMPLE_REVENUE_TREND;
 
 const topProducts = [
   { name: "Hand-Hammered Oval Basin", units: 24, revenue: 216000 },

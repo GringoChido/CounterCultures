@@ -43,7 +43,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "Overview", href: "/dashboard/overview", icon: LayoutDashboard },
   { label: "Weekly Review", href: "/dashboard/weekly-review", icon: CalendarCheck, section: "Sales" },
-  { label: "Leads", href: "/dashboard/leads", icon: Users, badge: 2 },
+  { label: "Leads", href: "/dashboard/leads", icon: Users },
   { label: "Pipeline", href: "/dashboard/pipeline", icon: Kanban },
   { label: "WhatsApp", href: "/dashboard/whatsapp", icon: MessageCircle },
   { label: "Content Calendar", href: "/dashboard/content-calendar", icon: CalendarDays, section: "Marketing" },
@@ -60,7 +60,7 @@ const navItems: NavItem[] = [
   { label: "Shipments", href: "/dashboard/shipments", icon: Truck },
   { label: "Customs", href: "/dashboard/customs", icon: FileCheck },
   { label: "Products", href: "/dashboard/products", icon: Package },
-  { label: "Trade Program", href: "/dashboard/trade-program", icon: Handshake, badge: 2 },
+  { label: "Trade Program", href: "/dashboard/trade-program", icon: Handshake },
   { label: "Drive", href: "/dashboard/drive", icon: FolderOpen },
   { label: "Settings", href: "/dashboard/settings", icon: Settings, section: "System" },
 ];

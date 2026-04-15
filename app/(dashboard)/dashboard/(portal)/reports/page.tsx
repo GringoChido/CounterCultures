@@ -15,7 +15,9 @@ import {
   AlertTriangle,
   Loader2,
 } from "lucide-react";
-import { differenceInDays, parseISO } from "date-fns";
+import { differenceInDays, parseISO, format } from "date-fns";
+import { toast } from "sonner";
+import { CLOSED_STAGES, WON_STAGES } from "@/app/lib/sample-dashboard-data";
 
 // ---------------------------------------------------------------------------
 // Types (matching API record shapes)
@@ -71,8 +73,8 @@ const parseNum = (val: string): number => {
   return isNaN(n) ? 0 : n;
 };
 
-const closedStages = ["closed-won", "closed-lost", "won", "lost", "complete"];
-const wonStages = ["closed-won", "won", "complete"];
+const closedStages: string[] = CLOSED_STAGES;
+const wonStages: string[] = WON_STAGES;
 
 // ---------------------------------------------------------------------------
 // Report cards (static UI — these describe future capabilities)
@@ -319,6 +321,33 @@ const ReportsPage = () => {
   const passCount = checklist.filter((c) => c.pass).length;
   const healthScore = Math.round((passCount / checklist.length) * 100);
 
+  const generateReport = (reportName: string) => {
+    const activeDeals = deals.filter((d) => !closedStages.includes(d.stage));
+    const wonDeals = deals.filter((d) => wonStages.includes(d.stage));
+    const pipelineValue = activeDeals.reduce((s, d) => s + parseNum(d.value), 0);
+    const wonValue = wonDeals.reduce((s, d) => s + parseNum(d.value), 0);
+    toast.success(`${reportName} generated`, {
+      description: `${activeDeals.length} active deals ($${(pipelineValue / 1000).toFixed(0)}K pipeline) · ${wonDeals.length} won ($${(wonValue / 1000).toFixed(0)}K) · ${leads.length} leads · ${campaigns.length} campaigns`,
+      duration: 6000,
+    });
+  };
+
+  const downloadReport = (reportName: string) => {
+    const rows = [
+      ["Deal", "Company", "Stage", "Value", "Probability", "Expected Close", "Source"],
+      ...deals.map((d) => [d.name, d.company, d.stage, d.value, d.probability, d.expected_close, d.source]),
+    ];
+    const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${reportName.toLowerCase().replace(/\s+/g, "-")}-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`${reportName} downloaded`);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -407,11 +436,17 @@ const ReportsPage = () => {
                     {report.description}
                   </p>
                   <div className="flex items-center gap-2 mt-4">
-                    <button className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-copper text-white rounded-lg text-xs font-medium hover:bg-brand-copper/90 transition-colors cursor-pointer">
+                    <button
+                      onClick={() => generateReport(report.name)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-copper text-white rounded-lg text-xs font-medium hover:bg-brand-copper/90 transition-colors cursor-pointer"
+                    >
                       <RefreshCw className="w-3 h-3" />
                       Generate
                     </button>
-                    <button className="flex items-center gap-1.5 px-3 py-1.5 border border-dash-border text-dash-text rounded-lg text-xs font-medium hover:bg-dash-bg transition-colors cursor-pointer">
+                    <button
+                      onClick={() => downloadReport(report.name)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 border border-dash-border text-dash-text rounded-lg text-xs font-medium hover:bg-dash-bg transition-colors cursor-pointer"
+                    >
                       <Download className="w-3 h-3" />
                       Download
                     </button>
