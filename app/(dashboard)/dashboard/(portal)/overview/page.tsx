@@ -5,7 +5,6 @@ import { format } from "date-fns";
 import {
   Users,
   DollarSign,
-  TrendingUp,
   Target,
   Eye,
   Share2,
@@ -18,17 +17,12 @@ import {
   CreditCard,
 } from "lucide-react";
 import {
-  AreaChart,
-  Area,
   BarChart,
   Bar,
   XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
 import Link from "next/link";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
@@ -41,20 +35,8 @@ import {
   SAMPLE_LEADS,
   SAMPLE_PIPELINE,
   SAMPLE_ACTIVITIES,
-  SAMPLE_CAMPAIGNS,
-  SAMPLE_REVENUE_TREND,
   CLOSED_STAGES,
 } from "@/app/lib/sample-dashboard-data";
-
-const revenueData = SAMPLE_REVENUE_TREND;
-
-const leadSourceData = [
-  { name: "Showroom", value: 35, color: "#B87333" },
-  { name: "Website", value: 25, color: "#C4725A" },
-  { name: "Referral", value: 20, color: "#7A8B6F" },
-  { name: "Instagram", value: 12, color: "#A89F91" },
-  { name: "WhatsApp", value: 8, color: "#D4C5A9" },
-];
 
 const pipelineByStage = [
   { stage: "Discovery", value: 1300000, count: 2 },
@@ -87,24 +69,6 @@ const formatCurrency = (value: number) => {
   if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
   return `$${value}`;
 };
-
-// Funnel data
-const funnelData = [
-  { name: "Email Campaigns", value: 145, color: "#635bff" },
-  { name: "New Leads", value: 12, color: "#B87333" },
-  { name: "Pipeline", value: 10400000, color: "#C4725A", isCurrency: true },
-  { name: "Quotes", value: 6, color: "#7A8B6F" },
-  { name: "Won", value: 320000, color: "#22c55e", isCurrency: true },
-];
-
-// 90-Day KPI Targets
-const ninetyDayTargets = [
-  { label: "New Contract Leads", target: 30, actual: 12 },
-  { label: "Meetings Booked", target: 20, actual: 8 },
-  { label: "Proposals Sent", target: 15, actual: 6 },
-  { label: "Deals Closed", target: 5, actual: 1 },
-  { label: "Revenue", target: 5000000, actual: 320000, format: "currency" as const },
-];
 
 interface OverviewData {
   totalLeads: number;
@@ -245,111 +209,19 @@ const OverviewPage = () => {
         )}
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Revenue Trend */}
-        <ChartCard title="Revenue Trend" subtitle="Last 6 months (MXN)">
-          <div className="h-52">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={revenueData}>
-                <defs>
-                  <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#B87333" stopOpacity={0.3} />
-                    <stop offset="100%" stopColor="#B87333" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#6B7280" }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#6B7280" }} tickFormatter={(v) => formatCurrency(v)} />
-                <Tooltip formatter={(value) => [`$${Number(value).toLocaleString()} MXN`, "Revenue"]} contentStyle={{ borderRadius: "8px", border: "1px solid #1E2028", backgroundColor: "#12141A", fontSize: "12px", color: "#E8E9ED" }} />
-                <Area type="monotone" dataKey="revenue" stroke="#B87333" strokeWidth={2} fill="url(#revenueGrad)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </ChartCard>
-
-        {/* Pipeline by Stage */}
-        <ChartCard title="Pipeline by Stage" subtitle="Active deals">
-          <div className="h-52">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={pipelineByStage} layout="vertical">
-                <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#6B7280" }} tickFormatter={(v) => formatCurrency(v)} />
-                <YAxis type="category" dataKey="stage" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#6B7280" }} width={80} />
-                <Tooltip formatter={(value) => [`$${Number(value).toLocaleString()} MXN`, "Value"]} contentStyle={{ borderRadius: "8px", border: "1px solid #1E2028", backgroundColor: "#12141A", fontSize: "12px", color: "#E8E9ED" }} />
-                <Bar dataKey="value" fill="#B87333" radius={[0, 4, 4, 0]} barSize={20} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </ChartCard>
-
-        {/* Lead Sources */}
-        <ChartCard title="Lead Sources" subtitle="This month">
-          <div className="h-52 flex items-center">
-            <ResponsiveContainer width="50%" height="100%">
-              <PieChart>
-                <Pie data={leadSourceData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} dataKey="value" strokeWidth={0}>
-                  {leadSourceData.map((entry, i) => (
-                    <Cell key={i} fill={entry.color} />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="flex-1 space-y-2">
-              {leadSourceData.map((source) => (
-                <div key={source.name} className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: source.color }} />
-                  <span className="text-xs text-dash-text-secondary">{source.name}</span>
-                  <span className="text-xs font-medium text-dash-text ml-auto">{source.value}%</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </ChartCard>
-      </div>
-
-      {/* Marketing to Revenue Funnel */}
-      <div className="bg-dash-surface rounded-xl border border-dash-border p-5">
-        <h3 className="text-sm font-semibold text-dash-text mb-4">Marketing to Revenue Funnel</h3>
-        <div className="flex items-center justify-between overflow-x-auto gap-2">
-          {funnelData.map((step, i) => (
-            <div key={step.name} className="flex items-center gap-2 min-w-0">
-              <div className="text-center min-w-[100px]">
-                <p className="text-lg font-bold text-dash-text" style={{ color: step.color }}>
-                  {step.isCurrency ? formatCurrency(step.value) : step.value.toLocaleString()}
-                </p>
-                <p className="text-[10px] text-dash-text-secondary mt-1">{step.name}</p>
-              </div>
-              {i < funnelData.length - 1 && (
-                <ArrowRight className="w-4 h-4 text-dash-text-secondary shrink-0" />
-              )}
-            </div>
-          ))}
+      {/* Pipeline by Stage */}
+      <ChartCard title="Pipeline by Stage" subtitle="Active deals">
+        <div className="h-52">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={pipelineByStage} layout="vertical">
+              <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#6B7280" }} tickFormatter={(v) => formatCurrency(v)} />
+              <YAxis type="category" dataKey="stage" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: "#6B7280" }} width={80} />
+              <Tooltip formatter={(value) => [`$${Number(value).toLocaleString()} MXN`, "Value"]} contentStyle={{ borderRadius: "8px", border: "1px solid #1E2028", backgroundColor: "#12141A", fontSize: "12px", color: "#E8E9ED" }} />
+              <Bar dataKey="value" fill="#B87333" radius={[0, 4, 4, 0]} barSize={20} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
-      </div>
-
-      {/* 90-Day KPI Targets */}
-      <div className="bg-dash-surface rounded-xl border border-dash-border p-5">
-        <h3 className="text-sm font-semibold text-dash-text mb-4">90-Day Growth Targets</h3>
-        <div className="space-y-4">
-          {ninetyDayTargets.map((kpi) => {
-            const pct = Math.round((kpi.actual / kpi.target) * 100);
-            const barColor = pct >= 75 ? "bg-emerald-500" : pct >= 50 ? "bg-amber-500" : "bg-red-500";
-            return (
-              <div key={kpi.label}>
-                <div className="flex items-center justify-between text-sm mb-1.5">
-                  <span className="text-dash-text-secondary">{kpi.label}</span>
-                  <span className="text-dash-text font-medium">
-                    {kpi.format === "currency" ? formatCurrency(kpi.actual) : kpi.actual} / {kpi.format === "currency" ? formatCurrency(kpi.target) : kpi.target}
-                    <span className="text-dash-text-secondary ml-2">({pct}%)</span>
-                  </span>
-                </div>
-                <div className="w-full bg-dash-bg rounded-full h-2">
-                  <div className={`${barColor} h-2 rounded-full transition-all`} style={{ width: `${Math.min(pct, 100)}%` }} />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      </ChartCard>
 
       {/* Bottom Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
