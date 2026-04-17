@@ -55,3 +55,6 @@ CC-*.md
 *-PROMPT.md
 /Untold_Works_*.pdf
 *.bak
+
+# Raw image sources awaiting migration to public/images/ — kept local only
+/public/Assets/home-page/
