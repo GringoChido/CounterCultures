@@ -52,3 +52,6 @@ EXPEDIENTE/
 *.docx
 PROMPT-*.md
 CC-*.md
+*-PROMPT.md
+/Untold_Works_*.pdf
+*.bak
