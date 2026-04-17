@@ -16,14 +16,16 @@ const PROTECTED_API_PREFIXES = [
 const isProtectedApi = (pathname: string) =>
   PROTECTED_API_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
-const isDashboardPage = (pathname: string) =>
-  pathname.startsWith("/dashboard") && pathname !== "/dashboard/login";
+const isDashboardPath = (pathname: string) => pathname.startsWith("/dashboard");
 
 export default function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Auth check for protected dashboard pages
-  if (isDashboardPage(pathname)) {
+  // Dashboard routes bypass next-intl entirely (they live outside [locale])
+  if (isDashboardPath(pathname)) {
+    if (pathname === "/dashboard/login") {
+      return NextResponse.next();
+    }
     const session = req.cookies.get("cc-portal-session")?.value;
     if (!validateSessionFromCookie(session)) {
       return NextResponse.redirect(new URL("/dashboard/login", req.url));
