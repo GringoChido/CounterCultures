@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Wifi, WifiOff } from "lucide-react";
+import { WifiOff } from "lucide-react";
 import { SocialTabs } from "@/app/(dashboard)/components/social/social-tabs";
+import { ContentCalendarView } from "@/app/(dashboard)/components/social/content-calendar-view";
 import { SocialFeed } from "@/app/(dashboard)/components/social/social-feed";
 import { PostComposer } from "@/app/(dashboard)/components/social/post-composer";
 import { CommentsPanel } from "@/app/(dashboard)/components/social/comments-panel";
@@ -10,9 +11,8 @@ import { AnalyticsDashboard } from "@/app/(dashboard)/components/social/analytic
 import { samplePosts, sampleComments, sampleAnalytics } from "@/app/lib/social/sample-data";
 
 const SocialPage = () => {
-  const [activeTab, setActiveTab] = useState("feed");
+  const [activeTab, setActiveTab] = useState("calendar");
 
-  // Using sample data — in production these would come from SWR/API calls
   const posts = samplePosts;
   const comments = sampleComments;
   const igAnalytics = sampleAnalytics.instagram_30d;
@@ -20,12 +20,11 @@ const SocialPage = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-dash-text">Social Media Hub</h2>
+          <h2 className="text-2xl font-bold text-dash-text">Social Hub</h2>
           <p className="text-sm text-dash-text-secondary mt-1">
-            Create, publish, engage, and track — all in one place
+            Plan, publish, engage, and track — calendar, feed, comments and analytics in one place
           </p>
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-lg">
@@ -35,11 +34,10 @@ const SocialPage = () => {
         </div>
       </div>
 
-      {/* Tabs */}
       <SocialTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* Tab Content */}
       <div>
+        {activeTab === "calendar" && <ContentCalendarView />}
         {activeTab === "feed" && <SocialFeed posts={posts} />}
         {activeTab === "create" && <PostComposer />}
         {activeTab === "comments" && <CommentsPanel comments={comments} />}

@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { Rss, PenSquare, MessageCircle, BarChart3 } from "lucide-react";
+import { CalendarDays, Rss, PenSquare, MessageCircle, BarChart3 } from "lucide-react";
 
 interface Tab {
   id: string;
@@ -10,6 +9,7 @@ interface Tab {
 }
 
 const tabs: Tab[] = [
+  { id: "calendar", label: "Calendar", icon: CalendarDays },
   { id: "feed", label: "Feed", icon: Rss },
   { id: "create", label: "Create Post", icon: PenSquare },
   { id: "comments", label: "Comments", icon: MessageCircle },
