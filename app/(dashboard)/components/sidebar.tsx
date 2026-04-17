@@ -29,7 +29,7 @@ import {
   CreditCard,
   Wallet,
   Truck,
-  FileCheck,
+  Award,
 } from "lucide-react";
 
 interface NavItem {
@@ -38,29 +38,30 @@ interface NavItem {
   icon: React.ElementType;
   section?: string;
   badge?: number;
+  comingSoon?: boolean;
 }
 
 const navItems: NavItem[] = [
-  { label: "Overview", href: "/dashboard/overview", icon: LayoutDashboard },
-  { label: "Weekly Review", href: "/dashboard/weekly-review", icon: CalendarCheck, section: "Sales" },
-  { label: "Leads", href: "/dashboard/leads", icon: Users },
+  { label: "Today", href: "/dashboard/overview", icon: LayoutDashboard, section: "Home" },
+  { label: "Weekly Review", href: "/dashboard/weekly-review", icon: CalendarCheck },
+  { label: "Leads", href: "/dashboard/leads", icon: Users, section: "Leads & Deals" },
   { label: "Pipeline", href: "/dashboard/pipeline", icon: Kanban },
   { label: "WhatsApp", href: "/dashboard/whatsapp", icon: MessageCircle },
-  { label: "Content Calendar", href: "/dashboard/content-calendar", icon: CalendarDays, section: "Marketing" },
+  { label: "Trade Program", href: "/dashboard/trade-program", icon: Handshake },
+  { label: "Brands", href: "/dashboard/brands", icon: Award, section: "Catalog", comingSoon: true },
+  { label: "Products", href: "/dashboard/products", icon: Package },
+  { label: "Shipments & Customs", href: "/dashboard/shipments", icon: Truck },
+  { label: "Email Campaigns", href: "/dashboard/email-campaigns", icon: Mail, section: "Marketing" },
+  { label: "Content Calendar", href: "/dashboard/content-calendar", icon: CalendarDays },
   { label: "Social Media", href: "/dashboard/social", icon: Share2 },
-  { label: "Email Campaigns", href: "/dashboard/email-campaigns", icon: Mail },
   { label: "Blog Manager", href: "/dashboard/blog-manager", icon: FileText },
-  { label: "Website Analytics", href: "/dashboard/website-analytics", icon: BarChart3, section: "Analytics" },
-  { label: "Sales Analytics", href: "/dashboard/sales-analytics", icon: TrendingUp },
+  { label: "Pipeline & Sales", href: "/dashboard/sales-analytics", icon: TrendingUp, section: "Insights" },
+  { label: "Website Analytics", href: "/dashboard/website-analytics", icon: BarChart3 },
   { label: "Marketing Analytics", href: "/dashboard/marketing-analytics", icon: PieChart },
   { label: "Reports", href: "/dashboard/reports", icon: ClipboardList },
   { label: "Odoo", href: "/dashboard/odoo", icon: Database, section: "Operations" },
   { label: "Finance", href: "/dashboard/finance", icon: Wallet },
   { label: "Stripe", href: "/dashboard/stripe", icon: CreditCard },
-  { label: "Shipments", href: "/dashboard/shipments", icon: Truck },
-  { label: "Customs", href: "/dashboard/customs", icon: FileCheck },
-  { label: "Products", href: "/dashboard/products", icon: Package },
-  { label: "Trade Program", href: "/dashboard/trade-program", icon: Handshake },
   { label: "Drive", href: "/dashboard/drive", icon: FolderOpen },
   { label: "Settings", href: "/dashboard/settings", icon: Settings, section: "System" },
 ];
@@ -151,6 +152,11 @@ const Sidebar = ({ mobileOpen = false, onMobileClose }: SidebarProps) => {
                 {!collapsed && (
                   <>
                     <span className="flex-1">{item.label}</span>
+                    {item.comingSoon && (
+                      <span className="text-[9px] uppercase tracking-wider text-brand-copper/80 bg-brand-copper/10 px-1.5 py-0.5 rounded">
+                        Soon
+                      </span>
+                    )}
                     {item.badge && item.badge > 0 && (
                       <span className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-brand-terracotta text-white text-[10px] font-bold px-1">
                         {item.badge}

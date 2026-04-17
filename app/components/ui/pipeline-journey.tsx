@@ -36,7 +36,7 @@ const BRAND = {
 const PHASES = [
   { id: "discovery", title: "Discovery", count: 3, accent: BRAND.copper },
   { id: "design", title: "Design & Scope", count: 2, accent: "#8B5CF6" },
-  { id: "close", title: "Close", count: 1, accent: BRAND.terracotta },
+  { id: "close", title: "Proposal / Negotiation", count: 1, accent: BRAND.terracotta },
   { id: "fulfillment", title: "Fulfillment", count: 2, accent: BRAND.sage },
   { id: "delivered", title: "Delivered", count: 4, accent: "#10B981" },
 ];

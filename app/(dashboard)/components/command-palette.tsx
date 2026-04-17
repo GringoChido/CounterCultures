@@ -23,6 +23,8 @@ import {
   User,
   DollarSign,
   ArrowRight,
+  Award,
+  Truck,
 } from "lucide-react";
 import { SAMPLE_LEADS, SAMPLE_PIPELINE } from "@/app/lib/sample-dashboard-data";
 import type { Product } from "@/app/lib/types";
@@ -89,20 +91,22 @@ interface SearchItem {
 }
 
 const pageItems: SearchItem[] = [
-  { id: "overview", label: "Overview", description: "Main dashboard", category: "page", href: "/dashboard/overview", icon: LayoutDashboard, keywords: ["home", "dashboard", "main"] },
+  { id: "overview", label: "Today", description: "Daily action view", category: "page", href: "/dashboard/overview", icon: LayoutDashboard, keywords: ["home", "dashboard", "main", "overview"] },
   { id: "leads", label: "Leads", description: "Manage leads & contacts", category: "page", href: "/dashboard/leads", icon: Users, keywords: ["contacts", "prospects"] },
   { id: "pipeline", label: "Pipeline", description: "Sales pipeline board", category: "page", href: "/dashboard/pipeline", icon: Kanban, keywords: ["deals", "kanban", "sales"] },
   { id: "whatsapp", label: "WhatsApp", description: "Messaging inbox", category: "page", href: "/dashboard/whatsapp", icon: MessageCircle, keywords: ["messages", "chat"] },
+  { id: "trade", label: "Trade Program", description: "Trade partner management", category: "page", href: "/dashboard/trade-program", icon: Handshake, keywords: ["partners", "wholesale", "discount"] },
+  { id: "brands", label: "Brands", description: "73 brand catalog (coming Week 2)", category: "page", href: "/dashboard/brands", icon: Award, keywords: ["brands", "catalog", "kohler", "dornbracht", "toto"] },
+  { id: "products", label: "Products", description: "Product catalog", category: "page", href: "/dashboard/products", icon: Package, keywords: ["inventory", "catalog", "items"] },
+  { id: "shipments", label: "Shipments & Customs", description: "Shipment tracking, pedimentos, duties", category: "page", href: "/dashboard/shipments", icon: Truck, keywords: ["customs", "pedimento", "shipping", "import"] },
   { id: "calendar", label: "Content Calendar", description: "Schedule social posts", category: "page", href: "/dashboard/content-calendar", icon: CalendarDays, keywords: ["schedule", "posts", "social"] },
-  { id: "social", label: "Social Media Hub", description: "Create, engage, analyze", category: "page", href: "/dashboard/social", icon: Share2, keywords: ["instagram", "facebook", "posts", "analytics"] },
+  { id: "social", label: "Social Media", description: "Create, engage, analyze", category: "page", href: "/dashboard/social", icon: Share2, keywords: ["instagram", "facebook", "posts", "analytics"] },
   { id: "email", label: "Email Campaigns", description: "Manage email campaigns", category: "page", href: "/dashboard/email-campaigns", icon: Mail, keywords: ["newsletter", "drip", "marketing"] },
   { id: "blog", label: "Blog Manager", description: "Blog posts & content", category: "page", href: "/dashboard/blog-manager", icon: FileText, keywords: ["articles", "content", "writing"] },
+  { id: "sales-analytics", label: "Pipeline & Sales", description: "Revenue & deal metrics", category: "page", href: "/dashboard/sales-analytics", icon: TrendingUp, keywords: ["revenue", "deals", "performance", "sales analytics"] },
   { id: "web-analytics", label: "Website Analytics", description: "Traffic & performance", category: "page", href: "/dashboard/website-analytics", icon: BarChart3, keywords: ["traffic", "visitors", "pageviews"] },
-  { id: "sales-analytics", label: "Sales Analytics", description: "Revenue & metrics", category: "page", href: "/dashboard/sales-analytics", icon: TrendingUp, keywords: ["revenue", "deals", "performance"] },
   { id: "marketing-analytics", label: "Marketing Analytics", description: "Campaign performance", category: "page", href: "/dashboard/marketing-analytics", icon: PieChart, keywords: ["campaigns", "roi", "funnel"] },
   { id: "reports", label: "Reports", description: "Generate reports", category: "page", href: "/dashboard/reports", icon: ClipboardList, keywords: ["export", "download", "pdf"] },
-  { id: "products", label: "Products", description: "Product catalog", category: "page", href: "/dashboard/products", icon: Package, keywords: ["inventory", "catalog", "items"] },
-  { id: "trade", label: "Trade Program", description: "Trade partner management", category: "page", href: "/dashboard/trade-program", icon: Handshake, keywords: ["partners", "wholesale", "discount"] },
   { id: "drive", label: "Drive", description: "Files & documents", category: "page", href: "/dashboard/drive", icon: FolderOpen, keywords: ["files", "documents", "uploads"] },
   { id: "settings", label: "Settings", description: "Account & preferences", category: "page", href: "/dashboard/settings", icon: Settings, keywords: ["account", "profile", "integrations"] },
 ];
