@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { DollarSign, Target, TrendingUp, Award, Loader2 } from "lucide-react";
+import { DollarSign, Target, TrendingUp, Award, Loader2, Download } from "lucide-react";
+import { toast } from "sonner";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { ChartCard } from "@/app/(dashboard)/components/chart-card";
 import { SAMPLE_REVENUE_TREND } from "@/app/lib/sample-dashboard-data";
+import { downloadCsv } from "@/app/lib/csv-export";
 
 const fallbackMonthlyRevenue = SAMPLE_REVENUE_TREND;
 
@@ -80,9 +82,25 @@ const SalesAnalyticsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-dash-text">Sales Analytics</h2>
-        <p className="text-sm text-dash-text-secondary mt-1">Revenue performance and deal metrics</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-dash-text">Sales Analytics</h2>
+          <p className="text-sm text-dash-text-secondary mt-1">Revenue performance and deal metrics</p>
+        </div>
+        <button
+          onClick={() => {
+            downloadCsv(
+              "sales-analytics",
+              ["Month", "Revenue (MXN)"],
+              monthlyRevenue.map((m) => [m.month, m.revenue])
+            );
+            toast.success("Sales analytics exported");
+          }}
+          className="flex items-center gap-1.5 px-3 py-1.5 border border-dash-border text-dash-text rounded-lg text-xs font-medium hover:bg-dash-bg transition-colors cursor-pointer shrink-0"
+        >
+          <Download className="w-3.5 h-3.5" />
+          Export CSV
+        </button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

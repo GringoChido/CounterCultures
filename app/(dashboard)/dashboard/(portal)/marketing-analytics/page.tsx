@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Eye, BarChart3, Clock, Share2, Loader2 } from "lucide-react";
+import { Eye, BarChart3, Clock, Share2, Loader2, Download } from "lucide-react";
+import { toast } from "sonner";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from "recharts";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { ChartCard } from "@/app/(dashboard)/components/chart-card";
+import { downloadCsv } from "@/app/lib/csv-export";
 
 const fallbackVisitorsOverTime = [
   { month: "Oct", visitors: 4200 },
@@ -81,9 +83,25 @@ const MarketingAnalyticsPage = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-dash-text">Marketing Analytics</h2>
-        <p className="text-sm text-dash-text-secondary mt-1">Track marketing performance and lead generation</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-dash-text">Marketing Analytics</h2>
+          <p className="text-sm text-dash-text-secondary mt-1">Track marketing performance and lead generation</p>
+        </div>
+        <button
+          onClick={() => {
+            downloadCsv(
+              "marketing-analytics",
+              ["Month", "Unique Visitors"],
+              visitorsOverTime.map((m) => [m.month, m.visitors])
+            );
+            toast.success("Marketing analytics exported");
+          }}
+          className="flex items-center gap-1.5 px-3 py-1.5 border border-dash-border text-dash-text rounded-lg text-xs font-medium hover:bg-dash-bg transition-colors cursor-pointer shrink-0"
+        >
+          <Download className="w-3.5 h-3.5" />
+          Export CSV
+        </button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
