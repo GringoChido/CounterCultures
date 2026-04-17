@@ -15,7 +15,6 @@ import {
   BarChart3,
   TrendingUp,
   PieChart,
-  ClipboardList,
   Package,
   Handshake,
   FolderOpen,
@@ -106,7 +105,6 @@ const pageItems: SearchItem[] = [
   { id: "sales-analytics", label: "Pipeline & Sales", description: "Revenue & deal metrics", category: "page", href: "/dashboard/sales-analytics", icon: TrendingUp, keywords: ["revenue", "deals", "performance", "sales analytics"] },
   { id: "web-analytics", label: "Website Analytics", description: "Traffic & performance", category: "page", href: "/dashboard/website-analytics", icon: BarChart3, keywords: ["traffic", "visitors", "pageviews"] },
   { id: "marketing-analytics", label: "Marketing Analytics", description: "Campaign performance", category: "page", href: "/dashboard/marketing-analytics", icon: PieChart, keywords: ["campaigns", "roi", "funnel"] },
-  { id: "reports", label: "Reports", description: "Generate reports", category: "page", href: "/dashboard/reports", icon: ClipboardList, keywords: ["export", "download", "pdf"] },
   { id: "drive", label: "Drive", description: "Files & documents", category: "page", href: "/dashboard/drive", icon: FolderOpen, keywords: ["files", "documents", "uploads"] },
   { id: "settings", label: "Settings", description: "Account & preferences", category: "page", href: "/dashboard/settings", icon: Settings, keywords: ["account", "profile", "integrations"] },
 ];

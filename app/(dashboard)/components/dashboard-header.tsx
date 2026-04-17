@@ -21,7 +21,6 @@ const pageTitles: Record<string, string> = {
   "/dashboard/sales-analytics": "Pipeline & Sales",
   "/dashboard/website-analytics": "Website Analytics",
   "/dashboard/marketing-analytics": "Marketing Analytics",
-  "/dashboard/reports": "Reports",
   "/dashboard/odoo": "Odoo",
   "/dashboard/finance": "Finance",
   "/dashboard/stripe": "Stripe",

@@ -5,6 +5,8 @@ import {
   TrendingUp,
   AlertCircle,
   CheckCircle2,
+  XCircle,
+  AlertTriangle,
   ArrowRight,
   Mail,
   Target,
@@ -14,6 +16,7 @@ import {
   BarChart3,
   Loader2,
 } from "lucide-react";
+import { computeSalesHealth } from "@/app/lib/sales-health";
 import {
   format,
   differenceInDays,
@@ -252,6 +255,10 @@ const WeeklyReviewPage = () => {
       ? wonValue / wonDeals.length
       : 0;
 
+  const healthChecklist = computeSalesHealth(deals, leads, campaigns);
+  const healthPassCount = healthChecklist.filter((c) => c.pass).length;
+  const healthScore = Math.round((healthPassCount / healthChecklist.length) * 100);
+
   const targets = [
     {
       label: "Pipeline Value",
@@ -352,6 +359,54 @@ const WeeklyReviewPage = () => {
             <p className="text-xl font-bold text-dash-text">{kpi.value}</p>
           </div>
         ))}
+      </div>
+
+      {/* Sales Health Checklist */}
+      <div className="bg-dash-surface rounded-xl border border-dash-border p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <AlertTriangle
+              className={`w-4 h-4 ${healthScore >= 75 ? "text-emerald-400" : healthScore >= 50 ? "text-amber-400" : "text-red-400"}`}
+            />
+            <h3 className="text-sm font-semibold text-dash-text">
+              Sales Health Checklist
+            </h3>
+          </div>
+          <div className="flex items-center gap-2">
+            <span
+              className={`text-sm font-bold ${healthScore >= 75 ? "text-emerald-400" : healthScore >= 50 ? "text-amber-400" : "text-red-400"}`}
+            >
+              {healthScore}%
+            </span>
+            <span className="text-xs text-dash-text-secondary">
+              {healthPassCount}/{healthChecklist.length} passing
+            </span>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
+          {healthChecklist.map((item) => (
+            <div
+              key={item.label}
+              className="flex items-center justify-between py-2 border-b border-dash-border"
+            >
+              <div className="flex items-center gap-3">
+                {item.pass ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                ) : (
+                  <XCircle className="w-4 h-4 text-red-400 shrink-0" />
+                )}
+                <span
+                  className={`text-sm ${item.pass ? "text-dash-text" : "text-red-400"}`}
+                >
+                  {item.label}
+                </span>
+              </div>
+              <span className="text-xs text-dash-text-secondary">
+                {item.detail}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
