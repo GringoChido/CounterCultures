@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import createMiddleware from "next-intl/middleware";
 import { routing } from "@/app/i18n/routing";
-import { validateSessionFromCookie } from "@/app/lib/auth";
+import { validateSessionFromCookieEdge } from "@/app/lib/auth-edge";
 
 const intlMiddleware = createMiddleware(routing);
 
@@ -18,7 +18,7 @@ const isProtectedApi = (pathname: string) =>
 
 const isDashboardPath = (pathname: string) => pathname.startsWith("/dashboard");
 
-export default function middleware(req: NextRequest) {
+export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Dashboard routes bypass next-intl entirely (they live outside [locale])
@@ -27,7 +27,7 @@ export default function middleware(req: NextRequest) {
       return NextResponse.next();
     }
     const session = req.cookies.get("cc-portal-session")?.value;
-    if (!validateSessionFromCookie(session)) {
+    if (!(await validateSessionFromCookieEdge(session))) {
       return NextResponse.redirect(new URL("/dashboard/login", req.url));
     }
     return NextResponse.next();
@@ -36,7 +36,7 @@ export default function middleware(req: NextRequest) {
   // Auth check for protected API routes
   if (isProtectedApi(pathname)) {
     const session = req.cookies.get("cc-portal-session")?.value;
-    if (!validateSessionFromCookie(session)) {
+    if (!(await validateSessionFromCookieEdge(session))) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     return NextResponse.next();
