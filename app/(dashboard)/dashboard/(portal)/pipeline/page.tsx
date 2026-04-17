@@ -51,6 +51,8 @@ import {
   SAMPLE_PIPELINE,
   LOST_STAGES,
   CLOSED_STAGES,
+  SALES_PHASES,
+  getJourneyPhase,
   getJourneyPhaseIndex,
   type PipelineDeal,
   type PipelineStage,
@@ -362,8 +364,6 @@ const PipelinePage = () => {
 
   const dealsByStage = (stage: PipelineStage) =>
     deals.filter((d) => d.stage === stage);
-  const stageValue = (stage: PipelineStage) =>
-    dealsByStage(stage).reduce((sum, d) => sum + d.value, 0);
 
   const activeDeals = deals.filter((d) => !CLOSED_STAGES.includes(d.stage));
   const totalPipeline = activeDeals.reduce((sum, d) => sum + d.value, 0);
@@ -418,9 +418,29 @@ const PipelinePage = () => {
     if (!over) return;
 
     const overId = String(over.id);
-    const targetStage = stages.find(
-      (s) => s === overId || dealsByStage(s).some((d) => d.id === overId)
-    );
+    const movedDeal = deals.find((d) => d.id === active.id);
+
+    // Sales view: columns are phases (discovery / design / close).
+    // Resolve drop target: if dropped on a phase column or on a card in that phase,
+    // pick the phase's default stage unless the deal is already in this phase (reorder, no change).
+    let targetStage: PipelineStage | undefined;
+    if (pipelineView === "sales") {
+      const phase = SALES_PHASES.find(
+        (p) =>
+          p.id === overId ||
+          p.stages.some((s) =>
+            deals.some((d) => d.id === overId && d.stage === s)
+          )
+      );
+      if (phase && movedDeal) {
+        if (getJourneyPhase(movedDeal.stage) === phase.id) return;
+        targetStage = phase.defaultStage;
+      }
+    } else {
+      targetStage = stages.find(
+        (s) => s === overId || dealsByStage(s).some((d) => d.id === overId)
+      );
+    }
     if (!targetStage) return;
 
     if (lostStages.includes(targetStage)) {
@@ -430,7 +450,6 @@ const PipelinePage = () => {
       return;
     }
 
-    const movedDeal = deals.find((d) => d.id === active.id);
     const oldStage = movedDeal?.stage;
     setDeals((prev) =>
       prev.map((d) => {
@@ -494,7 +513,43 @@ const PipelinePage = () => {
     setSendDialogOpen(true);
   };
 
-  const visibleStages = pipelineView === "sales" ? salesStages : opsStages;
+  // Kanban columns — phase-grouped for Sales (3 cols), per-stage for Operations.
+  type KanbanColumn = {
+    id: string;
+    label: string;
+    accentClass: string;
+    deals: PipelineDeal[];
+    valueMxn: number;
+  };
+
+  const salesColumns: KanbanColumn[] = SALES_PHASES.map((phase) => {
+    const phaseDeals = deals.filter(
+      (d) =>
+        getJourneyPhase(d.stage) === phase.id &&
+        !CLOSED_STAGES.includes(d.stage)
+    );
+    return {
+      id: phase.id,
+      label: phase.label,
+      accentClass: stageConfig[phase.defaultStage].bgColor,
+      deals: phaseDeals,
+      valueMxn: phaseDeals.reduce((sum, d) => sum + d.value, 0),
+    };
+  });
+
+  const opsColumns: KanbanColumn[] = opsStages.map((stage) => {
+    const stageDeals = dealsByStage(stage);
+    return {
+      id: stage,
+      label: stageConfig[stage].label,
+      accentClass: stageConfig[stage].bgColor,
+      deals: stageDeals,
+      valueMxn: stageDeals.reduce((sum, d) => sum + d.value, 0),
+    };
+  });
+
+  const kanbanColumns: KanbanColumn[] =
+    pipelineView === "sales" ? salesColumns : opsColumns;
 
   return (
     <div className="space-y-6">
@@ -611,52 +666,45 @@ const PipelinePage = () => {
         <div className="overflow-x-auto pb-4">
           <div
             className="flex gap-4 min-h-[60vh]"
-            style={{ minWidth: `${visibleStages.length * 236}px` }}
+            style={{ minWidth: `${kanbanColumns.length * 236}px` }}
           >
-            {visibleStages.map((stage) => {
-              const config = stageConfig[stage];
-              const stageDeals = dealsByStage(stage);
-
-              return (
-                <div
-                  key={stage}
-                  className="bg-dash-bg rounded-xl p-3 min-w-[220px] flex-1"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`w-2 h-2 rounded-full ${config.bgColor}`}
-                      />
-                      <span className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
-                        {config.label}
-                      </span>
-                      <span className="text-[10px] bg-dash-border rounded-full px-1.5 py-0.5 text-dash-text-secondary">
-                        {stageDeals.length}
-                      </span>
-                    </div>
+            {kanbanColumns.map((col) => (
+              <div
+                key={col.id}
+                className="bg-dash-bg rounded-xl p-3 min-w-[220px] flex-1"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${col.accentClass}`} />
+                    <span className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
+                      {col.label}
+                    </span>
+                    <span className="text-[10px] bg-dash-border rounded-full px-1.5 py-0.5 text-dash-text-secondary">
+                      {col.deals.length}
+                    </span>
                   </div>
-                  <p className="text-xs text-dash-text-secondary mb-3">
-                    {formatCurrency(stageValue(stage))}
-                  </p>
-
-                  <SortableContext
-                    id={stage}
-                    items={stageDeals.map((d) => d.id)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    <div className="space-y-2 min-h-[100px]">
-                      {stageDeals.map((deal) => (
-                        <DealCard
-                          key={deal.id}
-                          deal={deal}
-                          onClick={() => setSelectedDeal(deal)}
-                        />
-                      ))}
-                    </div>
-                  </SortableContext>
                 </div>
-              );
-            })}
+                <p className="text-xs text-dash-text-secondary mb-3">
+                  {formatCurrency(col.valueMxn)}
+                </p>
+
+                <SortableContext
+                  id={col.id}
+                  items={col.deals.map((d) => d.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-2 min-h-[100px]">
+                    {col.deals.map((deal) => (
+                      <DealCard
+                        key={deal.id}
+                        deal={deal}
+                        onClick={() => setSelectedDeal(deal)}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </div>
+            ))}
           </div>
         </div>
 

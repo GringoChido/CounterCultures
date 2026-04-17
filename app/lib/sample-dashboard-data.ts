@@ -84,6 +84,42 @@ export function getJourneyPhaseIndex(stage: PipelineStage): number {
 }
 
 // ---------------------------------------------------------------------------
+// Sales Pipeline phase grouping (Kanban column model)
+// Three-column sales view: Discovery → Design & Scope → Proposal / Negotiation.
+// Each phase buckets the granular PipelineStage enum values defined above.
+// Terminal stages (closed-won/closed-lost/won/lost) are intentionally excluded —
+// they exit the active sales pipeline via handoff to Operations or Lost state.
+// ---------------------------------------------------------------------------
+
+export interface SalesPhase {
+  id: "discovery" | "design" | "close";
+  label: string;
+  defaultStage: PipelineStage;
+  stages: PipelineStage[];
+}
+
+export const SALES_PHASES: SalesPhase[] = [
+  {
+    id: "discovery",
+    label: "Discovery",
+    defaultStage: "discovery",
+    stages: ["target-identified", "contacted", "conversation-started", "discovery"],
+  },
+  {
+    id: "design",
+    label: "Design & Scope",
+    defaultStage: "design-scope",
+    stages: ["qualified-project", "design-scope", "proposal", "proposal-sent"],
+  },
+  {
+    id: "close",
+    label: "Proposal / Negotiation",
+    defaultStage: "negotiation",
+    stages: ["follow-up-negotiation", "negotiation", "verbal-yes"],
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Shared Chart Data
 // ---------------------------------------------------------------------------
 
