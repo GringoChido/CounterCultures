@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -332,7 +332,7 @@ const emptyNewDealForm = {
   brandSlugs: [] as string[],
 };
 
-const PipelinePage = () => {
+const PipelinePageInner = () => {
   const [deals, setDeals] = useState(SAMPLE_PIPELINE);
   const [loading, setLoading] = useState(true);
   const [activeDeal, setActiveDeal] = useState<PipelineDeal | null>(null);
@@ -2118,5 +2118,12 @@ const PipelinePage = () => {
     </div>
   );
 };
+
+// useSearchParams() requires a Suspense boundary at static prerender time.
+const PipelinePage = () => (
+  <Suspense fallback={null}>
+    <PipelinePageInner />
+  </Suspense>
+);
 
 export default PipelinePage;

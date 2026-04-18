@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createColumnHelper } from "@tanstack/react-table";
 import { format, differenceInDays, isPast, parseISO } from "date-fns";
@@ -571,7 +571,7 @@ function exportLeadsToCSV(leads: Lead[]) {
   URL.revokeObjectURL(url);
 }
 
-const LeadsPage = () => {
+const LeadsPageInner = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -1027,5 +1027,14 @@ const LeadsPage = () => {
     </div>
   );
 };
+
+// useSearchParams() requires a Suspense boundary at static prerender time
+// (Next.js client-component rule). The auth-gated dashboard page is dynamic
+// in practice, but the build still does a prerender pass.
+const LeadsPage = () => (
+  <Suspense fallback={null}>
+    <LeadsPageInner />
+  </Suspense>
+);
 
 export default LeadsPage;

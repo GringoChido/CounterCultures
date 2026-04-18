@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { User, Bell, Link2, Users, Check, X, ExternalLink, CheckCircle2, Mail, Loader2, AlertCircle } from "lucide-react";
@@ -70,7 +70,7 @@ function saveSettings(state: SettingsState) {
   }
 }
 
-const SettingsPage = () => {
+const SettingsPageInner = () => {
   const [settings, setSettings] = useState<SettingsState>(defaultSettings);
   const [loaded, setLoaded] = useState(false);
   const [saveToast, setSaveToast] = useState(false);
@@ -441,5 +441,12 @@ const GmailIntegrationCard = () => {
     </div>
   );
 };
+
+// useSearchParams() requires a Suspense boundary at static prerender time.
+const SettingsPage = () => (
+  <Suspense fallback={null}>
+    <SettingsPageInner />
+  </Suspense>
+);
 
 export default SettingsPage;
