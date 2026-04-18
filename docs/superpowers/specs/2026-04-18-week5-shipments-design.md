@@ -252,3 +252,90 @@ event row. Doc-attach + payment events come later (no UI for those yet).
    `docs/superpowers/specs/2026-04-18-week5-shipments-plan.md`.
 2. Plan has small steps: write failing test → implement → verify → commit (each ~2-5 min).
 3. Once plan is approved, execution starts (subagent or inline — your call at that point).
+
+---
+
+## 8. Execution log (2026-04-18, completed)
+
+All 12 tasks from `2026-04-18-week5-shipments-plan.md` shipped inline in one
+session. Tree at `9584ae7`, 7 commits ahead of `origin/main`.
+
+| # | Task | Commit |
+|---|---|---|
+| 1 | Spec edit (Reality check + new SA note) | (outside-repo doc — see `SHIPMENTS_CUSTOMS_SPEC.md` line 10) |
+| 2-4 | 5 sheets scaffolded + verifier + idempotent creator | `6c51a42` |
+| 5 | Typed reference read helpers + round-trip test | `19b6dc8` |
+| 6 | 4 GET-only reference API routes + auth-gate test | `03f9ba0` |
+| 7 | Trafico_Events writer + reader lib + round-trip | `734dbcd` |
+| 8 | Auto-log on Traficos POST/PUT + Traficos header bug-fix | `60f451c` |
+| 9 | Pipeline Deal-detail Customs tab on live data | `a8f34f6` |
+| 10 | Start New Trafico flow (option d — stub + redirect) | `9584ae7` |
+| 11 | Customs page audit | (no diffs — already clean) |
+| 12 | Final smoke + this log | (this commit) |
+
+### 5 new sheets in CRM Sheet (1iXG…YT0) — sheetIds
+
+| Sheet | sheetId |
+|---|---|
+| Brand_NOM_Status | 860612384 |
+| Brand_Lead_Times | 1719157528 |
+| HS_Code_Lookup | 1851157160 |
+| FTA_Rates | 21794564 |
+| Trafico_Events | 1792247272 |
+
+All 5 are scaffolded + bolded headers, awaiting data population by Joshua + Roger
++ broker.
+
+### Deviations from plan
+
+- **Plan §Task 3 said "Implement minimal code"** — actually implemented full
+  idempotent creator (find-or-create per tab, header upsert, header bold) so
+  re-running doesn't double-create or skew formatting. Negligible extra code,
+  much better DX.
+- **Plan §Task 6 test was changed mid-task** — original plan asserted 200 +
+  `{rows:[]}`, but routes are middleware-auth-gated so script-level fetch returns
+  401 (no session cookie). Adapted test to assert "registered + auth-gated" (401
+  not 404). Happy-path 200 verified separately via browser preview eval.
+- **Plan §Task 7 added a `Records<string,string> &` intersection** — TS strict
+  mode required it for the `readSheet<T extends Record<string,string>>` constraint.
+- **Plan §Task 8 grew significantly** — surfaced a real pre-existing bug: the
+  `Traficos` sheet had no header row, silently breaking `findRowIndex` (and
+  therefore PUT) since the route was first written. Fixed via
+  `scripts/_fix-traficos-header.ts` (one-shot). Added incidental cleanup
+  (`scripts/_cleanup-test-rows.ts`, `_check-events.ts`, `_check-traficos.ts`)
+  so test detritus doesn't accumulate.
+- **Plan §Task 9 was bigger than envisioned** — the rich `Trafico` TS type
+  (with nested `items[]`, `documents`, `calculoBreakdown`) doesn't match the
+  flat `TraficoRecord` from the live sheet API. Replaced the rich-shape JSX
+  with a slim live-shape render (TRF_ID / Trafico_Number / Status badge /
+  Item_Count / Total_Import_Cost / "View detail →" link). The flat→rich
+  hydrator is W6 scope; explicit TODO comment in the JSX.
+- **Plan §Task 10 implementation = option (d)** — stub-and-redirect, not a
+  form. Approved mid-execution. Toast with "Open Customs" action button.
+
+### Open follow-ups (not blocking W5)
+
+- **`Trafico_Items` sheet has no header row** — same pre-existing bug as
+  Traficos pre-Task 8. Will silently break `findRowIndex` on PUT. Fix when
+  first items land (or eagerly via a parallel `_fix-trafico-items-header.ts`).
+- **`Shipments` sheet header status unconfirmed** — likely also missing.
+  Worth checking.
+- **W6 hydrator** — the slim live-shape rendering on the Pipeline Customs
+  tab is a placeholder. W6 should build a `TraficoRecord → Trafico` hydrator
+  that pulls Trafico_Items + parses `Calculo_Breakdown_JSON` + joins
+  `USMCA_Certificates` + `Spanish_Manuals` rows.
+- **Per-user actor on auto-log** — currently hardcoded to `"portal"` in
+  `appendTraficoEvent` calls from the Traficos route. Multi-user identity
+  is Phase 2 auth work.
+
+### Final smoke (2026-04-18)
+
+```
+✅ scripts/_test-shipments-sheets.ts       — 5 tabs present + correct headers
+✅ scripts/_test-shipments-reference.ts    — 4 lib reads return arrays
+✅ scripts/_test-reference-apis.ts         — 4 routes registered + auth-gated
+✅ scripts/_test-trafico-events.ts         — write + read round-trip OK
+✅ npx tsc --noEmit                        — clean
+```
+
+W5 ships. W6 (landed-cost calculator) can begin on the foundation.
