@@ -45,7 +45,7 @@ const navItems: NavItem[] = [
   { label: "Pipeline", href: "/dashboard/pipeline", icon: Kanban },
   { label: "WhatsApp", href: "/dashboard/whatsapp", icon: MessageCircle },
   { label: "Trade Program", href: "/dashboard/trade-program", icon: Handshake },
-  { label: "Brands", href: "/dashboard/brands", icon: Award, section: "Catalog", comingSoon: true },
+  { label: "Brands", href: "/dashboard/brands", icon: Award, section: "Catalog" },
   { label: "Products", href: "/dashboard/products", icon: Package },
   { label: "Shipments & Customs", href: "/dashboard/shipments", icon: Truck },
   { label: "Email Campaigns", href: "/dashboard/email-campaigns", icon: Mail, section: "Marketing" },
