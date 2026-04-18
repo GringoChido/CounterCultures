@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { User, Bell, Link2, Users, Check, X, ExternalLink, CheckCircle2 } from "lucide-react";
+import { useCallback, useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { User, Bell, Link2, Users, Check, X, ExternalLink, CheckCircle2, Mail, Loader2, AlertCircle } from "lucide-react";
 
 interface NotificationSetting {
   id: string;
@@ -201,6 +203,8 @@ const SettingsPage = () => {
         </div>
       </div>
 
+      <GmailIntegrationCard />
+
       {/* Integrations */}
       <div className="bg-dash-surface rounded-xl border border-dash-border p-5">
         <div className="flex items-center gap-3 mb-5">
@@ -291,6 +295,149 @@ const SettingsPage = () => {
           </table>
         </div>
       </div>
+    </div>
+  );
+};
+
+interface GmailStatus {
+  connected: boolean;
+  gmailAddress?: string;
+  connectedAt?: string;
+  lastError?: string;
+  oauthConfigured: boolean;
+}
+
+const GmailIntegrationCard = () => {
+  const [status, setStatus] = useState<GmailStatus | null>(null);
+  const [disconnecting, setDisconnecting] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const fetchStatus = useCallback(async () => {
+    try {
+      const r = await fetch("/api/gmail/status");
+      setStatus((await r.json()) as GmailStatus);
+    } catch {
+      setStatus({ connected: false, oauthConfigured: false });
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchStatus();
+  }, [fetchStatus]);
+
+  useEffect(() => {
+    const result = searchParams.get("gmail");
+    if (!result) return;
+    if (result === "connected") {
+      const as = searchParams.get("as");
+      toast.success(`Gmail connected${as ? ` as ${as}` : ""}`);
+    } else if (result === "error") {
+      toast.error(`Gmail connect failed: ${searchParams.get("reason") ?? "unknown"}`);
+    }
+    router.replace("/dashboard/settings");
+    fetchStatus();
+  }, [searchParams, router, fetchStatus]);
+
+  const disconnect = async () => {
+    if (!confirm("Disconnect Gmail? The portal inbox will stop loading mail until reconnected.")) {
+      return;
+    }
+    setDisconnecting(true);
+    try {
+      const r = await fetch("/api/gmail/disconnect", { method: "POST" });
+      if (!r.ok) throw new Error();
+      toast.success("Gmail disconnected");
+      await fetchStatus();
+    } catch {
+      toast.error("Couldn't disconnect");
+    } finally {
+      setDisconnecting(false);
+    }
+  };
+
+  return (
+    <div className="bg-dash-surface rounded-xl border border-dash-border p-5">
+      <div className="flex items-center gap-3 mb-5">
+        <div className="w-9 h-9 rounded-lg bg-red-500/10 flex items-center justify-center">
+          <Mail className="w-4.5 h-4.5 text-red-500" />
+        </div>
+        <div>
+          <h3 className="text-sm font-semibold text-dash-text">Gmail Integration</h3>
+          <p className="text-xs text-dash-text-secondary mt-0.5">
+            Native inbox, Create Lead from email, thread-on-Deal
+          </p>
+        </div>
+      </div>
+
+      {!status ? (
+        <div className="flex items-center gap-2 text-xs text-dash-text-secondary">
+          <Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking connection…
+        </div>
+      ) : !status.oauthConfigured ? (
+        <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg text-xs text-amber-400">
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium text-amber-400 mb-1">OAuth client not configured.</p>
+            <p className="text-amber-300/80">
+              Add <code className="bg-dash-bg px-1 py-0.5 rounded">GOOGLE_OAUTH_CLIENT_ID</code>{" "}
+              and <code className="bg-dash-bg px-1 py-0.5 rounded">GOOGLE_OAUTH_CLIENT_SECRET</code>{" "}
+              to <code>.env.local</code> and restart the dev server. Both values
+              come from APIs &amp; Services → Credentials in the{" "}
+              <code>gen-lang-client-0620971024</code> GCP project.
+            </p>
+          </div>
+        </div>
+      ) : status.connected ? (
+        <div className="space-y-3">
+          <div className="flex items-start justify-between gap-3 p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-lg">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-dash-text flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                Connected as {status.gmailAddress}
+              </p>
+              {status.connectedAt && (
+                <p className="text-[11px] text-dash-text-secondary mt-1">
+                  Since {new Date(status.connectedAt).toLocaleString()}
+                </p>
+              )}
+              {status.lastError && (
+                <p className="text-[11px] text-amber-400 mt-1">Last error: {status.lastError}</p>
+              )}
+            </div>
+            <button
+              onClick={disconnect}
+              disabled={disconnecting}
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-red-500/30 text-red-400 rounded-lg text-xs font-medium hover:bg-red-500/10 disabled:opacity-50 transition-colors cursor-pointer shrink-0"
+            >
+              {disconnecting ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                <X className="w-3 h-3" />
+              )}
+              Disconnect
+            </button>
+          </div>
+          <p className="text-[11px] text-dash-text-secondary">
+            Refresh tokens are encrypted at rest (AES-256-GCM via{" "}
+            <code>SESSION_SECRET</code>) and never leave the workspace.
+          </p>
+        </div>
+      ) : (
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm text-dash-text-secondary">
+            Not connected yet — click to authorize Counter Portal to read and
+            send mail on your behalf.
+          </p>
+          <a
+            href="/api/gmail/connect"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-copper text-white rounded-lg text-xs font-medium hover:bg-brand-copper/90 transition-colors cursor-pointer shrink-0"
+          >
+            <ExternalLink className="w-3 h-3" />
+            Connect Gmail
+          </a>
+        </div>
+      )}
     </div>
   );
 };
