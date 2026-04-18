@@ -268,6 +268,35 @@ export const ArticleContent = ({
           </div>
         </section>
 
+        {/* More About These Brands */}
+        {article.brandSlugs && article.brandSlugs.length > 0 && (
+          <section className="py-12 md:py-16 bg-brand-stone/5 border-y border-brand-stone/20">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <AnimatedSection>
+                <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
+                  {locale === "es"
+                    ? "Más Sobre Estas Marcas"
+                    : "More About This Brand"}
+                </span>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  {article.brandSlugs.map((slug) => (
+                    <Link
+                      key={slug}
+                      href={`/${locale}/brands/${slug}`}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-brand-stone/30 bg-white hover:border-brand-terracotta hover:bg-brand-terracotta/5 transition-colors text-sm font-body text-brand-charcoal"
+                    >
+                      <span className="font-medium capitalize">
+                        {slug.replace(/-/g, " ")}
+                      </span>
+                      <span className="text-brand-terracotta">→</span>
+                    </Link>
+                  ))}
+                </div>
+              </AnimatedSection>
+            </div>
+          </section>
+        )}
+
         {/* Related Articles */}
         {relatedArticles.length > 0 && (
           <section className="py-16 md:py-20 bg-white">

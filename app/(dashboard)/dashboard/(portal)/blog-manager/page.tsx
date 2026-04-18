@@ -19,6 +19,8 @@ interface BlogPost {
   date: string;
   views: number;
   pillar: string;
+  slug: string;
+  brandSlugs: string[];
 }
 
 const statusVariants: Record<string, BadgeVariant> = {
@@ -34,6 +36,8 @@ const blogPosts: BlogPost[] = articles.map((article, index) => ({
   date: article.date,
   views: Math.floor(Math.random() * 3000) + 200,
   pillar: article.pillar,
+  slug: article.slug,
+  brandSlugs: article.brandSlugs ?? [],
 }));
 
 const columnHelper = createColumnHelper<BlogPost>();
@@ -53,6 +57,35 @@ const columns = [
     cell: (info) => {
       const status = info.getValue();
       return <StatusBadge label={status.charAt(0).toUpperCase() + status.slice(1)} variant={statusVariants[status]} />;
+    },
+  }),
+  columnHelper.accessor("brandSlugs", {
+    header: "Brands",
+    enableSorting: false,
+    cell: (info) => {
+      const slugs = info.getValue();
+      if (slugs.length === 0) {
+        return <span className="text-dash-text-secondary">&mdash;</span>;
+      }
+      const shown = slugs.slice(0, 2);
+      const extra = slugs.length - shown.length;
+      return (
+        <div className="flex flex-wrap gap-1 items-center">
+          {shown.map((s) => (
+            <span
+              key={s}
+              className="px-1.5 py-0.5 bg-brand-copper/10 text-brand-copper border border-brand-copper/20 rounded text-[10px] leading-tight"
+            >
+              {s}
+            </span>
+          ))}
+          {extra > 0 && (
+            <span className="text-[10px] text-dash-text-secondary">
+              +{extra}
+            </span>
+          )}
+        </div>
+      );
     },
   }),
   columnHelper.accessor("author", {

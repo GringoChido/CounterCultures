@@ -13,6 +13,10 @@ export interface Article {
   editorsPick?: boolean;
   body: { en: string; es: string };
   relatedSlugs: string[];
+  /** Brand slugs referenced in the article — powers per-post brand chips in
+   * Blog Manager and the "More about this brand" footer on the storefront
+   * article detail page. Must match a slug in the Brand Kit Sheet. */
+  brandSlugs?: string[];
 }
 
 export const pillarColors: Record<ArticlePillar, string> = {
@@ -335,6 +339,7 @@ Para cocinas profesionales o semi-profesionales, cocinas al aire libre, o client
 Ambos están disponibles para ver en nuestro showroom.`,
     },
     relatedSlugs: ["kitchen-faucet-finish-guide", "hand-hammered-copper-basin-guide"],
+    brandSlugs: ["blanco"],
   },
   {
     slug: "specifying-fixtures-hospitality-mexico",
@@ -459,6 +464,7 @@ Precios del Programa Trade de Counter Cultures para cantidades de hospitalidad:
 Para cada proyecto de hospitalidad, proporcionamos un paquete de especificación que incluye fichas técnicas, especificaciones de instalación en bruto, guías de mantenimiento bilingües, documentación de garantía y proyecciones de cronograma.`,
     },
     relatedSlugs: ["trade-program-benefits", "kohler-vs-toto-comparison"],
+    brandSlugs: ["kohler", "toto", "grohe"],
   },
   {
     slug: "sun-valley-bronze-foundry",
@@ -538,6 +544,7 @@ Sun Valley Bronze es un producto premium. Un juego completo de cerradura de entr
 Tiempo de entrega estándar es 8–10 semanas desde el pedido.`,
     },
     relatedSlugs: ["hand-hammered-copper-basin-guide", "specifying-fixtures-hospitality-mexico"],
+    brandSlugs: ["sun-valley-bronze"],
   },
   {
     slug: "trade-program-benefits",
@@ -793,6 +800,7 @@ Para grifos, más a menudo recomendamos **Brizo** como la opción premium y **Ca
 Para la mayoría de los proyectos en San Miguel de Allende, recomendamos una especificación mixta: sanitarios TOTO, grifos Kohler o Brizo, y selecciones específicas de marca para bañeras y accesorios basados en la dirección estética del proyecto. Esto no es un compromiso — es cómo obtienes el mejor producto en cada categoría.`,
     },
     relatedSlugs: ["blanco-silgranit-vs-stainless", "specifying-fixtures-hospitality-mexico"],
+    brandSlugs: ["kohler", "toto"],
   },
   {
     slug: "talavera-tile-specification",
@@ -1093,6 +1101,7 @@ El acabado del grifo de cocina es una de esas decisiones que parece simple hasta
 Todos los acabados están disponibles para ver y comparar en nuestro showroom.`,
     },
     relatedSlugs: ["blanco-silgranit-vs-stainless", "kohler-vs-toto-comparison"],
+    brandSlugs: ["delta", "brizo", "california-faucets", "rohl"],
   },
   {
     slug: "water-efficiency-guide-mexico",
@@ -1210,6 +1219,7 @@ Para un proyecto residencial típico de 3 baños en San Miguel, cambiar de acces
 A los costos actuales de agua en San Miguel, esto representa aproximadamente MXN 3,400 en ahorros anuales. El período de recuperación de la inversión es típicamente 2–3 años.`,
     },
     relatedSlugs: ["kohler-vs-toto-comparison", "specifying-fixtures-hospitality-mexico"],
+    brandSlugs: ["kohler", "toto", "grohe"],
   },
 ];
 
