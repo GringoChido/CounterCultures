@@ -47,6 +47,8 @@ import { SlideOut } from "@/app/(dashboard)/components/slide-out";
 import { DocumentGenerator } from "@/app/(dashboard)/components/document-generator";
 import { SendDialog } from "@/app/(dashboard)/components/send-dialog";
 import { PreviewPanel, type PreviewFile } from "@/app/(dashboard)/components/preview-panel";
+import { NotesPanel } from "@/app/(dashboard)/components/notes-panel";
+import { ShareButton } from "@/app/(dashboard)/components/share-button";
 import {
   SAMPLE_PIPELINE,
   LOST_STAGES,
@@ -951,11 +953,19 @@ const PipelinePage = () => {
 
                 <div>
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary mb-3">
-                    Notes
+                    Context
                   </h4>
                   <p className="text-sm text-dash-text leading-relaxed">
                     {selectedDeal.notes}
                   </p>
+                </div>
+
+                <div className="pt-4 border-t border-dash-border">
+                  <NotesPanel
+                    entityType="deal"
+                    entityId={selectedDeal.id}
+                    title="Activity Notes"
+                  />
                 </div>
 
                 <div className="flex gap-2 pt-4 border-t border-dash-border">
@@ -973,6 +983,13 @@ const PipelinePage = () => {
                   >
                     Log Activity
                   </button>
+                  <ShareButton
+                    entityType="deal"
+                    entityId={selectedDeal.id}
+                    summary={`Deal: ${selectedDeal.name} — $${selectedDeal.value.toLocaleString()} ${selectedDeal.currency}`}
+                    deepLink={`/dashboard/pipeline#${selectedDeal.id}`}
+                    compact
+                  />
                 </div>
               </>
             )}

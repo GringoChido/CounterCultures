@@ -9,6 +9,8 @@ import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
+import { NotesPanel } from "@/app/(dashboard)/components/notes-panel";
+import { ShareButton } from "@/app/(dashboard)/components/share-button";
 
 // Shape matching Google Sheets Leads tab
 interface SheetLead {
@@ -900,6 +902,10 @@ const LeadsPage = () => {
               )}
             </div>
 
+            <div className="pt-4 border-t border-dash-border">
+              <NotesPanel entityType="lead" entityId={selectedLead.id} />
+            </div>
+
             <div className="flex gap-2 pt-4 border-t border-dash-border">
               <button
                 onClick={() => {
@@ -922,6 +928,13 @@ const LeadsPage = () => {
               >
                 Log Activity
               </button>
+              <ShareButton
+                entityType="lead"
+                entityId={selectedLead.id}
+                summary={`Lead: ${selectedLead.name}${selectedLead.interest ? ` — ${selectedLead.interest}` : ""}`}
+                deepLink={`/dashboard/leads#${selectedLead.id}`}
+                compact
+              />
             </div>
           </div>
         )}

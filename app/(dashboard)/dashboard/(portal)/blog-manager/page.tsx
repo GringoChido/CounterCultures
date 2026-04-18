@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
+import { NotesPanel } from "@/app/(dashboard)/components/notes-panel";
+import { ShareButton } from "@/app/(dashboard)/components/share-button";
 import { articles } from "@/app/lib/articles";
 import { useProductInsert } from "@/app/(dashboard)/components/product-insert-context";
 
@@ -117,6 +119,7 @@ const BlogManagerPage = () => {
   const [saving, setSaving] = useState(false);
   const [newPost, setNewPost] = useState({ title: "", pillar: BLOG_PILLARS[0] as string, author: "Roger Gonzalez", notes: "" });
   const [linkedProducts, setLinkedProducts] = useState<{ name: string; slug: string; brand: string; image: string }[]>([]);
+  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const { consumeInsert, pendingInsert, openCommandPalette } = useProductInsert();
 
   useEffect(() => {
@@ -187,6 +190,7 @@ const BlogManagerPage = () => {
         columns={columns as never}
         searchKey="title"
         searchPlaceholder="Search posts..."
+        onRowClick={(row) => setSelectedPost(row as unknown as BlogPost)}
       />
 
       <SlideOut open={formOpen} onClose={() => setFormOpen(false)} title="New Blog Post">
@@ -277,6 +281,83 @@ const BlogManagerPage = () => {
             </button>
           </div>
         </div>
+      </SlideOut>
+
+      <SlideOut
+        open={!!selectedPost}
+        onClose={() => setSelectedPost(null)}
+        title={selectedPost?.title ?? "Post"}
+      >
+        {selectedPost && (
+          <div className="space-y-6">
+            <div>
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary mb-3">
+                Post Details
+              </h4>
+              <div className="space-y-2 text-sm">
+                <p>
+                  <span className="text-dash-text-secondary">Pillar:</span>{" "}
+                  {selectedPost.pillar}
+                </p>
+                <p>
+                  <span className="text-dash-text-secondary">Author:</span>{" "}
+                  {selectedPost.author}
+                </p>
+                <p>
+                  <span className="text-dash-text-secondary">Date:</span>{" "}
+                  {format(new Date(selectedPost.date), "MMM d, yyyy")}
+                </p>
+                <p>
+                  <span className="text-dash-text-secondary">Status:</span>{" "}
+                  <StatusBadge
+                    label={selectedPost.status.charAt(0).toUpperCase() + selectedPost.status.slice(1)}
+                    variant={statusVariants[selectedPost.status]}
+                  />
+                </p>
+                {selectedPost.brandSlugs.length > 0 && (
+                  <div className="flex flex-wrap gap-1 items-center pt-1">
+                    <span className="text-dash-text-secondary mr-1">Brands:</span>
+                    {selectedPost.brandSlugs.map((s) => (
+                      <span
+                        key={s}
+                        className="px-1.5 py-0.5 bg-brand-copper/10 text-brand-copper border border-brand-copper/20 rounded text-[10px] leading-tight"
+                      >
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-dash-border">
+              <NotesPanel
+                entityType="blog_post"
+                entityId={selectedPost.id}
+                title="Editorial Notes"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 pt-4 border-t border-dash-border">
+              <a
+                href={`/en/insights/${selectedPost.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer"
+              >
+                <Eye className="w-4 h-4" />
+                View post
+              </a>
+              <ShareButton
+                entityType="blog_post"
+                entityId={selectedPost.id}
+                summary={`Review before publish: ${selectedPost.title}`}
+                deepLink={`/dashboard/blog-manager#${selectedPost.id}`}
+                compact
+              />
+            </div>
+          </div>
+        )}
       </SlideOut>
     </div>
   );

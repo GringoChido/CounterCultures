@@ -5,6 +5,8 @@ import { Users, Clock, Percent, DollarSign, CheckCircle2, XCircle, Briefcase, Tr
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
+import { NotesPanel } from "@/app/(dashboard)/components/notes-panel";
+import { ShareButton } from "@/app/(dashboard)/components/share-button";
 
 type Tier = "Gold" | "Silver" | "Bronze";
 
@@ -246,14 +248,10 @@ const TradeProgramPage = () => {
                 <option>Gold (25%)</option>
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-dash-text mb-1.5">Notes</label>
-              <textarea
-                placeholder="Internal notes about this application..."
-                className="w-full h-20 px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder-dash-text-secondary/50 resize-none focus:outline-none focus:border-brand-copper/50"
-              />
+            <div className="pt-4 border-t border-dash-border">
+              <NotesPanel entityType="trade_app" entityId={selectedApp.id} />
             </div>
-            <div className="flex gap-3 pt-4 border-t border-dash-border">
+            <div className="flex items-center gap-3 pt-4 border-t border-dash-border">
               <button className="flex-1 py-2.5 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors cursor-pointer flex items-center justify-center gap-2">
                 <CheckCircle2 className="w-4 h-4" />
                 Approve
@@ -262,6 +260,13 @@ const TradeProgramPage = () => {
                 <XCircle className="w-4 h-4" />
                 Decline
               </button>
+              <ShareButton
+                entityType="trade_app"
+                entityId={selectedApp.id}
+                summary={`Trade application: ${selectedApp.company} — ${selectedApp.contact}`}
+                deepLink={`/dashboard/trade-program#${selectedApp.id}`}
+                compact
+              />
             </div>
           </div>
         )}
