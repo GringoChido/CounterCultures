@@ -10,10 +10,15 @@ import {
   Paperclip,
   RefreshCw,
   Search,
-  Sparkles,
+  Send,
   UserPlus,
+  Briefcase,
+  Link2,
+  X,
   AlertCircle,
   Tag,
+  Pencil,
+  Reply,
 } from "lucide-react";
 
 interface ThreadSummary {
@@ -80,6 +85,13 @@ const formatDate = (iso: string): string => {
   }
 };
 
+interface DealLite {
+  id: string;
+  name: string;
+  company: string;
+  stage: string;
+}
+
 const InboxPage = () => {
   const router = useRouter();
   const [status, setStatus] = useState<StatusResponse | null>(null);
@@ -91,6 +103,17 @@ const InboxPage = () => {
   const [query, setQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [creatingLead, setCreatingLead] = useState(false);
+  const [creatingDeal, setCreatingDeal] = useState(false);
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [composeDraft, setComposeDraft] = useState({ to: "", cc: "", subject: "", body: "" });
+  const [sendingCompose, setSendingCompose] = useState(false);
+  const [replyBody, setReplyBody] = useState("");
+  const [replyOpen, setReplyOpen] = useState(false);
+  const [sendingReply, setSendingReply] = useState(false);
+  const [attachPickerOpen, setAttachPickerOpen] = useState(false);
+  const [deals, setDeals] = useState<DealLite[] | null>(null);
+  const [dealSearch, setDealSearch] = useState("");
+  const [attaching, setAttaching] = useState<string | null>(null);
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -202,6 +225,153 @@ const InboxPage = () => {
     }
   };
 
+  const createDealFromThread = async () => {
+    if (!threadDetail || threadDetail.messages.length === 0) return;
+    const latest = threadDetail.messages[threadDetail.messages.length - 1];
+    setCreatingDeal(true);
+    try {
+      const r = await fetch("/api/gmail/create-deal-from-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messageId: latest.messageId,
+          threadId: threadDetail.threadId,
+        }),
+      });
+      const data = await r.json();
+      if (!r.ok) {
+        toast.error(data.error || "Couldn't create deal");
+        return;
+      }
+      const brandCount = (data.matchedBrandSlugs ?? []).length;
+      toast.success(
+        `Deal ${data.dealId} created${brandCount > 0 ? ` · ${brandCount} brand${brandCount > 1 ? "s" : ""} tagged` : ""}`
+      );
+      router.push("/dashboard/pipeline");
+    } catch (err) {
+      console.error("[Inbox] create deal failed", err);
+      toast.error("Couldn't create deal");
+    } finally {
+      setCreatingDeal(false);
+    }
+  };
+
+  const openCompose = () => {
+    setComposeDraft({ to: "", cc: "", subject: "", body: "" });
+    setComposeOpen(true);
+  };
+
+  const openReply = () => {
+    if (!threadDetail) return;
+    const latest = threadDetail.messages[threadDetail.messages.length - 1];
+    setReplyBody(`\n\nOn ${new Date(latest.date).toLocaleString()}, ${latest.from || latest.fromEmail} wrote:\n> ${(latest.body || latest.snippet || "").split("\n").join("\n> ")}`);
+    setReplyOpen(true);
+  };
+
+  const sendCompose = async () => {
+    if (!composeDraft.to.trim() || !composeDraft.subject.trim() || !composeDraft.body.trim()) {
+      toast.error("To, subject, and body are required");
+      return;
+    }
+    setSendingCompose(true);
+    try {
+      const r = await fetch("/api/gmail/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(composeDraft),
+      });
+      const data = await r.json();
+      if (!r.ok) {
+        toast.error(data.error || "Couldn't send");
+        return;
+      }
+      toast.success("Sent");
+      setComposeOpen(false);
+    } catch (err) {
+      console.error("[Inbox] send failed", err);
+      toast.error("Couldn't send");
+    } finally {
+      setSendingCompose(false);
+    }
+  };
+
+  const sendReply = async () => {
+    if (!threadDetail || !replyBody.trim()) return;
+    setSendingReply(true);
+    try {
+      const r = await fetch("/api/gmail/reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ threadId: threadDetail.threadId, body: replyBody }),
+      });
+      const data = await r.json();
+      if (!r.ok) {
+        toast.error(data.error || "Couldn't send reply");
+        return;
+      }
+      toast.success("Reply sent");
+      setReplyOpen(false);
+      setReplyBody("");
+      // refresh the thread so the reply shows up
+      if (threadDetail) fetchThread(threadDetail.threadId);
+    } catch (err) {
+      console.error("[Inbox] reply failed", err);
+      toast.error("Couldn't send reply");
+    } finally {
+      setSendingReply(false);
+    }
+  };
+
+  const openAttachPicker = async () => {
+    setAttachPickerOpen(true);
+    if (deals === null) {
+      try {
+        const r = await fetch("/api/dashboard/pipeline");
+        const data = await r.json();
+        setDeals(
+          ((data.deals || []) as Record<string, string>[]).map((d) => ({
+            id: d.id,
+            name: d.name,
+            company: d.company,
+            stage: d.stage,
+          }))
+        );
+      } catch (err) {
+        console.error("[Inbox] pipeline fetch failed", err);
+        setDeals([]);
+      }
+    }
+  };
+
+  const attachToDeal = async (dealId: string) => {
+    if (!threadDetail) return;
+    const latest = threadDetail.messages[threadDetail.messages.length - 1];
+    setAttaching(dealId);
+    try {
+      const r = await fetch("/api/gmail/attach-to-deal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messageId: latest.messageId,
+          threadId: threadDetail.threadId,
+          dealId,
+        }),
+      });
+      const data = await r.json();
+      if (!r.ok) {
+        toast.error(data.error || "Couldn't attach");
+        return;
+      }
+      toast.success(`Attached to ${dealId}`);
+      setAttachPickerOpen(false);
+    } catch (err) {
+      console.error("[Inbox] attach failed", err);
+      toast.error("Couldn't attach");
+    } finally {
+      setAttaching(null);
+    }
+  };
+
   // ── Not connected state ───────────────────────────────────────────
   if (status && !status.connected) {
     return (
@@ -276,6 +446,13 @@ const InboxPage = () => {
         >
           <RefreshCw className="w-3.5 h-3.5" />
           Refresh
+        </button>
+        <button
+          onClick={openCompose}
+          className="flex items-center gap-1.5 px-3 py-2 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+          Compose
         </button>
         <div className="text-xs text-dash-text-secondary pr-1">
           {status.gmailAddress && (
@@ -390,7 +567,7 @@ const InboxPage = () => {
                     {threadDetail.messages.length === 1 ? "" : "s"}
                   </p>
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
                   <button
                     onClick={createLeadFromThread}
                     disabled={creatingLead}
@@ -404,15 +581,126 @@ const InboxPage = () => {
                     Create Lead
                   </button>
                   <button
-                    disabled
-                    title="Compose / Reply land Week 3 Day 3"
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-dash-border rounded-lg opacity-40 cursor-not-allowed"
+                    onClick={createDealFromThread}
+                    disabled={creatingDeal}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-brand-copper/40 text-brand-copper rounded-lg hover:bg-brand-copper/10 disabled:opacity-50 transition-colors cursor-pointer"
                   >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    Reply (soon)
+                    {creatingDeal ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Briefcase className="w-3.5 h-3.5" />
+                    )}
+                    Create Deal
+                  </button>
+                  <div className="relative">
+                    <button
+                      onClick={openAttachPicker}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-dash-border rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
+                    >
+                      <Link2 className="w-3.5 h-3.5" />
+                      Attach to Deal
+                    </button>
+                    {attachPickerOpen && (
+                      <div className="absolute right-0 mt-1 w-80 bg-dash-surface border border-dash-border rounded-xl shadow-xl z-30 overflow-hidden">
+                        <div className="flex items-center justify-between px-3 py-2 border-b border-dash-border">
+                          <p className="text-xs font-semibold text-dash-text">Pick a Deal</p>
+                          <button
+                            onClick={() => setAttachPickerOpen(false)}
+                            className="w-5 h-5 flex items-center justify-center rounded hover:bg-dash-bg text-dash-text-secondary cursor-pointer"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                        <div className="px-3 py-2 border-b border-dash-border">
+                          <input
+                            value={dealSearch}
+                            onChange={(e) => setDealSearch(e.target.value)}
+                            placeholder="Search deals…"
+                            className="w-full px-2 py-1.5 text-xs bg-dash-bg border border-dash-border rounded focus:outline-none focus:ring-1 focus:ring-brand-copper"
+                          />
+                        </div>
+                        {deals === null ? (
+                          <div className="px-3 py-4 text-xs text-dash-text-secondary flex items-center gap-2">
+                            <Loader2 className="w-3 h-3 animate-spin" /> Loading deals…
+                          </div>
+                        ) : deals.length === 0 ? (
+                          <p className="px-3 py-4 text-xs text-dash-text-secondary">
+                            No deals yet. Create one from this thread.
+                          </p>
+                        ) : (
+                          <ul className="max-h-72 overflow-y-auto">
+                            {deals
+                              .filter((d) => {
+                                const q = dealSearch.toLowerCase();
+                                return !q || d.name.toLowerCase().includes(q) || d.company.toLowerCase().includes(q) || d.id.toLowerCase().includes(q);
+                              })
+                              .slice(0, 50)
+                              .map((d) => (
+                                <li key={d.id}>
+                                  <button
+                                    onClick={() => attachToDeal(d.id)}
+                                    disabled={!!attaching}
+                                    className="w-full text-left px-3 py-2 hover:bg-dash-bg/50 transition-colors disabled:opacity-50 cursor-pointer"
+                                  >
+                                    <p className="text-xs text-dash-text truncate">{d.name || d.id}</p>
+                                    <p className="text-[10px] text-dash-text-secondary truncate">
+                                      {d.company} · {d.stage} · {d.id}
+                                      {attaching === d.id ? " · attaching…" : ""}
+                                    </p>
+                                  </button>
+                                </li>
+                              ))}
+                          </ul>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={openReply}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-dash-border rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
+                  >
+                    <Reply className="w-3.5 h-3.5" />
+                    Reply
                   </button>
                 </div>
               </div>
+
+              {/* Inline reply composer */}
+              {replyOpen && (
+                <div className="px-5 py-3 border-b border-dash-border bg-dash-bg/30">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
+                      Reply
+                    </p>
+                    <button
+                      onClick={() => setReplyOpen(false)}
+                      className="text-xs text-dash-text-secondary hover:text-dash-text cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  <textarea
+                    value={replyBody}
+                    onChange={(e) => setReplyBody(e.target.value)}
+                    rows={6}
+                    className="w-full px-3 py-2 bg-dash-surface border border-dash-border rounded-lg text-sm text-dash-text resize-y focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
+                  />
+                  <div className="flex items-center justify-end gap-2 mt-2">
+                    <button
+                      onClick={sendReply}
+                      disabled={!replyBody.trim() || sendingReply}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 disabled:opacity-50 transition-colors cursor-pointer"
+                    >
+                      {sendingReply ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <Send className="w-3 h-3" />
+                      )}
+                      {sendingReply ? "Sending…" : "Send reply"}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Messages */}
               <div className="flex-1 px-5 py-4 space-y-5">
@@ -441,13 +729,15 @@ const InboxPage = () => {
                       <div className="flex items-center gap-2 flex-wrap mt-3 pt-3 border-t border-dash-border/60">
                         <Paperclip className="w-3.5 h-3.5 text-dash-text-secondary" />
                         {m.attachments.map((a) => (
-                          <span
+                          <a
                             key={a.attachmentId}
-                            className="text-[11px] px-2 py-0.5 bg-dash-surface border border-dash-border rounded text-dash-text-secondary"
-                            title={`${a.mimeType} · ${Math.round(a.size / 1024)} KB`}
+                            href={`/api/gmail/attachment/${encodeURIComponent(m.messageId)}/${encodeURIComponent(a.attachmentId)}`}
+                            download={a.filename}
+                            className="text-[11px] px-2 py-0.5 bg-dash-surface border border-dash-border rounded text-dash-text hover:border-brand-copper/40 hover:text-brand-copper transition-colors"
+                            title={`Download ${a.filename} · ${a.mimeType} · ${Math.round(a.size / 1024)} KB`}
                           >
                             {a.filename}
-                          </span>
+                          </a>
                         ))}
                       </div>
                     )}
@@ -484,6 +774,80 @@ const InboxPage = () => {
           )}
         </div>
       </div>
+
+      {/* Compose modal */}
+      {composeOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:justify-end sm:pr-6 sm:pb-6 pointer-events-none">
+          <div
+            className="pointer-events-auto w-full sm:w-[560px] max-w-[calc(100vw-2rem)] bg-dash-surface border border-dash-border rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden"
+          >
+            <div className="flex items-center justify-between px-4 py-3 bg-dash-sidebar text-white">
+              <div className="flex items-center gap-2">
+                <Pencil className="w-4 h-4" />
+                <p className="text-sm font-semibold">New message</p>
+              </div>
+              <button
+                onClick={() => setComposeOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 cursor-pointer"
+              >
+                <X className="w-4 h-4 text-white/70" />
+              </button>
+            </div>
+            <div className="p-4 space-y-3">
+              <input
+                value={composeDraft.to}
+                onChange={(e) => setComposeDraft((d) => ({ ...d, to: e.target.value }))}
+                placeholder="To"
+                className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
+              />
+              <input
+                value={composeDraft.cc}
+                onChange={(e) => setComposeDraft((d) => ({ ...d, cc: e.target.value }))}
+                placeholder="Cc (optional)"
+                className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
+              />
+              <input
+                value={composeDraft.subject}
+                onChange={(e) => setComposeDraft((d) => ({ ...d, subject: e.target.value }))}
+                placeholder="Subject"
+                className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
+              />
+              <textarea
+                value={composeDraft.body}
+                onChange={(e) => setComposeDraft((d) => ({ ...d, body: e.target.value }))}
+                placeholder="Write your message…"
+                rows={10}
+                className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
+              />
+              <div className="flex items-center justify-between pt-2 border-t border-dash-border">
+                <span className="text-[11px] text-dash-text-secondary">
+                  From {status.gmailAddress}
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setComposeOpen(false)}
+                    className="px-3 py-1.5 text-xs border border-dash-border rounded-lg hover:bg-dash-bg cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={sendCompose}
+                    disabled={sendingCompose}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 disabled:opacity-50 cursor-pointer"
+                  >
+                    {sendingCompose ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <Send className="w-3 h-3" />
+                    )}
+                    {sendingCompose ? "Sending…" : "Send"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

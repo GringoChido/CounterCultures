@@ -304,3 +304,171 @@ export const markThreadRead = async (threadId: string): Promise<void> => {
     requestBody: { removeLabelIds: ["UNREAD"] },
   });
 };
+
+// ---- Send / Reply ----------------------------------------------------
+
+const encodeHeader = (v: string): string => {
+  // RFC 2047 encoded-word for any non-ASCII header value
+  // eslint-disable-next-line no-control-regex
+  return /[^\x00-\x7F]/.test(v) ? `=?UTF-8?B?${Buffer.from(v, "utf8").toString("base64")}?=` : v;
+};
+
+const buildRfc822 = (opts: {
+  from: string;
+  to: string;
+  cc?: string;
+  bcc?: string;
+  subject: string;
+  body: string;
+  inReplyTo?: string;
+  references?: string;
+}): string => {
+  const headers: string[] = [];
+  headers.push(`From: ${opts.from}`);
+  headers.push(`To: ${opts.to}`);
+  if (opts.cc) headers.push(`Cc: ${opts.cc}`);
+  if (opts.bcc) headers.push(`Bcc: ${opts.bcc}`);
+  headers.push(`Subject: ${encodeHeader(opts.subject)}`);
+  if (opts.inReplyTo) headers.push(`In-Reply-To: ${opts.inReplyTo}`);
+  if (opts.references) headers.push(`References: ${opts.references}`);
+  headers.push("MIME-Version: 1.0");
+  headers.push('Content-Type: text/plain; charset="UTF-8"');
+  headers.push("Content-Transfer-Encoding: 7bit");
+  return `${headers.join("\r\n")}\r\n\r\n${opts.body}`;
+};
+
+const base64UrlEncode = (raw: string): string =>
+  Buffer.from(raw, "utf8")
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+
+export interface SendResult {
+  messageId: string;
+  threadId: string;
+}
+
+export const sendMessage = async (input: {
+  to: string;
+  cc?: string;
+  bcc?: string;
+  subject: string;
+  body: string;
+}): Promise<SendResult> => {
+  const client = await getGmailClient();
+  if (!client) throw new Error("Gmail not connected");
+
+  const raw = base64UrlEncode(
+    buildRfc822({ from: client.gmailAddress, ...input })
+  );
+  const res = await client.gmail.users.messages.send({
+    userId: "me",
+    requestBody: { raw },
+  });
+  return {
+    messageId: res.data.id ?? "",
+    threadId: res.data.threadId ?? "",
+  };
+};
+
+export const replyToThread = async (input: {
+  threadId: string;
+  body: string;
+  cc?: string;
+}): Promise<SendResult> => {
+  const client = await getGmailClient();
+  if (!client) throw new Error("Gmail not connected");
+
+  // Fetch the last message in the thread to derive reply headers
+  const t = await client.gmail.users.threads.get({
+    userId: "me",
+    id: input.threadId,
+    format: "metadata",
+    metadataHeaders: ["From", "To", "Cc", "Subject", "Message-ID", "References"],
+  });
+  const msgs = t.data.messages ?? [];
+  if (msgs.length === 0) throw new Error("Thread has no messages");
+  const last = msgs[msgs.length - 1];
+  const h = headerMap(last.payload?.headers);
+
+  // Reply goes back to the original sender
+  const replyTo = h.from || "";
+  const messageId = h["message-id"] || "";
+  const references = h.references ? `${h.references} ${messageId}` : messageId;
+  const subject = h.subject?.toLowerCase().startsWith("re:")
+    ? h.subject
+    : `Re: ${h.subject ?? ""}`;
+
+  const raw = base64UrlEncode(
+    buildRfc822({
+      from: client.gmailAddress,
+      to: replyTo,
+      cc: input.cc,
+      subject,
+      body: input.body,
+      inReplyTo: messageId,
+      references,
+    })
+  );
+
+  const res = await client.gmail.users.messages.send({
+    userId: "me",
+    requestBody: { raw, threadId: input.threadId },
+  });
+  return {
+    messageId: res.data.id ?? "",
+    threadId: res.data.threadId ?? input.threadId,
+  };
+};
+
+// ---- Attachments -----------------------------------------------------
+
+export interface AttachmentBlob {
+  data: Buffer;
+  filename: string;
+  mimeType: string;
+}
+
+export const getAttachment = async (
+  messageId: string,
+  attachmentId: string
+): Promise<AttachmentBlob> => {
+  const client = await getGmailClient();
+  if (!client) throw new Error("Gmail not connected");
+
+  // Fetch attachment metadata from the message to recover filename + mime
+  const msg = await client.gmail.users.messages.get({
+    userId: "me",
+    id: messageId,
+    format: "full",
+  });
+
+  let filename = "attachment";
+  let mimeType = "application/octet-stream";
+  const findPart = (p: gmail_v1.Schema$MessagePart | undefined): boolean => {
+    if (!p) return false;
+    if (p.body?.attachmentId === attachmentId) {
+      filename = p.filename || filename;
+      mimeType = p.mimeType || mimeType;
+      return true;
+    }
+    for (const child of p.parts ?? []) {
+      if (findPart(child)) return true;
+    }
+    return false;
+  };
+  findPart(msg.data.payload ?? undefined);
+
+  const res = await client.gmail.users.messages.attachments.get({
+    userId: "me",
+    messageId,
+    id: attachmentId,
+  });
+  const data64 = (res.data.data ?? "").replace(/-/g, "+").replace(/_/g, "/");
+  return {
+    data: Buffer.from(data64, "base64"),
+    filename,
+    mimeType,
+  };
+};

@@ -50,6 +50,7 @@ import { SendDialog } from "@/app/(dashboard)/components/send-dialog";
 import { PreviewPanel, type PreviewFile } from "@/app/(dashboard)/components/preview-panel";
 import { NotesPanel } from "@/app/(dashboard)/components/notes-panel";
 import { ShareButton } from "@/app/(dashboard)/components/share-button";
+import { ThreadOnDealPanel } from "@/app/(dashboard)/components/thread-on-deal-panel";
 import {
   SAMPLE_PIPELINE,
   LOST_STAGES,
@@ -968,6 +969,10 @@ const PipelinePage = () => {
                   <p className="text-sm text-dash-text leading-relaxed">
                     {selectedDeal.notes}
                   </p>
+                </div>
+
+                <div className="pt-4 border-t border-dash-border">
+                  <ThreadOnDealPanel dealId={selectedDeal.id} />
                 </div>
 
                 <div className="pt-4 border-t border-dash-border">
