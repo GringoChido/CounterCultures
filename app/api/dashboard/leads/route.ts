@@ -71,7 +71,13 @@ export const POST = async (request: NextRequest) => {
       body.created_at = new Date().toISOString();
     }
 
-    const values = LEAD_COLUMNS.map((col) => body[col] ?? "");
+    // Sheets with valueInputOption=USER_ENTERED evaluates any cell starting
+    // with + = - @ as a formula, so phones like "+52 415 …" become #ERROR!.
+    // Leading apostrophe is the canonical escape — Sheets strips it on read.
+    const escapeFormula = (v: string) =>
+      typeof v === "string" && /^[+=\-@]/.test(v) ? `'${v}` : v;
+
+    const values = LEAD_COLUMNS.map((col) => escapeFormula(body[col] ?? ""));
     await appendRow("Leads", values);
 
     return NextResponse.json({ success: true, id: body.id });

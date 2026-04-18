@@ -1,7 +1,8 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Bell, Search, Menu, Command } from "lucide-react";
+import { Bell, Search, Menu } from "lucide-react";
+import { QuickCapture } from "./quick-capture";
 
 const pageTitles: Record<string, string> = {
   "/dashboard/overview": "Today",
@@ -68,6 +69,9 @@ const DashboardHeader = ({ onMenuClick, onSearchClick }: DashboardHeaderProps) =
             ⌘K
           </kbd>
         </button>
+
+        {/* Quick-Capture ⚡ */}
+        <QuickCapture />
 
         {/* Notifications */}
         <button className="relative w-10 h-10 flex items-center justify-center rounded-lg hover:bg-dash-bg transition-colors cursor-pointer" aria-label="Notifications">

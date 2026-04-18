@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createColumnHelper } from "@tanstack/react-table";
 import { format, differenceInDays, isPast, parseISO } from "date-fns";
 import { Plus, Filter, Download, Mail, MessageCircle, ClipboardList, Loader2, Save, X, ChevronDown, AlertTriangle } from "lucide-react";
@@ -84,6 +85,7 @@ interface LeadFormProps {
   onClose: () => void;
   onSaved: () => void;
   editLead?: Lead | null;
+  initialSource?: string;
 }
 
 const emptyForm = {
@@ -105,7 +107,7 @@ interface BrandOption {
   name: string;
 }
 
-const LeadForm = ({ open, onClose, onSaved, editLead }: LeadFormProps) => {
+const LeadForm = ({ open, onClose, onSaved, editLead, initialSource }: LeadFormProps) => {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -142,10 +144,10 @@ const LeadForm = ({ open, onClose, onSaved, editLead }: LeadFormProps) => {
         brand_slugs: editLead.brandSlugs.join("|"),
       });
     } else {
-      setForm(emptyForm);
+      setForm({ ...emptyForm, source: initialSource || emptyForm.source });
     }
     setError(null);
-  }, [editLead, open]);
+  }, [editLead, open, initialSource]);
 
   const selectedBrandSlugs = form.brand_slugs
     .split("|")
@@ -605,6 +607,20 @@ const LeadsPage = () => {
     fetchLeads();
   }, [fetchLeads]);
 
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const actionParam = searchParams.get("action");
+  const sourceParam = searchParams.get("source") ?? undefined;
+
+  useEffect(() => {
+    if (actionParam === "new") {
+      setEditingLead(null);
+      setFormOpen(true);
+      // Strip the query so it doesn't re-open on remount
+      router.replace("/dashboard/leads");
+    }
+  }, [actionParam, router]);
+
   const filteredLeads = useMemo(() => {
     return leads.filter((lead) => {
       if (statusFilter !== "all" && lead.status !== statusFilter) return false;
@@ -1006,6 +1022,7 @@ const LeadsPage = () => {
         }}
         onSaved={fetchLeads}
         editLead={editingLead}
+        initialSource={sourceParam}
       />
     </div>
   );

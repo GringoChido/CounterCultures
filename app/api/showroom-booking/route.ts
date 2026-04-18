@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod/v4";
-import { submitShowroomBooking } from "@/app/lib/sheets";
+import { submitShowroomBooking, submitLead } from "@/app/lib/sheets";
 import { sendBookingConfirmation, notifyRoger, notifyWhatsApp } from "@/app/lib/email";
 
 const schema = z.object({
@@ -27,6 +27,17 @@ export const POST = async (request: Request) => {
     const { name, email, phone, date, time, notes } = result.data;
 
     await submitShowroomBooking({ name, email, phone, date, time, notes });
+
+    // Mirror into Leads so Roger checks one inbox, not three
+    await submitLead({
+      name,
+      email,
+      phone,
+      source: "Showroom Booking",
+      message: `Visit requested${date ? ` for ${date}` : ""}${time ? ` at ${time}` : ""}${notes ? `\n\n${notes}` : ""}`,
+    }).catch((err) => {
+      console.error("[Showroom] Leads mirror failed:", err);
+    });
 
     void Promise.all([
       sendBookingConfirmation(email, name, date || "TBD", time || "TBD").catch(() => {}),

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   DndContext,
   DragOverlay,
@@ -329,6 +330,15 @@ const PipelinePage = () => {
 
   // Option A — New Deal SlideOut state
   const [newDealOpen, setNewDealOpen] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const newDealActionParam = searchParams.get("action");
+  useEffect(() => {
+    if (newDealActionParam === "new") {
+      setNewDealOpen(true);
+      router.replace("/dashboard/pipeline");
+    }
+  }, [newDealActionParam, router]);
   const [newDealForm, setNewDealForm] = useState(emptyNewDealForm);
   const [newDealSaving, setNewDealSaving] = useState(false);
   const [brandOptions, setBrandOptions] = useState<BrandOption[]>([]);

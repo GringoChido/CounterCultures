@@ -216,6 +216,31 @@ const TOOLS: Anthropic.Messages.Tool[] = [
       required: [],
     },
   },
+  {
+    name: "get_new_leads_today",
+    description:
+      "Return leads created in the last 24 hours (or N hours if specified). Use when the user asks about today's leads, recent leads, or the latest inquiries.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        hours: {
+          type: "number",
+          description: "Window in hours. Default 24.",
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: "get_week_kpis",
+    description:
+      "Compute this week's headline numbers: active pipeline value, deals won, deals created, new leads. Use when the user asks about this week, week-in-review, or weekly numbers.",
+    input_schema: {
+      type: "object" as const,
+      properties: {},
+      required: [],
+    },
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -421,6 +446,89 @@ async function executeTool(
         return `Sync complete: ${result.totalRows} total products parsed from ${result.results.length} files.\n\nDetails:\n${result.results.map((r) => `- ${r.brand} (${r.fileName}): ${r.rowsParsed} rows — ${r.status}${r.error ? ` — ${r.error}` : ""}`).join("\n")}`;
       }
 
+      case "get_new_leads_today": {
+        const hours = Number(input.hours) > 0 ? Number(input.hours) : 24;
+        const cutoff = Date.now() - hours * 60 * 60 * 1000;
+        const rows = await readSheet<Record<string, string>>("Leads");
+        const recent = rows.filter((r) => {
+          const created = r.created_at || r.createdAt || r.Created_At;
+          if (!created) return false;
+          const t = new Date(created).getTime();
+          return !Number.isNaN(t) && t >= cutoff;
+        });
+        if (recent.length === 0) {
+          return `No new leads in the last ${hours}h.`;
+        }
+        return `${recent.length} new leads in the last ${hours}h:\n${JSON.stringify(
+          recent.slice(0, 15).map((r) => ({
+            id: r.id,
+            name: r.name,
+            source: r.source,
+            status: r.status,
+            brand_slugs: r.brand_slugs,
+            created_at: r.created_at,
+          })),
+          null,
+          2
+        )}`;
+      }
+
+      case "get_week_kpis": {
+        const now = new Date();
+        const day = now.getDay(); // 0=Sun
+        const daysSinceMonday = (day + 6) % 7; // Monday=0
+        const weekStart = new Date(now);
+        weekStart.setHours(0, 0, 0, 0);
+        weekStart.setDate(weekStart.getDate() - daysSinceMonday);
+        const weekStartMs = weekStart.getTime();
+
+        const [leads, pipeline] = await Promise.all([
+          readSheet<Record<string, string>>("Leads"),
+          readSheet<Record<string, string>>("Pipeline"),
+        ]);
+
+        const newLeadsThisWeek = leads.filter((r) => {
+          const t = new Date(r.created_at || "").getTime();
+          return !Number.isNaN(t) && t >= weekStartMs;
+        }).length;
+
+        const parseValue = (v: string): number => {
+          const n = Number(String(v).replace(/[^0-9.-]/g, ""));
+          return Number.isFinite(n) ? n : 0;
+        };
+
+        let pipelineValue = 0;
+        let wonThisWeek = 0;
+        let newDealsThisWeek = 0;
+        for (const r of pipeline) {
+          const stage = (r.stage || r.Stage || "").toLowerCase();
+          const isOpen = stage && !stage.includes("closed-won") && !stage.includes("closed-lost");
+          if (isOpen) pipelineValue += parseValue(r.value || "0");
+          const created = new Date(r.created_at || "").getTime();
+          if (!Number.isNaN(created) && created >= weekStartMs) newDealsThisWeek++;
+          const closed = new Date(r.closed_at || "").getTime();
+          if (
+            stage.includes("closed-won") &&
+            !Number.isNaN(closed) &&
+            closed >= weekStartMs
+          ) {
+            wonThisWeek += parseValue(r.value || "0");
+          }
+        }
+
+        return JSON.stringify(
+          {
+            weekStart: weekStart.toISOString().slice(0, 10),
+            activePipelineValue: pipelineValue,
+            revenueWonThisWeek: wonThisWeek,
+            newDealsThisWeek,
+            newLeadsThisWeek,
+          },
+          null,
+          2
+        );
+      }
+
       default:
         return `Unknown tool: ${name}`;
     }
@@ -524,7 +632,7 @@ export const POST = async (request: Request) => {
       iterations++;
 
       const response = await client.messages.create({
-        model: "claude-haiku-4-5-20251001",
+        model: "claude-opus-4-7",
         max_tokens: 1200,
         system: SYSTEM_PROMPT,
         tools: TOOLS,

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod/v4";
-import { submitTradeApplication } from "@/app/lib/sheets";
+import { submitTradeApplication, submitLead } from "@/app/lib/sheets";
 import { sendTradeConfirmation, notifyRoger, notifyWhatsApp } from "@/app/lib/email";
 
 const schema = z.object({
@@ -39,6 +39,17 @@ export const POST = async (request: Request) => {
       license,
       website,
       message,
+    });
+
+    // Mirror into Leads so Roger checks one inbox, not three
+    await submitLead({
+      name,
+      email,
+      phone,
+      source: "Trade Program",
+      message: `${company}${profession ? ` · ${profession}` : ""}${website ? ` · ${website}` : ""}${license ? ` · License ${license}` : ""}${message ? `\n\n${message}` : ""}`,
+    }).catch((err) => {
+      console.error("[Trade] Leads mirror failed:", err);
     });
 
     void Promise.all([
