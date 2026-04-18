@@ -280,6 +280,11 @@ export interface PipelineDeal {
   competitor?: string;
   lostReason?: LostReason;
 
+  // Brands involved in this deal — inherits from source Lead when Lead→Deal
+  // promotion happens; editable on the deal. Source of truth for deal-card chips
+  // and Shipments brand matrix. Pipe-serialized in Pipeline sheet column.
+  brandSlugs?: string[];
+
   // Structured product data (Operations)
   lineItems?: DealLineItem[];
 

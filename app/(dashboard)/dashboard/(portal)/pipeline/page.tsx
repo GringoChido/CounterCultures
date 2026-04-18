@@ -246,6 +246,24 @@ const DealCard = ({ deal, onClick }: DealCardProps) => {
         </span>
       )}
 
+      {deal.brandSlugs && deal.brandSlugs.length > 0 && (
+        <div className="flex flex-wrap gap-1 mb-1.5">
+          {deal.brandSlugs.slice(0, 3).map((slug) => (
+            <span
+              key={slug}
+              className="px-1.5 py-0.5 bg-brand-copper/10 text-brand-copper border border-brand-copper/20 rounded text-[9px] leading-tight"
+            >
+              {slug}
+            </span>
+          ))}
+          {deal.brandSlugs.length > 3 && (
+            <span className="text-[9px] text-dash-text-secondary self-center">
+              +{deal.brandSlugs.length - 3}
+            </span>
+          )}
+        </div>
+      )}
+
       <div className="flex items-center justify-between text-[10px] text-dash-text-secondary">
         <div className="flex items-center gap-1">
           <Calendar className="w-3 h-3" />
@@ -281,6 +299,21 @@ const DealCardOverlay = ({ deal }: { deal: PipelineDeal }) => (
 
 type DealTabKey = "details" | "documents" | "line-items" | "payments" | "purchase-orders" | "shipments" | "customs" | "financial";
 
+interface BrandOption {
+  slug: string;
+  name: string;
+}
+
+const emptyNewDealForm = {
+  name: "",
+  company: "",
+  stage: "discovery" as PipelineStage,
+  value: "",
+  expectedClose: "",
+  source: "Direct",
+  brandSlugs: [] as string[],
+};
+
 const PipelinePage = () => {
   const [deals, setDeals] = useState(SAMPLE_PIPELINE);
   const [loading, setLoading] = useState(true);
@@ -291,6 +324,98 @@ const PipelinePage = () => {
   const [activityNote, setActivityNote] = useState("");
   const [activityType, setActivityType] = useState<"call" | "email" | "meeting" | "note" | "whatsapp">("call");
   const addActivity = useActivityStore((s) => s.addActivity);
+
+  // Option A — New Deal SlideOut state
+  const [newDealOpen, setNewDealOpen] = useState(false);
+  const [newDealForm, setNewDealForm] = useState(emptyNewDealForm);
+  const [newDealSaving, setNewDealSaving] = useState(false);
+  const [brandOptions, setBrandOptions] = useState<BrandOption[]>([]);
+
+  useEffect(() => {
+    if (!newDealOpen || brandOptions.length > 0) return;
+    fetch("/api/dashboard/brands")
+      .then((r) => r.json())
+      .then((d) => {
+        const brands = (d.brands ?? []) as BrandOption[];
+        setBrandOptions(
+          brands
+            .map((b) => ({ slug: b.slug, name: b.name }))
+            .sort((a, b) => a.name.localeCompare(b.name))
+        );
+      })
+      .catch((err) => console.error("[PipelinePage] brand fetch failed", err));
+  }, [newDealOpen, brandOptions.length]);
+
+  const resetNewDealForm = () => setNewDealForm(emptyNewDealForm);
+
+  const toggleNewDealBrand = (slug: string) => {
+    setNewDealForm((prev) => ({
+      ...prev,
+      brandSlugs: prev.brandSlugs.includes(slug)
+        ? prev.brandSlugs.filter((s) => s !== slug)
+        : [...prev.brandSlugs, slug],
+    }));
+  };
+
+  const createNewDeal = async () => {
+    if (!newDealForm.name.trim()) return;
+    try {
+      setNewDealSaving(true);
+      const id = `DEAL-${Date.now()}`;
+      const now = new Date().toISOString();
+      const expected =
+        newDealForm.expectedClose ||
+        new Date(Date.now() + 30 * 86400000).toISOString();
+
+      const body = {
+        id,
+        name: newDealForm.name.trim(),
+        company: newDealForm.company.trim(),
+        stage: newDealForm.stage,
+        value: newDealForm.value || "0",
+        probability: "50",
+        expected_close: expected,
+        owner: "Roger",
+        source: newDealForm.source,
+        created_at: now,
+        last_activity: now,
+        brand_slugs: newDealForm.brandSlugs.join("|"),
+      };
+
+      const res = await fetch("/api/dashboard/pipeline", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error("Failed to create deal");
+
+      const created: PipelineDeal = {
+        id,
+        name: body.name,
+        contactName: body.company,
+        contactCompany: body.company,
+        value: parseFloat(body.value) || 0,
+        currency: "MXN",
+        stage: newDealForm.stage,
+        probability: 50,
+        expectedClose: expected,
+        assignedRep: "Roger",
+        products: "",
+        createdAt: now,
+        notes: "",
+        leadSource: body.source,
+        brandSlugs: newDealForm.brandSlugs,
+      };
+      setDeals((prev) => [created, ...prev]);
+      setNewDealOpen(false);
+      resetNewDealForm();
+      setSelectedDeal(created);
+    } catch (err) {
+      console.error("[PipelinePage] createNewDeal failed", err);
+    } finally {
+      setNewDealSaving(false);
+    }
+  };
 
   // Fetch pipeline deals from CRM — merge with sample data structure
   useEffect(() => {
@@ -316,6 +441,10 @@ const PipelinePage = () => {
               createdAt: d.created_at || new Date().toISOString(),
               notes: "",
               leadSource: d.source || "",
+              brandSlugs: (d.brand_slugs ?? "")
+                .split("|")
+                .map((s) => s.trim())
+                .filter(Boolean),
             }));
             setDeals(mapped);
           }
@@ -612,42 +741,8 @@ const PipelinePage = () => {
         </div>
         <button
           onClick={() => {
-            const newDeal: PipelineDeal = {
-              id: `DEAL-${Date.now()}`,
-              name: "New Deal",
-              contactName: "",
-              contactCompany: "",
-              value: 0,
-              currency: "MXN",
-              stage: "discovery" as PipelineStage,
-              probability: 50,
-              expectedClose: new Date(Date.now() + 30 * 86400000).toISOString(),
-              assignedRep: "Roger",
-              products: "",
-              createdAt: new Date().toISOString(),
-              notes: "",
-            };
-            setDeals((prev) => [newDeal, ...prev]);
-            setSelectedDeal(newDeal);
-            setDealTab("details");
-            // Persist to CRM
-            fetch("/api/dashboard/pipeline", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                id: newDeal.id,
-                name: newDeal.name,
-                company: "",
-                stage: newDeal.stage,
-                value: "0",
-                probability: "50",
-                expected_close: newDeal.expectedClose,
-                owner: "Roger",
-                source: "",
-                created_at: newDeal.createdAt,
-                last_activity: newDeal.createdAt,
-              }),
-            }).catch(() => {});
+            resetNewDealForm();
+            setNewDealOpen(true);
           }}
           className="flex items-center gap-2 px-4 py-1.5 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer"
         >
@@ -1771,6 +1866,197 @@ const PipelinePage = () => {
             </div>
           </div>
         )}
+      </SlideOut>
+
+      {/* New Deal — Option A direct entry (bypasses Lead form) */}
+      <SlideOut
+        open={newDealOpen}
+        onClose={() => {
+          if (!newDealSaving) {
+            setNewDealOpen(false);
+            resetNewDealForm();
+          }
+        }}
+        title="New Deal"
+        width="w-[520px]"
+      >
+        <div className="space-y-5">
+          <p className="text-xs text-dash-text-secondary">
+            For known customers — phone orders, walk-ins, WhatsApp, or
+            referrals. For brand-new prospects, use a Lead instead.
+          </p>
+
+          <div>
+            <label className="block text-xs font-medium text-dash-text-secondary mb-1.5">
+              Deal name <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="text"
+              value={newDealForm.name}
+              onChange={(e) =>
+                setNewDealForm((p) => ({ ...p, name: e.target.value }))
+              }
+              placeholder="Residencial San Antonio — 12 Units"
+              className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
+              autoFocus
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-dash-text-secondary mb-1.5">
+              Customer / company
+            </label>
+            <input
+              type="text"
+              value={newDealForm.company}
+              onChange={(e) =>
+                setNewDealForm((p) => ({ ...p, company: e.target.value }))
+              }
+              placeholder="ARQ. Gabor Goded / Casa Atelier"
+              className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-dash-text-secondary mb-1.5">
+                Stage
+              </label>
+              <select
+                value={newDealForm.stage}
+                onChange={(e) =>
+                  setNewDealForm((p) => ({
+                    ...p,
+                    stage: e.target.value as PipelineStage,
+                  }))
+                }
+                className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
+              >
+                <option value="discovery">Discovery</option>
+                <option value="design-scope">Design & Scope</option>
+                <option value="proposal-sent">Proposal Sent</option>
+                <option value="follow-up-negotiation">Negotiation</option>
+                <option value="verbal-yes">Verbal Yes</option>
+                <option value="won">Won</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-dash-text-secondary mb-1.5">
+                Estimated value (MXN)
+              </label>
+              <input
+                type="number"
+                value={newDealForm.value}
+                onChange={(e) =>
+                  setNewDealForm((p) => ({ ...p, value: e.target.value }))
+                }
+                placeholder="450000"
+                className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-dash-text-secondary mb-1.5">
+                Expected close
+              </label>
+              <input
+                type="date"
+                value={newDealForm.expectedClose}
+                onChange={(e) =>
+                  setNewDealForm((p) => ({
+                    ...p,
+                    expectedClose: e.target.value,
+                  }))
+                }
+                className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-dash-text-secondary mb-1.5">
+                Source
+              </label>
+              <select
+                value={newDealForm.source}
+                onChange={(e) =>
+                  setNewDealForm((p) => ({ ...p, source: e.target.value }))
+                }
+                className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
+              >
+                <option value="Direct">Direct</option>
+                <option value="Email">Email</option>
+                <option value="Walk-in">Walk-in</option>
+                <option value="Phone">Phone</option>
+                <option value="WhatsApp">WhatsApp</option>
+                <option value="Referral">Referral</option>
+                <option value="Trade Program">Trade Program</option>
+                <option value="Instagram">Instagram</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-dash-text-secondary mb-1.5">
+              Brands involved{" "}
+              <span className="text-dash-text-secondary/70 font-normal">
+                ({newDealForm.brandSlugs.length} selected)
+              </span>
+            </label>
+            {brandOptions.length === 0 ? (
+              <p className="text-xs text-dash-text-secondary">
+                Loading brands…
+              </p>
+            ) : (
+              <div className="max-h-40 overflow-y-auto border border-dash-border rounded-lg p-2 bg-dash-bg">
+                <div className="flex flex-wrap gap-1.5">
+                  {brandOptions.map((b) => {
+                    const active = newDealForm.brandSlugs.includes(b.slug);
+                    return (
+                      <button
+                        key={b.slug}
+                        type="button"
+                        onClick={() => toggleNewDealBrand(b.slug)}
+                        className={`px-2 py-0.5 rounded-full text-xs border transition-colors cursor-pointer ${
+                          active
+                            ? "bg-brand-copper/15 text-brand-copper border-brand-copper/30"
+                            : "bg-dash-surface text-dash-text-secondary border-dash-border hover:border-dash-text-secondary"
+                        }`}
+                      >
+                        {b.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-3 pt-4 border-t border-dash-border">
+            <button
+              onClick={createNewDeal}
+              disabled={!newDealForm.name.trim() || newDealSaving}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              {newDealSaving ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Plus className="w-4 h-4" />
+              )}
+              {newDealSaving ? "Creating…" : "Create Deal"}
+            </button>
+            <button
+              onClick={() => {
+                if (newDealSaving) return;
+                setNewDealOpen(false);
+                resetNewDealForm();
+              }}
+              className="px-4 py-2.5 text-sm border border-dash-border rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
       </SlideOut>
     </div>
   );

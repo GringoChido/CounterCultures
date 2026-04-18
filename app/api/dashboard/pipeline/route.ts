@@ -18,6 +18,7 @@ type PipelineRecord = {
   source: string;
   created_at: string;
   last_activity: string;
+  brand_slugs: string; // pipe-separated ("kohler|dornbracht")
 };
 
 const PIPELINE_COLUMNS: (keyof PipelineRecord)[] = [
@@ -32,6 +33,7 @@ const PIPELINE_COLUMNS: (keyof PipelineRecord)[] = [
   "source",
   "created_at",
   "last_activity",
+  "brand_slugs",
 ];
 
 // GET — list all pipeline deals
