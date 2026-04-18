@@ -5,6 +5,7 @@ import {
   findRowIndex,
   updateRow,
 } from "@/app/lib/dashboard-sheets";
+import { appendTraficoEvent } from "@/app/lib/trafico-events";
 
 type TraficoRecord = {
   TRF_ID: string;
@@ -89,6 +90,18 @@ export const POST = async (request: NextRequest) => {
     const body: TraficoRecord = await request.json();
     const values = TRAFICO_COLUMNS.map((col) => body[col] ?? "");
     await appendRow("Traficos", values);
+
+    // Audit: every new Trafico starts with a creation event so the
+    // timeline is never empty. Status auto-logged as the to_status.
+    appendTraficoEvent({
+      trafico_id: body.TRF_ID,
+      actor: "portal", // single-tenant for v1; per-user identity is Phase 2
+      event_type: "status_change",
+      from_status: "",
+      to_status: body.Status || "collecting",
+      message: `Trafico created${body.Trafico_Number ? ` — ${body.Trafico_Number}` : ""}`,
+    }).catch((err) => console.error("[Traficos POST] event log failed:", err));
+
     return NextResponse.json({ success: true, trfId: body.TRF_ID });
   } catch (err) {
     console.error("[Traficos API] POST error:", err);
@@ -105,6 +118,13 @@ export const PUT = async (request: NextRequest) => {
       return NextResponse.json({ error: "TRF_ID is required" }, { status: 400 });
     }
 
+    // Capture old Status before write so we can log a status_change event
+    // if and only if it actually changed. One extra readSheet here is
+    // acceptable — Traficos volume is < 500 rows/year.
+    const all = await readSheet<TraficoRecord>("Traficos");
+    const old = all.find((t) => t.TRF_ID === TRF_ID);
+    const oldStatus = old?.Status ?? "";
+
     const rowIdx = await findRowIndex("Traficos", "TRF_ID", TRF_ID);
     if (rowIdx === null) {
       return NextResponse.json({ error: "Trafico not found" }, { status: 404 });
@@ -112,6 +132,18 @@ export const PUT = async (request: NextRequest) => {
 
     const values = TRAFICO_COLUMNS.map((col) => body[col] ?? "");
     await updateRow("Traficos", rowIdx, values);
+
+    if (body.Status && body.Status !== oldStatus) {
+      appendTraficoEvent({
+        trafico_id: TRF_ID,
+        actor: "portal", // TODO: per-user identity once auth is multi-user
+        event_type: "status_change",
+        from_status: oldStatus,
+        to_status: body.Status,
+        message: `Status changed via Traficos PUT`,
+      }).catch((err) => console.error("[Traficos PUT] event log failed:", err));
+    }
+
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("[Traficos API] PUT error:", err);
