@@ -70,12 +70,24 @@ const TRAFICO_COLUMNS: (keyof TraficoRecord)[] = [
 
 export const GET = async (request: NextRequest) => {
   const status = request.nextUrl.searchParams.get("status");
+  const dealId = request.nextUrl.searchParams.get("dealId");
 
   try {
     let traficos = await readSheet<TraficoRecord>("Traficos");
 
     if (status) {
       traficos = traficos.filter((t) => t.Status === status);
+    }
+
+    // ?dealId — inner-join via Trafico_Items.Deal_ID
+    if (dealId) {
+      const items = await readSheet<{ TRF_ID: string; Deal_ID: string }>(
+        "Trafico_Items"
+      );
+      const trfIds = new Set(
+        items.filter((i) => i.Deal_ID === dealId).map((i) => i.TRF_ID)
+      );
+      traficos = traficos.filter((t) => trfIds.has(t.TRF_ID));
     }
 
     return NextResponse.json({ traficos });

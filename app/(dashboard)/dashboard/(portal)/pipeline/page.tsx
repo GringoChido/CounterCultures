@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   DndContext,
@@ -74,9 +75,21 @@ import {
   calculateStripeFees,
   getDealCompletionChecklist,
 } from "@/app/lib/deal-automation";
-import { SAMPLE_TRAFICOS } from "@/app/lib/sample-customs-data";
 import { useActivityStore } from "@/app/lib/stores/activity-store";
-import { TRAFICO_STATUS_CONFIG, type Trafico, getDocumentChecklist } from "@/app/lib/customs-data";
+import { TRAFICO_STATUS_CONFIG, type TraficoStatus } from "@/app/lib/customs-data";
+
+// Slim live shape from /api/dashboard/traficos (matches the flat sheet
+// row, not the rich Trafico TS type). The hydrator that converts
+// TraficoRecord → rich Trafico (with items[], documents[], calculo
+// breakdown) is W6 scope.
+interface TraficoSummary {
+  TRF_ID: string;
+  Trafico_Number: string;
+  Pedimento_Number: string;
+  Status: string;
+  Item_Count: string;
+  Total_Import_Cost: string;
+}
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -484,6 +497,24 @@ const PipelinePage = () => {
   const [dealTab, setDealTab] = useState<DealTabKey>("details");
   const [dealDocs, setDealDocs] = useState<DocumentRecord[]>([]);
   const [docsLoading, setDocsLoading] = useState(false);
+
+  // Customs tab state — Traficos linked to this deal via Trafico_Items
+  const [dealTraficos, setDealTraficos] = useState<TraficoSummary[]>([]);
+  const [traficosLoading, setTraficosLoading] = useState(false);
+
+  useEffect(() => {
+    if (!selectedDeal?.id || dealTab !== "customs") return;
+    const dealId = selectedDeal.id;
+    setTraficosLoading(true);
+    fetch(`/api/dashboard/traficos?dealId=${encodeURIComponent(dealId)}`, { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : { traficos: [] }))
+      .then((d) => setDealTraficos((d.traficos as TraficoSummary[]) ?? []))
+      .catch((e) => {
+        console.error("[Pipeline] dealTraficos fetch failed", e);
+        setDealTraficos([]);
+      })
+      .finally(() => setTraficosLoading(false));
+  }, [selectedDeal?.id, dealTab]);
 
   // Document generator state
   const [generatorOpen, setGeneratorOpen] = useState(false);
@@ -1480,137 +1511,72 @@ const PipelinePage = () => {
 
             {/* Customs Tab */}
             {dealTab === "customs" && (
-              (() => {
-                const dealTraficos = SAMPLE_TRAFICOS.filter((t) =>
-                  t.items.some((item) => item.dealId === selectedDeal.id)
-                );
-                const totalImportCost = selectedDeal.importCosts?.totalImportCost ?? 0;
+              <div className="space-y-4">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
+                  Import Crossings
+                </h4>
 
-                return (
-                  <div className="space-y-4">
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
-                      Import Crossings
-                    </h4>
-
-                    {dealTraficos.length === 0 ? (
-                      <div className="text-center py-8">
-                        <FileCheck className="w-10 h-10 text-dash-text-secondary/30 mx-auto mb-2" />
-                        <p className="text-sm text-dash-text-secondary">No customs crossings linked</p>
-                        <p className="text-xs text-dash-text-secondary/60 mt-1">
-                          Items in this deal have not been assigned to a tráfico yet
-                        </p>
-                      </div>
-                    ) : (
-                      <>
-                        {/* Total import cost */}
-                        {totalImportCost > 0 && (
-                          <div className="bg-dash-bg rounded-lg p-3 flex items-center justify-between">
-                            <span className="text-xs text-dash-text-secondary">Total Import Cost Allocated</span>
-                            <span className="text-sm font-semibold text-brand-copper">
-                              ${totalImportCost.toLocaleString()} MXN
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Per-trafico cards */}
-                        <div className="space-y-3">
-                          {dealTraficos.map((trafico) => {
-                            const cfg = TRAFICO_STATUS_CONFIG[trafico.status];
-                            const dealItems = trafico.items.filter(
-                              (item) => item.dealId === selectedDeal.id
-                            );
-                            const checklist = getDocumentChecklist(trafico);
-                            const docsUploaded = checklist.filter((d) => d.status === "uploaded").length;
-                            const docsTotal = checklist.filter((d) => d.status !== "not-applicable").length;
-                            const hasCert = dealItems.some(
-                              (item) => item.usmcaStatus === "on-file" || item.usmcaStatus === "received"
-                            );
-
-                            return (
-                              <div key={trafico.id} className="bg-dash-bg rounded-lg p-3 space-y-3">
-                                {/* Header */}
-                                <div className="flex items-start justify-between">
-                                  <div>
-                                    <p className="text-sm font-medium text-dash-text">
-                                      Tráfico {trafico.traficoNumber}
-                                    </p>
-                                    {trafico.pedimentoNumber && (
-                                      <p className="text-[10px] text-dash-text-secondary font-mono">
-                                        {trafico.pedimentoNumber}
-                                      </p>
-                                    )}
-                                  </div>
-                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${cfg.bg} ${cfg.text}`}>
-                                    {cfg.label.en}
-                                  </span>
-                                </div>
-
-                                {/* Items in this trafico from this deal */}
-                                <div className="space-y-1">
-                                  <p className="text-[10px] font-semibold uppercase tracking-wider text-dash-text-secondary">
-                                    Items in this crossing
-                                  </p>
-                                  {dealItems.map((item) => (
-                                    <div key={item.id} className="flex items-center justify-between text-[11px]">
-                                      <span className="text-dash-text">{item.vendorName}</span>
-                                      <span className="text-dash-text-secondary">
-                                        ${item.invoiceTotal.toLocaleString()} USD
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-
-                                {/* Document progress */}
-                                <div className="flex items-center justify-between text-[11px]">
-                                  <span className="text-dash-text-secondary">Documents</span>
-                                  <span className="text-dash-text">
-                                    {docsUploaded}/{docsTotal} uploaded
-                                  </span>
-                                </div>
-
-                                {/* USMCA status */}
-                                <div className="flex items-center justify-between text-[11px]">
-                                  <span className="text-dash-text-secondary flex items-center gap-1">
-                                    <Shield className="w-3 h-3" />
-                                    USMCA
-                                  </span>
-                                  <span className={hasCert ? "text-emerald-400" : "text-amber-400"}>
-                                    {hasCert ? "On file" : "Pending"}
-                                  </span>
-                                </div>
-
-                                {/* Financials if available */}
-                                {trafico.totalImportCost && (
-                                  <div className="border-t border-dash-border pt-2 grid grid-cols-3 gap-2 text-[11px]">
-                                    <div>
-                                      <p className="text-dash-text-secondary">Invoice USD</p>
-                                      <p className="text-dash-text font-medium">
-                                        ${(trafico.invoiceValueUSD ?? 0).toLocaleString()}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <p className="text-dash-text-secondary">Total Cost</p>
-                                      <p className="text-brand-copper font-medium">
-                                        ${trafico.totalImportCost.toLocaleString()} MXN
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <p className="text-dash-text-secondary">Exchange Rate</p>
-                                      <p className="text-dash-text font-medium">
-                                        {trafico.exchangeRate ?? "—"}
-                                      </p>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </>
-                    )}
+                {traficosLoading ? (
+                  <div className="text-center py-8 text-xs text-dash-text-secondary">Loading…</div>
+                ) : dealTraficos.length === 0 ? (
+                  <div className="text-center py-8">
+                    <FileCheck className="w-10 h-10 text-dash-text-secondary/30 mx-auto mb-2" />
+                    <p className="text-sm text-dash-text-secondary">No customs crossings linked</p>
+                    <p className="text-xs text-dash-text-secondary/60 mt-1">
+                      Items in this deal have not been assigned to a tráfico yet
+                    </p>
                   </div>
-                );
-              })()
+                ) : (
+                  <div className="space-y-3">
+                    {dealTraficos.map((t) => {
+                      const cfg = TRAFICO_STATUS_CONFIG[t.Status as TraficoStatus];
+                      const cost = Number(t.Total_Import_Cost || 0);
+                      return (
+                        <div key={t.TRF_ID} className="bg-dash-bg rounded-lg p-3 space-y-2">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-dash-text">
+                                Tráfico {t.Trafico_Number || t.TRF_ID}
+                              </p>
+                              {t.Pedimento_Number && (
+                                <p className="text-[10px] text-dash-text-secondary font-mono">
+                                  {t.Pedimento_Number}
+                                </p>
+                              )}
+                            </div>
+                            {cfg && (
+                              <span
+                                className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${cfg.bg} ${cfg.text}`}
+                              >
+                                {cfg.label.en}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="text-dash-text-secondary">Items in crossing</span>
+                            <span className="text-dash-text">{t.Item_Count || "0"}</span>
+                          </div>
+                          {cost > 0 && (
+                            <div className="flex items-center justify-between text-[11px]">
+                              <span className="text-dash-text-secondary">Total Import Cost</span>
+                              <span className="text-brand-copper font-medium">
+                                ${cost.toLocaleString()} MXN
+                              </span>
+                            </div>
+                          )}
+                          <Link
+                            href={`/dashboard/customs?trafico=${encodeURIComponent(t.TRF_ID)}`}
+                            className="inline-block text-[11px] text-brand-copper hover:underline"
+                          >
+                            View detail →
+                          </Link>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                {/* Items / docs / USMCA / calculo breakdown rendering deferred to W6 (needs flat→rich hydrator). */}
+              </div>
             )}
 
             {/* Financial Summary Tab */}
