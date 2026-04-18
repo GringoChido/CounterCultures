@@ -69,8 +69,17 @@ const main = async () => {
     }
   };
 
-  await cleanTab("Traficos", 0, (v) => v.startsWith("CC-TRF-TEST-"));
-  await cleanTab("Trafico_Events", 1, (v) => v.startsWith("CC-TRF-TEST-") || v === "__TEST__");
+  // Matches our test/dev IDs across this session and prior:
+  //   CC-TRF-TEST-*           — early Task 8 verification
+  //   CC-TRF-2026-{ms}-*      — Task 10 "Start New Trafico" stubs (long ID
+  //                             with embedded timestamp). Real production
+  //                             Traficos use shorter manual numbers like
+  //                             CC-TRF-2026-001, so the >4 segment count
+  //                             distinguishes test stubs from real rows.
+  const isTestTrf = (v: string) =>
+    v.startsWith("CC-TRF-TEST-") || /^CC-TRF-\d{4}-\d{10,}-\d+$/.test(v);
+  await cleanTab("Traficos", 0, isTestTrf);
+  await cleanTab("Trafico_Events", 1, (v) => isTestTrf(v) || v === "__TEST__");
 
   console.log("\n✅ Cleanup complete.");
 };

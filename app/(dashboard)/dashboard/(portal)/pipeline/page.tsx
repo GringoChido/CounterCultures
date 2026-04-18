@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   DndContext,
@@ -501,6 +502,7 @@ const PipelinePage = () => {
   // Customs tab state — Traficos linked to this deal via Trafico_Items
   const [dealTraficos, setDealTraficos] = useState<TraficoSummary[]>([]);
   const [traficosLoading, setTraficosLoading] = useState(false);
+  const [creatingTrafico, setCreatingTrafico] = useState(false);
 
   useEffect(() => {
     if (!selectedDeal?.id || dealTab !== "customs") return;
@@ -515,6 +517,51 @@ const PipelinePage = () => {
       })
       .finally(() => setTraficosLoading(false));
   }, [selectedDeal?.id, dealTab]);
+
+  const startNewTrafico = async () => {
+    if (!selectedDeal?.id || creatingTrafico) return;
+    setCreatingTrafico(true);
+    // CC-TRF-{YYYY}-{ms}-{rand3} — collision-resistant, sortable
+    const now = new Date();
+    const trfId = `CC-TRF-${now.getFullYear()}-${Date.now()}-${Math.floor(
+      Math.random() * 1000
+    )
+      .toString()
+      .padStart(3, "0")}`;
+    try {
+      const r = await fetch("/api/dashboard/traficos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          TRF_ID: trfId,
+          Trafico_Number: "",
+          Status: "collecting",
+          Initiated_Date: now.toISOString().slice(0, 10),
+          Item_Count: "0",
+        }),
+        cache: "no-store",
+      });
+      if (!r.ok) {
+        const data = await r.json().catch(() => ({}));
+        toast.error(data.error || "Couldn't create Trafico");
+        return;
+      }
+      toast.success("Trafico stub created", {
+        description: `${trfId} — assign items in Customs to link to this deal`,
+        action: {
+          label: "Open Customs",
+          onClick: () => router.push(`/dashboard/customs?trafico=${encodeURIComponent(trfId)}`),
+        },
+      });
+      // Trafico won't appear in this deal's list yet (no Trafico_Items
+      // link). Roger needs to assign items in /dashboard/customs.
+    } catch (err) {
+      console.error("[Pipeline] startNewTrafico failed", err);
+      toast.error("Couldn't create Trafico");
+    } finally {
+      setCreatingTrafico(false);
+    }
+  };
 
   // Document generator state
   const [generatorOpen, setGeneratorOpen] = useState(false);
@@ -1512,9 +1559,21 @@ const PipelinePage = () => {
             {/* Customs Tab */}
             {dealTab === "customs" && (
               <div className="space-y-4">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
-                  Import Crossings
-                </h4>
+                <div className="flex items-center justify-between gap-2">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
+                    Import Crossings
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={startNewTrafico}
+                    disabled={creatingTrafico}
+                    className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 disabled:opacity-50 transition-colors cursor-pointer"
+                    title="Create a new Trafico stub. You'll assign items in Customs to link it to this deal."
+                  >
+                    <Plus className="w-3 h-3" />
+                    {creatingTrafico ? "Creating…" : "Start New Trafico"}
+                  </button>
+                </div>
 
                 {traficosLoading ? (
                   <div className="text-center py-8 text-xs text-dash-text-secondary">Loading…</div>
