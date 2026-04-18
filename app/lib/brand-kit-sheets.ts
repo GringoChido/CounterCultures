@@ -38,7 +38,7 @@ const getSheets = () => {
       client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
       private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
     },
-    scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
   return google.sheets({ version: "v4", auth });
 };
@@ -143,4 +143,118 @@ export const getBrandBySlug = async (slug: string): Promise<Brand | null> => {
 
 export const invalidateBrandsCache = (): void => {
   cache = null;
+};
+
+// ── Writer ──────────────────────────────────────────────────────────────
+
+// Columns (1-indexed) matching the seed schema. Keep in sync with scripts/seed-brand-kit-sheet.ts.
+const COLUMN_MAP = {
+  name: "B",
+  taglineEn: "C",
+  taglineEs: "D",
+  descriptionEn: "E",
+  descriptionEs: "F",
+  originCountry: "G",
+  originCountryName: "H",
+  websiteUrl: "I",
+  externalUrl: "J",
+  stockedState: "K",
+  primaryCategorySlug: "L",
+  categorySlugs: "M",
+  logoDriveId: "N",
+  heroDriveId: "O",
+  brandFolderDriveId: "P",
+  featuredProductIds: "Q",
+  featuredProjectSlugs: "R",
+  nomStatusSummary: "S",
+  isArtisan: "T",
+  isFeatured: "U",
+  displayOrder: "V",
+  updatedAt: "X",
+  updatedBy: "Y",
+} as const;
+
+export type BrandPatch = Partial<
+  Pick<
+    Brand,
+    | "name"
+    | "taglineEn"
+    | "taglineEs"
+    | "descriptionEn"
+    | "descriptionEs"
+    | "originCountry"
+    | "originCountryName"
+    | "websiteUrl"
+    | "externalUrl"
+    | "stockedState"
+    | "primaryCategorySlug"
+    | "categorySlugs"
+    | "logoDriveId"
+    | "heroDriveId"
+    | "brandFolderDriveId"
+    | "featuredProductIds"
+    | "featuredProjectSlugs"
+    | "nomStatusSummary"
+    | "isArtisan"
+    | "isFeatured"
+    | "displayOrder"
+  >
+>;
+
+const serializeCell = (field: keyof BrandPatch, value: unknown): string => {
+  if (value == null) return "";
+  if (typeof value === "boolean") return value ? "TRUE" : "FALSE";
+  if (Array.isArray(value)) return value.map((v) => String(v).trim()).filter(Boolean).join("|");
+  return String(value);
+};
+
+export const updateBrand = async (
+  slug: string,
+  patch: BrandPatch,
+  actor = "portal"
+): Promise<Brand | null> => {
+  if (!isConfigured()) throw new Error("Brand Kit Sheet not configured");
+
+  const sheets = getSheets();
+
+  // Find the row for this slug
+  const slugRead = await sheets.spreadsheets.values.get({
+    spreadsheetId: SHEET_ID,
+    range: `${TAB}!A:A`,
+  });
+  const rows = slugRead.data.values ?? [];
+  let targetRow = -1;
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i]?.[0] === slug) {
+      targetRow = i + 1; // 1-indexed
+      break;
+    }
+  }
+  if (targetRow === -1) return null;
+
+  const now = new Date().toISOString();
+  const data: { range: string; values: string[][] }[] = [];
+
+  for (const [field, value] of Object.entries(patch) as [keyof BrandPatch, unknown][]) {
+    const col = COLUMN_MAP[field as keyof typeof COLUMN_MAP];
+    if (!col) continue;
+    data.push({
+      range: `${TAB}!${col}${targetRow}`,
+      values: [[serializeCell(field, value)]],
+    });
+  }
+
+  // Always bump updated_at / updated_by
+  data.push({
+    range: `${TAB}!${COLUMN_MAP.updatedAt}${targetRow}:${COLUMN_MAP.updatedBy}${targetRow}`,
+    values: [[now, actor]],
+  });
+
+  await sheets.spreadsheets.values.batchUpdate({
+    spreadsheetId: SHEET_ID,
+    requestBody: { valueInputOption: "RAW", data },
+  });
+
+  invalidateBrandsCache();
+  return getBrandBySlug(slug);
 };

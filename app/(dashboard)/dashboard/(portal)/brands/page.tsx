@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { createColumnHelper } from "@tanstack/react-table";
 import {
   Filter,
@@ -9,6 +10,7 @@ import {
   Star,
   ExternalLink,
   AlertTriangle,
+  Pencil,
 } from "lucide-react";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
@@ -514,9 +516,26 @@ const BrandsPage = () => {
                 Featured: {selectedBrand.isFeatured ? "Yes" : "No"} · Artisan:{" "}
                 {selectedBrand.isArtisan ? "Yes" : "No"}
               </p>
-              <p className="pt-2 italic text-dash-text-secondary/80">
-                Full edit view lands Day 3 of the roadmap.
-              </p>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Link
+                href={`/dashboard/brands/${selectedBrand.slug}`}
+                className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer"
+              >
+                <Pencil className="w-4 h-4" />
+                Open full edit
+              </Link>
+              {selectedBrand.websiteUrl && (
+                <a
+                  href={selectedBrand.websiteUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center px-3 py-2 text-sm border border-dash-border rounded-lg hover:bg-dash-bg transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              )}
             </div>
           </div>
         )}
