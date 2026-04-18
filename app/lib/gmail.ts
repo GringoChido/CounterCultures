@@ -213,6 +213,72 @@ const messageToShaped = (msg: gmail_v1.Schema$Message): ThreadMessage => {
   };
 };
 
+// ---- Cache (module-level, per server instance) -----------------------
+
+interface CachedInbox {
+  value: { threads: ThreadSummary[]; nextPageToken?: string; historyId?: string };
+  expiresAt: number;
+}
+interface CachedThread {
+  value: ThreadDetail;
+  expiresAt: number;
+}
+
+const INBOX_TTL_MS = 5 * 60 * 1000; // 5 minutes — per spec
+const THREAD_TTL_MS = 60 * 1000; // 1 minute — read-heavy detail view
+
+// Shared via globalThis so caches are consistent across Next.js route
+// bundles (each route can otherwise own its own module instance).
+const _g = globalThis as typeof globalThis & {
+  __ccGmailInboxCache?: Map<string, CachedInbox>;
+  __ccGmailThreadCache?: Map<string, CachedThread>;
+};
+const inboxCache: Map<string, CachedInbox> =
+  _g.__ccGmailInboxCache ?? (_g.__ccGmailInboxCache = new Map());
+const threadCache: Map<string, CachedThread> =
+  _g.__ccGmailThreadCache ?? (_g.__ccGmailThreadCache = new Map());
+
+const inboxCacheKey = (
+  gmailAddress: string,
+  opts: { maxResults?: number; q?: string; labelIds?: string[]; pageToken?: string }
+): string =>
+  `${gmailAddress}::${opts.q || ""}::${(opts.labelIds || ["INBOX"]).join(",")}::${
+    opts.pageToken || ""
+  }::${opts.maxResults ?? 50}`;
+
+const threadCacheKey = (gmailAddress: string, threadId: string): string =>
+  `${gmailAddress}::${threadId}`;
+
+/**
+ * Drop all cached inbox + thread entries for a user. Called by every
+ * write helper (mark-read, modify-labels, send, reply) so subsequent
+ * reads see the new state.
+ */
+export const invalidateGmailCache = (gmailAddress: string, threadId?: string): void => {
+  for (const key of inboxCache.keys()) {
+    if (key.startsWith(`${gmailAddress}::`)) inboxCache.delete(key);
+  }
+  if (threadId) {
+    threadCache.delete(threadCacheKey(gmailAddress, threadId));
+  } else {
+    for (const key of threadCache.keys()) {
+      if (key.startsWith(`${gmailAddress}::`)) threadCache.delete(key);
+    }
+  }
+};
+
+/**
+ * Get the current Gmail historyId via users.getProfile. Cheap call
+ * (~30ms), useful for clients that want to do incremental sync via
+ * users.history.list later.
+ */
+export const getCurrentHistoryId = async (): Promise<string | undefined> => {
+  const client = await getGmailClient();
+  if (!client) throw new Error("Gmail not connected");
+  const p = await client.gmail.users.getProfile({ userId: "me" });
+  return p.data.historyId ?? undefined;
+};
+
 // ---- Operations -------------------------------------------------------
 
 export const listInbox = async (opts: {
@@ -220,9 +286,16 @@ export const listInbox = async (opts: {
   q?: string;
   labelIds?: string[];
   pageToken?: string;
-}): Promise<{ threads: ThreadSummary[]; nextPageToken?: string }> => {
+  noCache?: boolean;
+}): Promise<{ threads: ThreadSummary[]; nextPageToken?: string; historyId?: string }> => {
   const client = await getGmailClient();
   if (!client) throw new Error("Gmail not connected");
+
+  const cacheKey = inboxCacheKey(client.gmailAddress, opts);
+  if (!opts.noCache) {
+    const hit = inboxCache.get(cacheKey);
+    if (hit && hit.expiresAt > Date.now()) return hit.value;
+  }
 
   const list = await client.gmail.users.threads.list({
     userId: "me",
@@ -273,15 +346,37 @@ export const listInbox = async (opts: {
     }
   }
 
-  return {
+  // Capture the user's current historyId so clients can later do
+  // incremental sync via users.history.list. Cheap follow-up call.
+  let historyId: string | undefined;
+  try {
+    const profile = await client.gmail.users.getProfile({ userId: "me" });
+    historyId = profile.data.historyId ?? undefined;
+  } catch {
+    /* non-fatal */
+  }
+
+  const value = {
     threads,
     nextPageToken: list.data.nextPageToken ?? undefined,
+    historyId,
   };
+  inboxCache.set(cacheKey, { value, expiresAt: Date.now() + INBOX_TTL_MS });
+  return value;
 };
 
-export const getThread = async (threadId: string): Promise<ThreadDetail> => {
+export const getThread = async (
+  threadId: string,
+  opts: { noCache?: boolean } = {}
+): Promise<ThreadDetail> => {
   const client = await getGmailClient();
   if (!client) throw new Error("Gmail not connected");
+
+  const cacheKey = threadCacheKey(client.gmailAddress, threadId);
+  if (!opts.noCache) {
+    const hit = threadCache.get(cacheKey);
+    if (hit && hit.expiresAt > Date.now()) return hit.value;
+  }
 
   const t = await client.gmail.users.threads.get({
     userId: "me",
@@ -291,8 +386,9 @@ export const getThread = async (threadId: string): Promise<ThreadDetail> => {
 
   const messages = (t.data.messages ?? []).map(messageToShaped);
   const subject = messages[0]?.subject ?? "(no subject)";
-
-  return { threadId, subject, messages };
+  const value: ThreadDetail = { threadId, subject, messages };
+  threadCache.set(cacheKey, { value, expiresAt: Date.now() + THREAD_TTL_MS });
+  return value;
 };
 
 export const markThreadRead = async (threadId: string): Promise<void> => {
@@ -303,6 +399,58 @@ export const markThreadRead = async (threadId: string): Promise<void> => {
     id: threadId,
     requestBody: { removeLabelIds: ["UNREAD"] },
   });
+  invalidateGmailCache(client.gmailAddress, threadId);
+};
+
+// ---- Labels ----------------------------------------------------------
+
+export interface GmailLabel {
+  id: string;
+  name: string;
+  type: "system" | "user";
+}
+
+/**
+ * List labels for the active user. Returns user-created labels by
+ * default; system labels (INBOX, SENT, etc.) only when `includeSystem`
+ * is true. Used by the portal label picker.
+ */
+export const listLabels = async (
+  opts: { includeSystem?: boolean } = {}
+): Promise<GmailLabel[]> => {
+  const client = await getGmailClient();
+  if (!client) throw new Error("Gmail not connected");
+  const res = await client.gmail.users.labels.list({ userId: "me" });
+  const labels = (res.data.labels ?? []).map((l) => ({
+    id: l.id ?? "",
+    name: l.name ?? "",
+    type: (l.type === "system" ? "system" : "user") as "system" | "user",
+  }));
+  return opts.includeSystem ? labels : labels.filter((l) => l.type === "user");
+};
+
+/**
+ * Apply add/remove label changes to a thread (and all its messages).
+ * IDs come from `listLabels()`. Returns the updated label IDs for the
+ * thread's latest message so the UI can confirm.
+ */
+export const modifyThreadLabels = async (
+  threadId: string,
+  changes: { add?: string[]; remove?: string[] }
+): Promise<string[]> => {
+  const client = await getGmailClient();
+  if (!client) throw new Error("Gmail not connected");
+  const res = await client.gmail.users.threads.modify({
+    userId: "me",
+    id: threadId,
+    requestBody: {
+      addLabelIds: changes.add ?? [],
+      removeLabelIds: changes.remove ?? [],
+    },
+  });
+  invalidateGmailCache(client.gmailAddress, threadId);
+  const msgs = res.data.messages ?? [];
+  return msgs.length > 0 ? (msgs[msgs.length - 1].labelIds ?? []) : [];
 };
 
 // ---- Send / Reply ----------------------------------------------------
@@ -366,6 +514,7 @@ export const sendMessage = async (input: {
     userId: "me",
     requestBody: { raw },
   });
+  invalidateGmailCache(client.gmailAddress);
   return {
     messageId: res.data.id ?? "",
     threadId: res.data.threadId ?? "",
@@ -416,6 +565,7 @@ export const replyToThread = async (input: {
     userId: "me",
     requestBody: { raw, threadId: input.threadId },
   });
+  invalidateGmailCache(client.gmailAddress, input.threadId);
   return {
     messageId: res.data.id ?? "",
     threadId: res.data.threadId ?? input.threadId,

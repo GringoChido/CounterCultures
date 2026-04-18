@@ -19,7 +19,13 @@ import {
   Tag,
   Pencil,
   Reply,
+  Archive,
+  CheckSquare,
+  Square,
 } from "lucide-react";
+import { EmailTemplatePicker } from "@/app/(dashboard)/components/email-template-picker";
+import { ThreadLabelChips } from "@/app/(dashboard)/components/thread-label-chips";
+import { AttachmentChip } from "@/app/(dashboard)/components/attachment-chip";
 
 interface ThreadSummary {
   threadId: string;
@@ -114,6 +120,19 @@ const InboxPage = () => {
   const [deals, setDeals] = useState<DealLite[] | null>(null);
   const [dealSearch, setDealSearch] = useState("");
   const [attaching, setAttaching] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkRunning, setBulkRunning] = useState<null | "archive" | "create_lead">(null);
+
+  const toggleSelect = useCallback((threadId: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(threadId)) next.delete(threadId);
+      else next.add(threadId);
+      return next;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -128,12 +147,13 @@ const InboxPage = () => {
   }, []);
 
   const fetchThreads = useCallback(
-    async (q?: string) => {
+    async (q?: string, opts: { noCache?: boolean } = {}) => {
       setLoadingThreads(true);
       setError(null);
       try {
         const params = new URLSearchParams();
         if (q) params.set("q", q);
+        if (opts.noCache) params.set("noCache", "1");
         const r = await fetch(`/api/gmail/inbox?${params.toString()}`);
         const data = await r.json();
         if (!r.ok) {
@@ -372,6 +392,48 @@ const InboxPage = () => {
     }
   };
 
+  const runBulk = async (action: "archive" | "create_lead") => {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    setBulkRunning(action);
+    try {
+      const r = await fetch("/api/gmail/threads/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ threadIds: ids, action }),
+      });
+      const data = await r.json();
+      if (!r.ok) {
+        toast.error(data.error || "Bulk action failed");
+        return;
+      }
+      const verb = action === "archive" ? "Archived" : "Created leads from";
+      if (data.failed > 0) {
+        toast.warning(`${verb} ${data.success}/${data.total} threads — ${data.failed} failed`);
+      } else {
+        toast.success(`${verb} ${data.success} thread${data.success === 1 ? "" : "s"}`);
+      }
+      // For archive: drop archived threads from the list locally so the UI is fast
+      if (action === "archive") {
+        const successIds = new Set(
+          (data.results as { threadId: string; ok: boolean }[])
+            .filter((r) => r.ok)
+            .map((r) => r.threadId)
+        );
+        setThreads((prev) => prev.filter((t) => !successIds.has(t.threadId)));
+        if (selectedThreadId && successIds.has(selectedThreadId)) {
+          setSelectedThreadId(null);
+        }
+      }
+      clearSelection();
+    } catch (err) {
+      console.error("[Inbox] bulk failed", err);
+      toast.error("Bulk action failed");
+    } finally {
+      setBulkRunning(null);
+    }
+  };
+
   // ── Not connected state ───────────────────────────────────────────
   if (status && !status.connected) {
     return (
@@ -441,8 +503,9 @@ const InboxPage = () => {
           />
         </div>
         <button
-          onClick={() => fetchThreads(query || undefined)}
+          onClick={() => fetchThreads(query || undefined, { noCache: true })}
           className="flex items-center gap-1.5 px-3 py-2 text-sm border border-dash-border rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
+          title="Force a fresh fetch (bypasses 5-min cache)"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           Refresh
@@ -467,12 +530,57 @@ const InboxPage = () => {
       <div className="flex-1 grid grid-cols-[360px_1fr] gap-0 border border-dash-border rounded-xl overflow-hidden bg-dash-surface min-h-0">
         {/* Thread list */}
         <div className="border-r border-dash-border overflow-y-auto">
-          <div className="px-3 py-2 border-b border-dash-border flex items-center justify-between text-[11px] uppercase tracking-wider font-semibold text-dash-text-secondary">
-            <span>Inbox</span>
-            <span>
-              {unreadCount} unread · {threads.length}
-            </span>
-          </div>
+          {selectedIds.size > 0 ? (
+            <div className="px-3 py-2 border-b border-dash-border flex items-center justify-between gap-2 bg-brand-copper/5">
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={clearSelection}
+                  className="text-dash-text-secondary hover:text-dash-text cursor-pointer"
+                  title="Clear selection"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+                <span className="text-[11px] font-semibold text-dash-text">
+                  {selectedIds.size} selected
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => runBulk("archive")}
+                  disabled={bulkRunning !== null}
+                  className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium border border-dash-border rounded hover:bg-dash-bg cursor-pointer disabled:opacity-50"
+                  title="Archive selected"
+                >
+                  {bulkRunning === "archive" ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Archive className="w-3 h-3" />
+                  )}
+                  Archive
+                </button>
+                <button
+                  onClick={() => runBulk("create_lead")}
+                  disabled={bulkRunning !== null}
+                  className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium bg-brand-copper text-white rounded hover:bg-brand-copper/90 cursor-pointer disabled:opacity-50"
+                  title="Create a Lead from each selected thread"
+                >
+                  {bulkRunning === "create_lead" ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <UserPlus className="w-3 h-3" />
+                  )}
+                  Create Leads
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="px-3 py-2 border-b border-dash-border flex items-center justify-between text-[11px] uppercase tracking-wider font-semibold text-dash-text-secondary">
+              <span>Inbox</span>
+              <span>
+                {unreadCount} unread · {threads.length}
+              </span>
+            </div>
+          )}
           {loadingThreads ? (
             <div className="flex items-center gap-2 px-3 py-6 text-xs text-dash-text-secondary">
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -488,53 +596,74 @@ const InboxPage = () => {
             <ul>
               {threads.map((t) => {
                 const active = t.threadId === selectedThreadId;
+                const checked = selectedIds.has(t.threadId);
                 return (
                   <li key={t.threadId}>
-                    <button
-                      onClick={() => setSelectedThreadId(t.threadId)}
-                      className={`w-full text-left px-3 py-3 border-b border-dash-border/50 transition-colors cursor-pointer ${
+                    <div
+                      className={`flex items-stretch border-b border-dash-border/50 transition-colors group ${
                         active
                           ? "bg-brand-copper/5 border-l-2 border-l-brand-copper"
+                          : checked
+                          ? "bg-brand-copper/5 border-l-2 border-l-transparent"
                           : "hover:bg-dash-bg/40 border-l-2 border-l-transparent"
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-2 mb-0.5">
-                        <span
-                          className={`text-sm truncate ${
-                            t.unread ? "font-semibold text-dash-text" : "text-dash-text"
-                          }`}
-                          title={t.fromEmail}
-                        >
-                          {t.from || t.fromEmail || "(unknown sender)"}
-                        </span>
-                        <span className="text-[10px] text-dash-text-secondary shrink-0">
-                          {formatDate(t.date)}
-                        </span>
-                      </div>
-                      <div
-                        className={`text-xs truncate ${
-                          t.unread ? "font-medium text-dash-text" : "text-dash-text-secondary"
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleSelect(t.threadId);
+                        }}
+                        className={`shrink-0 px-2 flex items-center cursor-pointer text-dash-text-secondary hover:text-brand-copper ${
+                          checked ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus:opacity-100"
                         }`}
+                        aria-label={checked ? "Deselect thread" : "Select thread"}
+                        title={checked ? "Deselect thread" : "Select thread"}
                       >
-                        {t.subject}
-                      </div>
-                      <div className="text-[11px] text-dash-text-secondary/80 truncate mt-0.5">
-                        {t.snippet}
-                      </div>
-                      <div className="flex items-center gap-1.5 mt-1.5">
-                        {t.messageCount > 1 && (
-                          <span className="text-[10px] px-1.5 py-0.5 bg-dash-bg text-dash-text-secondary rounded">
-                            {t.messageCount}
+                        {checked ? <CheckSquare className="w-3.5 h-3.5 text-brand-copper" /> : <Square className="w-3.5 h-3.5" />}
+                      </button>
+                      <button
+                        onClick={() => setSelectedThreadId(t.threadId)}
+                        className="flex-1 min-w-0 text-left pr-3 py-3 cursor-pointer"
+                      >
+                        <div className="flex items-center justify-between gap-2 mb-0.5">
+                          <span
+                            className={`text-sm truncate ${
+                              t.unread ? "font-semibold text-dash-text" : "text-dash-text"
+                            }`}
+                            title={t.fromEmail}
+                          >
+                            {t.from || t.fromEmail || "(unknown sender)"}
                           </span>
-                        )}
-                        {t.hasAttachments && (
-                          <Paperclip className="w-3 h-3 text-dash-text-secondary/70" />
-                        )}
-                        {t.unread && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-brand-copper" />
-                        )}
-                      </div>
-                    </button>
+                          <span className="text-[10px] text-dash-text-secondary shrink-0">
+                            {formatDate(t.date)}
+                          </span>
+                        </div>
+                        <div
+                          className={`text-xs truncate ${
+                            t.unread ? "font-medium text-dash-text" : "text-dash-text-secondary"
+                          }`}
+                        >
+                          {t.subject}
+                        </div>
+                        <div className="text-[11px] text-dash-text-secondary/80 truncate mt-0.5">
+                          {t.snippet}
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                          {t.messageCount > 1 && (
+                            <span className="text-[10px] px-1.5 py-0.5 bg-dash-bg text-dash-text-secondary rounded">
+                              {t.messageCount}
+                            </span>
+                          )}
+                          {t.hasAttachments && (
+                            <Paperclip className="w-3 h-3 text-dash-text-secondary/70" />
+                          )}
+                          {t.unread && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-brand-copper" />
+                          )}
+                        </div>
+                      </button>
+                    </div>
                   </li>
                 );
               })}
@@ -558,7 +687,7 @@ const InboxPage = () => {
             <div className="flex flex-col h-full">
               {/* Thread header */}
               <div className="px-5 py-4 border-b border-dash-border flex items-center justify-between gap-3 flex-wrap">
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <h3 className="text-base font-semibold text-dash-text truncate">
                     {threadDetail.subject}
                   </h3>
@@ -566,6 +695,14 @@ const InboxPage = () => {
                     {threadDetail.messages.length} message
                     {threadDetail.messages.length === 1 ? "" : "s"}
                   </p>
+                  <ThreadLabelChips
+                    threadId={threadDetail.threadId}
+                    labelIds={Array.from(
+                      new Set(threadDetail.messages.flatMap((m) => m.labelIds))
+                    )}
+                    onChange={() => fetchThread(threadDetail.threadId)}
+                    className="mt-2"
+                  />
                 </div>
                 <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
                   <button
@@ -672,12 +809,19 @@ const InboxPage = () => {
                     <p className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
                       Reply
                     </p>
-                    <button
-                      onClick={() => setReplyOpen(false)}
-                      className="text-xs text-dash-text-secondary hover:text-dash-text cursor-pointer"
-                    >
-                      Cancel
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <EmailTemplatePicker
+                        mode="reply"
+                        userEmail={status.gmailAddress}
+                        onApply={({ body }) => setReplyBody(body)}
+                      />
+                      <button
+                        onClick={() => setReplyOpen(false)}
+                        className="text-xs text-dash-text-secondary hover:text-dash-text cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
                   <textarea
                     value={replyBody}
@@ -729,15 +873,14 @@ const InboxPage = () => {
                       <div className="flex items-center gap-2 flex-wrap mt-3 pt-3 border-t border-dash-border/60">
                         <Paperclip className="w-3.5 h-3.5 text-dash-text-secondary" />
                         {m.attachments.map((a) => (
-                          <a
+                          <AttachmentChip
                             key={a.attachmentId}
-                            href={`/api/gmail/attachment/${encodeURIComponent(m.messageId)}/${encodeURIComponent(a.attachmentId)}`}
-                            download={a.filename}
-                            className="text-[11px] px-2 py-0.5 bg-dash-surface border border-dash-border rounded text-dash-text hover:border-brand-copper/40 hover:text-brand-copper transition-colors"
-                            title={`Download ${a.filename} · ${a.mimeType} · ${Math.round(a.size / 1024)} KB`}
-                          >
-                            {a.filename}
-                          </a>
+                            messageId={m.messageId}
+                            attachmentId={a.attachmentId}
+                            filename={a.filename}
+                            mimeType={a.mimeType}
+                            size={a.size}
+                          />
                         ))}
                       </div>
                     )}
@@ -820,9 +963,18 @@ const InboxPage = () => {
                 className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
               />
               <div className="flex items-center justify-between pt-2 border-t border-dash-border">
-                <span className="text-[11px] text-dash-text-secondary">
-                  From {status.gmailAddress}
-                </span>
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-[11px] text-dash-text-secondary truncate">
+                    From {status.gmailAddress}
+                  </span>
+                  <EmailTemplatePicker
+                    mode="compose"
+                    userEmail={status.gmailAddress}
+                    onApply={({ subject, body }) =>
+                      setComposeDraft((d) => ({ ...d, subject, body }))
+                    }
+                  />
+                </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setComposeOpen(false)}

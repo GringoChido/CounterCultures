@@ -7,9 +7,10 @@ export const GET = async (request: NextRequest) => {
   const labelParam = request.nextUrl.searchParams.get("labels");
   const labelIds = labelParam ? labelParam.split(",") : undefined;
   const maxResults = Number(request.nextUrl.searchParams.get("maxResults") || 50);
+  const noCache = request.nextUrl.searchParams.get("noCache") === "1";
 
   try {
-    const result = await listInbox({ q, pageToken, labelIds, maxResults });
+    const result = await listInbox({ q, pageToken, labelIds, maxResults, noCache });
     return NextResponse.json(result);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "inbox_failed";

@@ -227,6 +227,30 @@ export const createFolder = async (
   return mapFile(res.data);
 };
 
+/**
+ * Find a folder by exact name under `parentId`, or create it. Used so
+ * routing helpers (e.g. "Email attachments / 2026-04-18") don't pile up
+ * duplicate folders on every save. Includes Shared Drive folders.
+ */
+export const findOrCreateFolder = async (
+  name: string,
+  parentId?: string
+): Promise<DriveFile> => {
+  const drive = getDrive();
+  const parent = parentId || ROOT_FOLDER_ID;
+  const safeName = name.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+  const res = await drive.files.list({
+    q: `name = '${safeName}' and mimeType = 'application/vnd.google-apps.folder' and '${parent}' in parents and trashed = false`,
+    fields: "files(id, name, mimeType, size, modifiedTime, createdTime, webViewLink, iconLink, thumbnailLink, parents)",
+    pageSize: 1,
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
+  });
+  const existing = res.data.files?.[0];
+  if (existing) return mapFile(existing);
+  return createFolder(name, parent);
+};
+
 /** Upload a file from a buffer */
 export const uploadFile = async (
   name: string,
