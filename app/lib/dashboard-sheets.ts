@@ -44,7 +44,12 @@ type SheetTab =
   | "Spanish_Manuals"
   | "Notes"
   | "Gmail_Tokens"
-  | "Email_Activity";
+  | "Email_Activity"
+  | "Brand_NOM_Status"
+  | "Brand_Lead_Times"
+  | "HS_Code_Lookup"
+  | "FTA_Rates"
+  | "Trafico_Events";
 
 // Read all rows from a sheet tab (returns array of objects using header row as keys)
 const readSheet = async <T extends Record<string, string>>(
