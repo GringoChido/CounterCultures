@@ -3,14 +3,52 @@ import Link from "next/link";
 import Image from "next/image";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
-import { BRANDS } from "@/app/lib/constants";
-import { getProducts } from "@/app/lib/sheets";
-import { ArtisanalGallery } from "../artisanal/artisanal-gallery";
+import { getBrands } from "@/app/lib/brand-kit-sheets";
+import type { CategorySlug } from "@/app/lib/brand-kit-types";
+import { BrandsGrid } from "./brands-grid";
 
 const BASE_URL = "https://countercultures.mx";
 
+/**
+ * Pre-staged hero images — the 19 hand-picked editorial photos at
+ * /public/Assets/ and /public/Assets/BRANDS/. Protected across Brand Kit
+ * Sheet churn. Slug → path.
+ */
+const PRE_STAGED_HEROES: Record<string, string> = {
+  kohler: "/Assets/BRANDS/kohler-hero.webp",
+  toto: "/Assets/BRANDS/toto-hero.webp",
+  brizo: "/Assets/BRANDS/brizo-hero.webp",
+  blanco: "/Assets/BRANDS/blanco-hero.webp",
+  "california-faucets": "/Assets/BRANDS/california-faucets-hero.webp",
+  "sun-valley-bronze": "/Assets/BRANDS/sun-valley-bronze-hero.webp",
+  emtek: "/Assets/BRANDS/emtek-hero.avif",
+  badeloft: "/Assets/BRANDS/badeloft-hero.webp",
+  "villeroy-boch": "/Assets/BRANDS/villeroy-boch-hero.webp",
+  aquaspa: "/Assets/BRANDS/aquaspa-hero.webp",
+  ebbe: "/Assets/BRANDS/ebbe-hero.webp",
+  delta: "/Assets/BRANDS/delta-hero.webp",
+  rohl: "/Assets/BRANDS/rohl-hero.webp",
+  teka: "/Assets/BRANDS/teka-hero.webp",
+  smeg: "/Assets/BRANDS/smeg-hero.webp",
+  bluestar: "/Assets/BRANDS/bluestar-hero.webp",
+  baldwin: "/Assets/BRANDS/baldwin-hero.webp",
+};
+
+/**
+ * Flagship brands — the 6 top-tier editorial relationships rendered as a
+ * hero band above the filterable grid.
+ */
+const FLAGSHIP_SLUGS: readonly string[] = [
+  "kohler",
+  "toto",
+  "brizo",
+  "blanco",
+  "california-faucets",
+  "sun-valley-bronze",
+];
+
 /* ------------------------------------------------------------------ */
-/*  Artisan profiles                                                   */
+/*  Artisan profiles — kept hardcoded, elevated above imports         */
 /* ------------------------------------------------------------------ */
 
 const artisans = [
@@ -44,144 +82,10 @@ const artisans = [
 ];
 
 /* ------------------------------------------------------------------ */
-/*  Brand descriptions                                                 */
+/*  Revalidation — Brand Kit Sheet changes surface within 5 min       */
 /* ------------------------------------------------------------------ */
 
-const brandDescriptions: Record<string, { tagline: string; description: string; origin: string; image: string; alt: string }> = {
-  kohler: {
-    tagline: "Bold Looks. Lasting Quality.",
-    description: "Since 1873, Kohler has defined kitchen and bath innovation — from precision-engineered faucets to their iconic cast iron sinks.",
-    origin: "Wisconsin, USA",
-    image: "/Assets/BRANDS/kohler-hero.webp",
-    alt: "Kohler — Bold Looks. Lasting Quality. Kitchen and bath fixtures from Wisconsin, USA",
-  },
-  toto: {
-    tagline: "People-First Innovation.",
-    description: "Japan's leading fixture manufacturer, known for CEFIONTECT glaze technology and the world's most advanced toilet engineering.",
-    origin: "Kitakyushu, Japan",
-    image: "/Assets/BRANDS/toto-hero.webp",
-    alt: "TOTO — People-First Innovation. Advanced toilet and bath technology from Kitakyushu, Japan",
-  },
-  brizo: {
-    tagline: "Fashion for the Home.",
-    description: "Brizo brings fashion-forward design to kitchen and bath — the Litze collection's industrial precision is a kitchen centerpiece.",
-    origin: "Indianapolis, USA",
-    image: "/Assets/BRANDS/brizo-hero.webp",
-    alt: "Brizo — Fashion for the Home. Designer kitchen and bath faucets from Indianapolis, USA",
-  },
-  blanco: {
-    tagline: "The Kitchen Sink Experts.",
-    description: "German engineering meets kitchen design. BLANCO's patented Silgranit material is heat, scratch, and stain resistant.",
-    origin: "Oberderdingen, Germany",
-    image: "/Assets/BRANDS/blanco-hero.webp",
-    alt: "BLANCO — The Kitchen Sink Experts. German-engineered Silgranit sinks from Oberderdingen, Germany",
-  },
-  "california-faucets": {
-    tagline: "Handcrafted in Huntington Beach.",
-    description: "Over 30 finish options, made to order in California. Bridge-style faucets and custom configurations for architects.",
-    origin: "Huntington Beach, USA",
-    image: "/Assets/BRANDS/california-faucets-hero.webp",
-    alt: "California Faucets — Handcrafted in Huntington Beach. Custom bridge faucets from Huntington Beach, USA",
-  },
-  "sun-valley-bronze": {
-    tagline: "Hand-Cast. Hand-Finished. Idaho-Made.",
-    description: "Each Sun Valley Bronze lock set is individually sand-cast in silicon bronze and hand-finished — functional sculpture for your door.",
-    origin: "Bellevue, Idaho, USA",
-    image: "/Assets/BRANDS/sun-valley-bronze-hero.webp",
-    alt: "Sun Valley Bronze — Hand-Cast. Hand-Finished. Idaho-Made. Bronze entry hardware from Bellevue, Idaho",
-  },
-  emtek: {
-    tagline: "Hardware for Every Style.",
-    description: "Solid brass door hardware with designs spanning modern to traditional — Hampton, Ribbon & Reed, T-Bar, and more.",
-    origin: "City of Industry, USA",
-    image: "/Assets/BRANDS/emtek-hero.avif",
-    alt: "Emtek — Hardware for Every Style. Solid brass door hardware from City of Industry, USA",
-  },
-  badeloft: {
-    tagline: "Modern Bathing Reimagined.",
-    description: "Freestanding tubs in seamless mineral casting — sculptural forms with ergonomic comfort and easy-clean surfaces.",
-    origin: "Berlin, Germany",
-    image: "/Assets/BRANDS/badeloft-hero.webp",
-    alt: "Badeloft — Modern Bathing Reimagined. Freestanding mineral-cast tubs from Berlin, Germany",
-  },
-  bante: {
-    tagline: "Farmhouse Refined.",
-    description: "Fireclay and ceramic farmhouse sinks — the Duetto, Marea, and Duo collections bring timeless style to the kitchen.",
-    origin: "Mexico",
-    image: "/Assets/BRANDS/bante-hero.avif",
-    alt: "Banté — Farmhouse Refined. Fireclay and ceramic farmhouse sinks from Mexico",
-  },
-  mistoa: {
-    tagline: "Mexican Artisanal Ceramics.",
-    description: "Hand-shaped ceramic basins available in 10 curated colorways inspired by the Mexican landscape — Surco, Poas, Barú, Sisa, Musa.",
-    origin: "Guanajuato, Mexico",
-    image: "/Assets/BRANDS/mistoa-hero.webp",
-    alt: "Mistoa — Mexican Artisanal Ceramics. Hand-shaped ceramic basins from Guanajuato, Mexico",
-  },
-  "villeroy-boch": {
-    tagline: "European Craftsmanship Since 1748.",
-    description: "The Architectura line brings German precision to the bathroom — undermount, vessel, and countertop basins in timeless white.",
-    origin: "Mettlach, Germany",
-    image: "/Assets/BRANDS/villeroy-boch-hero.webp",
-    alt: "Villeroy & Boch — European Craftsmanship Since 1748. Precision bathroom basins from Mettlach, Germany",
-  },
-  aquaspa: {
-    tagline: "Spa-Grade Shower Systems.",
-    description: "Rain showers, body sprays, and complete spa systems — bringing the luxury spa experience into the home.",
-    origin: "Mexico",
-    image: "/Assets/BRANDS/aquaspa-hero.webp",
-    alt: "AquaSpa — Spa-Grade Shower Systems. Rain showers and spa systems from Mexico",
-  },
-  ebbe: {
-    tagline: "Engineered Drain Solutions.",
-    description: "Precision-machined linear and square shower drains — stainless steel construction with tile-insert and decorative grate options.",
-    origin: "California, USA",
-    image: "/Assets/BRANDS/ebbe-hero.webp",
-    alt: "Ebbe — Engineered Drain Solutions. Precision shower drains from California, USA",
-  },
-  delta: {
-    tagline: "Innovation at Every Turn.",
-    description: "Touch2O and ShieldSpray technologies across kitchen and bath. Delta's H2Okinetic showerheads sculpt water into a warmer, more powerful pattern.",
-    origin: "Indianapolis, USA",
-    image: "/Assets/BRANDS/delta-hero.webp",
-    alt: "Delta — Innovation at Every Turn. Touch2O kitchen and bath faucets from Indianapolis, USA",
-  },
-  rohl: {
-    tagline: "Authentic Luxury Since 1983.",
-    description: "Italian-made bridge faucets and fireclay farmhouse sinks — every piece reflects ROHL's commitment to European craftsmanship and heritage design.",
-    origin: "Irvine, California, USA",
-    image: "/Assets/BRANDS/rohl-hero.webp",
-    alt: "ROHL — Authentic Luxury Since 1983. Italian-made bridge faucets from Irvine, California",
-  },
-  teka: {
-    tagline: "German Kitchen Technology.",
-    description: "Built-in ovens, induction hobs, and stainless steel sinks — Teka brings 95 years of German-engineered kitchen innovation to Mexico.",
-    origin: "Haiger, Germany",
-    image: "/Assets/BRANDS/teka-hero.webp",
-    alt: "Teka — German Kitchen Technology. Built-in ovens and induction hobs from Haiger, Germany",
-  },
-  smeg: {
-    tagline: "Technology with Style.",
-    description: "Iconic Italian design meets precision engineering — retro-style refrigerators, ranges, and small appliances that define the modern kitchen.",
-    origin: "Guastalla, Italy",
-    image: "/Assets/BRANDS/smeg-hero.webp",
-    alt: "SMEG — Technology with Style. Iconic Italian kitchen appliances from Guastalla, Italy",
-  },
-  bluestar: {
-    tagline: "Restaurant Power. Residential Beauty.",
-    description: "Open-burner ranges with 25,000 BTU and 750+ color options — the professional chef's choice, built by hand in Pennsylvania.",
-    origin: "Pennsylvania, USA",
-    image: "/Assets/BRANDS/bluestar-hero.webp",
-    alt: "BlueStar — Restaurant Power. Residential Beauty. Professional ranges from Pennsylvania, USA",
-  },
-  baldwin: {
-    tagline: "American Craftsmanship Since 1946.",
-    description: "Forged brass door hardware with lifetime finishes — from estate rosettes to contemporary levers, each set is built to last generations.",
-    origin: "Reading, Pennsylvania, USA",
-    image: "/Assets/BRANDS/baldwin-hero.webp",
-    alt: "Baldwin — American Craftsmanship Since 1946. Forged brass door hardware from Reading, Pennsylvania",
-  },
-};
+export const revalidate = 300;
 
 /* ------------------------------------------------------------------ */
 /*  Metadata                                                           */
@@ -201,8 +105,8 @@ export const generateMetadata = async ({
     ? "Marcas y Artesanos — Counter Cultures"
     : "Brands & Makers — Counter Cultures";
   const description = isEs
-    ? "Distribuidor autorizado de Kohler, TOTO, Brizo, BLANCO y más. Artesanos mexicanos de cobre, cerámica y piedra. Descubre nuestra colección en San Miguel de Allende."
-    : "Authorized dealer for Kohler, TOTO, Brizo, BLANCO, and more. Mexican artisans crafting copper, ceramic, and stone. Discover our collection in San Miguel de Allende.";
+    ? "73 marcas premium importadas — Kohler, TOTO, Brizo, BLANCO y más — junto con artesanos mexicanos que crean cobre, cerámica y piedra a mano. Descubre nuestra colección completa en San Miguel de Allende."
+    : "73 premium imported brands — Kohler, TOTO, Brizo, BLANCO, and more — alongside Mexican artisan makers crafting copper, ceramic, and stone by hand. Discover our full collection in San Miguel de Allende.";
 
   return {
     title,
@@ -248,7 +152,49 @@ export const generateMetadata = async ({
 const BrandsPage = async ({ params }: BrandsPageProps) => {
   const { locale } = await params;
   const isEs = locale === "es";
-  const products = await getProducts({ artisanal: true });
+  const localeKey = (locale === "es" ? "es" : "en") as "en" | "es";
+
+  const allBrands = await getBrands();
+
+  // Shape brands for the client grid. External-state brands link out to
+  // their own site; others route internally.
+  const brandCards = allBrands
+    .map((b) => {
+      const tagline = (isEs && b.taglineEs ? b.taglineEs : b.taglineEn) || "";
+      const description =
+        (isEs && b.descriptionEs ? b.descriptionEs : b.descriptionEn) || "";
+      const heroImage = PRE_STAGED_HEROES[b.slug];
+      const externalHref =
+        b.stockedState === "external"
+          ? b.externalUrl || b.websiteUrl
+          : undefined;
+      return {
+        slug: b.slug,
+        name: b.name,
+        tagline,
+        description,
+        originCountry: b.originCountry,
+        originCountryName: b.originCountryName,
+        heroImage,
+        primaryCategorySlug: b.primaryCategorySlug || "other",
+        categorySlugs: b.categorySlugs as CategorySlug[],
+        stockedState: b.stockedState || "",
+        externalHref,
+        internalHref: `/${locale}/brands/${b.slug}`,
+        isFeatured: b.isFeatured,
+        displayOrder: b.displayOrder ?? 999,
+      };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  const flagship = FLAGSHIP_SLUGS.map((slug) =>
+    brandCards.find((b) => b.slug === slug)
+  ).filter((b): b is NonNullable<typeof b> => Boolean(b));
+
+  const flagshipSlugSet = new Set(FLAGSHIP_SLUGS);
+  const nonFlagship = brandCards.filter((b) => !flagshipSlugSet.has(b.slug));
+
+  /* ─── JSON-LD ─── */
 
   const brandListJsonLd = {
     "@context": "https://schema.org",
@@ -257,11 +203,11 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
       ? "Marcas y Artesanos — Counter Cultures"
       : "Brands & Makers — Counter Cultures",
     description: isEs
-      ? "Counter Cultures es distribuidor autorizado de Kohler, TOTO, Brizo, BLANCO, California Faucets, Sun Valley Bronze y más. Artesanos mexicanos de cobre, cerámica y piedra en San Miguel de Allende."
-      : "Counter Cultures is an authorized dealer for Kohler, TOTO, Brizo, BLANCO, California Faucets, Sun Valley Bronze, and more. Mexican artisans crafting copper, ceramic, and stone in San Miguel de Allende.",
+      ? "Counter Cultures representa 73 marcas premium importadas más artesanos mexicanos de cobre, cerámica y piedra en San Miguel de Allende."
+      : "Counter Cultures represents 73 premium imported brands alongside Mexican artisans crafting copper, ceramic, and stone in San Miguel de Allende.",
     url: `${BASE_URL}/${locale}/brands`,
-    numberOfItems: BRANDS.length,
-    itemListElement: BRANDS.map((brand, index) => ({
+    numberOfItems: allBrands.length,
+    itemListElement: brandCards.map((brand, index) => ({
       "@type": "ListItem",
       position: index + 1,
       item: {
@@ -308,10 +254,10 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
       ? [
           {
             "@type": "Question",
-            name: "¿Cómo se hacen los lavabos de cobre de Counter Cultures?",
+            name: "¿Cuántas marcas representa Counter Cultures?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Los lavabos de cobre de Counter Cultures son fabricados a mano por artesanos de Santa Clara del Cobre, Michoacán. Cada pieza comienza como una lámina de cobre plana de calibre 16. El artesano la calienta y la martilla sobre un molde de madera llamado yunque. Un solo lavabo requiere entre 3,000 y 8,000 golpes de martillo.",
+              text: `Counter Cultures representa ${allBrands.length} marcas premium importadas — desde Kohler y TOTO hasta Dornbracht y Hansgrohe — más artesanos mexicanos de cobre, cerámica y piedra.`,
             },
           },
           {
@@ -326,10 +272,10 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
       : [
           {
             "@type": "Question",
-            name: "How are Counter Cultures copper basins made?",
+            name: "How many brands does Counter Cultures represent?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Counter Cultures copper basins are handmade by artisans from Santa Clara del Cobre, Michoacán. Each piece starts as a flat 16-gauge copper sheet. The artisan heats it and hammers it over a wooden form called a yunque. A single basin requires 3,000–8,000 hammer strikes.",
+              text: `Counter Cultures represents ${allBrands.length} premium imported brands — from Kohler and TOTO to Dornbracht and Hansgrohe — alongside Mexican artisans crafting copper, ceramic, and stone.`,
             },
           },
           {
@@ -364,7 +310,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
 
   return (
     <>
-        <script
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(brandListJsonLd) }}
       />
@@ -400,171 +346,27 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
           </div>
           <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
-              {isEs ? "Distribuidor Autorizado · Hecho a Mano en México" : "Authorized Dealer · Handcrafted in Mexico"}
+              {isEs
+                ? "Artesanos Mexicanos · Distribuidor Autorizado"
+                : "Mexican Makers · Authorized Dealer"}
             </span>
             <h1 className="mt-6 font-display text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-light text-white tracking-wide leading-[0.95]">
-              {isEs ? "Marcas de Clase Mundial." : "World-Class Brands."}
+              {isEs ? "Artesanía Mexicana." : "Mexican Craft."}
               <br />
-              <span className="italic">{isEs ? "Artesanía Mexicana." : "Mexican Craft."}</span>
+              <span className="italic">
+                {isEs ? "Marcas de Clase Mundial." : "World-Class Brands."}
+              </span>
             </h1>
             <p className="mt-6 font-body text-lg text-white/70 max-w-2xl leading-relaxed">
               {isEs
-                ? "Representamos a las marcas más prestigiosas del mundo en baño, cocina y herrajes — y colaboramos con artesanos mexicanos que transforman cobre, cerámica y piedra en piezas únicas."
-                : "We carry the world's most prestigious bath, kitchen, and hardware brands — and collaborate with Mexican artisans who transform copper, ceramic, and stone into one-of-a-kind pieces."}
+                ? "Colaboramos con artesanos mexicanos que transforman cobre, cerámica y piedra en piezas únicas — y representamos las marcas más prestigiosas del mundo en baño, cocina y herrajes."
+                : "We collaborate with Mexican artisans who transform copper, ceramic, and stone into one-of-a-kind pieces — and we represent the world's most prestigious bath, kitchen, and hardware brands."}
             </p>
           </div>
         </section>
 
         {/* ═══════════════════════════════════════════════════════════ */}
-        {/*  OUR BRANDS                                                */}
-        {/* ═══════════════════════════════════════════════════════════ */}
-        <section className="py-20 lg:py-28 bg-brand-linen">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-14">
-              <div>
-                <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-stone uppercase">
-                  {isEs ? "Distribuidor Autorizado" : "Authorized Dealer"}
-                </span>
-                <h2 className="mt-3 font-display text-4xl md:text-5xl font-light tracking-wide text-brand-charcoal">
-                  {isEs ? "Nuestras Marcas" : "Our Brands"}
-                </h2>
-              </div>
-              <p className="font-body text-sm text-brand-stone max-w-md leading-relaxed">
-                {isEs
-                  ? "Cada marca fue elegida por su calidad, integridad de diseño y valor duradero."
-                  : "Every brand chosen for quality, design integrity, and lasting value."}
-              </p>
-            </div>
-
-            {/* Flagship brands — 2-column with large images */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
-              {BRANDS.slice(0, 6).map((brand) => {
-                const info = brandDescriptions[brand.slug];
-                return (
-                  <Link
-                    key={brand.slug}
-                    href={`/${locale}/brands/${brand.slug}`}
-                    className="group relative bg-white border border-brand-stone/8 overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-brand-copper/20 hover:-translate-y-0.5"
-                  >
-                    <div className="absolute top-0 left-0 w-0 h-0.5 bg-brand-copper transition-all duration-500 group-hover:w-full z-10" />
-                    {/* Image */}
-                    {info && (
-                      <div className="relative h-52 lg:h-64 overflow-hidden">
-                        <Image
-                          src={info.image}
-                          alt={info.alt}
-                          fill
-                          sizes="(max-width: 768px) 100vw, 50vw"
-                          className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
-                        <div className="absolute bottom-4 left-6">
-                          <p className="font-body font-semibold text-[10px] text-white/80 tracking-[0.15em] uppercase">
-                            {info.origin}
-                          </p>
-                          <h3 className="mt-1 font-display text-2xl lg:text-3xl font-light text-white tracking-wide">
-                            {brand.name}
-                          </h3>
-                        </div>
-                      </div>
-                    )}
-                    {/* Content */}
-                    <div className="p-7 lg:p-8">
-                      {info && (
-                        <>
-                          <p className="font-body font-medium text-xs text-brand-terracotta tracking-wide">
-                            {info.tagline}
-                          </p>
-                          <p className="mt-3 font-body text-sm text-brand-stone leading-relaxed">
-                            {info.description}
-                          </p>
-                        </>
-                      )}
-                      <span className="inline-flex items-center gap-2 mt-4 font-body font-medium text-xs text-brand-stone/50 group-hover:text-brand-terracotta transition-colors duration-300 tracking-wide uppercase">
-                        {isEs ? "Explorar" : "Explore"}
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M7 17L17 7M17 7H7M17 7V17" />
-                        </svg>
-                      </span>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-
-            {/* Remaining brands — 3-column with small images */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {BRANDS.slice(6).map((brand) => {
-                const info = brandDescriptions[brand.slug];
-                return (
-                  <Link
-                    key={brand.slug}
-                    href={`/${locale}/brands/${brand.slug}`}
-                    className="group relative bg-white border border-brand-stone/8 overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-brand-copper/20 hover:-translate-y-0.5"
-                  >
-                    <div className="absolute top-0 left-0 w-0 h-0.5 bg-brand-copper transition-all duration-500 group-hover:w-full z-10" />
-                    {/* Small image */}
-                    {info && (
-                      <div className="relative h-36 overflow-hidden">
-                        <Image
-                          src={info.image}
-                          alt={info.alt}
-                          fill
-                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                          className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/15 to-transparent" />
-                        <h3 className="absolute bottom-3 left-5 font-display text-xl font-light text-white tracking-wide">
-                          {brand.name}
-                        </h3>
-                      </div>
-                    )}
-                    {/* Content */}
-                    <div className="p-5">
-                      {info && (
-                        <>
-                          <p className="font-body font-semibold text-[10px] text-brand-terracotta tracking-[0.15em] uppercase">
-                            {info.origin}
-                          </p>
-                          <p className="mt-1.5 font-body text-xs text-brand-stone/80 tracking-wide">
-                            {info.tagline}
-                          </p>
-                          <p className="mt-2.5 font-body text-sm text-brand-stone leading-relaxed line-clamp-2">
-                            {info.description}
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* ═══════════════════════════════════════════════════════════ */}
-        {/*  NARRATIVE BRIDGE                                          */}
-        {/* ═══════════════════════════════════════════════════════════ */}
-        <section className="relative py-20 lg:py-24 bg-brand-charcoal overflow-hidden">
-          <div className="absolute inset-0 opacity-[0.03]">
-            <div className="absolute inset-0" style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")" }} />
-          </div>
-          <div className="relative z-10 mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-            <div className="w-12 h-0.5 bg-brand-copper mx-auto mb-8" />
-            <p className="font-display text-2xl md:text-3xl lg:text-4xl font-light text-white tracking-wide leading-snug">
-              {isEs
-                ? "Las mejores marcas del mundo nos dan la base. Nuestros artesanos mexicanos le dan "
-                : "The world's finest brands give us the foundation. Our Mexican artisans give it "}
-              <span className="italic text-brand-copper">
-                {isEs ? "alma." : "soul."}
-              </span>
-            </p>
-            <div className="w-12 h-0.5 bg-brand-copper mx-auto mt-8" />
-          </div>
-        </section>
-
-        {/* ═══════════════════════════════════════════════════════════ */}
-        {/*  THE MAKERS                                                */}
+        {/*  ARTISAN MAKERS — elevated above the import grid           */}
         {/* ═══════════════════════════════════════════════════════════ */}
         <section className="py-20 lg:py-28 bg-brand-sand/30">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -588,7 +390,6 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
                   key={artisan.name}
                   className="group relative bg-white overflow-hidden"
                 >
-                  {/* Image */}
                   <div className="relative aspect-[3/4] overflow-hidden">
                     <Image
                       src={artisan.image}
@@ -598,8 +399,6 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
                       className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-brand-charcoal/70 via-brand-charcoal/20 to-transparent" />
-
-                    {/* Overlay content at bottom of image */}
                     <div className="absolute bottom-0 left-0 right-0 p-6">
                       <span className="inline-block bg-brand-copper text-white px-3 py-1 text-[10px] font-body font-semibold tracking-[0.15em] uppercase mb-3">
                         {artisan.location}
@@ -613,7 +412,6 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
                     </div>
                   </div>
 
-                  {/* Text content */}
                   <div className="p-6 lg:p-8">
                     <div className="w-8 h-0.5 bg-brand-copper mb-4" />
                     <p className="font-body text-sm text-brand-stone leading-relaxed">
@@ -627,9 +425,124 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
         </section>
 
         {/* ═══════════════════════════════════════════════════════════ */}
-        {/*  ARTISANAL GALLERY                                         */}
+        {/*  NARRATIVE BRIDGE — makers → imports                       */}
         {/* ═══════════════════════════════════════════════════════════ */}
-        <ArtisanalGallery products={products} />
+        <section className="relative py-20 lg:py-24 bg-brand-charcoal overflow-hidden">
+          <div className="absolute inset-0 opacity-[0.03]">
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage:
+                  "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
+              }}
+            />
+          </div>
+          <div className="relative z-10 mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
+            <div className="w-12 h-0.5 bg-brand-copper mx-auto mb-8" />
+            <p className="font-display text-2xl md:text-3xl lg:text-4xl font-light text-white tracking-wide leading-snug">
+              {isEs
+                ? "Nuestros artesanos mexicanos dan el "
+                : "Our Mexican artisans give the "}
+              <span className="italic text-brand-copper">
+                {isEs ? "alma." : "soul."}
+              </span>
+              {isEs
+                ? " Las mejores marcas del mundo nos dan la base."
+                : " The world's finest brands give us the foundation."}
+            </p>
+            <div className="w-12 h-0.5 bg-brand-copper mx-auto mt-8" />
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════════════════════════ */}
+        {/*  OUR IMPORT PARTNERS — flagship band + filterable grid     */}
+        {/* ═══════════════════════════════════════════════════════════ */}
+        <section className="py-20 lg:py-28 bg-brand-linen">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-14">
+              <div>
+                <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-stone uppercase">
+                  {isEs ? "Distribuidor Autorizado" : "Authorized Dealer"}
+                </span>
+                <h2 className="mt-3 font-display text-4xl md:text-5xl font-light tracking-wide text-brand-charcoal">
+                  {isEs ? "Nuestros Socios" : "Our Import Partners"}
+                </h2>
+              </div>
+              <p className="font-body text-sm text-brand-stone max-w-md leading-relaxed">
+                {isEs
+                  ? `${allBrands.length} marcas — cada una elegida por su calidad, integridad de diseño y valor duradero.`
+                  : `${allBrands.length} brands — each chosen for quality, design integrity, and lasting value.`}
+              </p>
+            </div>
+
+            {/* Flagship band — 2-column large cards */}
+            {flagship.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
+                {flagship.map((brand) => (
+                  <Link
+                    key={brand.slug}
+                    href={brand.internalHref}
+                    className="group relative bg-white border border-brand-stone/8 overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-brand-copper/20 hover:-translate-y-0.5"
+                  >
+                    <div className="absolute top-0 left-0 w-0 h-0.5 bg-brand-copper transition-all duration-500 group-hover:w-full z-10" />
+                    {brand.heroImage && (
+                      <div className="relative h-52 lg:h-64 overflow-hidden">
+                        <Image
+                          src={brand.heroImage}
+                          alt={brand.name}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 50vw"
+                          className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
+                        <div className="absolute bottom-4 left-6">
+                          {brand.originCountryName && (
+                            <p className="font-body font-semibold text-[10px] text-white/80 tracking-[0.15em] uppercase">
+                              {brand.originCountryName}
+                            </p>
+                          )}
+                          <h3 className="mt-1 font-display text-2xl lg:text-3xl font-light text-white tracking-wide">
+                            {brand.name}
+                          </h3>
+                        </div>
+                      </div>
+                    )}
+                    <div className="p-7 lg:p-8">
+                      {brand.tagline && (
+                        <p className="font-body font-medium text-xs text-brand-terracotta tracking-wide">
+                          {brand.tagline}
+                        </p>
+                      )}
+                      {brand.description && (
+                        <p className="mt-3 font-body text-sm text-brand-stone leading-relaxed line-clamp-3">
+                          {brand.description}
+                        </p>
+                      )}
+                      <span className="inline-flex items-center gap-2 mt-4 font-body font-medium text-xs text-brand-stone/50 group-hover:text-brand-terracotta transition-colors duration-300 tracking-wide uppercase">
+                        {isEs ? "Explorar" : "Explore"}
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M7 17L17 7M17 7H7M17 7V17" />
+                        </svg>
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {/* Filterable grid — 67 remaining brands */}
+            <BrandsGrid locale={localeKey} brands={nonFlagship} />
+          </div>
+        </section>
 
         {/* ═══════════════════════════════════════════════════════════ */}
         {/*  COMMISSION CTA                                            */}
