@@ -24,6 +24,7 @@ interface SheetLead {
   created_at: string;
   next_followup: string;
   last_contact_date: string;
+  brand_slugs: string;
 }
 
 // UI-friendly lead derived from sheet data
@@ -40,6 +41,7 @@ interface Lead {
   createdAt: string;
   nextFollowUp: string;
   lastContactDate: string;
+  brandSlugs: string[];
 }
 
 const mapSheetLead = (s: SheetLead): Lead => ({
@@ -55,6 +57,10 @@ const mapSheetLead = (s: SheetLead): Lead => ({
   createdAt: s.created_at,
   nextFollowUp: s.next_followup,
   lastContactDate: s.last_contact_date,
+  brandSlugs: (s.brand_slugs ?? "")
+    .split("|")
+    .map((x) => x.trim())
+    .filter(Boolean),
 });
 
 const statusVariants: Record<string, BadgeVariant> = {
@@ -89,12 +95,34 @@ const emptyForm = {
   value: "",
   next_followup: "",
   last_contact_date: "",
+  brand_slugs: "",
 };
+
+interface BrandOption {
+  slug: string;
+  name: string;
+}
 
 const LeadForm = ({ open, onClose, onSaved, editLead }: LeadFormProps) => {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [brandOptions, setBrandOptions] = useState<BrandOption[]>([]);
+
+  useEffect(() => {
+    if (!open) return;
+    fetch("/api/dashboard/brands")
+      .then((r) => r.json())
+      .then((d) => {
+        const brands = (d.brands ?? []) as BrandOption[];
+        setBrandOptions(
+          brands
+            .map((b) => ({ slug: b.slug, name: b.name }))
+            .sort((a, b) => a.name.localeCompare(b.name))
+        );
+      })
+      .catch((err) => console.error("[LeadForm] brand fetch failed", err));
+  }, [open]);
 
   useEffect(() => {
     if (editLead) {
@@ -109,12 +137,31 @@ const LeadForm = ({ open, onClose, onSaved, editLead }: LeadFormProps) => {
         value: editLead.value,
         next_followup: editLead.nextFollowUp,
         last_contact_date: editLead.lastContactDate,
+        brand_slugs: editLead.brandSlugs.join("|"),
       });
     } else {
       setForm(emptyForm);
     }
     setError(null);
   }, [editLead, open]);
+
+  const selectedBrandSlugs = form.brand_slugs
+    .split("|")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  const toggleBrand = (slug: string) => {
+    setForm((prev) => {
+      const current = prev.brand_slugs
+        .split("|")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const next = current.includes(slug)
+        ? current.filter((s) => s !== slug)
+        : [...current, slug];
+      return { ...prev, brand_slugs: next.join("|") };
+    });
+  };
 
   const handleChange = (field: string, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -287,6 +334,41 @@ const LeadForm = ({ open, onClose, onSaved, editLead }: LeadFormProps) => {
           </div>
         </div>
 
+        {/* Brands of interest */}
+        <div>
+          <label className={labelClass}>
+            Brands of interest{" "}
+            <span className="text-dash-text-secondary/70 font-normal">
+              ({selectedBrandSlugs.length} selected)
+            </span>
+          </label>
+          {brandOptions.length === 0 ? (
+            <p className="text-xs text-dash-text-secondary">Loading brands…</p>
+          ) : (
+            <div className="max-h-40 overflow-y-auto border border-dash-border rounded-lg p-2 bg-dash-bg">
+              <div className="flex flex-wrap gap-1.5">
+                {brandOptions.map((b) => {
+                  const active = selectedBrandSlugs.includes(b.slug);
+                  return (
+                    <button
+                      key={b.slug}
+                      type="button"
+                      onClick={() => toggleBrand(b.slug)}
+                      className={`px-2 py-0.5 rounded-full text-xs border transition-colors cursor-pointer ${
+                        active
+                          ? "bg-brand-copper/15 text-brand-copper border-brand-copper/30"
+                          : "bg-dash-surface text-dash-text-secondary border-dash-border hover:border-dash-text-secondary"
+                      }`}
+                    >
+                      {b.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Actions */}
         <div className="flex gap-3 pt-4 border-t border-dash-border">
           <button
@@ -350,6 +432,29 @@ const FollowUpIndicator = ({ dateStr }: { dateStr?: string }) => {
   }
 };
 
+const BrandChips = ({ slugs }: { slugs: string[] }) => {
+  if (slugs.length === 0) {
+    return <span className="text-dash-text-secondary">&mdash;</span>;
+  }
+  const shown = slugs.slice(0, 3);
+  const extra = slugs.length - shown.length;
+  return (
+    <div className="flex flex-wrap gap-1 items-center">
+      {shown.map((s) => (
+        <span
+          key={s}
+          className="px-1.5 py-0.5 bg-brand-copper/10 text-brand-copper border border-brand-copper/20 rounded text-[10px] leading-tight"
+        >
+          {s}
+        </span>
+      ))}
+      {extra > 0 && (
+        <span className="text-[10px] text-dash-text-secondary">+{extra}</span>
+      )}
+    </div>
+  );
+};
+
 const columns = [
   columnHelper.accessor("name", {
     header: "Name",
@@ -359,6 +464,11 @@ const columns = [
         <p className="text-xs text-dash-text-secondary">{info.row.original.email}</p>
       </div>
     ),
+  }),
+  columnHelper.accessor("brandSlugs", {
+    header: "Brands",
+    cell: (info) => <BrandChips slugs={info.getValue()} />,
+    enableSorting: false,
   }),
   columnHelper.accessor("source", {
     header: "Source",

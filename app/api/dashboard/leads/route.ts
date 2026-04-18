@@ -19,6 +19,7 @@ type LeadRecord = {
   created_at: string;
   next_followup: string;
   last_contact_date: string;
+  brand_slugs: string; // pipe-separated ("kohler|dornbracht")
 };
 
 const LEAD_COLUMNS: (keyof LeadRecord)[] = [
@@ -34,6 +35,7 @@ const LEAD_COLUMNS: (keyof LeadRecord)[] = [
   "created_at",
   "next_followup",
   "last_contact_date",
+  "brand_slugs",
 ];
 
 // GET — list all leads, optionally filter by status
