@@ -59,9 +59,6 @@ const KpiCard = ({ label, value, href, change, changeLabel = "vs last month", va
   return <div className={surfaceClasses}>{inner}</div>;
 };
 
-// Legacy alias for grandfathered consumers (overview/leads/pipeline/etc).
-// New code should import { KpiCard } directly.
-const KPICard = KpiCard;
-
-export { KpiCard, KPICard };
+// New code should import { KpiCard } directly. KPICard is a grandfathered alias.
+export { KpiCard, KpiCard as KPICard };
 export type { KpiCardProps };

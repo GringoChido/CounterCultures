@@ -28,12 +28,29 @@ const ACTIVITY_COLUMNS: (keyof ActivityRecord)[] = [
 // GET — list recent activities
 export const GET = async (request: NextRequest) => {
   const limit = Number(request.nextUrl.searchParams.get("limit") ?? "20");
+  const since = request.nextUrl.searchParams.get("since");
 
   try {
     const rows = await readSheet<ActivityRecord>("Activity_Log");
 
-    // Sort by timestamp descending, take limit
+    let sinceCutoff: number | null = null;
+    if (since) {
+      const match = /^(\d+)([hd])$/i.exec(since);
+      if (match) {
+        const amount = Number(match[1]);
+        const unit = match[2].toLowerCase();
+        const ms = unit === "h" ? amount * 60 * 60 * 1000 : amount * 24 * 60 * 60 * 1000;
+        sinceCutoff = Date.now() - ms;
+      }
+    }
+
+    // Sort by timestamp descending, optionally filter by since cutoff, take limit
     const sorted = rows
+      .filter((r) => {
+        if (sinceCutoff === null) return true;
+        const t = new Date(r.timestamp).getTime();
+        return !Number.isNaN(t) && t >= sinceCutoff;
+      })
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
       .slice(0, limit);
 
