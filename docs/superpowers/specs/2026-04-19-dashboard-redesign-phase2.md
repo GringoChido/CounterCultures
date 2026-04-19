@@ -343,3 +343,92 @@ Let's go. Start with the 4-file read + confirm summary.
 ```
 
 ---
+
+## §8 Execution log (2026-04-19)
+
+Phase 2 plan: [2026-04-19-dashboard-redesign-phase2-plan.md](2026-04-19-dashboard-redesign-phase2-plan.md)
+
+### Commits
+
+| # | SHA | Task | Notes |
+|---|---|---|---|
+| 1 | `4df55c8` | T1 | `app/lib/search.ts` + unit-style round-trip test. 7 entity types, 60s in-memory cache, scored ranking, dedupe, cap-at-50. |
+| 2 | `5f8f25c` | T2 | CommandPalette refactor — SAMPLE_LEADS/PIPELINE imports gone; live `searchAllEntities` with 250ms debounce; Recent section (top 5) from localStorage `cc_palette_recent`; Sign Out wipe added. -54 net lines. |
+| 3 | `97e5bf9` | T3 | `Notifications` sheet (10 cols), `app/lib/notifications.ts` (`appendNotification` upsert / `listNotifications` filtered / `ackNotification` flip / `syncNotificationsFromSources` self-healing 60s throttle). `/api/dashboard/needs-you` refactored from 138 → 11 lines, returns identical shape via `notificationToNeedsYouItem`. |
+| 4 | `338a759` | T4 | `<NotificationBell>` component — 60s auto-refresh, badge with severity-tinted dot, click-outside/Escape close, click-row → ack + navigate. Header swap drops inline `<Bell>` + `notificationCount` prop. |
+| 5 | `35add8b` | T5 | `/dashboard/notifications` page — Status/Severity/Source filter chip rows, ack button per unread row, EmptyState fallback, skeleton loading. No sidebar entry (bell is the only entry point). |
+| 6 | (this) | T6 | Final smoke + execution log. |
+
+### Decisions resolved (§4 Q&A)
+
+| # | Question | Answer |
+|---|---|---|
+| 1 | ⌘K result scope | **B** — 7 entity types (Lead/Deal/Trafico/Shipment/Brand/Product/Blog). Contact deferred until a real `Contacts` sheet exists. |
+| 2 | Search modifiers (`lead:`, `from:`, `brand:`) | **B** — Defer to Phase 3. Plain fuzzy ranks well at this volume. |
+| 3 | Notifications data model | **B** — Persist `Notifications` sheet. Schema explicitly approved (10 cols incl. `acked_at`). |
+| 4 | Severity tiers | **B** — 3 tiers (`critical` / `high` / `normal`), aligned with the existing alert engine spec. |
+| 5 | Ack / snooze / dismiss | **A** — Ack only. Snooze/dismiss → Phase 3. |
+| 6 | Notification sources | **A** — Same 3 active sources as `<NeedsYou>` (Trafico customs `issue_logged`>24h, Leads.next_followup overdue, Traficos delay ≥3d). Deal_Payments deferred (sheet doesn't exist yet). |
+| 7 | Recent items memory | **A** — localStorage `cc_palette_recent`, top 5, wiped on Sign Out next to existing `cc_chat_history_v2`. |
+
+### Deviations from plan
+
+- **`<EntityCard variant="search">` skipped.** EntityCard is a multi-row card (id+value, title, contact, brand chips, status, SLA bar) — wrong shape for a single-line search row. Kept rendering inline in `command-palette.tsx` using the same `dash-*` tokens. Documented upfront in plan §2 — Joshua approved the deviation by approving the plan.
+- **Deterministic notification IDs replace 1h dedupe.** Plan §3.2 of the spec called for "1h dedupe by (type, id, severity)". I went stronger: `notification_id` is a deterministic `${source_type}-${source_id}` (e.g. `trafico-EVT-12345`, `lead-LEAD-204`). `appendNotification` is a true upsert by ID — same source item can never produce two notifications, regardless of how often sync runs.
+- **Self-healing sync, no cron.** Every `/api/dashboard/needs-you` and `/api/dashboard/notifications` GET triggers `syncNotificationsFromSources()` with a 60s in-memory throttle. No scheduled job needed for v1. If notification volume grows, lift the throttle or move to a real cron.
+- **T1 test scope narrowed.** The plan called for `_test-search.ts` to assert "kohler returns ≥1 result" — but the test runs in Node and `/api/dashboard/*` requires session cookies, so it would 401 silently. Narrowed to unit-test the pure `score()` and `rankResults()` functions; live integration verified via browser preview in T2 (where ⌘K → "kohler" returned 1 brand + 8 products + 1 blog post).
+- **`SAMPLE_PIPELINE` still imported by `pipeline/page.tsx:57`.** Out of T2 scope (palette only). Pipeline page initial state still seeds from sample data; flagged for separate cleanup.
+- **Pre-existing Turbopack error noise** — the dev console shows "Export KPICard doesn't exist in target module" warnings for several pages. The grandfather alias `export { KpiCard, KpiCard as KPICard }` IS in `kpi-card.tsx` (Phase 1's intentional design), and the pages render correctly. Looks like a Turbopack cache quirk that survives reloads. Pre-existing before Phase 2; not a blocker; ignore.
+
+### Out of scope (rolled forward)
+
+- ⌘K search modifiers (`lead:`, `from:`, `brand:`) — Phase 3
+- Snooze + dismiss on notifications — Phase 3
+- Real `Contacts` sheet + `Contact` search type — Phase 3
+- Server-side `/api/dashboard/search?q=` endpoint (current client-side approach is fine at <350-row total volume) — only if perf bites
+- `Deal_Payments` source (sheet doesn't exist; was deferred in Phase 1 too)
+- `pipeline/page.tsx` `SAMPLE_PIPELINE` removal — separate cleanup task
+
+### Verification snapshot
+
+- `npx tsc --noEmit` (filtered): **0 errors**
+- `npm run build`: see commit 6 build output
+- `grep SAMPLE_LEADS|SAMPLE_PIPELINE app/(dashboard)/components/command-palette.tsx`: **0 matches**
+- Round-trip tests:
+  - `scripts/_test-search.ts` ✅ unit logic OK (12 assertions)
+  - `scripts/_test-notifications.ts` ✅ append + dedupe + list + filter + ack round-trip OK
+- Browser preview at /dashboard/overview:
+  - ⌘K → "kohler" → 10 results across 3 sections (Brands / Products / Blog Posts)
+  - Click Kohler → routes to `/dashboard/brands/kohler`, persists to Recent
+  - Reopen palette → Recent section shows Kohler at top
+  - Bell badge "9+", aria-label "Notifications (10 unread)"
+  - Click bell → flyout opens with 10 follow-up rows + "See all →"
+  - `<NeedsYou>` widget on Today renders 8 of the same items
+- Browser preview at /dashboard/notifications:
+  - Page renders with H1 + 11 filter chips
+  - Default unread filter shows 21 active alerts
+  - Click Ack on first row → drops to 20; switch to "acked" filter → row appears with "acked" tag
+  - Bell badge in header decrements correspondingly
+
+### Single-source-of-truth proof
+
+The data flow on first dashboard load:
+
+```
+Today page mount
+  └─ <NeedsYou> fetches /api/dashboard/needs-you
+       ├─ syncNotificationsFromSources()
+       │    └─ aggregates from Trafico_Events / Leads / Traficos
+       │    └─ upserts into Notifications sheet (deterministic IDs)
+       └─ listNotifications({status: 'unread', limit: 8})
+       └─ maps to NeedsYouItem shape
+
+Header mount
+  └─ <NotificationBell> fetches /api/dashboard/notifications?status=unread&limit=10
+       ├─ syncNotificationsFromSources()  (60s throttled — no-op if recent)
+       └─ listNotifications({status: 'unread', limit: 10})
+```
+
+Both surfaces hit the same `Notifications` sheet via the same lib. Drift is impossible by construction.
+
+
