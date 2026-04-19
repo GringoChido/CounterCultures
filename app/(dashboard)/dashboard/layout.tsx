@@ -42,7 +42,7 @@ const DashboardInner = ({ children }: { children: ReactNode }) => {
         mobileOpen={mobileSidebarOpen}
         onMobileClose={() => setMobileSidebarOpen(false)}
       />
-      <div className="flex-1 lg:ml-60 transition-all duration-300 min-w-0">
+      <div className="flex-1 lg:ml-[220px] transition-all duration-300 min-w-0">
         <DashboardHeader onMenuClick={() => setMobileSidebarOpen(true)} />
         <main className="p-4 md:p-6">{children}</main>
       </div>

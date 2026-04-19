@@ -42,23 +42,29 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "Today", href: "/dashboard/overview", icon: LayoutDashboard, section: "Home" },
   { label: "Weekly Review", href: "/dashboard/weekly-review", icon: CalendarCheck },
+
   { label: "Leads", href: "/dashboard/leads", icon: Users, section: "Leads & Deals" },
   { label: "Pipeline", href: "/dashboard/pipeline", icon: Kanban },
   { label: "Inbox", href: "/dashboard/inbox", icon: Inbox },
   { label: "WhatsApp", href: "/dashboard/whatsapp", icon: MessageCircle },
-  { label: "Trade Program", href: "/dashboard/trade-program", icon: Handshake },
+
   { label: "Brands", href: "/dashboard/brands", icon: Award, section: "Catalog" },
   { label: "Products", href: "/dashboard/products", icon: Package },
   { label: "Shipments & Customs", href: "/dashboard/shipments", icon: Truck },
+
   { label: "Email Campaigns", href: "/dashboard/email-campaigns", icon: Mail, section: "Marketing" },
   { label: "Social Hub", href: "/dashboard/social", icon: Share2 },
   { label: "Blog Manager", href: "/dashboard/blog-manager", icon: FileText },
+
   { label: "Pipeline & Sales", href: "/dashboard/sales-analytics", icon: TrendingUp, section: "Insights" },
   { label: "Marketing & Traffic", href: "/dashboard/marketing-analytics", icon: BarChart3 },
-  { label: "Odoo", href: "/dashboard/odoo", icon: Database, section: "Operations" },
+
+  { label: "Trade Program", href: "/dashboard/trade-program", icon: Handshake, section: "Operations" },
+  { label: "Drive", href: "/dashboard/drive", icon: FolderOpen },
   { label: "Finance", href: "/dashboard/finance", icon: Wallet },
   { label: "Stripe", href: "/dashboard/stripe", icon: CreditCard },
-  { label: "Drive", href: "/dashboard/drive", icon: FolderOpen },
+  { label: "Odoo", href: "/dashboard/odoo", icon: Database },
+
   { label: "Settings", href: "/dashboard/settings", icon: Settings, section: "System" },
 ];
 
@@ -86,7 +92,7 @@ const Sidebar = ({ mobileOpen = false, onMobileClose }: SidebarProps) => {
   const navContent = (
     <>
       {/* Logo */}
-      <div className="flex items-center justify-between px-4 h-16 border-b border-white/10 shrink-0">
+      <div className="flex items-center justify-between px-4 h-16 border-b border-dash-border shrink-0">
         {!collapsed && (
           <Link href="/dashboard/overview" className="flex flex-col" onClick={onMobileClose}>
             <span className="font-display text-lg font-light tracking-wider">
@@ -130,7 +136,7 @@ const Sidebar = ({ mobileOpen = false, onMobileClose }: SidebarProps) => {
           return (
             <div key={item.href}>
               {item.section && !collapsed && (
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-white/40 mt-4 mb-2 px-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-dash-text-muted mt-4 mb-2 px-3">
                   {item.section}
                 </p>
               )}
@@ -138,10 +144,10 @@ const Sidebar = ({ mobileOpen = false, onMobileClose }: SidebarProps) => {
               <Link
                 href={item.href}
                 onClick={onMobileClose}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors mb-0.5 min-h-[44px] ${
+                className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors mb-0.5 min-h-[44px] ${
                   isActive
-                    ? "bg-brand-copper/20 text-brand-copper font-medium"
-                    : "text-white/70 hover:bg-dash-sidebar-hover hover:text-white"
+                    ? "bg-dash-sidebar-active text-dash-text font-medium before:content-[''] before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[3px] before:bg-brand-copper before:rounded-r"
+                    : "text-dash-text-secondary hover:bg-dash-sidebar-hover hover:text-dash-text"
                 }`}
                 title={collapsed ? item.label : undefined}
               >
@@ -173,10 +179,10 @@ const Sidebar = ({ mobileOpen = false, onMobileClose }: SidebarProps) => {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-white/10 p-3 shrink-0">
+      <div className="border-t border-dash-border p-3 shrink-0">
         <button
           onClick={handleSignOut}
-          className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-white/70 hover:bg-dash-sidebar-hover hover:text-white transition-colors cursor-pointer min-h-[44px] ${
+          className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-dash-text-secondary hover:bg-dash-sidebar-hover hover:text-dash-text transition-colors cursor-pointer min-h-[44px] ${
             collapsed ? "justify-center" : ""
           }`}
         >
@@ -191,8 +197,8 @@ const Sidebar = ({ mobileOpen = false, onMobileClose }: SidebarProps) => {
     <>
       {/* Desktop sidebar — always visible on lg+ */}
       <aside
-        className={`hidden lg:flex fixed top-0 left-0 h-screen bg-dash-sidebar text-white flex-col transition-all duration-300 z-40 ${
-          collapsed ? "w-16" : "w-60"
+        className={`hidden lg:flex fixed top-0 left-0 h-screen bg-dash-sidebar text-dash-text border-r border-dash-border flex-col transition-all duration-300 z-40 ${
+          collapsed ? "w-16" : "w-[220px]"
         }`}
       >
         {navContent}
@@ -205,7 +211,7 @@ const Sidebar = ({ mobileOpen = false, onMobileClose }: SidebarProps) => {
             className="absolute inset-0 bg-black/50"
             onClick={onMobileClose}
           />
-          <aside className="relative w-72 max-w-[85vw] h-full bg-dash-sidebar text-white flex flex-col z-10">
+          <aside className="relative w-72 max-w-[85vw] h-full bg-dash-sidebar text-dash-text border-r border-dash-border flex flex-col z-10">
             {navContent}
           </aside>
         </div>
