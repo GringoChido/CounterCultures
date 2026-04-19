@@ -13,7 +13,14 @@
  */
 
 import Anthropic from "@anthropic-ai/sdk";
-import { readSheet, appendRow, type SheetTab } from "./dashboard-sheets";
+import {
+  readSheet,
+  appendRow,
+  updateRow,
+  findRowIndex,
+  type SheetTab,
+} from "./dashboard-sheets";
+import { appendTraficoEvent } from "./trafico-events";
 import {
   searchFiles,
   listFiles,
@@ -290,6 +297,67 @@ export const TOOLS: Anthropic.Messages.Tool[] = [
         pageSize: {
           type: "number",
           description: "Max threads to return. Default 25, max 50.",
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: "update_lead_status",
+    description:
+      "[CRM-UPDATE TIER — ASK FIRST] Change a Lead's status. Valid statuses: new, contacted, qualified, proposal, won, lost. The user must approve before this is called — propose 'Want me to mark LEAD-204 as Qualified?' first, only call after they agree.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        leadId: {
+          type: "string",
+          description: "The Lead's ID (e.g., LEAD-204).",
+        },
+        newStatus: {
+          type: "string",
+          enum: ["new", "contacted", "qualified", "proposal", "won", "lost"],
+          description: "The target status.",
+        },
+      },
+      required: ["leadId", "newStatus"],
+    },
+  },
+  {
+    name: "update_deal_stage",
+    description:
+      "[CRM-UPDATE TIER — ASK FIRST] Move a Pipeline deal to a new stage (Sales: discovery / design-scope / proposal-negotiation; Operations: quote-approved / deposit-pending / deposit-received / ordering / in-production / shipping / in-customs / customs-cleared / received-at-cc / delivery-scheduled / delivered / balance-pending / complete). The user must approve before this is called.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        dealId: {
+          type: "string",
+          description: "The Deal's ID (e.g., DEAL-118).",
+        },
+        newStage: {
+          type: "string",
+          description:
+            "The target stage slug (kebab-case). Pass-through to the Pipeline sheet without strict enforcement until W7 stage automation ships.",
+        },
+      },
+      required: ["dealId", "newStage"],
+    },
+  },
+  {
+    name: "start_new_trafico",
+    description:
+      "[CRM-UPDATE TIER — ASK FIRST] Create a new Trafico (customs batch crossing) stub with auto-generated TRF_ID and Status='collecting'. Optional: pass dealId to remember the originating deal in the message. The user must approve before this is called.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        dealId: {
+          type: "string",
+          description:
+            "Originating Deal's ID, optional (used in the audit event message).",
+        },
+        traficoNumber: {
+          type: "string",
+          description:
+            "Broker's reference number, optional (e.g., 'E27-26'). Roger usually fills this in later.",
         },
       },
       required: [],
@@ -669,6 +737,104 @@ export async function executeTool(
           content: content.trim(),
         });
         return `✓ Note ${note.noteId} added to ${entityType.toUpperCase()} ${entityId}.`;
+      }
+
+      case "update_lead_status": {
+        const leadId = input.leadId as string;
+        const newStatus = input.newStatus as string;
+        if (!leadId || !newStatus) {
+          return "Missing required fields: leadId, newStatus.";
+        }
+        const rowIdx = await findRowIndex("Leads", "id", leadId);
+        if (rowIdx === null) return `Lead ${leadId} not found.`;
+        const all = await readSheet<Record<string, string>>("Leads");
+        const current = all[rowIdx];
+        const oldStatus = current.status;
+        const merged: Record<string, string> = { ...current, status: newStatus };
+        // LEAD_COLUMNS in the route file — replicated here to avoid a
+        // route ↔ lib circular import. Stable since W2.
+        const LEAD_COLUMNS = [
+          "id", "name", "email", "phone", "source", "status",
+          "contact_type", "interest", "value", "created_at",
+          "next_followup", "last_contact_date", "brand_slugs",
+        ];
+        const values = LEAD_COLUMNS.map((col) => merged[col] ?? "");
+        await updateRow("Leads", rowIdx, values);
+        return `✓ Lead ${leadId} status: ${oldStatus} → ${newStatus}.`;
+      }
+
+      case "update_deal_stage": {
+        const dealId = input.dealId as string;
+        const newStage = input.newStage as string;
+        if (!dealId || !newStage) {
+          return "Missing required fields: dealId, newStage.";
+        }
+        const rowIdx = await findRowIndex("Pipeline", "id", dealId);
+        if (rowIdx === null) return `Deal ${dealId} not found.`;
+        const all = await readSheet<Record<string, string>>("Pipeline");
+        const current = all[rowIdx];
+        const oldStage = current.stage;
+        const merged: Record<string, string> = { ...current, stage: newStage };
+        // PIPELINE_COLUMNS — replicated to avoid route ↔ lib import.
+        // Source of truth: app/api/dashboard/pipeline/route.ts.
+        const PIPELINE_COLUMNS = [
+          "id", "name", "company", "value", "stage", "owner_email",
+          "expected_close", "created_at", "closed_at", "lost_reason",
+          "source_lead_id", "brand_slugs", "source_message_id",
+        ];
+        const values = PIPELINE_COLUMNS.map((col) => merged[col] ?? "");
+        await updateRow("Pipeline", rowIdx, values);
+        return `✓ Deal ${dealId} stage: ${oldStage} → ${newStage}.`;
+      }
+
+      case "start_new_trafico": {
+        const dealId = (input.dealId as string) || "";
+        const traficoNumber = (input.traficoNumber as string) || "";
+        const now = new Date();
+        const trfId = `CC-TRF-${now.getFullYear()}-${Date.now()}-${Math.floor(
+          Math.random() * 1000
+        )
+          .toString()
+          .padStart(3, "0")}`;
+        // TRAFICO_COLUMNS replicated; source: app/api/dashboard/traficos/route.ts
+        const TRAFICO_COLUMNS = [
+          "TRF_ID", "Trafico_Number", "Pedimento_Number", "Status",
+          "Broker_Name", "Broker_Email", "Crossing_Agent",
+          "Warehouse_Name", "Warehouse_Address",
+          "Invoice_Value_USD", "Exchange_Rate", "Customs_Value_MXN",
+          "Calculo_Total_MXN", "Calculo_Breakdown_JSON", "Calculo_Drive_ID",
+          "Truck_Crossing_Fee", "Truck_Fee_Payee",
+          "Calculo_Payment_JSON", "Truck_Payment_JSON",
+          "Total_Import_Cost",
+          "Factura_Amount", "Factura_Difference", "Factura_Drive_ID",
+          "Domestic_Carrier", "Domestic_Tracking", "Domestic_Ship_Date",
+          "Domestic_Est_Arrival", "Domestic_Actual_Arrival",
+          "Expediente_Status", "Expediente_Drive_ID", "Expediente_Signed_Date",
+          "Initiated_Date", "Import_Closed_Date", "Calculo_Received_Date",
+          "Payment_Sent_Date", "Crossing_Approved_Date", "Completed_Date",
+          "Notes", "Status_History_JSON", "Item_Count",
+        ];
+        const row: Record<string, string> = {
+          TRF_ID: trfId,
+          Trafico_Number: traficoNumber,
+          Status: "collecting",
+          Initiated_Date: now.toISOString().slice(0, 10),
+          Item_Count: "0",
+        };
+        const values = TRAFICO_COLUMNS.map((col) => row[col] ?? "");
+        await appendRow("Traficos", values);
+        // Mirror the route's auto-event: Trafico creation log
+        appendTraficoEvent({
+          trafico_id: trfId,
+          actor: "portal-assistant",
+          event_type: "status_change",
+          from_status: "",
+          to_status: "collecting",
+          message: `Trafico created via chat${dealId ? ` (originating deal ${dealId})` : ""}${traficoNumber ? ` — ${traficoNumber}` : ""}`,
+        }).catch((err) =>
+          console.error("[chat start_new_trafico] event log failed:", err)
+        );
+        return `✓ Trafico ${trfId} created. Status='collecting'. Open in Customs to assign items.`;
       }
 
       default:

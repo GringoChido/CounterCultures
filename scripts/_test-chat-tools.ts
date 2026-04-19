@@ -43,6 +43,47 @@ const main = async () => {
     fail++;
   }
 
+  // ───── start_new_trafico (CRM-UPDATE) ─────
+  console.log("→ start_new_trafico (creates a stub)");
+  const trfResult = await executeTool("start_new_trafico", {
+    dealId: "__TEST_DEAL__",
+  });
+  if (trfResult.startsWith("✓ Trafico CC-TRF-")) {
+    console.log(`  ✓ ${trfResult}`);
+  } else {
+    console.log(`  ✗ unexpected output: ${trfResult.slice(0, 200)}`);
+    fail++;
+  }
+
+  // ───── update_lead_status (CRM-UPDATE) ─────
+  // We don't have a known-existing lead to update without side-effects,
+  // so call against a deliberately-missing ID and assert the not-found
+  // path returns the right shape (proves the tool resolves correctly).
+  console.log("→ update_lead_status (not-found path)");
+  const leadResult = await executeTool("update_lead_status", {
+    leadId: "LEAD-DOES-NOT-EXIST-__TEST__",
+    newStatus: "qualified",
+  });
+  if (leadResult.includes("not found")) {
+    console.log(`  ✓ correctly handled missing lead: ${leadResult}`);
+  } else {
+    console.log(`  ✗ expected 'not found', got: ${leadResult.slice(0, 200)}`);
+    fail++;
+  }
+
+  // ───── update_deal_stage (CRM-UPDATE) — also not-found path ─────
+  console.log("→ update_deal_stage (not-found path)");
+  const dealResult = await executeTool("update_deal_stage", {
+    dealId: "DEAL-DOES-NOT-EXIST-__TEST__",
+    newStage: "design-scope",
+  });
+  if (dealResult.includes("not found")) {
+    console.log(`  ✓ correctly handled missing deal: ${dealResult}`);
+  } else {
+    console.log(`  ✗ expected 'not found', got: ${dealResult.slice(0, 200)}`);
+    fail++;
+  }
+
   console.log(
     fail === 0
       ? "\n✅ All chat tools round-trip OK."
