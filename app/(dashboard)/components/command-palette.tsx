@@ -17,162 +17,92 @@ import {
   Handshake,
   FolderOpen,
   Settings,
-  User,
-  DollarSign,
   ArrowRight,
   Award,
   Truck,
+  Clock,
+  User,
+  Briefcase,
+  type LucideIcon,
 } from "lucide-react";
-import { SAMPLE_LEADS, SAMPLE_PIPELINE } from "@/app/lib/sample-dashboard-data";
+import {
+  searchAllEntities,
+  type SearchResult,
+  type SearchResultType,
+  type SearchProductData,
+} from "@/app/lib/search";
 import type { Product } from "@/app/lib/types";
 
-// ---------------------------------------------------------------------------
-// Product data type (as returned by the Sheet API — all strings)
-// ---------------------------------------------------------------------------
+const RECENT_KEY = "cc_palette_recent";
+const RECENT_CAP = 5;
+const RECENT_RENDER_LIMIT = 5;
+const SEARCH_DEBOUNCE_MS = 250;
 
-interface SheetProduct {
-  sku: string;
-  brand: string;
-  name: string;
-  nameEn: string;
-  price: string;
-  tradePrice: string;
-  currency: string;
-  images: string;
-  finishes: string;
-  category: string;
-  subcategory: string;
-  availability: string;
-  slug: string;
-  description: string;
-  descriptionEn: string;
-  artisanal: string;
+type PaletteItemType = SearchResultType | "page";
+
+interface PaletteItem {
   id: string;
-  featured: string;
-}
-
-// ---------------------------------------------------------------------------
-// Searchable items
-// ---------------------------------------------------------------------------
-
-interface ProductData {
-  sku: string;
-  brand: string;
-  name: string;
-  nameEn: string;
-  price: number;
-  tradePrice?: number;
-  currency: string;
-  images: string[];
-  finishes: string[];
-  category: string;
-  subcategory: string;
-  availability: string;
-  slug: string;
-  description: string;
-  descriptionEn: string;
-  artisanal: boolean;
-  id: string;
-  featured: boolean;
-}
-
-interface SearchItem {
-  id: string;
-  label: string;
-  description?: string;
-  category: "page" | "lead" | "deal" | "action" | "document" | "product";
+  type: PaletteItemType;
+  title: string;
+  subtitle: string;
   href: string;
-  icon: React.ElementType;
-  keywords?: string[];
-  productData?: ProductData;
+  icon?: LucideIcon;
+  productData?: SearchProductData;
 }
 
-const pageItems: SearchItem[] = [
-  { id: "overview", label: "Today", description: "Daily action view", category: "page", href: "/dashboard/overview", icon: LayoutDashboard, keywords: ["home", "dashboard", "main", "overview"] },
-  { id: "leads", label: "Leads", description: "Manage leads & contacts", category: "page", href: "/dashboard/leads", icon: Users, keywords: ["contacts", "prospects"] },
-  { id: "pipeline", label: "Pipeline", description: "Sales pipeline board", category: "page", href: "/dashboard/pipeline", icon: Kanban, keywords: ["deals", "kanban", "sales"] },
-  { id: "whatsapp", label: "WhatsApp", description: "Messaging inbox", category: "page", href: "/dashboard/whatsapp", icon: MessageCircle, keywords: ["messages", "chat"] },
-  { id: "trade", label: "Trade Program", description: "Trade partner management", category: "page", href: "/dashboard/trade-program", icon: Handshake, keywords: ["partners", "wholesale", "discount"] },
-  { id: "brands", label: "Brands", description: "73 brand catalog (coming Week 2)", category: "page", href: "/dashboard/brands", icon: Award, keywords: ["brands", "catalog", "kohler", "dornbracht", "toto"] },
-  { id: "products", label: "Products", description: "Product catalog", category: "page", href: "/dashboard/products", icon: Package, keywords: ["inventory", "catalog", "items"] },
-  { id: "shipments", label: "Shipments & Customs", description: "Shipment tracking, pedimentos, duties", category: "page", href: "/dashboard/shipments", icon: Truck, keywords: ["customs", "pedimento", "shipping", "import"] },
-  { id: "social", label: "Social Hub", description: "Calendar, feed, create, comments, analytics", category: "page", href: "/dashboard/social", icon: Share2, keywords: ["instagram", "facebook", "posts", "analytics", "content calendar", "schedule"] },
-  { id: "email", label: "Email Campaigns", description: "Manage email campaigns", category: "page", href: "/dashboard/email-campaigns", icon: Mail, keywords: ["newsletter", "drip", "marketing"] },
-  { id: "blog", label: "Blog Manager", description: "Blog posts & content", category: "page", href: "/dashboard/blog-manager", icon: FileText, keywords: ["articles", "content", "writing"] },
-  { id: "sales-analytics", label: "Pipeline & Sales", description: "Revenue & deal metrics", category: "page", href: "/dashboard/sales-analytics", icon: TrendingUp, keywords: ["revenue", "deals", "performance", "sales analytics"] },
-  { id: "marketing-analytics", label: "Marketing & Traffic", description: "Traffic, sources, pages, campaigns, funnel", category: "page", href: "/dashboard/marketing-analytics", icon: BarChart3, keywords: ["campaigns", "roi", "funnel", "website analytics", "traffic"] },
-  { id: "drive", label: "Drive", description: "Files & documents", category: "page", href: "/dashboard/drive", icon: FolderOpen, keywords: ["files", "documents", "uploads"] },
-  { id: "settings", label: "Settings", description: "Account & preferences", category: "page", href: "/dashboard/settings", icon: Settings, keywords: ["account", "profile", "integrations"] },
+const pageItems: PaletteItem[] = [
+  { id: "page-overview", type: "page", title: "Today", subtitle: "Daily action view", href: "/dashboard/overview", icon: LayoutDashboard },
+  { id: "page-leads", type: "page", title: "Leads", subtitle: "Manage leads & contacts", href: "/dashboard/leads", icon: Users },
+  { id: "page-pipeline", type: "page", title: "Pipeline", subtitle: "Sales pipeline board", href: "/dashboard/pipeline", icon: Kanban },
+  { id: "page-whatsapp", type: "page", title: "WhatsApp", subtitle: "Messaging inbox", href: "/dashboard/whatsapp", icon: MessageCircle },
+  { id: "page-trade", type: "page", title: "Trade Program", subtitle: "Trade partner management", href: "/dashboard/trade-program", icon: Handshake },
+  { id: "page-brands", type: "page", title: "Brands", subtitle: "73 brand catalog", href: "/dashboard/brands", icon: Award },
+  { id: "page-products", type: "page", title: "Products", subtitle: "Product catalog", href: "/dashboard/products", icon: Package },
+  { id: "page-shipments", type: "page", title: "Shipments & Customs", subtitle: "Shipment tracking, pedimentos, duties", href: "/dashboard/shipments", icon: Truck },
+  { id: "page-social", type: "page", title: "Social Hub", subtitle: "Calendar, feed, create, comments, analytics", href: "/dashboard/social", icon: Share2 },
+  { id: "page-email", type: "page", title: "Email Campaigns", subtitle: "Manage email campaigns", href: "/dashboard/email-campaigns", icon: Mail },
+  { id: "page-blog", type: "page", title: "Blog Manager", subtitle: "Blog posts & content", href: "/dashboard/blog-manager", icon: FileText },
+  { id: "page-sales-analytics", type: "page", title: "Pipeline & Sales", subtitle: "Revenue & deal metrics", href: "/dashboard/sales-analytics", icon: TrendingUp },
+  { id: "page-marketing-analytics", type: "page", title: "Marketing & Traffic", subtitle: "Traffic, sources, pages, campaigns, funnel", href: "/dashboard/marketing-analytics", icon: BarChart3 },
+  { id: "page-notifications", type: "page", title: "Notifications", subtitle: "Alert history & ack queue", href: "/dashboard/notifications", icon: Clock },
+  { id: "page-drive", type: "page", title: "Drive", subtitle: "Files & documents", href: "/dashboard/drive", icon: FolderOpen },
+  { id: "page-settings", type: "page", title: "Settings", subtitle: "Account & preferences", href: "/dashboard/settings", icon: Settings },
 ];
 
-function buildSearchItems(): SearchItem[] {
-  const items: SearchItem[] = [...pageItems];
+const groupOrder: PaletteItemType[] = [
+  "page",
+  "lead",
+  "deal",
+  "trafico",
+  "shipment",
+  "brand",
+  "product",
+  "blog",
+];
 
-  // Add leads
-  SAMPLE_LEADS.forEach((lead) => {
-    items.push({
-      id: `lead-${lead.id}`,
-      label: lead.name,
-      description: `${lead.status} · ${lead.source} · ${lead.budget}`,
-      category: "lead",
-      href: "/dashboard/leads",
-      icon: User,
-      keywords: [lead.email, lead.phone, lead.projectType, lead.assignedRep].filter(Boolean),
-    });
-  });
-
-  // Add pipeline deals
-  SAMPLE_PIPELINE.forEach((deal) => {
-    items.push({
-      id: `deal-${deal.id}`,
-      label: deal.name,
-      description: `${deal.stage} · $${(deal.value / 1000).toFixed(0)}K · ${deal.contactName}`,
-      category: "deal",
-      href: "/dashboard/pipeline",
-      icon: DollarSign,
-      keywords: [deal.contactName, deal.products, deal.assignedRep].filter(Boolean),
-    });
-  });
-
-  return items;
-}
-
-const categoryLabels: Record<string, string> = {
+const groupLabels: Record<PaletteItemType, string> = {
   page: "Pages",
   lead: "Leads",
   deal: "Deals",
-  document: "Documents",
-  action: "Actions",
+  trafico: "Traficos",
+  shipment: "Shipments",
+  brand: "Brands",
   product: "Products",
+  blog: "Blog Posts",
 };
 
-// ---------------------------------------------------------------------------
-// Helper: convert sheet row to typed ProductData
-// ---------------------------------------------------------------------------
+const typeIcons: Record<PaletteItemType, LucideIcon> = {
+  page: LayoutDashboard,
+  lead: User,
+  deal: Briefcase,
+  trafico: Truck,
+  shipment: Package,
+  brand: Award,
+  product: Package,
+  blog: FileText,
+};
 
-const sheetToProductData = (p: SheetProduct): ProductData => ({
-  sku: p.sku,
-  brand: p.brand,
-  name: p.name,
-  nameEn: p.nameEn,
-  price: parseFloat(p.price) || 0,
-  tradePrice: p.tradePrice ? parseFloat(p.tradePrice) : undefined,
-  currency: p.currency || "MXN",
-  images: p.images ? p.images.split(",").map((u: string) => u.trim()) : [],
-  finishes: p.finishes ? p.finishes.split(",").map((f: string) => f.trim()) : [],
-  category: p.category,
-  subcategory: p.subcategory,
-  availability: p.availability || "in-stock",
-  slug: p.slug,
-  description: p.description || "",
-  descriptionEn: p.descriptionEn || "",
-  artisanal: p.artisanal === "true",
-  id: p.id,
-  featured: p.featured === "true",
-});
-
-/** Convert ProductData to the full Product type for the preview panel */
-export const productDataToProduct = (pd: ProductData): Product => ({
+const productDataToProduct = (pd: SearchProductData): Product => ({
   id: pd.id,
   sku: pd.sku,
   brand: pd.brand,
@@ -193,9 +123,48 @@ export const productDataToProduct = (pd: ProductData): Product => ({
   featured: pd.featured,
 });
 
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
+const searchResultToPalette = (r: SearchResult): PaletteItem => ({
+  id: r.id,
+  type: r.type,
+  title: r.title,
+  subtitle: r.subtitle,
+  href: r.href,
+  productData: r.productData,
+});
+
+const getRecent = (): PaletteItem[] => {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(RECENT_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as PaletteItem[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const pushRecent = (item: PaletteItem) => {
+  if (typeof window === "undefined") return;
+  const current = getRecent().filter((r) => r.id !== item.id);
+  const next = [item, ...current].slice(0, RECENT_CAP);
+  try {
+    window.localStorage.setItem(RECENT_KEY, JSON.stringify(next));
+  } catch {
+    /* localStorage full or disabled — ignore */
+  }
+};
+
+const filterPages = (q: string): PaletteItem[] => {
+  if (!q.trim()) return [];
+  const ql = q.trim().toLowerCase();
+  return pageItems.filter(
+    (p) =>
+      p.title.toLowerCase().includes(ql) ||
+      p.subtitle.toLowerCase().includes(ql) ||
+      p.href.toLowerCase().includes(ql)
+  );
+};
 
 interface CommandPaletteProps {
   onProductSelect?: (product: Product) => void;
@@ -203,121 +172,78 @@ interface CommandPaletteProps {
   registerOpen?: (fn: () => void) => void;
 }
 
-export function CommandPalette({ onProductSelect, onProductInsert, registerOpen }: CommandPaletteProps) {
+export function CommandPalette({
+  onProductSelect,
+  onProductInsert,
+  registerOpen,
+}: CommandPaletteProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [docItems, setDocItems] = useState<SearchItem[]>([]);
-  const [productItems, setProductItems] = useState<SearchItem[]>([]);
+  const [results, setResults] = useState<PaletteItem[]>([]);
+  const [recent, setRecent] = useState<PaletteItem[]>([]);
+  const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  const allItems = useMemo(() => buildSearchItems(), []);
-
-  // Register the open function so external components can trigger ⌘K
   useEffect(() => {
     registerOpen?.(() => setOpen(true));
   }, [registerOpen]);
 
-  // Fetch documents when query changes
   useEffect(() => {
-    if (!open || !query.trim() || query.length < 2) {
-      setDocItems([]);
+    if (!open) return;
+    setRecent(getRecent());
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const q = query.trim();
+    if (q.length < 2) {
+      setResults([]);
+      setLoading(false);
       return;
     }
+    setLoading(true);
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(
-          `/api/dashboard/documents?q=${encodeURIComponent(query)}`
-        );
-        if (res.ok) {
-          const data = await res.json();
-          const items: SearchItem[] = (data.documents ?? []).map(
-            (doc: { Doc_ID: string; Type: string; Customer_Name: string; Created_Date: string; Amount: string }) => ({
-              id: `doc-${doc.Doc_ID}`,
-              label: doc.Doc_ID,
-              description: `${doc.Type} · ${doc.Customer_Name} · ${doc.Created_Date}${doc.Amount ? ` · $${parseInt(doc.Amount).toLocaleString()}` : ""}`,
-              category: "document" as const,
-              href: "/dashboard/drive",
-              icon: FileText,
-              keywords: [doc.Customer_Name, doc.Type],
-            })
-          );
-          setDocItems(items);
-        }
+        const live = await searchAllEntities(q);
+        setResults(live.map(searchResultToPalette));
       } catch {
-        setDocItems([]);
+        setResults([]);
+      } finally {
+        setLoading(false);
       }
-    }, 300);
+    }, SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
   }, [query, open]);
 
-  // Fetch products when query changes (debounced)
-  useEffect(() => {
-    if (!open || !query.trim() || query.length < 2) {
-      setProductItems([]);
-      return;
-    }
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch(
-          `/api/dashboard/products?q=${encodeURIComponent(query)}&limit=8`
-        );
-        if (res.ok) {
-          const data = await res.json();
-          const items: SearchItem[] = ((data.products ?? []) as SheetProduct[])
-            .map((p) => {
-              const pd = sheetToProductData(p);
-              return {
-                id: `product-${p.slug || p.sku}`,
-                label: p.name,
-                description: `${p.brand} · ${p.category}/${p.subcategory.replace(/-/g, " ")} · $${parseInt(p.price).toLocaleString()} MXN`,
-                category: "product" as const,
-                href: "#",
-                icon: Package,
-                keywords: [p.brand, p.sku, p.nameEn],
-                productData: pd,
-              };
-            });
-          setProductItems(items);
-        }
-      } catch {
-        setProductItems([]);
+  const grouped = useMemo<Record<PaletteItemType, PaletteItem[]>>(() => {
+    const out = {} as Record<PaletteItemType, PaletteItem[]>;
+    if (query.trim()) {
+      const pageMatches = filterPages(query);
+      if (pageMatches.length) out.page = pageMatches;
+      for (const r of results) {
+        if (!out[r.type]) out[r.type] = [];
+        out[r.type].push(r);
       }
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [query, open]);
+    } else {
+      out.page = pageItems;
+    }
+    return out;
+  }, [query, results]);
 
-  const filtered = useMemo(() => {
-    if (!query.trim()) return allItems.slice(0, 12);
-    const q = query.toLowerCase();
-    const matched = allItems.filter((item) => {
-      if (item.label.toLowerCase().includes(q)) return true;
-      if (item.description?.toLowerCase().includes(q)) return true;
-      if (item.keywords?.some((k) => k.toLowerCase().includes(q))) return true;
-      return false;
-    });
-    return [...matched, ...docItems, ...productItems];
-  }, [query, allItems, docItems, productItems]);
-
-  // Group by category
-  const grouped = useMemo(() => {
-    const groups: Record<string, SearchItem[]> = {};
-    filtered.forEach((item) => {
-      if (!groups[item.category]) groups[item.category] = [];
-      groups[item.category].push(item);
-    });
-    return groups;
-  }, [filtered]);
-
-  const flatFiltered = useMemo(() => {
-    const flat: SearchItem[] = [];
-    Object.values(grouped).forEach((items) => flat.push(...items));
+  const flatList = useMemo<PaletteItem[]>(() => {
+    if (!query.trim()) {
+      return [...recent.slice(0, RECENT_RENDER_LIMIT), ...pageItems];
+    }
+    const flat: PaletteItem[] = [];
+    for (const t of groupOrder) {
+      if (grouped[t]) flat.push(...grouped[t]);
+    }
     return flat;
-  }, [grouped]);
+  }, [query, grouped, recent]);
 
-  // Keyboard shortcut to open
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -332,7 +258,6 @@ export function CommandPalette({ onProductSelect, onProductInsert, registerOpen 
     return () => window.removeEventListener("keydown", handler);
   }, []);
 
-  // Focus input when opened
   useEffect(() => {
     if (open) {
       setQuery("");
@@ -342,8 +267,9 @@ export function CommandPalette({ onProductSelect, onProductInsert, registerOpen 
   }, [open]);
 
   const navigate = useCallback(
-    (item: SearchItem) => {
-      if (item.category === "product" && item.productData) {
+    (item: PaletteItem) => {
+      pushRecent(item);
+      if (item.type === "product" && item.productData) {
         setOpen(false);
         onProductSelect?.(productDataToProduct(item.productData));
         return;
@@ -355,8 +281,9 @@ export function CommandPalette({ onProductSelect, onProductInsert, registerOpen 
   );
 
   const insertProduct = useCallback(
-    (item: SearchItem) => {
-      if (item.category === "product" && item.productData) {
+    (item: PaletteItem) => {
+      if (item.type === "product" && item.productData) {
+        pushRecent(item);
         setOpen(false);
         onProductInsert?.(productDataToProduct(item.productData));
       }
@@ -367,25 +294,22 @@ export function CommandPalette({ onProductSelect, onProductInsert, registerOpen 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setSelectedIndex((prev) => Math.min(prev + 1, flatFiltered.length - 1));
+      setSelectedIndex((prev) => Math.min(prev + 1, flatList.length - 1));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setSelectedIndex((prev) => Math.max(prev - 1, 0));
     } else if (e.key === "Enter") {
       e.preventDefault();
-      if (flatFiltered[selectedIndex]) {
-        navigate(flatFiltered[selectedIndex]);
-      }
+      if (flatList[selectedIndex]) navigate(flatList[selectedIndex]);
     } else if (e.key === "Tab") {
-      const selected = flatFiltered[selectedIndex];
-      if (selected?.category === "product") {
+      const selected = flatList[selectedIndex];
+      if (selected?.type === "product") {
         e.preventDefault();
         insertProduct(selected);
       }
     }
   };
 
-  // Scroll selected item into view
   useEffect(() => {
     if (listRef.current) {
       const selected = listRef.current.querySelector(`[data-index="${selectedIndex}"]`);
@@ -396,19 +320,62 @@ export function CommandPalette({ onProductSelect, onProductInsert, registerOpen 
   if (!open) return null;
 
   let runningIndex = 0;
+  const showRecent = !query.trim() && recent.length > 0;
+  const showEmptyHint = query.trim().length >= 2 && !loading && flatList.length === 0;
+
+  const renderRow = (item: PaletteItem) => {
+    const idx = runningIndex++;
+    const isSelected = idx === selectedIndex;
+    const Icon = item.icon ?? typeIcons[item.type];
+    return (
+      <button
+        key={`${item.id}-${idx}`}
+        data-index={idx}
+        onClick={() => navigate(item)}
+        onMouseEnter={() => setSelectedIndex(idx)}
+        className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-md text-left transition-colors cursor-pointer ${
+          isSelected ? "bg-brand-copper/10 text-brand-copper" : "text-dash-text hover:bg-dash-bg"
+        }`}
+      >
+        {item.type === "product" && item.productData?.images[0] ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={item.productData.images[0]}
+            alt=""
+            className="w-9 h-9 rounded-md object-cover shrink-0"
+          />
+        ) : (
+          <Icon className="w-4 h-4 shrink-0 opacity-60" />
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium truncate">{item.title}</p>
+          {item.subtitle && (
+            <p className="text-[11px] text-dash-text-secondary truncate">{item.subtitle}</p>
+          )}
+        </div>
+        {isSelected && <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-40" />}
+      </button>
+    );
+  };
+
+  const renderSection = (label: string, items: PaletteItem[]) => (
+    <div className="mb-2">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-copper/80 px-3 py-2">
+        {label}
+      </p>
+      {items.map(renderRow)}
+    </div>
+  );
 
   return (
     <div className="fixed inset-0 z-[100]">
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         onClick={() => setOpen(false)}
       />
 
-      {/* Palette */}
-      <div className="relative mx-auto mt-[15vh] w-full max-w-xl">
+      <div className="relative mx-auto mt-[15vh] w-full max-w-xl px-4">
         <div className="bg-dash-surface rounded-2xl border border-dash-border shadow-2xl overflow-hidden">
-          {/* Search input */}
           <div className="flex items-center gap-3 px-4 border-b border-dash-border">
             <Search className="w-5 h-5 text-dash-text-secondary shrink-0" />
             <input
@@ -420,7 +387,7 @@ export function CommandPalette({ onProductSelect, onProductInsert, registerOpen 
                 setSelectedIndex(0);
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Search products, pages, leads, deals..."
+              placeholder="Search leads, deals, traficos, shipments, brands, products, blog…"
               className="flex-1 h-14 bg-transparent text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none"
             />
             <kbd className="hidden sm:inline-flex items-center gap-0.5 px-2 py-1 text-[10px] font-mono text-dash-text-secondary bg-dash-bg border border-dash-border rounded-md">
@@ -428,68 +395,46 @@ export function CommandPalette({ onProductSelect, onProductInsert, registerOpen 
             </kbd>
           </div>
 
-          {/* Results */}
-          <div ref={listRef} className="max-h-[50vh] overflow-y-auto p-2">
-            {flatFiltered.length === 0 ? (
-              <div className="py-8 text-center text-sm text-dash-text-secondary">
-                No results for &ldquo;{query}&rdquo;
-              </div>
-            ) : (
-              Object.entries(grouped).map(([category, items]) => {
-                const group = (
-                  <div key={category} className="mb-2">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-dash-text-secondary px-3 py-2">
-                      {categoryLabels[category] || category}
-                    </p>
-                    {items.map((item) => {
-                      const idx = runningIndex++;
-                      const isSelected = idx === selectedIndex;
-                      const Icon = item.icon;
-                      return (
-                        <button
-                          key={item.id}
-                          data-index={idx}
-                          onClick={() => navigate(item)}
-                          onMouseEnter={() => setSelectedIndex(idx)}
-                          className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-left transition-colors cursor-pointer ${
-                            isSelected
-                              ? "bg-brand-copper/10 text-brand-copper"
-                              : "text-dash-text hover:bg-dash-bg"
-                          }`}
-                        >
-                          {/* Product thumbnail */}
-                          {item.category === "product" && item.productData?.images[0] ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={item.productData.images[0]}
-                              alt=""
-                              className="w-10 h-10 rounded-lg object-cover shrink-0"
-                            />
-                          ) : (
-                            <Icon className="w-4 h-4 shrink-0 opacity-60" />
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">{item.label}</p>
-                            {item.description && (
-                              <p className="text-[11px] text-dash-text-secondary truncate">
-                                {item.description}
-                              </p>
-                            )}
-                          </div>
-                          {isSelected && (
-                            <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-40" />
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
+          <div ref={listRef} className="max-h-[55vh] overflow-y-auto p-2">
+            {showRecent && renderSection("Recent", recent.slice(0, RECENT_RENDER_LIMIT))}
+
+            {!query.trim() && renderSection("Pages", pageItems)}
+
+            {query.trim().length >= 2 &&
+              loading &&
+              flatList.length === 0 && (
+                <div className="space-y-2 px-2 py-4">
+                  {[0, 1, 2, 3].map((i) => (
+                    <div key={i} className="h-9 bg-dash-bg rounded-md animate-pulse" />
+                  ))}
+                </div>
+              )}
+
+            {query.trim().length >= 2 &&
+              groupOrder.map((t) => {
+                const items = grouped[t];
+                if (!items || items.length === 0) return null;
+                return (
+                  <div key={t}>{renderSection(groupLabels[t], items)}</div>
                 );
-                return group;
-              })
+              })}
+
+            {showEmptyHint && (
+              <div className="py-8 text-center text-sm text-dash-text-secondary">
+                <p>No results for &ldquo;{query}&rdquo;</p>
+                <p className="text-xs text-dash-text-muted mt-1">
+                  Try a brand, deal name, or trafico number.
+                </p>
+              </div>
+            )}
+
+            {query.trim().length === 1 && (
+              <div className="py-6 text-center text-xs text-dash-text-muted">
+                Keep typing — minimum 2 characters.
+              </div>
             )}
           </div>
 
-          {/* Footer */}
           <div className="flex items-center justify-between px-4 py-2 border-t border-dash-border text-[10px] text-dash-text-secondary">
             <div className="flex items-center gap-3">
               <span className="flex items-center gap-1">

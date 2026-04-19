@@ -80,9 +80,10 @@ const Sidebar = ({ mobileOpen = false, onMobileClose }: SidebarProps) => {
 
   const handleSignOut = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
-    // Clear chat history so the next user doesn't see prior conversation
+    // Clear per-session local state so the next user doesn't see prior data
     try {
       localStorage.removeItem("cc_chat_history_v2");
+      localStorage.removeItem("cc_palette_recent");
     } catch {
       // ignore
     }
