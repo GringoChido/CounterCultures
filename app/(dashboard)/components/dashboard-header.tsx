@@ -1,14 +1,14 @@
 "use client";
 
-import { Bell, Search, Menu } from "lucide-react";
+import { Search, Menu } from "lucide-react";
+import { NotificationBell } from "./notification-bell";
 
 interface DashboardHeaderProps {
   onMenuClick?: () => void;
   onSearchClick?: () => void;
-  notificationCount?: number;
 }
 
-const DashboardHeader = ({ onMenuClick, onSearchClick, notificationCount = 0 }: DashboardHeaderProps) => {
+const DashboardHeader = ({ onMenuClick, onSearchClick }: DashboardHeaderProps) => {
   const triggerSearch = () => {
     if (onSearchClick) {
       onSearchClick();
@@ -47,17 +47,7 @@ const DashboardHeader = ({ onMenuClick, onSearchClick, notificationCount = 0 }: 
           <Search className="w-5 h-5 text-dash-text-secondary" />
         </button>
 
-        <button
-          className="relative w-9 h-9 flex items-center justify-center rounded-md hover:bg-dash-bg transition-colors cursor-pointer"
-          aria-label="Notifications"
-        >
-          <Bell className="w-5 h-5 text-dash-text-secondary" />
-          {notificationCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-brand-terracotta text-white text-[10px] font-bold px-1">
-              {notificationCount > 9 ? "9+" : notificationCount}
-            </span>
-          )}
-        </button>
+        <NotificationBell />
 
         <div className="flex items-center gap-2 pl-1">
           <div className="w-8 h-8 rounded-full bg-brand-copper flex items-center justify-center text-white text-sm font-semibold shrink-0">
