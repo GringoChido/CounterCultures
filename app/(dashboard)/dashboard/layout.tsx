@@ -7,6 +7,7 @@ import { Sidebar } from "../components/sidebar";
 import { DashboardHeader } from "../components/dashboard-header";
 import { CommandPalette } from "../components/command-palette";
 import { AIChatWidget } from "../components/ai-chat-widget";
+import { ActionFab } from "../components/action-fab";
 import { ProductInsertProvider, useProductInsert } from "../components/product-insert-context";
 import { ProductPreview } from "../components/product-preview";
 import type { Product } from "@/app/lib/types";
@@ -52,7 +53,8 @@ const DashboardInner = ({ children }: { children: ReactNode }) => {
         registerOpen={setCommandPaletteOpener}
       />
       <ProductPreview />
-      <AIChatWidget />
+      <AIChatWidget hideOwnFab />
+      <ActionFab />
     </div>
   );
 };

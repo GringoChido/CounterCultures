@@ -1,97 +1,69 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { Bell, Search, Menu } from "lucide-react";
-import { QuickCapture } from "./quick-capture";
-
-const pageTitles: Record<string, string> = {
-  "/dashboard/overview": "Today",
-  "/dashboard/weekly-review": "Weekly Review",
-  "/dashboard/leads": "Leads",
-  "/dashboard/pipeline": "Pipeline",
-  "/dashboard/inbox": "Inbox",
-  "/dashboard/whatsapp": "WhatsApp",
-  "/dashboard/trade-program": "Trade Program",
-  "/dashboard/brands": "Brands",
-  "/dashboard/products": "Products",
-  "/dashboard/shipments": "Shipments & Customs",
-  "/dashboard/customs": "Customs",
-  "/dashboard/email-campaigns": "Email Campaigns",
-  "/dashboard/social": "Social Hub",
-  "/dashboard/blog-manager": "Blog Manager",
-  "/dashboard/sales-analytics": "Pipeline & Sales",
-  "/dashboard/marketing-analytics": "Marketing & Traffic",
-  "/dashboard/odoo": "Odoo",
-  "/dashboard/finance": "Finance",
-  "/dashboard/stripe": "Stripe",
-  "/dashboard/drive": "Drive",
-  "/dashboard/settings": "Settings",
-};
 
 interface DashboardHeaderProps {
   onMenuClick?: () => void;
   onSearchClick?: () => void;
+  notificationCount?: number;
 }
 
-const DashboardHeader = ({ onMenuClick, onSearchClick }: DashboardHeaderProps) => {
-  const pathname = usePathname();
-  const title = pageTitles[pathname] ?? "Dashboard";
+const DashboardHeader = ({ onMenuClick, onSearchClick, notificationCount = 0 }: DashboardHeaderProps) => {
+  const triggerSearch = () => {
+    if (onSearchClick) {
+      onSearchClick();
+    } else {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true, ctrlKey: true }));
+    }
+  };
 
   return (
-    <header className="h-16 bg-dash-surface border-b border-dash-border flex items-center justify-between px-4 md:px-6">
-      <div className="flex items-center gap-3">
-        {/* Mobile hamburger */}
+    <header className="h-14 bg-dash-surface border-b border-dash-border flex items-center justify-between px-4 md:px-6">
+      <div className="flex items-center gap-2">
         <button
           onClick={onMenuClick}
-          className="lg:hidden w-10 h-10 flex items-center justify-center rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
+          className="lg:hidden w-9 h-9 flex items-center justify-center rounded-md hover:bg-dash-bg transition-colors cursor-pointer"
           aria-label="Open menu"
         >
           <Menu className="w-5 h-5 text-dash-text-secondary" />
         </button>
-        <h1 className="text-lg font-semibold text-dash-text">{title}</h1>
       </div>
 
-      <div className="flex items-center gap-3 md:gap-4">
-        {/* Search trigger */}
+      <div className="flex items-center gap-2 md:gap-3">
         <button
-          onClick={() => {
-            if (onSearchClick) {
-              onSearchClick();
-            } else {
-              // Dispatch Cmd+K programmatically
-              window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true, ctrlKey: true }));
-            }
-          }}
-          className="relative hidden md:flex items-center gap-2 pl-9 pr-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg w-64 hover:border-brand-copper/40 transition-colors cursor-pointer text-left"
+          onClick={triggerSearch}
+          className="hidden md:flex items-center gap-2 px-3 h-9 text-sm text-dash-text-secondary bg-dash-bg border border-dash-border rounded-md hover:border-dash-border-strong transition-colors cursor-pointer"
+          aria-label="Search"
         >
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dash-text-secondary" />
-          <span className="text-dash-text-secondary/50">Search...</span>
-          <kbd className="ml-auto flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono text-dash-text-secondary bg-dash-surface border border-dash-border rounded">
-            ⌘K
-          </kbd>
+          <Search className="w-4 h-4" />
+          <kbd className="font-mono text-[10px] px-1.5 py-0.5 bg-dash-surface border border-dash-border rounded">⌘K</kbd>
         </button>
 
-        {/* Quick-Capture ⚡ */}
-        <QuickCapture />
+        <button
+          onClick={triggerSearch}
+          className="md:hidden w-9 h-9 flex items-center justify-center rounded-md hover:bg-dash-bg transition-colors cursor-pointer"
+          aria-label="Search"
+        >
+          <Search className="w-5 h-5 text-dash-text-secondary" />
+        </button>
 
-        {/* Notifications */}
-        <button className="relative w-10 h-10 flex items-center justify-center rounded-lg hover:bg-dash-bg transition-colors cursor-pointer" aria-label="Notifications">
+        <button
+          className="relative w-9 h-9 flex items-center justify-center rounded-md hover:bg-dash-bg transition-colors cursor-pointer"
+          aria-label="Notifications"
+        >
           <Bell className="w-5 h-5 text-dash-text-secondary" />
+          {notificationCount > 0 && (
+            <span className="absolute top-1.5 right-1.5 min-w-[16px] h-[16px] flex items-center justify-center rounded-full bg-brand-terracotta text-white text-[10px] font-bold px-1">
+              {notificationCount > 9 ? "9+" : notificationCount}
+            </span>
+          )}
         </button>
 
-        {/* User avatar */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 pl-1">
           <div className="w-8 h-8 rounded-full bg-brand-copper flex items-center justify-center text-white text-sm font-semibold shrink-0">
             R
           </div>
-          <div className="hidden md:block">
-            <p className="text-sm font-medium text-dash-text leading-tight">
-              Roger Williams
-            </p>
-            <p className="text-xs text-dash-text-secondary leading-tight">
-              Owner
-            </p>
-          </div>
+          <span className="hidden md:inline text-sm font-medium text-dash-text">Roger Williams</span>
         </div>
       </div>
     </header>

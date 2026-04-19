@@ -99,7 +99,7 @@ function RichText({ text }: { text: string }) {
   );
 }
 
-export function AIChatWidget() {
+export function AIChatWidget({ hideOwnFab = false }: { hideOwnFab?: boolean } = {}) {
   const pathname = usePathname();
   const selectedDeal = usePageContextStore((s) => s.selectedDeal);
   const selectedLead = usePageContextStore((s) => s.selectedLead);
@@ -133,14 +133,11 @@ export function AIChatWidget() {
     }
   }, [open]);
 
-  // Load saved identity + conversation history; auto-open on mount unless user dismissed this session
+  // Load saved identity + conversation history. Closed-by-default (per redesign §9 — chat is a tool, not a popup).
   useEffect(() => {
     try {
       const saved = localStorage.getItem(IDENTITY_KEY);
       if (saved && saved.trim()) setName(saved.trim());
-      const dismissed = sessionStorage.getItem(DISMISSED_KEY);
-      if (!dismissed) setOpen(true);
-      // Restore last conversation
       const raw = localStorage.getItem(HISTORY_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as Message[];
@@ -153,6 +150,13 @@ export function AIChatWidget() {
     } catch {
       // storage not available — fall through
     }
+  }, []);
+
+  // Open via external event from <ActionFab>.
+  useEffect(() => {
+    const handler = () => setOpen(true);
+    window.addEventListener("cc:open-chat", handler);
+    return () => window.removeEventListener("cc:open-chat", handler);
   }, []);
 
   // Persist conversation on every change (capped to last HISTORY_CAP)
@@ -552,24 +556,26 @@ export function AIChatWidget() {
         </div>
       )}
 
-      {/* Floating trigger button */}
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all cursor-pointer ${
-          open
-            ? "bg-dash-sidebar text-white hover:bg-dash-sidebar/90"
-            : "bg-brand-copper text-white hover:bg-brand-copper/90 hover:scale-105"
-        }`}
-      >
-        {open ? (
-          <X className="w-5 h-5" />
-        ) : (
-          <div className="relative">
-            <MessageCircle className="w-5 h-5" />
-            <Sparkles className="absolute -top-1.5 -right-1.5 w-3 h-3 text-yellow-300" />
-          </div>
-        )}
-      </button>
+      {/* Floating trigger button — hidden when ActionFab is mounted */}
+      {!hideOwnFab && (
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all cursor-pointer ${
+            open
+              ? "bg-dash-sidebar text-white hover:bg-dash-sidebar/90"
+              : "bg-brand-copper text-white hover:bg-brand-copper/90 hover:scale-105"
+          }`}
+        >
+          {open ? (
+            <X className="w-5 h-5" />
+          ) : (
+            <div className="relative">
+              <MessageCircle className="w-5 h-5" />
+              <Sparkles className="absolute -top-1.5 -right-1.5 w-3 h-3 text-yellow-300" />
+            </div>
+          )}
+        </button>
+      )}
     </>
   );
 }
