@@ -77,6 +77,7 @@ import {
   getDealCompletionChecklist,
 } from "@/app/lib/deal-automation";
 import { useActivityStore } from "@/app/lib/stores/activity-store";
+import { usePageContextStore } from "@/app/lib/stores/page-context-store";
 import { TRAFICO_STATUS_CONFIG, type TraficoStatus } from "@/app/lib/customs-data";
 
 // Slim live shape from /api/dashboard/traficos (matches the flat sheet
@@ -337,6 +338,23 @@ const PipelinePageInner = () => {
   const [loading, setLoading] = useState(true);
   const [activeDeal, setActiveDeal] = useState<PipelineDeal | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<PipelineDeal | null>(null);
+
+  // Publish open deal to the page-context store so the AI chat widget
+  // can resolve "this deal" without the user re-typing the ID.
+  const setPageDeal = usePageContextStore((s) => s.setSelectedDeal);
+  useEffect(() => {
+    if (selectedDeal) {
+      setPageDeal({
+        id: selectedDeal.id,
+        name: selectedDeal.name || selectedDeal.id,
+        company: selectedDeal.contactCompany || selectedDeal.contactName || "",
+        stage: selectedDeal.stage || "",
+      });
+    } else {
+      setPageDeal(null);
+    }
+    return () => setPageDeal(null);
+  }, [selectedDeal, setPageDeal]);
   const [pipelineView, setPipelineView] = useState<PipelineView>("sales");
   const [activityLogDeal, setActivityLogDeal] = useState<PipelineDeal | null>(null);
   const [activityNote, setActivityNote] = useState("");

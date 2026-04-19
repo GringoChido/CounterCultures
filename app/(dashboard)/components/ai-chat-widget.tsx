@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { usePageContextStore, renderPageContext } from "@/app/lib/stores/page-context-store";
 import DOMPurify from "dompurify";
 import {
   MessageCircle,
@@ -110,6 +111,16 @@ function RichText({ text }: { text: string }) {
 
 export function AIChatWidget() {
   const router = useRouter();
+  const pathname = usePathname();
+  const selectedDeal = usePageContextStore((s) => s.selectedDeal);
+  const selectedLead = usePageContextStore((s) => s.selectedLead);
+  const setPathname = usePageContextStore((s) => s.setPathname);
+
+  // Keep pathname in store mirror so other consumers can read it
+  useEffect(() => {
+    setPathname(pathname || "");
+  }, [pathname, setPathname]);
+
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -200,10 +211,19 @@ export function AIChatWidget() {
           content: m.content,
         }));
 
+        const pageContext = renderPageContext({
+          pathname,
+          selectedDeal,
+          selectedLead,
+        });
+
         const res = await fetch("/api/dashboard-chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages: apiMessages }),
+          body: JSON.stringify({
+            messages: apiMessages,
+            pageContext: pageContext || undefined,
+          }),
         });
 
         if (!res.ok || !res.body) {
@@ -299,7 +319,7 @@ export function AIChatWidget() {
         setLoading(false);
       }
     },
-    [loading]
+    [loading, pathname, selectedDeal, selectedLead]
   );
 
   const runAction = (action: QuickAction) => {

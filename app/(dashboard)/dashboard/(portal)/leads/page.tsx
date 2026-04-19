@@ -6,6 +6,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { format, differenceInDays, isPast, parseISO } from "date-fns";
 import { Plus, Filter, Download, Mail, MessageCircle, ClipboardList, Loader2, Save, X, ChevronDown, AlertTriangle } from "lucide-react";
 import { useActivityStore } from "@/app/lib/stores/activity-store";
+import { usePageContextStore } from "@/app/lib/stores/page-context-store";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
@@ -580,6 +581,22 @@ const LeadsPageInner = () => {
   const [contactTypeFilter, setContactTypeFilter] = useState<string>("all");
   const [viewFilter, setViewFilter] = useState<"all" | "stale">("all");
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+
+  // Publish open lead to page-context store for the AI chat widget.
+  const setPageLead = usePageContextStore((s) => s.setSelectedLead);
+  useEffect(() => {
+    if (selectedLead) {
+      setPageLead({
+        id: selectedLead.id,
+        name: selectedLead.name,
+        status: selectedLead.status,
+      });
+    } else {
+      setPageLead(null);
+    }
+    return () => setPageLead(null);
+  }, [selectedLead, setPageLead]);
+
   const [formOpen, setFormOpen] = useState(false);
   const [editingLead, setEditingLead] = useState<Lead | null>(null);
   const [activityLogLead, setActivityLogLead] = useState<Lead | null>(null);
