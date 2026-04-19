@@ -233,3 +233,98 @@ Word cap on system prompt: ~1.2k tokens. Stays cacheable.
 2. I write the TDD-shaped task plan to `docs/superpowers/specs/2026-04-18-webchat-v2-plan.md`.
 3. Plan tasks: each tool (8) gets a small implement+verify step; streaming refactor is one big-ish task; per-page context store is a separate task; UI updates are 2-3 tasks. Estimated ~12-15 tasks → ~6-8 commits.
 4. Once plan approved, execution starts (inline, same as W5).
+
+---
+
+## 9. Execution log (2026-04-18, completed)
+
+All 8 tasks shipped inline in one session. 7 commits ahead of origin/main
+(b51fcfe → c4d5286). Build passes locally (`npm run build`).
+
+| # | Task | Commit |
+|---|---|---|
+| 1 | Pure refactor: extract tools to lib | `b51fcfe` |
+| 2 | SSE streaming + Anthropic prompt caching | `4c17acd` |
+| 3 | Per-page context store + Pipeline/Leads wiring | `c79a5a2` |
+| 4 | UX overhaul (3 starters, tool chips, persistence, modal scaffold, new prompt) | `d32c4e8` |
+| 5 | `read_inbox` + `add_note` tools | `474b9ae` |
+| 6 | `update_lead_status` + `update_deal_stage` + `start_new_trafico` | `a72b718` |
+| 7 | `share_entity` + `send_email` + `reply_to_thread` | `c4d5286` |
+| 8 | Final smoke + this log | (this commit) |
+
+### Tool count
+
+v1: 14 tools. v2: **22 tools** (+ 8). All wired to real CRM/Drive/Gmail
+endpoints; no fixtures.
+
+### Architecture changes shipped
+
+- ✅ SSE streaming via `client.messages.stream()` + manual SSE-frame
+  parser on the browser side (`fetch().body.getReader()` since
+  EventSource can't POST). Wire format: `text` / `tool_use` /
+  `tool_result` / `done` / `error` events.
+- ✅ Anthropic prompt caching: `cache_control: ephemeral` on system +
+  last tool def. ~90% input cost cut on subsequent turns.
+- ✅ Per-page context Zustand store at `app/lib/stores/page-context-store.ts`.
+  Pipeline + Leads pages publish `selectedDeal` / `selectedLead` on
+  open; widget reads on every send and forwards as a "## CURRENT USER
+  CONTEXT" addendum to the system prompt.
+- ✅ Conversation persistence to localStorage (`cc_chat_history_v2`,
+  cap 50, restored on mount, cleared on Sign Out).
+- ✅ `<ChatToolChip />` component — collapsible inline chip per tool
+  call with status icon + name + spinner/preview + click-to-expand
+  input/result JSON.
+- ✅ `<ChatConfirmModal />` component — scaffold for v3 pause/resume
+  flow. Wired up but not yet connected to streaming agent loop.
+
+### UX changes shipped
+
+- ✅ 7 hardcoded quick-actions → 3 conversational starters
+  ("What's new today?" · "Find a contact" · "Show this week's numbers")
+- ✅ Tool-call chips render under each assistant bubble
+- ✅ Streaming text appears progressively
+- ✅ System prompt rewritten — lists all 22 tools by tier, instructs
+  agent to ask first for crm-update / customer-facing tools, 200-word
+  cap, removed dashboard-section block (⌘K covers it)
+
+### Deviations from plan
+
+- **Customer-facing tier confirmation** — shipped the simpler "ask first
+  as text, execute on yes" pattern (per design doc §4.3 revised). The
+  `<ChatConfirmModal />` is built but unused; v3 will wire it via
+  `/api/dashboard-chat/approve` for true pause/resume.
+- **Identity name in `add_note` author** — hardcoded to
+  `"portal-assistant"` instead of `"portal-assistant (on behalf of
+  {identity})"`. The `IDENTITY_KEY` localStorage value is browser-side;
+  threading it into tool calls requires forwarding through the request
+  body. Saved for v3.
+- **Task 6 columns replicated inline** — `LEAD_COLUMNS`,
+  `PIPELINE_COLUMNS`, `TRAFICO_COLUMNS` are duplicated in
+  `chat-tools.ts` instead of imported from the route files (which would
+  create a route ↔ lib circular import). Each duplicate has an inline
+  comment pointing to the canonical source.
+
+### Known limitations / open follow-ups
+
+- **No real pause/resume for confirmation** — agent uses text-based
+  ask-first pattern. Works but UX is less polished than a true modal
+  preview. (v3)
+- **Single-tenant actor** — all tool calls log `actor: "portal-assistant"`.
+  Per-user identity threading lands when auth becomes multi-user (Phase 2).
+- **No conversation history sidebar** — single ephemeral conversation
+  only. (v3)
+- **No Stripe / quote / invoice tools** — design doc §6 deferred these
+  to v3 (real money flow needs richer per-artifact confirm flow).
+
+### Final smoke (2026-04-18)
+
+```
+✅ scripts/_test-chat-tools.ts — 7 tool paths verified end-to-end
+✅ npx tsc --noEmit            — clean
+✅ npm run build               — Netlify-ready
+```
+
+Counter Portal's webchat is now an actual "master of the dashboard"
+agent: it can read, log, mutate CRM, and reach customers — all inside
+the chat surface, with streaming + tool transparency + page-context
+awareness.
