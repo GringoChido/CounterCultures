@@ -35,8 +35,10 @@ import {
   syncPriceLists,
   isConfigured as priceListConfigured,
 } from "./price-lists";
-import { listInbox } from "./gmail";
+import { listInbox, sendMessage, replyToThread } from "./gmail";
 import { createNote, type EntityType } from "./notes";
+import { logEmailActivity } from "./email-activity";
+import { listReps } from "./reps";
 
 // ---------------------------------------------------------------------------
 // Tool definitions
@@ -361,6 +363,88 @@ export const TOOLS: Anthropic.Messages.Tool[] = [
         },
       },
       required: [],
+    },
+  },
+  {
+    name: "send_email",
+    description:
+      "[CUSTOMER-FACING TIER — ASK FIRST + SHOW PREVIEW] Send a new Gmail message via the connected user's @countercultures.com.mx account. Before calling, you MUST show the user the full recipient + subject + body and ask for explicit approval ('Want me to send this email?'). Only call after they say yes.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        to: {
+          type: "string",
+          description: "Recipient email address (single).",
+        },
+        cc: {
+          type: "string",
+          description: "Optional CC email address.",
+        },
+        subject: {
+          type: "string",
+          description: "Subject line.",
+        },
+        body: {
+          type: "string",
+          description: "Plain-text body. Sign with the user's name from context if known.",
+        },
+      },
+      required: ["to", "subject", "body"],
+    },
+  },
+  {
+    name: "reply_to_thread",
+    description:
+      "[CUSTOMER-FACING TIER — ASK FIRST + SHOW PREVIEW] Reply to an existing Gmail thread (preserves thread headers). Before calling, show the user the thread subject + reply body and ask for explicit approval. Only call after they say yes.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        threadId: {
+          type: "string",
+          description:
+            "The Gmail thread ID. Get it from read_inbox results.",
+        },
+        body: {
+          type: "string",
+          description: "Plain-text reply body.",
+        },
+      },
+      required: ["threadId", "body"],
+    },
+  },
+  {
+    name: "share_entity",
+    description:
+      "[CUSTOMER-FACING TIER — ASK FIRST + SHOW PREVIEW] Forward an entity summary to a teammate via WhatsApp or Email. The recipient is looked up in the Reps sheet by name (read it first via read_crm_tab('Reps') if you don't know who's available). Before calling, show the user the recipient + medium + summary and ask for approval.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        entityType: {
+          type: "string",
+          enum: [
+            "lead",
+            "deal",
+            "shipment",
+            "trade_app",
+            "blog_post",
+            "whatsapp_thread",
+          ],
+        },
+        entityId: { type: "string" },
+        recipientName: {
+          type: "string",
+          description: "Rep's name as listed in the Reps sheet.",
+        },
+        medium: {
+          type: "string",
+          enum: ["whatsapp", "email"],
+        },
+        summary: {
+          type: "string",
+          description: "1-2 sentence summary of what's being shared.",
+        },
+      },
+      required: ["entityType", "entityId", "recipientName", "medium", "summary"],
     },
   },
   {
@@ -785,6 +869,127 @@ export async function executeTool(
         const values = PIPELINE_COLUMNS.map((col) => merged[col] ?? "");
         await updateRow("Pipeline", rowIdx, values);
         return `✓ Deal ${dealId} stage: ${oldStage} → ${newStage}.`;
+      }
+
+      case "send_email": {
+        const to = input.to as string;
+        const cc = input.cc as string | undefined;
+        const subject = input.subject as string;
+        const body = input.body as string;
+        if (!to || !subject || !body) {
+          return "Missing required fields: to, subject, body.";
+        }
+        try {
+          const result = await sendMessage({ to, cc, subject, body });
+          // Audit log (mirrors /api/gmail/send route's behavior)
+          logEmailActivity({
+            userEmail: "portal-assistant",
+            gmailMessageId: result.messageId,
+            gmailThreadId: result.threadId,
+            direction: "outbound",
+            action: "sent",
+            senderEmail: "portal-assistant",
+            recipientEmails: [to, cc].filter(Boolean) as string[],
+            subject,
+            snippet: body.slice(0, 200),
+          }).catch((err) =>
+            console.error("[chat send_email] activity log failed:", err)
+          );
+          return `✓ Email sent to ${to}. Subject: "${subject}". Gmail messageId ${result.messageId}.`;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : "send failed";
+          if (msg === "Gmail not connected") {
+            return "Can't send — Gmail isn't connected. Open Settings → Connect Gmail.";
+          }
+          throw err;
+        }
+      }
+
+      case "reply_to_thread": {
+        const threadId = input.threadId as string;
+        const body = input.body as string;
+        if (!threadId || !body) {
+          return "Missing required fields: threadId, body.";
+        }
+        try {
+          const result = await replyToThread({ threadId, body });
+          logEmailActivity({
+            userEmail: "portal-assistant",
+            gmailMessageId: result.messageId,
+            gmailThreadId: result.threadId,
+            direction: "outbound",
+            action: "replied",
+            senderEmail: "portal-assistant",
+            recipientEmails: [],
+            subject: "",
+            snippet: body.slice(0, 200),
+          }).catch((err) =>
+            console.error("[chat reply_to_thread] activity log failed:", err)
+          );
+          return `✓ Reply sent on thread ${threadId}. Gmail messageId ${result.messageId}.`;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : "reply failed";
+          if (msg === "Gmail not connected") {
+            return "Can't reply — Gmail isn't connected. Open Settings → Connect Gmail.";
+          }
+          throw err;
+        }
+      }
+
+      case "share_entity": {
+        const entityType = input.entityType as EntityType;
+        const entityId = input.entityId as string;
+        const recipientName = input.recipientName as string;
+        const medium = input.medium as "whatsapp" | "email";
+        const summary = input.summary as string;
+        if (
+          !entityType ||
+          !entityId ||
+          !recipientName ||
+          !medium ||
+          !summary?.trim()
+        ) {
+          return "Missing required fields: entityType, entityId, recipientName, medium, summary.";
+        }
+        const reps = await listReps();
+        const rep = reps.find(
+          (r) =>
+            r.name.toLowerCase() === recipientName.toLowerCase() ||
+            r.name
+              .toLowerCase()
+              .includes(recipientName.toLowerCase())
+        );
+        if (!rep) {
+          return `No Rep matched "${recipientName}". Available: ${reps.map((r) => r.name).join(", ") || "(none)"}`;
+        }
+        const deepLink = `https://countercultures.netlify.app/dashboard/${entityType === "deal" ? "pipeline" : "leads"}#${entityId}`;
+        // POST to the share route — its full preview/send/log path
+        // (including Resend wiring) lives there. Internal fetch goes
+        // through the running Next server.
+        const baseUrl =
+          process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+        const r = await fetch(`${baseUrl}/api/dashboard/share`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            entityType,
+            entityId,
+            recipient: {
+              name: rep.name,
+              email: rep.email,
+              whatsappPhone: rep.whatsappPhone,
+            },
+            medium,
+            summary,
+            deepLink,
+            authorEmail: "portal-assistant",
+          }),
+        });
+        if (!r.ok) {
+          const errBody = await r.text();
+          return `Share failed (${r.status}): ${errBody.slice(0, 200)}`;
+        }
+        return `✓ Shared ${entityType.toUpperCase()} ${entityId} with ${rep.name} via ${medium}.`;
       }
 
       case "start_new_trafico": {

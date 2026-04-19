@@ -84,6 +84,42 @@ const main = async () => {
     fail++;
   }
 
+  // ───── share_entity (CUSTOMER-FACING) — bad recipient path ─────
+  console.log("→ share_entity (bad recipient path)");
+  const shareResult = await executeTool("share_entity", {
+    entityType: "lead",
+    entityId: "LEAD-__TEST__",
+    recipientName: "__NO_SUCH_REP__",
+    medium: "email",
+    summary: "test",
+  });
+  if (shareResult.startsWith("No Rep matched")) {
+    console.log(`  ✓ correctly rejected unknown rep: ${shareResult.slice(0, 80)}…`);
+  } else {
+    console.log(`  ✗ expected 'No Rep matched', got: ${shareResult.slice(0, 200)}`);
+    fail++;
+  }
+
+  // ───── send_email (CUSTOMER-FACING) — missing-fields path ─────
+  console.log("→ send_email (missing-fields path)");
+  const sendResult = await executeTool("send_email", {});
+  if (sendResult.includes("Missing required")) {
+    console.log(`  ✓ correctly rejected empty input: ${sendResult}`);
+  } else {
+    console.log(`  ✗ expected 'Missing required', got: ${sendResult.slice(0, 200)}`);
+    fail++;
+  }
+
+  // ───── reply_to_thread (CUSTOMER-FACING) — missing-fields path ─────
+  console.log("→ reply_to_thread (missing-fields path)");
+  const replyResult = await executeTool("reply_to_thread", {});
+  if (replyResult.includes("Missing required")) {
+    console.log(`  ✓ correctly rejected empty input: ${replyResult}`);
+  } else {
+    console.log(`  ✗ expected 'Missing required', got: ${replyResult.slice(0, 200)}`);
+    fail++;
+  }
+
   console.log(
     fail === 0
       ? "\n✅ All chat tools round-trip OK."
