@@ -464,6 +464,66 @@ These are the calls I deliberately did NOT make in this design — flag them at 
 
 ---
 
+## §8 Execution log (2026-04-19)
+
+Phase 2 plan: [docs/superpowers/specs/2026-04-19-dashboard-redesign-plan.md](2026-04-19-dashboard-redesign-plan.md)
+
+### Commits
+
+| # | SHA | Task | Notes |
+|---|---|---|---|
+| 1 | `26725ca` | T1 | Defined `--color-dash-*` / `--space-*` / `--radius-*` / `--text-*` tokens in `@theme inline`. |
+| 2 | `bf89a5a` | T2 | Sidebar v2 light at `#EFE7DA`, 220px, 6 nav groups + SYSTEM. Surfaced previously invisible modules. |
+| 3 | `01931f4` | T3+T4 | Header v2 (no page title, slim, icon-only search), ActionFab stack, chat closed-by-default with 3-session pulse. |
+| 4 | `8afa185` | T5 | KpiCard v2 with hero/compact variants. Cormorant for hero, DM Sans tabular for compact. |
+| 5 | `85f7955` | T6 | EntityCard with 6 slots + 5 variants. Demo at `/dashboard/design`. |
+| 6 | `765d792` | T7 | EmptyState component. StatusBadge collapsed to 6 brand-palette tones (legacy variants auto-remap). |
+| 7 | `3cc7dee` | T8+T9+T10 | Today page rewrite — NeedsYou hero, NewSinceLastCheck, TodayActiveDeals, MorningSalesHealth, right-rail KPI stack. |
+| 8 | (this) | T11+T12 | Migration script (dry-run reported 0 affected — Sales pipeline already clean). Final smoke + execution log. |
+
+### Decisions resolved (§7 Q&A)
+
+| # | Question | Answer |
+|---|---|---|
+| 1 | Sidebar light vs dark | **C** — light at `#EFE7DA` (sand-tinted, darker than page bg) |
+| 2 | EntityCard slots | **A** — 6 slots, SLA optional, no avatar |
+| 3 | NeedsYou data sources | **C** — 3 sources (Trafico_Events, Leads.next_followup, Traficos.delay_days). Deal_Payments deferred to W8. |
+| 4 | Pipeline migration | **A** — script with dry-run + backup CSV + Activity_Log audit. Result: 0 affected. |
+| 5 | Chat auto-open | **B** — closed by default + 3-session FAB pulse (cancellable on first interaction) |
+| 6 | KPI typography | **C** — Cormorant for hero, DM Sans tabular for compact |
+| 7 | Token names | **A** — `--color-dash-*` (matches existing class usage) |
+
+### Deviations from plan
+
+- **T2 sidebar token override:** discovered a second `app/(dashboard)/dashboard/globals.css` defining its own `--color-dash-*` block with the OLD dark charcoal sidebar values. The dashboard surface was overriding the root `@theme inline`. Fixed by mirroring the new token block into the dashboard-scoped globals.css. Root cause documented in T2 commit body.
+- **T5 KpiCard scope discipline:** found 14 consumers of the v1 `<KPICard>` component. Rather than churn 14 files in one commit, kept `KPICard` as a grandfathered export alias (`export { KpiCard, KpiCard as KPICard }`) and accepted the legacy `icon` / `accentColor` props as ignored. New consumers (Today page right-rail, future pages) use the new `KpiCard` symbol with explicit `href`. Old consumers inherit the new clean look automatically.
+- **T6 design route name:** spec called for `/dashboard/_design` but Next.js App Router treats `_`-prefixed folders as private (excluded from routing). Renamed to `/dashboard/design`.
+- **T11 migration result:** dry-run reported 0 affected deals. The Sales pipeline is already clean (no deals stuck in fulfillment/delivered Sales-side stages). The script is committed for future use; no `--execute` run was needed. Sales view already shows 3 columns via the pre-existing `SALES_PHASES` structure (Discovery / Design & Scope / Proposal · Negotiation).
+- **T11 EntityCard standardization on Pipeline DealCard deferred:** the pipeline page is ~1900 lines with complex dnd-kit + slideout state. Refactoring its inline `DealCard` to `EntityCard` was scoped out of this commit to avoid risking the page's drag-drop behavior. EntityCard is in place, demoed, and ready when someone next touches the pipeline page. Tracked as a follow-up.
+- **T11 view toggle:** the Sales ↔ Operations view toggle already existed in the page (lines 829-850). No new work needed.
+- **T7 inline status colors:** kept bespoke `bg-emerald/amber/cyan/blue` classes on functional state badges (Settings, Finance, Shipments, Activity Logger). Those are intentional state colors, not the lime/pink "zoo" the StatusBadge collapse targeted. Documented as out of scope.
+- **NewSinceLastCheck deeplink:** spec mentioned a future `/dashboard/activity` history page for "View all" target. Page doesn't exist yet, so the widget links to `/dashboard/leads` or `/dashboard/pipeline?deal=...` per item context.
+
+### Out of scope (Phase 2 of the redesign — separate doc)
+
+- ⌘K global search upgrade (notifications bell + history page)
+- Real notification source wiring for the bell badge
+- `/dashboard/activity` deep history page
+- DataTable / SlideOut explicit restyle (cascades from new tokens; cosmetic-only)
+- EntityCard adoption on Pipeline DealCard, Leads slideout, Trade Program list, Shipments list
+- Brand chips column join on Leads (`brand_slugs` → display names) — surfaced in §1.5 but flagged low-priority
+
+### Verification snapshot
+
+- `npx tsc --noEmit` (filtered): zero errors
+- `npm run build`: passes (logged at commit time)
+- Dev preview verification: Today page, Pipeline (Sales view), Leads, Email Campaigns, EntityCard demo — all render with consistent linen/sand/copper/sage palette
+- Live data flow: NeedsYou hero pulled 8 real overdue follow-ups from the Leads sheet on first load; TodayActiveDeals rendered DEAL-101 (Hotel Rosewood) with copper ID + brand resolution
+
+---
+
+## §9 Original new-chat bootstrap prompt (kept for reference)
+
 **Hi Claude. I want to redesign the Counter Cultures dashboard.**
 
 Read these in order, in full, before doing anything:
