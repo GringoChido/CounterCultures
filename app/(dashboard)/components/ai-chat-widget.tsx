@@ -22,11 +22,20 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+interface ToolCall {
+  id: string;
+  name: string;
+  input?: unknown;
+  preview?: string;
+  status: "running" | "ok" | "error";
+}
+
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  toolCalls?: ToolCall[];
 }
 
 type QuickAction =
@@ -166,10 +175,24 @@ export function AIChatWidget() {
         content: text.trim(),
         timestamp: new Date(),
       };
+      const assistantId = `a-${Date.now()}`;
+      const assistantMsg: Message = {
+        id: assistantId,
+        role: "assistant",
+        content: "",
+        timestamp: new Date(),
+        toolCalls: [],
+      };
 
-      setMessages((prev) => [...prev, userMsg]);
+      setMessages((prev) => [...prev, userMsg, assistantMsg]);
       setInput("");
       setLoading(true);
+
+      const updateAssistant = (mut: (m: Message) => Message) => {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === assistantId ? mut(m) : m))
+        );
+      };
 
       try {
         const apiMessages = [...messagesRef.current, userMsg].map((m) => ({
@@ -183,27 +206,95 @@ export function AIChatWidget() {
           body: JSON.stringify({ messages: apiMessages }),
         });
 
-        const data = await res.json();
+        if (!res.ok || !res.body) {
+          const errText = await res.text().catch(() => "");
+          updateAssistant((m) => ({
+            ...m,
+            content: errText || "Sorry, I couldn't process that.",
+          }));
+          return;
+        }
 
-        const assistantMsg: Message = {
-          id: `a-${Date.now()}`,
-          role: "assistant",
+        // Parse SSE frames from a streamed POST response
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+
+          // Split on double-newline = end of one SSE frame
+          let nlIdx: number;
+          while ((nlIdx = buffer.indexOf("\n\n")) !== -1) {
+            const frame = buffer.slice(0, nlIdx);
+            buffer = buffer.slice(nlIdx + 2);
+
+            let event = "message";
+            let dataLine = "";
+            for (const line of frame.split("\n")) {
+              if (line.startsWith("event: ")) event = line.slice(7).trim();
+              else if (line.startsWith("data: ")) dataLine = line.slice(6);
+            }
+            if (!dataLine) continue;
+
+            let payload: Record<string, unknown> = {};
+            try {
+              payload = JSON.parse(dataLine) as Record<string, unknown>;
+            } catch {
+              continue;
+            }
+
+            if (event === "text") {
+              const delta = (payload.text as string) ?? "";
+              updateAssistant((m) => ({ ...m, content: m.content + delta }));
+            } else if (event === "tool_use") {
+              const tc: ToolCall = {
+                id: payload.id as string,
+                name: payload.name as string,
+                input: payload.input,
+                status: "running",
+              };
+              updateAssistant((m) => ({
+                ...m,
+                toolCalls: [...(m.toolCalls ?? []), tc],
+              }));
+            } else if (event === "tool_result") {
+              const id = payload.id as string;
+              const preview = payload.preview as string;
+              updateAssistant((m) => ({
+                ...m,
+                toolCalls: (m.toolCalls ?? []).map((c) =>
+                  c.id === id ? { ...c, preview, status: "ok" } : c
+                ),
+              }));
+            } else if (event === "error") {
+              const errMsg = (payload.message as string) || "Stream error";
+              updateAssistant((m) => ({
+                ...m,
+                content: m.content + `\n\n_Error: ${errMsg}_`,
+              }));
+            } else if (event === "done") {
+              // No-op — loop will exit on stream close
+            }
+          }
+        }
+
+        // If nothing came back at all, show a fallback
+        updateAssistant((m) =>
+          m.content || (m.toolCalls && m.toolCalls.length)
+            ? m
+            : { ...m, content: "I processed that but have nothing to add." }
+        );
+      } catch (err) {
+        console.error("[Chat stream]", err);
+        updateAssistant((m) => ({
+          ...m,
           content:
-            data.message || data.error || "Sorry, I couldn't process that.",
-          timestamp: new Date(),
-        };
-
-        setMessages((prev) => [...prev, assistantMsg]);
-      } catch {
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `e-${Date.now()}`,
-            role: "assistant",
-            content: "Connection error. Please try again.",
-            timestamp: new Date(),
-          },
-        ]);
+            m.content ||
+            "Connection error. Please try again.",
+        }));
       } finally {
         setLoading(false);
       }
@@ -355,7 +446,40 @@ export function AIChatWidget() {
                   }`}
                 >
                   {msg.role === "assistant" ? (
-                    <RichText text={msg.content} />
+                    <>
+                      <RichText text={msg.content} />
+                      {msg.toolCalls && msg.toolCalls.length > 0 && (
+                        <div className="mt-2 space-y-1">
+                          {msg.toolCalls.map((tc) => (
+                            <div
+                              key={tc.id}
+                              className={`text-[10px] px-2 py-1 rounded border flex items-center gap-1.5 ${
+                                tc.status === "running"
+                                  ? "bg-brand-copper/5 border-brand-copper/20 text-brand-copper"
+                                  : tc.status === "ok"
+                                    ? "bg-dash-bg border-dash-border text-dash-text-secondary"
+                                    : "bg-red-500/5 border-red-500/20 text-red-400"
+                              }`}
+                              title={
+                                tc.preview ||
+                                JSON.stringify(tc.input).slice(0, 200)
+                              }
+                            >
+                              <span className="opacity-60">🔧</span>
+                              <span className="font-mono">{tc.name}</span>
+                              {tc.status === "running" && (
+                                <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                              )}
+                              {tc.preview && tc.status === "ok" && (
+                                <span className="opacity-70 truncate">
+                                  · {tc.preview.slice(0, 40)}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <p className="whitespace-pre-wrap leading-relaxed">
                       {msg.content}

@@ -1,105 +1,172 @@
 /**
  * Dashboard chat agent — HTTP route handler.
  *
- * Tool defs + executor live in app/lib/chat-tools.ts (extracted W6 v2
- * refactor). This route is just the agentic loop + transport.
+ * Tool defs + executor live in app/lib/chat-tools.ts.
  *
- * Streaming via SSE + prompt caching ships in webchat-v2 Task 2.
- * For now: kept as the v1 non-streaming JSON response shape so the
- * existing widget keeps working until Task 2 swaps both ends.
+ * v2 (2026-04-18): streaming via SSE + Anthropic prompt caching.
+ * Wire format (text/event-stream):
+ *   event: text          data: {"text": "<delta>"}
+ *   event: tool_use      data: {"id":"<id>","name":"<name>","input":{...}}
+ *   event: tool_result   data: {"id":"<id>","name":"<name>","preview":"<≤120 chars>"}
+ *   event: done          data: {}
+ *   event: error         data: {"message":"<err>"}
+ *
+ * The browser parses with a small SSE-frame reader (EventSource doesn't
+ * support POST). See app/(dashboard)/components/ai-chat-widget.tsx.
  */
 
 import Anthropic from "@anthropic-ai/sdk";
 import { TOOLS, executeTool, SYSTEM_PROMPT } from "@/app/lib/chat-tools";
 
+const enc = new TextEncoder();
+
+const sseEvent = (event: string, data: unknown): Uint8Array =>
+  enc.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+
 export const POST = async (request: Request) => {
-  try {
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) {
-      return Response.json(
-        {
-          error:
-            "AI assistant is not configured. Add ANTHROPIC_API_KEY to your environment variables.",
-        },
-        { status: 503 }
-      );
-    }
-
-    const { messages } = (await request.json()) as {
-      messages: { role: "user" | "assistant"; content: string }[];
-    };
-
-    if (!messages?.length) {
-      return Response.json({ error: "No messages" }, { status: 400 });
-    }
-
-    const client = new Anthropic({ apiKey });
-
-    // Run the agentic loop — Claude may call tools multiple times
-    let currentMessages: Anthropic.Messages.MessageParam[] = messages.map(
-      (m) => ({ role: m.role, content: m.content })
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    return Response.json(
+      {
+        error:
+          "AI assistant is not configured. Add ANTHROPIC_API_KEY to your environment variables.",
+      },
+      { status: 503 }
     );
-    let iterations = 0;
-    const MAX_ITERATIONS = 6; // safety limit
-
-    while (iterations < MAX_ITERATIONS) {
-      iterations++;
-
-      const response = await client.messages.create({
-        model: "claude-opus-4-7",
-        max_tokens: 1200,
-        system: SYSTEM_PROMPT,
-        tools: TOOLS,
-        messages: currentMessages,
-      });
-
-      // If no tool use, extract text and return
-      if (
-        response.stop_reason === "end_turn" ||
-        !response.content.some((b) => b.type === "tool_use")
-      ) {
-        const text = response.content
-          .filter((b): b is Anthropic.Messages.TextBlock => b.type === "text")
-          .map((b) => b.text)
-          .join("\n");
-
-        return Response.json({
-          message: text || "I processed that but have nothing to add.",
-        });
-      }
-
-      // Handle tool calls
-      const toolResults: Anthropic.Messages.ToolResultBlockParam[] = [];
-
-      for (const block of response.content) {
-        if (block.type === "tool_use") {
-          const result = await executeTool(
-            block.name,
-            block.input as Record<string, unknown>
-          );
-          toolResults.push({
-            type: "tool_result",
-            tool_use_id: block.id,
-            content: result,
-          });
-        }
-      }
-
-      // Add assistant response + tool results to conversation
-      currentMessages = [
-        ...currentMessages,
-        { role: "assistant", content: response.content },
-        { role: "user", content: toolResults },
-      ];
-    }
-
-    // If we hit max iterations, return what we have
-    return Response.json({
-      message:
-        "I ran into a lot of steps trying to answer that. Could you try a more specific question?",
-    });
-  } catch (err) {
-    console.error("[Dashboard Chat]", err);
-    return Response.json({ error: "Failed to respond" }, { status: 500 });
   }
+
+  const { messages, pageContext } = (await request.json()) as {
+    messages: { role: "user" | "assistant"; content: string }[];
+    pageContext?: string; // optional inline addendum from the widget
+  };
+
+  if (!messages?.length) {
+    return Response.json({ error: "No messages" }, { status: 400 });
+  }
+
+  const client = new Anthropic({ apiKey });
+
+  // Cache the static portion (system prompt + tool defs) for ~90% input
+  // cost savings on subsequent turns. Cache breakpoint = LAST tool def.
+  const systemBlocks: Anthropic.Messages.TextBlockParam[] = [
+    {
+      type: "text",
+      text: pageContext
+        ? `${SYSTEM_PROMPT}\n\n## CURRENT USER CONTEXT\n${pageContext}`
+        : SYSTEM_PROMPT,
+      cache_control: { type: "ephemeral" },
+    },
+  ];
+
+  const cachedTools: Anthropic.Messages.Tool[] = TOOLS.map((t, i) =>
+    i === TOOLS.length - 1 ? { ...t, cache_control: { type: "ephemeral" } } : t
+  );
+
+  let currentMessages: Anthropic.Messages.MessageParam[] = messages.map((m) => ({
+    role: m.role,
+    content: m.content,
+  }));
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      const send = (event: string, data: unknown) =>
+        controller.enqueue(sseEvent(event, data));
+
+      try {
+        const MAX_ITERATIONS = 6;
+        let iter = 0;
+
+        while (iter < MAX_ITERATIONS) {
+          iter++;
+
+          // Streaming call — Claude emits text deltas + tool_use blocks
+          const apiStream = client.messages.stream({
+            model: "claude-opus-4-7",
+            max_tokens: 1500,
+            system: systemBlocks,
+            tools: cachedTools,
+            messages: currentMessages,
+          });
+
+          // Forward text deltas to the client as they arrive
+          for await (const event of apiStream) {
+            if (
+              event.type === "content_block_delta" &&
+              event.delta.type === "text_delta"
+            ) {
+              send("text", { text: event.delta.text });
+            }
+          }
+
+          const final = await apiStream.finalMessage();
+
+          // If no tool use, we're done
+          if (
+            final.stop_reason === "end_turn" ||
+            !final.content.some((b) => b.type === "tool_use")
+          ) {
+            send("done", {});
+            controller.close();
+            return;
+          }
+
+          // Execute every tool_use block; emit chips for each
+          const toolResults: Anthropic.Messages.ToolResultBlockParam[] = [];
+          for (const block of final.content) {
+            if (block.type === "tool_use") {
+              send("tool_use", {
+                id: block.id,
+                name: block.name,
+                input: block.input,
+              });
+              const result = await executeTool(
+                block.name,
+                block.input as Record<string, unknown>
+              );
+              const preview =
+                result.length > 120
+                  ? `${result.slice(0, 117).replace(/\n/g, " ")}…`
+                  : result.replace(/\n/g, " ");
+              send("tool_result", {
+                id: block.id,
+                name: block.name,
+                preview,
+              });
+              toolResults.push({
+                type: "tool_result",
+                tool_use_id: block.id,
+                content: result,
+              });
+            }
+          }
+
+          currentMessages = [
+            ...currentMessages,
+            { role: "assistant", content: final.content },
+            { role: "user", content: toolResults },
+          ];
+        }
+
+        // Hit the iteration limit
+        send("text", {
+          text: "\n\n_Hit the tool-call limit on this turn. Try a more specific question._",
+        });
+        send("done", {});
+        controller.close();
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "stream_failed";
+        console.error("[Dashboard Chat]", msg);
+        send("error", { message: msg });
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache, no-transform",
+      Connection: "keep-alive",
+    },
+  });
 };
