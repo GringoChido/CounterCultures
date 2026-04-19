@@ -49,7 +49,8 @@ type SheetTab =
   | "Brand_Lead_Times"
   | "HS_Code_Lookup"
   | "FTA_Rates"
-  | "Trafico_Events";
+  | "Trafico_Events"
+  | "Notifications";
 
 // Read all rows from a sheet tab (returns array of objects using header row as keys)
 const readSheet = async <T extends Record<string, string>>(
