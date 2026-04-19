@@ -28,6 +28,8 @@ import {
   syncPriceLists,
   isConfigured as priceListConfigured,
 } from "./price-lists";
+import { listInbox } from "./gmail";
+import { createNote, type EntityType } from "./notes";
 
 // ---------------------------------------------------------------------------
 // Tool definitions
@@ -265,6 +267,64 @@ export const TOOLS: Anthropic.Messages.Tool[] = [
       type: "object" as const,
       properties: {},
       required: [],
+    },
+  },
+  // ───────────────────────── webchat-v2 tools ─────────────────────────
+  {
+    name: "read_inbox",
+    description:
+      "List recent Gmail threads from the connected user's inbox. Pass-through of Gmail query syntax (from:, subject:, has:attachment, label:). Read-only. Use when the user asks 'what emails do I have', 'find emails from X', 'any unread', etc.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        q: {
+          type: "string",
+          description:
+            "Gmail query syntax (e.g., 'from:gabor@arqgoded.mx', 'subject:quote', 'is:unread'). Optional.",
+        },
+        label: {
+          type: "string",
+          description:
+            "Single Gmail label name to filter by (e.g., 'INBOX', 'IMPORTANT', a custom label). Defaults to INBOX if omitted.",
+        },
+        pageSize: {
+          type: "number",
+          description: "Max threads to return. Default 25, max 50.",
+        },
+      },
+      required: [],
+    },
+  },
+  {
+    name: "add_note",
+    description:
+      "[LOG TIER — silent, just call] Append a note to a Lead, Deal, Shipment, Trade application, Blog post, or WhatsApp thread. Use the page-context entity ID if the user says 'this deal' / 'this lead'. The note is logged to the Notes sheet immediately and appears in the entity's Notes panel.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        entityType: {
+          type: "string",
+          enum: [
+            "lead",
+            "deal",
+            "shipment",
+            "trade_app",
+            "blog_post",
+            "whatsapp_thread",
+          ],
+          description: "Which kind of entity to attach the note to.",
+        },
+        entityId: {
+          type: "string",
+          description:
+            "The entity's ID (e.g., LEAD-204, DEAL-118, SHP-00042). Get from page context when the user says 'this deal'.",
+        },
+        content: {
+          type: "string",
+          description: "The note text. Plain text, < 1000 chars typical.",
+        },
+      },
+      required: ["entityType", "entityId", "content"],
     },
   },
 ];
@@ -552,6 +612,63 @@ export async function executeTool(
           null,
           2
         );
+      }
+
+      // ───────────────────── webchat-v2 tools ─────────────────────
+
+      case "read_inbox": {
+        try {
+          const result = await listInbox({
+            maxResults: Math.min(Number(input.pageSize) || 25, 50),
+            q: (input.q as string) || undefined,
+            labelIds: input.label
+              ? [(input.label as string).toUpperCase()]
+              : ["INBOX"],
+          });
+          if (result.threads.length === 0) {
+            return "No threads matched (inbox empty for that filter).";
+          }
+          return JSON.stringify(
+            {
+              count: result.threads.length,
+              threads: result.threads.slice(0, 25).map((t) => ({
+                threadId: t.threadId,
+                from: t.from,
+                fromEmail: t.fromEmail,
+                subject: t.subject,
+                snippet: t.snippet,
+                date: t.date,
+                unread: t.unread,
+                messageCount: t.messageCount,
+                hasAttachments: t.hasAttachments,
+              })),
+            },
+            null,
+            2
+          );
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : "read failed";
+          if (msg === "Gmail not connected") {
+            return "Gmail isn't connected for this portal user. Open Settings → Connect Gmail.";
+          }
+          throw err;
+        }
+      }
+
+      case "add_note": {
+        const entityType = input.entityType as EntityType;
+        const entityId = input.entityId as string;
+        const content = input.content as string;
+        if (!entityType || !entityId || !content?.trim()) {
+          return "Missing required fields: entityType, entityId, content.";
+        }
+        const note = await createNote({
+          entityType,
+          entityId,
+          authorEmail: "portal-assistant",
+          content: content.trim(),
+        });
+        return `✓ Note ${note.noteId} added to ${entityType.toUpperCase()} ${entityId}.`;
       }
 
       default:

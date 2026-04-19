@@ -32,7 +32,7 @@ const main = async () => {
     }
   }
 
-  const cleanTab = async (tab: "Traficos" | "Trafico_Events", idCol: number, idMatcher: (v: string) => boolean) => {
+  const cleanTab = async (tab: string, idCol: number, idMatcher: (v: string) => boolean) => {
     // Read all columns up to the one we care about (idCol is 0-indexed)
     const lastCol = String.fromCharCode(65 + idCol);
     const r = await sheets.spreadsheets.values.get({
@@ -80,6 +80,10 @@ const main = async () => {
     v.startsWith("CC-TRF-TEST-") || /^CC-TRF-\d{4}-\d{10,}-\d+$/.test(v);
   await cleanTab("Traficos", 0, isTestTrf);
   await cleanTab("Trafico_Events", 1, (v) => isTestTrf(v) || v === "__TEST__");
+
+  // Notes — webchat-v2 add_note test rows have entity_id = "__TEST__"
+  // Notes schema: note_id | entity_type | entity_id | author_email | timestamp | content
+  await cleanTab("Notes", 2, (v) => v === "__TEST__");
 
   console.log("\n✅ Cleanup complete.");
 };
