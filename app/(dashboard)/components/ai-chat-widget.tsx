@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { usePageContextStore, renderPageContext } from "@/app/lib/stores/page-context-store";
 import DOMPurify from "dompurify";
 import {
@@ -13,15 +13,8 @@ import {
   Minimize2,
   Maximize2,
   Trash2,
-  UserPlus,
-  Briefcase,
-  Search,
-  CalendarClock,
-  CalendarPlus,
-  Target,
-  BarChart3,
-  type LucideIcon,
 } from "lucide-react";
+import { ChatToolChip } from "./chat-tool-chip";
 
 interface ToolCall {
   id: string;
@@ -39,23 +32,20 @@ interface Message {
   toolCalls?: ToolCall[];
 }
 
-type QuickAction =
-  | { kind: "navigate"; label: string; icon: LucideIcon; href: string }
-  | { kind: "message"; label: string; icon: LucideIcon; prompt: string };
-
-const QUICK_ACTIONS: QuickAction[] = [
-  { kind: "navigate", label: "Add a new Lead", icon: UserPlus, href: "/dashboard/leads?action=new" },
-  { kind: "navigate", label: "Create a Deal", icon: Briefcase, href: "/dashboard/pipeline?action=new" },
-  { kind: "message", label: "Find a customer", icon: Search, prompt: "Help me find a customer. Ask me their name or company, then search leads, contacts, and deals." },
-  { kind: "message", label: "Today's new leads", icon: CalendarClock, prompt: "Show me the new leads from the last 24 hours." },
-  { kind: "navigate", label: "Schedule a showroom visit", icon: CalendarPlus, href: "/dashboard/leads?action=new&source=Showroom+Walk-in" },
-  { kind: "message", label: "Check deal status", icon: Target, prompt: "I want to check the status of a deal — ask me for the deal name, customer, or ID." },
-  { kind: "message", label: "This week's numbers", icon: BarChart3, prompt: "What are this week's pipeline value, revenue collected, new deals, and new leads?" },
-];
+// 3 conversational starters (replaces v1's 7 hardcoded actions). Each
+// is a message-only prompt — no navigate-and-close shortcuts. The agent
+// drives everything from inside the chat.
+const STARTER_PROMPTS = [
+  "What's new today?",
+  "Find a contact",
+  "Show this week's numbers",
+] as const;
 
 const DEFAULT_NAME = "Roger";
 const IDENTITY_KEY = "cc_portal_identity_name";
 const DISMISSED_KEY = "cc_chat_dismissed_session";
+const HISTORY_KEY = "cc_chat_history_v2";
+const HISTORY_CAP = 50;
 
 // Minimal markdown renderer for assistant messages
 function RichText({ text }: { text: string }) {
@@ -110,7 +100,6 @@ function RichText({ text }: { text: string }) {
 }
 
 export function AIChatWidget() {
-  const router = useRouter();
   const pathname = usePathname();
   const selectedDeal = usePageContextStore((s) => s.selectedDeal);
   const selectedLead = usePageContextStore((s) => s.selectedLead);
@@ -144,17 +133,38 @@ export function AIChatWidget() {
     }
   }, [open]);
 
-  // Load saved identity, auto-open on mount unless user dismissed this session
+  // Load saved identity + conversation history; auto-open on mount unless user dismissed this session
   useEffect(() => {
     try {
       const saved = localStorage.getItem(IDENTITY_KEY);
       if (saved && saved.trim()) setName(saved.trim());
       const dismissed = sessionStorage.getItem(DISMISSED_KEY);
       if (!dismissed) setOpen(true);
+      // Restore last conversation
+      const raw = localStorage.getItem(HISTORY_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Message[];
+        if (Array.isArray(parsed)) {
+          setMessages(
+            parsed.map((m) => ({ ...m, timestamp: new Date(m.timestamp) }))
+          );
+        }
+      }
     } catch {
       // storage not available — fall through
     }
   }, []);
+
+  // Persist conversation on every change (capped to last HISTORY_CAP)
+  useEffect(() => {
+    try {
+      if (messages.length === 0) return;
+      const trimmed = messages.slice(-HISTORY_CAP);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed));
+    } catch {
+      // ignore
+    }
+  }, [messages]);
 
   const persistName = (next: string) => {
     const clean = next.trim() || DEFAULT_NAME;
@@ -322,17 +332,13 @@ export function AIChatWidget() {
     [loading, pathname, selectedDeal, selectedLead]
   );
 
-  const runAction = (action: QuickAction) => {
-    if (action.kind === "navigate") {
-      router.push(action.href);
-      closeWidget();
-    } else {
-      sendMessage(action.prompt);
-    }
-  };
-
   const clearChat = () => {
     setMessages([]);
+    try {
+      localStorage.removeItem(HISTORY_KEY);
+    } catch {
+      // ignore
+    }
   };
 
   const widthClass = expanded ? "w-[500px] max-w-[calc(100vw-2rem)]" : "w-[380px] max-w-[calc(100vw-2rem)]";
@@ -432,16 +438,16 @@ export function AIChatWidget() {
 
                 <div className="space-y-1.5">
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-dash-text-secondary px-1">
-                    Quick actions
+                    Try
                   </p>
-                  {QUICK_ACTIONS.map((a) => (
+                  {STARTER_PROMPTS.map((p) => (
                     <button
-                      key={a.label}
-                      onClick={() => runAction(a)}
+                      key={p}
+                      onClick={() => sendMessage(p)}
                       className="flex items-center gap-2.5 w-full text-left px-3 py-2 text-xs text-dash-text bg-dash-bg rounded-lg border border-dash-border hover:border-brand-copper/40 hover:bg-brand-copper/5 transition-colors cursor-pointer"
                     >
-                      <a.icon className="w-3.5 h-3.5 text-brand-copper/70 shrink-0" />
-                      {a.label}
+                      <Sparkles className="w-3.5 h-3.5 text-brand-copper/70 shrink-0" />
+                      {p}
                     </button>
                   ))}
                 </div>
@@ -471,31 +477,13 @@ export function AIChatWidget() {
                       {msg.toolCalls && msg.toolCalls.length > 0 && (
                         <div className="mt-2 space-y-1">
                           {msg.toolCalls.map((tc) => (
-                            <div
+                            <ChatToolChip
                               key={tc.id}
-                              className={`text-[10px] px-2 py-1 rounded border flex items-center gap-1.5 ${
-                                tc.status === "running"
-                                  ? "bg-brand-copper/5 border-brand-copper/20 text-brand-copper"
-                                  : tc.status === "ok"
-                                    ? "bg-dash-bg border-dash-border text-dash-text-secondary"
-                                    : "bg-red-500/5 border-red-500/20 text-red-400"
-                              }`}
-                              title={
-                                tc.preview ||
-                                JSON.stringify(tc.input).slice(0, 200)
-                              }
-                            >
-                              <span className="opacity-60">🔧</span>
-                              <span className="font-mono">{tc.name}</span>
-                              {tc.status === "running" && (
-                                <Loader2 className="w-2.5 h-2.5 animate-spin" />
-                              )}
-                              {tc.preview && tc.status === "ok" && (
-                                <span className="opacity-70 truncate">
-                                  · {tc.preview.slice(0, 40)}
-                                </span>
-                              )}
-                            </div>
+                              name={tc.name}
+                              status={tc.status}
+                              input={tc.input}
+                              preview={tc.preview}
+                            />
                           ))}
                         </div>
                       )}

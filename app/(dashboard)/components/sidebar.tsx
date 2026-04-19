@@ -74,6 +74,12 @@ const Sidebar = ({ mobileOpen = false, onMobileClose }: SidebarProps) => {
 
   const handleSignOut = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
+    // Clear chat history so the next user doesn't see prior conversation
+    try {
+      localStorage.removeItem("cc_chat_history_v2");
+    } catch {
+      // ignore
+    }
     router.push("/dashboard/login");
   };
 
