@@ -200,12 +200,15 @@ const DOC_STATUS_STYLES: Record<string, string> = {
 // DealCard
 // ---------------------------------------------------------------------------
 
+type ShipmentRisk = "green" | "yellow" | "red";
+
 interface DealCardProps {
   deal: PipelineDeal;
   onClick: () => void;
+  shipmentRisk?: ShipmentRisk;
 }
 
-const DealCard = ({ deal, onClick }: DealCardProps) => {
+const DealCard = ({ deal, onClick, shipmentRisk }: DealCardProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: deal.id });
 
@@ -223,6 +226,12 @@ const DealCard = ({ deal, onClick }: DealCardProps) => {
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
+  const riskTitle = {
+    red: "Linked Tráfico has an issue or critical hold",
+    yellow: "Linked Tráfico awaiting documents or payment",
+    green: "Linked Tráfico tracking on plan",
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -236,13 +245,24 @@ const DealCard = ({ deal, onClick }: DealCardProps) => {
         <p className="text-sm font-medium text-dash-text leading-snug flex-1 mr-2">
           {deal.name}
         </p>
-        <button
-          onClick={handleWhatsApp}
-          className="p-1 rounded hover:bg-green-500/10 text-dash-text-secondary hover:text-green-400 transition-colors cursor-pointer shrink-0"
-          title={`WhatsApp ${deal.contactName}`}
-        >
-          <MessageCircle className="w-3.5 h-3.5" />
-        </button>
+        <div className="flex items-center gap-1 shrink-0">
+          {shipmentRisk && shipmentRisk !== "green" && (
+            <span title={riskTitle[shipmentRisk]}>
+              <AlertTriangle
+                className={`w-3.5 h-3.5 ${
+                  shipmentRisk === "red" ? "text-red-400" : "text-amber-400"
+                }`}
+              />
+            </span>
+          )}
+          <button
+            onClick={handleWhatsApp}
+            className="p-1 rounded hover:bg-green-500/10 text-dash-text-secondary hover:text-green-400 transition-colors cursor-pointer"
+            title={`WhatsApp ${deal.contactName}`}
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
       <div className="flex items-center justify-between text-xs text-dash-text-secondary mb-2">
         <div className="flex items-center gap-1">
@@ -341,6 +361,49 @@ const PipelinePageInner = () => {
   const [loading, setLoading] = useState(true);
   const [activeDeal, setActiveDeal] = useState<PipelineDeal | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<PipelineDeal | null>(null);
+  const [shipmentRiskByDeal, setShipmentRiskByDeal] = useState<Record<string, ShipmentRisk>>({});
+
+  // One-shot batch read: every Trafico_Item links to a deal_id; for each deal,
+  // the worst Trafico status drives the card's risk badge. W6 uses a coarse
+  // status-based heuristic (issue → red, awaiting-documents/payment-pending →
+  // yellow); precise delay_days math lives in W7 once date tracking is richer.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const [itemsRes, traficosRes] = await Promise.all([
+          fetch("/api/dashboard/trafico-items", { cache: "no-store" }),
+          fetch("/api/dashboard/traficos", { cache: "no-store" }),
+        ]);
+        if (cancelled) return;
+        // Falls back gracefully if the items list endpoint isn't deployed yet.
+        const items = itemsRes.ok ? ((await itemsRes.json()).items as { TRF_ID: string; Deal_ID: string }[]) : [];
+        const traficos = traficosRes.ok ? ((await traficosRes.json()).traficos as { TRF_ID: string; Status: string }[]) : [];
+        const statusByTrf = new Map(traficos.map((t) => [t.TRF_ID, t.Status]));
+        const riskRank = { green: 0, yellow: 1, red: 2 } as const;
+        const next: Record<string, ShipmentRisk> = {};
+        for (const it of items) {
+          if (!it.Deal_ID) continue;
+          const status = statusByTrf.get(it.TRF_ID);
+          if (!status) continue;
+          const r: ShipmentRisk =
+            status === "issue"
+              ? "red"
+              : status === "awaiting-documents" || status === "payment-pending"
+                ? "yellow"
+                : "green";
+          const prev = next[it.Deal_ID];
+          if (!prev || riskRank[r] > riskRank[prev]) next[it.Deal_ID] = r;
+        }
+        if (!cancelled) setShipmentRiskByDeal(next);
+      } catch {
+        // Silent failure — card just renders without the badge
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Publish open deal to the page-context store so the AI chat widget
   // can resolve "this deal" without the user re-typing the ID.
@@ -920,6 +983,7 @@ const PipelinePageInner = () => {
                         key={deal.id}
                         deal={deal}
                         onClick={() => setSelectedDeal(deal)}
+                        shipmentRisk={shipmentRiskByDeal[deal.id]}
                       />
                     ))}
                   </div>

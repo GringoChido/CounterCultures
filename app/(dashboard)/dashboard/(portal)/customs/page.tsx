@@ -16,6 +16,7 @@ import {
 import Link from "next/link";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { TRAFICO_STATUS_CONFIG, type TraficoStatus } from "@/app/lib/customs-data";
+import { toast } from "sonner";
 
 // ---------------------------------------------------------------------------
 // Types (matching Traficos sheet)
@@ -67,22 +68,65 @@ const CustomsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkStatus, setBulkStatus] = useState<TraficoStatus | "">("");
+  const [bulkUpdating, setBulkUpdating] = useState(false);
+
+  const fetchTraficos = async () => {
+    try {
+      const res = await fetch("/api/dashboard/traficos", { cache: "no-store" });
+      if (!res.ok) throw new Error("Failed to fetch traficos");
+      const data = await res.json();
+      setTraficos(data.traficos ?? []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchTraficos = async () => {
-      try {
-        const res = await fetch("/api/dashboard/traficos");
-        if (!res.ok) throw new Error("Failed to fetch traficos");
-        const data = await res.json();
-        setTraficos(data.traficos ?? []);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchTraficos();
   }, []);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const applyBulkStatus = async () => {
+    if (!bulkStatus || selectedIds.size === 0) return;
+    setBulkUpdating(true);
+    try {
+      // Each PATCH writes through the existing /[id] route which auto-logs to
+      // Trafico_Events on Status change (W5 wiring) — so each update gets its
+      // own audit trail row.
+      const results = await Promise.all(
+        Array.from(selectedIds).map((id) =>
+          fetch(`/api/dashboard/traficos/${encodeURIComponent(id)}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ Status: bulkStatus }),
+          }).then((r) => ({ id, ok: r.ok }))
+        )
+      );
+      const failed = results.filter((r) => !r.ok);
+      if (failed.length > 0) {
+        toast.error(`Updated ${results.length - failed.length}/${results.length} — ${failed.length} failed`);
+      } else {
+        toast.success(`Updated ${results.length} tráfico${results.length === 1 ? "" : "s"} → ${bulkStatus}`);
+      }
+      setSelectedIds(new Set());
+      setBulkStatus("");
+      await fetchTraficos();
+    } finally {
+      setBulkUpdating(false);
+    }
+  };
 
   const filtered = traficos.filter((t) => {
     if (!searchQuery) return true;
@@ -213,16 +257,63 @@ const CustomsPage = () => {
         </div>
       ) : (
         <div className="bg-dash-surface rounded-xl border border-dash-border">
-          <div className="p-5 border-b border-dash-border">
+          <div className="p-5 border-b border-dash-border flex items-center justify-between gap-4 flex-wrap">
             <h3 className="text-sm font-semibold text-dash-text">
               All Tráficos ({filtered.length})
             </h3>
+            {selectedIds.size > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-dash-text-secondary">
+                  {selectedIds.size} selected
+                </span>
+                <select
+                  value={bulkStatus}
+                  onChange={(e) => setBulkStatus(e.target.value as TraficoStatus | "")}
+                  className="px-2 py-1 text-xs bg-dash-bg border border-dash-border rounded-md text-dash-text"
+                >
+                  <option value="">→ Set status…</option>
+                  {(Object.keys(TRAFICO_STATUS_CONFIG) as TraficoStatus[]).map((s) => (
+                    <option key={s} value={s}>
+                      {TRAFICO_STATUS_CONFIG[s].label.en}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={applyBulkStatus}
+                  disabled={!bulkStatus || bulkUpdating}
+                  className="px-2.5 py-1 text-xs font-medium bg-brand-copper text-white rounded-md hover:bg-brand-copper/90 disabled:opacity-50 cursor-pointer"
+                >
+                  {bulkUpdating ? "Applying…" : "Apply"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedIds(new Set())}
+                  className="px-2.5 py-1 text-xs text-dash-text-secondary hover:text-dash-text cursor-pointer"
+                >
+                  Clear
+                </button>
+              </div>
+            )}
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-dash-border text-left text-xs text-dash-text-secondary uppercase tracking-wider">
-                  <th className="px-5 pb-3 pt-4">Tráfico #</th>
+                  <th className="px-5 pb-3 pt-4 w-8">
+                    <input
+                      type="checkbox"
+                      aria-label="Select all"
+                      checked={filtered.length > 0 && filtered.every((t) => selectedIds.has(t.TRF_ID))}
+                      onChange={(e) =>
+                        setSelectedIds(
+                          e.target.checked ? new Set(filtered.map((t) => t.TRF_ID)) : new Set()
+                        )
+                      }
+                      className="cursor-pointer"
+                    />
+                  </th>
+                  <th className="pb-3 pt-4">Tráfico #</th>
                   <th className="pb-3 pt-4">Pedimento</th>
                   <th className="pb-3 pt-4">Broker</th>
                   <th className="pb-3 pt-4 text-right">Invoice USD</th>
@@ -240,13 +331,30 @@ const CustomsPage = () => {
                     bg: "bg-gray-500/10",
                     text: "text-gray-400",
                   };
+                  const checked = selectedIds.has(t.TRF_ID);
                   return (
                     <tr
                       key={t.TRF_ID}
-                      className="border-b border-dash-border/50 hover:bg-dash-bg/50 text-dash-text"
+                      className={`border-b border-dash-border/50 hover:bg-dash-bg/50 text-dash-text ${
+                        checked ? "bg-brand-copper/5" : ""
+                      }`}
                     >
-                      <td className="px-5 py-3 font-medium">
-                        {t.Trafico_Number || t.TRF_ID}
+                      <td className="px-5 py-3" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleSelect(t.TRF_ID)}
+                          aria-label={`Select ${t.Trafico_Number || t.TRF_ID}`}
+                          className="cursor-pointer"
+                        />
+                      </td>
+                      <td className="py-3 font-medium">
+                        <Link
+                          href={`/dashboard/shipments/${encodeURIComponent(t.TRF_ID)}`}
+                          className="hover:text-brand-copper hover:underline"
+                        >
+                          {t.Trafico_Number || t.TRF_ID}
+                        </Link>
                       </td>
                       <td className="py-3 text-dash-text-secondary text-xs">
                         {t.Pedimento_Number || "—"}
