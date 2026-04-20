@@ -43,6 +43,8 @@ import {
   ChevronRight,
   FileCheck,
   Shield,
+  Calculator,
+  AlertTriangle,
 } from "lucide-react";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { PipelineJourneyPlayer } from "@/app/(dashboard)/components/pipeline-journey-player";
@@ -80,6 +82,7 @@ import { useActivityStore } from "@/app/lib/stores/activity-store";
 import { usePageContextStore } from "@/app/lib/stores/page-context-store";
 import { TRAFICO_STATUS_CONFIG, type TraficoStatus, getDocumentChecklist } from "@/app/lib/customs-data";
 import type { HydratedTrafico } from "@/app/lib/trafico-hydrator";
+import { LandedCostCalculator } from "@/app/(dashboard)/components/landed-cost-calculator";
 
 // Slim live shape from /api/dashboard/traficos (flat sheet row).
 // Rich shape (items[], documents, calculoBreakdown) loaded separately
@@ -316,7 +319,7 @@ const DealCardOverlay = ({ deal }: { deal: PipelineDeal }) => (
 // Pipeline Page
 // ---------------------------------------------------------------------------
 
-type DealTabKey = "details" | "documents" | "line-items" | "payments" | "purchase-orders" | "shipments" | "customs" | "financial";
+type DealTabKey = "details" | "documents" | "line-items" | "payments" | "purchase-orders" | "shipments" | "customs" | "landed-cost" | "financial";
 
 interface BrandOption {
   slug: string;
@@ -949,6 +952,7 @@ const PipelinePageInner = () => {
                 { key: "purchase-orders" as DealTabKey, label: "POs", icon: FileText },
                 { key: "shipments" as DealTabKey, label: "Shipments", icon: Truck },
                 { key: "customs" as DealTabKey, label: "Customs", icon: FileCheck },
+                { key: "landed-cost" as DealTabKey, label: "Landed Cost", icon: Calculator },
                 { key: "financial" as DealTabKey, label: "P&L", icon: BarChart3 },
                 { key: "documents" as DealTabKey, label: "Docs", icon: FileText },
               ]).map((tab) => (
@@ -1768,6 +1772,26 @@ const PipelinePageInner = () => {
                     })}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Landed Cost Tab — quote-time computation per spec §Part 3 */}
+            {dealTab === "landed-cost" && (
+              <div className="space-y-3">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
+                  Landed Cost Calculator
+                </h4>
+                <p className="text-[11px] text-dash-text-secondary">
+                  Compute total cost (FOB → CIF → duty + IVA + broker + freight) for any
+                  brand × product × quantity at quote time.
+                </p>
+                <LandedCostCalculator
+                  variant="full"
+                  defaultValues={{
+                    brandId: selectedDeal.brandSlugs?.[0] ?? "",
+                    destinationType: "warehouse_sma",
+                  }}
+                />
               </div>
             )}
 

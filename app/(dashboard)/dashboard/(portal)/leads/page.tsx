@@ -10,6 +10,7 @@ import { usePageContextStore } from "@/app/lib/stores/page-context-store";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
+import { LandedCostCalculator } from "@/app/(dashboard)/components/landed-cost-calculator";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { NotesPanel } from "@/app/(dashboard)/components/notes-panel";
 import { ShareButton } from "@/app/(dashboard)/components/share-button";
@@ -373,6 +374,21 @@ const LeadForm = ({ open, onClose, onSaved, editLead, initialSource }: LeadFormP
             </div>
           )}
         </div>
+
+        {/* Landed-cost preview — only when ≥1 brand selected */}
+        {selectedBrandSlugs.length > 0 && (
+          <details className="border border-dash-border rounded-lg p-3 bg-dash-bg/50">
+            <summary className="cursor-pointer text-xs font-semibold text-dash-text uppercase tracking-wider hover:text-brand-copper transition-colors">
+              Estimate landed cost (optional)
+            </summary>
+            <div className="mt-3">
+              <LandedCostCalculator
+                variant="preview"
+                defaultValues={{ brandId: selectedBrandSlugs[0] }}
+              />
+            </div>
+          </details>
+        )}
 
         {/* Actions */}
         <div className="flex gap-3 pt-4 border-t border-dash-border">
