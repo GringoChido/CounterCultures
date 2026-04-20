@@ -78,12 +78,12 @@ import {
 } from "@/app/lib/deal-automation";
 import { useActivityStore } from "@/app/lib/stores/activity-store";
 import { usePageContextStore } from "@/app/lib/stores/page-context-store";
-import { TRAFICO_STATUS_CONFIG, type TraficoStatus } from "@/app/lib/customs-data";
+import { TRAFICO_STATUS_CONFIG, type TraficoStatus, getDocumentChecklist } from "@/app/lib/customs-data";
+import type { HydratedTrafico } from "@/app/lib/trafico-hydrator";
 
-// Slim live shape from /api/dashboard/traficos (matches the flat sheet
-// row, not the rich Trafico TS type). The hydrator that converts
-// TraficoRecord → rich Trafico (with items[], documents[], calculo
-// breakdown) is W6 scope.
+// Slim live shape from /api/dashboard/traficos (flat sheet row).
+// Rich shape (items[], documents, calculoBreakdown) loaded separately
+// via /api/dashboard/traficos/[id]/rich and merged into richMap below.
 interface TraficoSummary {
   TRF_ID: string;
   Trafico_Number: string;
@@ -521,6 +521,7 @@ const PipelinePageInner = () => {
   const [dealTraficos, setDealTraficos] = useState<TraficoSummary[]>([]);
   const [traficosLoading, setTraficosLoading] = useState(false);
   const [creatingTrafico, setCreatingTrafico] = useState(false);
+  const [richMap, setRichMap] = useState<Record<string, HydratedTrafico | null>>({});
 
   useEffect(() => {
     if (!selectedDeal?.id || dealTab !== "customs") return;
@@ -528,7 +529,20 @@ const PipelinePageInner = () => {
     setTraficosLoading(true);
     fetch(`/api/dashboard/traficos?dealId=${encodeURIComponent(dealId)}`, { cache: "no-store" })
       .then((r) => (r.ok ? r.json() : { traficos: [] }))
-      .then((d) => setDealTraficos((d.traficos as TraficoSummary[]) ?? []))
+      .then((d) => {
+        const list = (d.traficos as TraficoSummary[]) ?? [];
+        setDealTraficos(list);
+        // Background-fetch rich shape for each Trafico in parallel; failures
+        // leave the entry as null and the UI falls back to the slim card.
+        list.forEach((t) => {
+          fetch(`/api/dashboard/traficos/${encodeURIComponent(t.TRF_ID)}/rich`, { cache: "no-store" })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((rich: HydratedTrafico | null) =>
+              setRichMap((m) => ({ ...m, [t.TRF_ID]: rich }))
+            )
+            .catch(() => setRichMap((m) => ({ ...m, [t.TRF_ID]: null })));
+        });
+      })
       .catch((e) => {
         console.error("[Pipeline] dealTraficos fetch failed", e);
         setDealTraficos([]);
@@ -1608,6 +1622,17 @@ const PipelinePageInner = () => {
                     {dealTraficos.map((t) => {
                       const cfg = TRAFICO_STATUS_CONFIG[t.Status as TraficoStatus];
                       const cost = Number(t.Total_Import_Cost || 0);
+                      const rich = richMap[t.TRF_ID];
+                      const items = rich?.trafico.items ?? [];
+                      const checklist = rich ? getDocumentChecklist(rich.trafico) : [];
+                      const uploaded = checklist.filter((c) => c.status === "uploaded").length;
+                      const applicable = checklist.filter((c) => c.status !== "not-applicable").length;
+                      const docsPct = applicable > 0 ? Math.round((uploaded / applicable) * 100) : 0;
+                      const calc = rich?.trafico.calculoBreakdown;
+                      const recentEvents = (rich?.events ?? [])
+                        .slice()
+                        .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+                        .slice(0, 3);
                       return (
                         <div key={t.TRF_ID} className="bg-dash-bg rounded-lg p-3 space-y-2">
                           <div className="flex items-start justify-between">
@@ -1631,7 +1656,7 @@ const PipelinePageInner = () => {
                           </div>
                           <div className="flex items-center justify-between text-[11px]">
                             <span className="text-dash-text-secondary">Items in crossing</span>
-                            <span className="text-dash-text">{t.Item_Count || "0"}</span>
+                            <span className="text-dash-text">{items.length || t.Item_Count || "0"}</span>
                           </div>
                           {cost > 0 && (
                             <div className="flex items-center justify-between text-[11px]">
@@ -1641,18 +1666,108 @@ const PipelinePageInner = () => {
                               </span>
                             </div>
                           )}
+                          {rich && applicable > 0 && (
+                            <div className="flex items-center justify-between text-[11px]">
+                              <span className="text-dash-text-secondary">Documents</span>
+                              <span className="text-dash-text">
+                                {uploaded}/{applicable} uploaded
+                                <span className="text-dash-text-secondary ml-1">({docsPct}%)</span>
+                              </span>
+                            </div>
+                          )}
+                          {items.length > 0 && (
+                            <div className="border-t border-dash-border pt-2 space-y-1">
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-dash-text-secondary">
+                                Vendors
+                              </p>
+                              {items.slice(0, 4).map((it) => (
+                                <div
+                                  key={it.id}
+                                  className="flex items-center justify-between text-[11px]"
+                                >
+                                  <span className="text-dash-text">
+                                    {it.vendorName}
+                                    {it.usmcaStatus === "on-file" && (
+                                      <span className="ml-1.5 text-[9px] text-green-400">USMCA</span>
+                                    )}
+                                    {it.spanishManualsRequired &&
+                                      it.spanishManualsStatus !== "on-file" && (
+                                        <span className="ml-1.5 text-[9px] text-amber-400">
+                                          MANUAL
+                                        </span>
+                                      )}
+                                  </span>
+                                  <span className="text-dash-text-secondary">
+                                    ${it.invoiceTotal.toLocaleString()}
+                                  </span>
+                                </div>
+                              ))}
+                              {items.length > 4 && (
+                                <p className="text-[10px] text-dash-text-secondary">
+                                  +{items.length - 4} more
+                                </p>
+                              )}
+                            </div>
+                          )}
+                          {calc && (
+                            <div className="border-t border-dash-border pt-2 space-y-1">
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-dash-text-secondary">
+                                Cálculo
+                              </p>
+                              <div className="grid grid-cols-3 gap-2 text-[10px]">
+                                <div>
+                                  <p className="text-dash-text-secondary">Taxes</p>
+                                  <p className="text-dash-text">
+                                    ${calc.taxSubtotal.toLocaleString()}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-dash-text-secondary">Broker</p>
+                                  <p className="text-dash-text">
+                                    ${calc.brokerSubtotal.toLocaleString()}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-dash-text-secondary">Warehouse</p>
+                                  <p className="text-dash-text">
+                                    ${calc.warehouseSubtotal.toLocaleString()}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          {recentEvents.length > 0 && (
+                            <div className="border-t border-dash-border pt-2 space-y-1">
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-dash-text-secondary">
+                                Recent activity
+                              </p>
+                              {recentEvents.map((e) => (
+                                <p key={e.event_id} className="text-[10px] text-dash-text-secondary">
+                                  <span className="text-dash-text">{e.event_type}</span>
+                                  {e.from_status && e.to_status && (
+                                    <>
+                                      {" "}
+                                      <span className="text-dash-text-secondary">
+                                        {e.from_status} → {e.to_status}
+                                      </span>
+                                    </>
+                                  )}
+                                  {e.message && <> · {e.message}</>}
+                                </p>
+                              ))}
+                            </div>
+                          )}
                           <Link
-                            href={`/dashboard/customs?trafico=${encodeURIComponent(t.TRF_ID)}`}
+                            href={`/dashboard/shipments/${encodeURIComponent(t.TRF_ID)}`}
                             className="inline-block text-[11px] text-brand-copper hover:underline"
                           >
-                            View detail →
+                            View full detail →
                           </Link>
                         </div>
                       );
                     })}
                   </div>
                 )}
-                {/* Items / docs / USMCA / calculo breakdown rendering deferred to W6 (needs flat→rich hydrator). */}
               </div>
             )}
 
