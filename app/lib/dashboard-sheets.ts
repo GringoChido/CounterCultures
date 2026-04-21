@@ -50,6 +50,7 @@ type SheetTab =
   | "HS_Code_Lookup"
   | "FTA_Rates"
   | "Trafico_Events"
+  | "Deal_Events"
   | "Notifications";
 
 // Read all rows from a sheet tab (returns array of objects using header row as keys)
