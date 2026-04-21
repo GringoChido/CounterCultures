@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArticleContent } from "./article-content";
 import {
-  articles,
-  getArticleBySlug,
+  articles as hardcodedArticles,
   pillarLabels,
 } from "@/app/lib/articles";
+import { getAllArticles, getArticleBySlug } from "@/app/lib/posts-sheet";
+
+export const revalidate = 300;
 
 const BASE_URL = "https://countercultures.mx";
 
@@ -14,7 +16,7 @@ interface ArticlePageProps {
 }
 
 export const generateStaticParams = () =>
-  articles.flatMap((a) => [
+  hardcodedArticles.flatMap((a) => [
     { locale: "en", slug: a.slug },
     { locale: "es", slug: a.slug },
   ]);
@@ -23,7 +25,7 @@ export const generateMetadata = async ({
   params,
 }: ArticlePageProps): Promise<Metadata> => {
   const { slug, locale } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await getArticleBySlug(slug);
   if (!article) return { title: "Article Not Found" };
 
   const isEs = locale === "es";
@@ -67,15 +69,16 @@ export const generateMetadata = async ({
 
 const ArticlePage = async ({ params }: ArticlePageProps) => {
   const { slug, locale } = await params;
-  const article = getArticleBySlug(slug);
+  const article = await getArticleBySlug(slug);
 
   if (!article) notFound();
 
   const isEs = locale === "es";
   const lang = isEs ? "es" : "en";
 
+  const allArticles = await getAllArticles();
   const relatedArticles = article.relatedSlugs
-    .map((s) => articles.find((a) => a.slug === s))
+    .map((s) => allArticles.find((a) => a.slug === s))
     .filter(Boolean);
 
   // AEO/GEO: Enriched Article JSON-LD with topical authority signals
@@ -194,7 +197,7 @@ const ArticlePage = async ({ params }: ArticlePageProps) => {
       />
       <ArticleContent
         article={article}
-        relatedArticles={relatedArticles as typeof articles}
+        relatedArticles={relatedArticles as typeof hardcodedArticles}
         locale={lang}
       />
     </>

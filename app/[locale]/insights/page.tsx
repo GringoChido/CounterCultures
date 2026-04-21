@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { InsightsContent } from "./insights-content";
-import { articles } from "@/app/lib/articles";
+import { getAllArticles } from "@/app/lib/posts-sheet";
+
+export const revalidate = 300;
 
 const BASE_URL = "https://countercultures.mx";
 
@@ -62,6 +64,7 @@ export const generateMetadata = async ({
 const InsightsPage = async ({ params }: InsightsPageProps) => {
   const { locale } = await params;
   const isEs = locale === "es";
+  const articles = await getAllArticles();
 
   // ItemList JSON-LD — GEO: enumerate articles for AI discovery
   const itemListJsonLd = {
@@ -113,7 +116,7 @@ const InsightsPage = async ({ params }: InsightsPageProps) => {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <InsightsContent />
+      <InsightsContent articles={articles} />
     </>
   );
 };

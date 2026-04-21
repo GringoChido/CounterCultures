@@ -45,7 +45,7 @@ const DashboardInner = ({ children }: { children: ReactNode }) => {
       />
       <div className="flex-1 lg:ml-[220px] transition-all duration-300 min-w-0">
         <DashboardHeader onMenuClick={() => setMobileSidebarOpen(true)} />
-        <main className="p-4 md:p-6">{children}</main>
+        <main className="p-4 pb-28 md:p-6 md:pb-28">{children}</main>
       </div>
       <CommandPalette
         onProductSelect={handleProductSelect}

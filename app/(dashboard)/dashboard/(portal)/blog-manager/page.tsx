@@ -30,13 +30,37 @@ const statusVariants: Record<string, BadgeVariant> = {
   draft: "default",
 };
 
-const blogPosts: BlogPost[] = articles.map((article, index) => ({
-  id: String(index + 1),
+interface ApiPost {
+  slug: string;
+  title: { en: string; es: string };
+  pillar: string;
+  date: string;
+  author: string;
+  brandSlugs?: string[];
+  status: "published" | "draft";
+  source: "hardcoded" | "sheet";
+}
+
+const apiPostToBlogPost = (p: ApiPost, index: number): BlogPost => ({
+  id: p.slug || String(index + 1),
+  title: p.title.en || p.title.es,
+  status: p.status,
+  author: p.author,
+  date: p.date,
+  views: 0,
+  pillar: p.pillar,
+  slug: p.slug,
+  brandSlugs: p.brandSlugs ?? [],
+});
+
+// Fallback for SSR: render hardcoded articles immediately, then hydrate from API
+const initialPosts: BlogPost[] = articles.map((article, index) => ({
+  id: article.slug,
   title: article.title.en,
   status: index < articles.length - 1 ? "published" : "draft",
   author: article.author,
   date: article.date,
-  views: Math.floor(Math.random() * 3000) + 200,
+  views: 0,
   pillar: article.pillar,
   slug: article.slug,
   brandSlugs: article.brandSlugs ?? [],
@@ -112,9 +136,19 @@ const columns = [
 const BLOG_PILLARS = ["Design Inspiration", "Product Spotlights", "Trade Insights", "Behind the Scenes", "Project Showcases", "Industry Trends"] as const;
 
 const BlogManagerPage = () => {
-  const publishedCount = blogPosts.filter((p) => p.status === "published").length;
-  const draftCount = blogPosts.filter((p) => p.status === "draft").length;
-  const totalViews = blogPosts.reduce((sum, p) => sum + p.views, 0);
+  const [posts, setPosts] = useState<BlogPost[]>(initialPosts);
+  useEffect(() => {
+    fetch("/api/dashboard/blog-posts")
+      .then((r) => r.json())
+      .then((data: { posts?: ApiPost[] }) => {
+        if (data.posts) setPosts(data.posts.map(apiPostToBlogPost));
+      })
+      .catch(() => {});
+  }, []);
+
+  const publishedCount = posts.filter((p) => p.status === "published").length;
+  const draftCount = posts.filter((p) => p.status === "draft").length;
+  const totalViews = posts.reduce((sum, p) => sum + p.views, 0);
   const [formOpen, setFormOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [newPost, setNewPost] = useState({ title: "", pillar: BLOG_PILLARS[0] as string, author: "Roger Gonzalez", notes: "" });
@@ -186,7 +220,7 @@ const BlogManagerPage = () => {
       </div>
 
       <DataTable
-        data={blogPosts as unknown as Record<string, unknown>[]}
+        data={posts as unknown as Record<string, unknown>[]}
         columns={columns as never}
         searchKey="title"
         searchPlaceholder="Search posts..."

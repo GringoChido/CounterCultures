@@ -5,9 +5,10 @@ import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import {
-  articles,
+  articles as hardcodedArticles,
   pillarColors,
   pillarLabels,
+  type Article,
   type ArticlePillar,
 } from "@/app/lib/articles";
 import { useLocale } from "next-intl";
@@ -16,7 +17,13 @@ import Link from "next/link";
 
 const INITIAL_COUNT = 6;
 
-export const InsightsContent = () => {
+interface InsightsContentProps {
+  articles?: Article[];
+}
+
+export const InsightsContent = ({
+  articles = hardcodedArticles,
+}: InsightsContentProps = {}) => {
   const locale = useLocale() as "en" | "es";
   const [activePillar, setActivePillar] = useState<ArticlePillar | "All">("All");
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
