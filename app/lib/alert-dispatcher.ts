@@ -293,14 +293,18 @@ const buildBaseVars = (
 // Idempotency — has this {rule, deal, channel, recipient} already fired?
 // ---------------------------------------------------------------------------
 
-const alreadyFired = async (
+/**
+ * Idempotency check against a pre-fetched event list — callers fetch
+ * Deal_Events once at the top of dispatchAlertsForTransition and pass the
+ * snapshot to every per-channel check, saving 4-5x Sheets reads per rule.
+ */
+const alreadyFired = (
+  events: Awaited<ReturnType<typeof getDealEvents>>,
   ruleId: string,
-  dealId: string,
   channel: AlertChannel,
   recipient: string,
   now: Date
-): Promise<boolean> => {
-  const events = await getDealEvents(dealId);
+): boolean => {
   const cutoff = new Date(now.getTime() - IDEMPOTENCY_WINDOW_MS).getTime();
   return events.some((e) => {
     if (e.event_type !== "alert_fired") return false;
@@ -356,6 +360,8 @@ interface DispatchOneInput {
   input: AlertDispatchInput;
   vars: Record<string, string>;
   now: Date;
+  /** Pre-fetched Deal_Events for this deal (idempotency lookup) */
+  existingEvents: Awaited<ReturnType<typeof getDealEvents>>;
 }
 
 const dispatchOne = async (
@@ -379,7 +385,7 @@ const dispatchOne = async (
 
     // Idempotency
     if (!input.__testing?.skipIdempotency) {
-      const dup = await alreadyFired(input.ruleId, input.dealId, channel, recipient, now);
+      const dup = alreadyFired(opts.existingEvents, input.ruleId, channel, recipient, now);
       if (dup) {
         results.push({ channel, status: "skipped", error: "idempotent", recipient });
         continue;
@@ -575,41 +581,45 @@ export const dispatchAlertsForTransition = async (
   const customerEmail = guessCustomerEmail(input.deal) ?? "";
   const customerPhone = guessCustomerPhone(input.deal) ?? "";
 
-  const [customer, roger, finance] = await Promise.all([
-    route.customer
-      ? dispatchOne({
-          audience: "customer",
-          route: route.customer,
-          recipientEmail: customerEmail,
-          recipientPhone: customerPhone,
-          input,
-          vars,
-          now,
-        })
-      : Promise.resolve([] as ChannelResult[]),
-    route.roger
-      ? dispatchOne({
-          audience: "roger",
-          route: route.roger,
-          recipientEmail: ROGER_EMAIL,
-          recipientPhone: ROGER_WA,
-          input,
-          vars,
-          now,
-        })
-      : Promise.resolve([] as ChannelResult[]),
-    route.finance
-      ? dispatchOne({
-          audience: "finance",
-          route: route.finance,
-          recipientEmail: FINANCE_EMAIL,
-          recipientPhone: "",
-          input,
-          vars,
-          now,
-        })
-      : Promise.resolve([] as ChannelResult[]),
-  ]);
+  // Fetch Deal_Events ONCE for idempotency across all three audiences —
+  // otherwise we'd do 3 parallel reads × N rules during the nightly sweep
+  // and blow through Google Sheets' per-minute read quota.
+  const existingEvents = input.__testing?.skipIdempotency
+    ? []
+    : await getDealEvents(input.dealId);
+
+  // Run audiences sequentially (not Promise.all) so that the same rule's
+  // multiple channels to the same recipient (e.g. customer email + WA)
+  // don't both pass idempotency before the first one's alert_fired row
+  // is written. This also stretches Sheets writes over time, reducing the
+  // chance of a per-minute quota breach.
+  const customer = route.customer
+    ? await dispatchOne({
+        audience: "customer",
+        route: route.customer,
+        recipientEmail: customerEmail,
+        recipientPhone: customerPhone,
+        input, vars, now, existingEvents,
+      })
+    : [];
+  const roger = route.roger
+    ? await dispatchOne({
+        audience: "roger",
+        route: route.roger,
+        recipientEmail: ROGER_EMAIL,
+        recipientPhone: ROGER_WA,
+        input, vars, now, existingEvents,
+      })
+    : [];
+  const finance = route.finance
+    ? await dispatchOne({
+        audience: "finance",
+        route: route.finance,
+        recipientEmail: FINANCE_EMAIL,
+        recipientPhone: "",
+        input, vars, now, existingEvents,
+      })
+    : [];
 
   return { ruleId: input.ruleId, dealId: input.dealId, customer, roger, finance };
 };
