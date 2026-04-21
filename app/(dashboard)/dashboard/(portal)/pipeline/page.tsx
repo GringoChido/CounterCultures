@@ -49,6 +49,8 @@ import {
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { PipelineJourneyPlayer } from "@/app/(dashboard)/components/pipeline-journey-player";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
+import DealHistoryPanel from "@/app/(dashboard)/components/deal-history-panel";
+import PendingMoveBanner from "@/app/(dashboard)/components/pending-move-banner";
 import { DocumentGenerator } from "@/app/(dashboard)/components/document-generator";
 import { SendDialog } from "@/app/(dashboard)/components/send-dialog";
 import { PreviewPanel, type PreviewFile } from "@/app/(dashboard)/components/preview-panel";
@@ -375,7 +377,7 @@ const DealCardOverlay = ({ deal }: { deal: PipelineDeal }) => (
 // Pipeline Page
 // ---------------------------------------------------------------------------
 
-type DealTabKey = "details" | "documents" | "line-items" | "payments" | "purchase-orders" | "shipments" | "customs" | "landed-cost" | "financial";
+type DealTabKey = "details" | "documents" | "line-items" | "payments" | "purchase-orders" | "shipments" | "customs" | "landed-cost" | "financial" | "history";
 
 interface BrandOption {
   slug: string;
@@ -1128,6 +1130,19 @@ const PipelinePageInner = () => {
       >
         {selectedDeal && (
           <div className="space-y-6">
+            {/* W8: Pending-move banner shown when a high-value auto-move is queued */}
+            {selectedDeal.pendingMoveTo && selectedDeal.pendingMoveAt && (
+              <PendingMoveBanner
+                dealId={selectedDeal.id}
+                toStage={selectedDeal.pendingMoveTo}
+                queuedAt={selectedDeal.pendingMoveAt}
+                onAction={() => {
+                  // Refetch the deal so the banner disappears / updates
+                  setSelectedDeal(null);
+                }}
+              />
+            )}
+
             {/* Tab switcher */}
             <div className="flex gap-1 bg-dash-bg rounded-lg p-1 overflow-x-auto">
               {([
@@ -1140,6 +1155,7 @@ const PipelinePageInner = () => {
                 { key: "landed-cost" as DealTabKey, label: "Landed Cost", icon: Calculator },
                 { key: "financial" as DealTabKey, label: "P&L", icon: BarChart3 },
                 { key: "documents" as DealTabKey, label: "Docs", icon: FileText },
+                { key: "history" as DealTabKey, label: "History", icon: Circle },
               ]).map((tab) => (
                 <button
                   key={tab.key}
@@ -1309,6 +1325,11 @@ const PipelinePageInner = () => {
             )}
 
             {/* Documents Tab */}
+            {/* W8: History tab — Deal_Events timeline + rollback UX */}
+            {dealTab === "history" && (
+              <DealHistoryPanel dealId={selectedDeal.id} />
+            )}
+
             {dealTab === "documents" && (
               <div className="space-y-4">
                 {/* New Document dropdown */}
