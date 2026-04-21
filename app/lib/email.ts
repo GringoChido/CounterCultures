@@ -26,33 +26,20 @@ const ROGER_EMAIL = process.env.NOTIFY_EMAIL || "roger@countercultures.com.mx";
 const WHATSAPP_NUMBER = process.env.WHATSAPP_NOTIFY_NUMBER || "";
 
 // --- Internal notification to Roger via WhatsApp API ---
+//
+// W8: delegates to the whatsapp.ts module so the WHATSAPP_ENABLED flag
+// gates every send (dry-run vs. live). Free-text is only for internal
+// use — customer-facing comms go through sendWhatsAppTemplate.
+import { sendWhatsAppFreeText } from "./whatsapp";
 
 export const notifyWhatsApp = async (message: string): Promise<void> => {
-  const token = process.env.WHATSAPP_API_TOKEN;
-  if (!token || !WHATSAPP_NUMBER) {
-    console.warn("[WhatsApp] Not configured — skipping");
+  if (!WHATSAPP_NUMBER) {
+    console.warn("[WhatsApp] WHATSAPP_NOTIFY_NUMBER not set — skipping");
     return;
   }
-
-  try {
-    await fetch(
-      `https://graph.facebook.com/v21.0/${process.env.WHATSAPP_PHONE_ID}/messages`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messaging_product: "whatsapp",
-          to: WHATSAPP_NUMBER,
-          type: "text",
-          text: { body: message },
-        }),
-      }
-    );
-  } catch (err) {
-    console.error("[WhatsApp] Failed to send:", err);
+  const result = await sendWhatsAppFreeText(WHATSAPP_NUMBER, message);
+  if (result.status === "failed") {
+    console.error("[WhatsApp] Failed to send:", result.error);
   }
 };
 
