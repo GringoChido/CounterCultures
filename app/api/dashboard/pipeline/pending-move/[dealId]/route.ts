@@ -21,7 +21,8 @@ import {
 import { writePipelineFields } from "@/app/lib/rule-engine";
 import { appendDealEvent, getDealEvents } from "@/app/lib/deal-events";
 import { getCurrentUserEmailFromRequest } from "@/app/lib/auth";
-import type { PipelineStage } from "@/app/lib/sample-dashboard-data";
+import { dispatchAlertsForTransition } from "@/app/lib/alert-dispatcher";
+import type { PipelineStage, PipelineDeal } from "@/app/lib/sample-dashboard-data";
 
 type PipelineRow = Record<string, string>;
 
@@ -123,6 +124,34 @@ export const POST = async (
     trigger_rule_id: originalRuleId,
     payload: { executed_early: true, original_queue_event: latestPending?.event_id },
   });
+
+  // W8: same fire-and-forget alert dispatch as the rule engine path.
+  // The flat Pipeline row we loaded is a PipelineRecord; we coerce it to
+  // the minimal PipelineDeal shape the dispatcher needs.
+  const minimalDeal: PipelineDeal = {
+    id: deal.id,
+    name: deal.name ?? "",
+    contactName: deal.company ?? "",
+    value: Number(deal.value) || 0,
+    currency: "MXN",
+    stage: toStage,
+    probability: Number(deal.probability) || 0,
+    expectedClose: deal.expected_close ?? "",
+    assignedRep: deal.owner ?? "",
+    products: "",
+    createdAt: deal.created_at ?? "",
+    notes: deal.notes ?? "",
+    contactCompany: deal.company ?? undefined,
+    brandSlugs: deal.brand_slugs ? deal.brand_slugs.split("|").filter(Boolean) : undefined,
+  };
+  dispatchAlertsForTransition({
+    ruleId: originalRuleId,
+    dealId,
+    fromStage,
+    toStage,
+    deal: minimalDeal,
+    actor,
+  }).catch((err) => console.error("[pending-move execute] alert dispatch failed:", err));
 
   return NextResponse.json({
     ok: true,

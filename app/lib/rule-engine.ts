@@ -26,6 +26,7 @@ import type {
   PipelineDeal,
   PipelineStage,
 } from "./sample-dashboard-data";
+import { dispatchAlertsForTransition } from "./alert-dispatcher";
 
 // ---------------------------------------------------------------------------
 // RuleResult
@@ -174,6 +175,21 @@ const executeTransition = async (
     payload,
   });
 
+  // W8: fire the alert dispatcher fire-and-forget. Resend/Meta failures
+  // log but never propagate back to the rule engine — a stage transition
+  // succeeds regardless of notification delivery.
+  dispatchAlertsForTransition({
+    ruleId: rule.id,
+    dealId: deal.id,
+    fromStage: deal.stage,
+    toStage: rule.toStage,
+    deal,
+    actor,
+    extraVars: stringifyPayloadForVars(payload),
+  }).catch((err) => {
+    console.error("[rule-engine] alert dispatcher failed:", err);
+  });
+
   return {
     type: "moved",
     ruleId: rule.id,
@@ -181,6 +197,17 @@ const executeTransition = async (
     toStage: rule.toStage,
     eventId: event.event_id,
   };
+};
+
+const stringifyPayloadForVars = (
+  payload: Record<string, unknown>
+): Record<string, string> => {
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(payload)) {
+    if (v === null || v === undefined) continue;
+    out[k] = typeof v === "object" ? JSON.stringify(v) : String(v);
+  }
+  return out;
 };
 
 // ---------------------------------------------------------------------------
