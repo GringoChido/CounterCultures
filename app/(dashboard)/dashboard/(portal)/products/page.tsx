@@ -40,9 +40,10 @@ interface Product {
   category: string;
   price: number;
   availability: "in-stock" | "low-stock" | "out-of-stock" | "made-to-order";
+  source: "curated" | "odoo";
 }
 
-const mapProduct = (s: SheetProduct): Product => ({
+const mapProduct = (s: SheetProduct & { source?: string }): Product => ({
   id: s.slug || s.id || s.sku,
   sku: s.sku,
   name: s.name,
@@ -50,6 +51,7 @@ const mapProduct = (s: SheetProduct): Product => ({
   category: s.category,
   price: parseFloat(s.price) || 0,
   availability: (s.availability as Product["availability"]) || "in-stock",
+  source: s.source === "odoo" ? "odoo" : "curated",
 });
 
 const availabilityVariants: Record<string, BadgeVariant> = {
@@ -98,6 +100,13 @@ const columns = [
     cell: (info) => {
       const status = info.getValue();
       return <StatusBadge label={availabilityLabels[status] ?? status} variant={availabilityVariants[status] ?? "info"} />;
+    },
+  }),
+  columnHelper.accessor("source", {
+    header: "Source",
+    cell: (info) => {
+      const src = info.getValue();
+      return <StatusBadge label={src === "odoo" ? "Odoo" : "Curated"} variant={src === "odoo" ? "info" : "success"} />;
     },
   }),
 ];

@@ -26,6 +26,7 @@ type SheetTab =
   | "Reps"
   | "Trade_Applications"
   | "Products"
+  | "Products_Odoo"
   | "Content_Calendar"
   | "Email_Campaigns"
   | "Social_Posts"

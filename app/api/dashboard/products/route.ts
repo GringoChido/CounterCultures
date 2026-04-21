@@ -82,7 +82,14 @@ export const GET = async (request: NextRequest) => {
   const limitParam = request.nextUrl.searchParams.get("limit");
 
   try {
-    let products = await readSheet<ProductRecord>("Products");
+    const [curated, odoo] = await Promise.all([
+      readSheet<ProductRecord>("Products"),
+      readSheet<ProductRecord>("Products_Odoo"),
+    ]);
+    let products: (ProductRecord & { source: "curated" | "odoo" })[] = [
+      ...curated.map((p) => ({ ...p, source: "curated" as const })),
+      ...odoo.map((p) => ({ ...p, source: "odoo" as const })),
+    ];
 
     if (category && category !== "all") {
       products = products.filter((p) => p.category === category);

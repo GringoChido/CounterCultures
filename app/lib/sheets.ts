@@ -188,7 +188,11 @@ const getAllProducts = async (): Promise<Product[]> => {
     return cachedProducts;
   }
 
-  const rows = await fetchSheetData("Products!A2:R");
+  const [curatedRows, odooRows] = await Promise.all([
+    fetchSheetData("Products!A2:R"),
+    fetchSheetData("Products_Odoo!A2:R"),
+  ]);
+  const rows = [...curatedRows, ...odooRows];
   if (rows.length === 0) {
     console.warn("[Sheets] No product data returned — using sample data");
     cachedProducts = sampleToProducts();
