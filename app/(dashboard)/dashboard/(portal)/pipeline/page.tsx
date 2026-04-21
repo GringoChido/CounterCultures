@@ -205,13 +205,29 @@ const DOC_STATUS_STYLES: Record<string, string> = {
 
 type ShipmentRisk = "green" | "yellow" | "red";
 
+type SlaDisplay = {
+  color: "green" | "yellow" | "red" | "unknown";
+  daysInStage: number;
+  green: number;
+  yellow: number;
+  red: number;
+} | null;
+
 interface DealCardProps {
   deal: PipelineDeal;
   onClick: () => void;
   shipmentRisk?: ShipmentRisk;
+  sla?: SlaDisplay;
 }
 
-const DealCard = ({ deal, onClick, shipmentRisk }: DealCardProps) => {
+const SLA_BORDER: Record<"green" | "yellow" | "red" | "unknown", string> = {
+  green: "border-emerald-500/40",
+  yellow: "border-amber-400/60",
+  red: "border-red-500/70",
+  unknown: "border-dash-border",
+};
+
+const DealCard = ({ deal, onClick, shipmentRisk, sla }: DealCardProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: deal.id });
 
@@ -242,7 +258,7 @@ const DealCard = ({ deal, onClick, shipmentRisk }: DealCardProps) => {
       {...attributes}
       {...listeners}
       onClick={onClick}
-      className="bg-dash-surface border border-dash-border rounded-lg p-3.5 cursor-grab active:cursor-grabbing hover:border-brand-copper/30 transition-colors"
+      className={`bg-dash-surface border-2 ${SLA_BORDER[sla?.color ?? "unknown"]} rounded-lg p-3.5 cursor-grab active:cursor-grabbing hover:border-brand-copper/30 transition-colors`}
     >
       <div className="flex items-start justify-between mb-2">
         <p className="text-sm font-medium text-dash-text leading-snug flex-1 mr-2">
@@ -317,6 +333,23 @@ const DealCard = ({ deal, onClick, shipmentRisk }: DealCardProps) => {
         <span>{deal.probability}%</span>
       </div>
 
+      {sla && sla.color !== "unknown" && (
+        <div
+          className={`mt-1.5 text-[10px] ${
+            sla.color === "red"
+              ? "text-red-400 font-medium"
+              : sla.color === "yellow"
+                ? "text-amber-400"
+                : "text-emerald-400/80"
+          }`}
+          title={`SLA — green ≤ ${sla.green}d · yellow ≤ ${sla.yellow}d · red > ${sla.yellow}d`}
+        >
+          Day {sla.daysInStage} / {sla.green}
+          {sla.color === "yellow" && ` · over by ${sla.daysInStage - sla.green}d`}
+          {sla.color === "red" && ` · ${sla.daysInStage - sla.yellow}d past red`}
+        </div>
+      )}
+
       {deal.followUpDate && (
         <div
           className={`flex items-center gap-1 text-[10px] mt-1.5 ${isOverdue ? "text-red-400 font-medium" : "text-dash-text-secondary"}`}
@@ -365,6 +398,43 @@ const PipelinePageInner = () => {
   const [activeDeal, setActiveDeal] = useState<PipelineDeal | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<PipelineDeal | null>(null);
   const [shipmentRiskByDeal, setShipmentRiskByDeal] = useState<Record<string, ShipmentRisk>>({});
+  const [slaByDeal, setSlaByDeal] = useState<Record<string, SlaDisplay>>({});
+
+  // W7: per-card SLA. Fetch Brand_Lead_Times once + compute synchronously
+  // per deal via getSlaColor. Recomputes whenever deals change.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await fetch("/api/dashboard/reference/brand-lead-times", { cache: "no-store" });
+        const brandLeadTimes = r.ok
+          ? ((await r.json()).rows as Parameters<
+              typeof import("@/app/lib/sla-timers").getSlaColor
+            >[1])
+          : [];
+        if (cancelled) return;
+        const { getSlaColor } = await import("@/app/lib/sla-timers");
+        const next: Record<string, SlaDisplay> = {};
+        for (const d of deals) {
+          const r = getSlaColor(d, brandLeadTimes ?? []);
+          if (r.color === "unknown" || !r.sla) continue;
+          next[d.id] = {
+            color: r.color,
+            daysInStage: r.daysInStage,
+            green: r.sla.green,
+            yellow: r.sla.yellow,
+            red: r.sla.red,
+          };
+        }
+        if (!cancelled) setSlaByDeal(next);
+      } catch {
+        // silent — cards render without SLA row
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [deals]);
 
   // W7: real shipment risk via deriveShipmentRiskMetrics + computeShipmentRisk.
   // Batch-fetch Trafico_Items + flat Traficos (for Status_History_JSON +
@@ -600,6 +670,12 @@ const PipelinePageInner = () => {
                 .split("|")
                 .map((s) => s.trim())
                 .filter(Boolean),
+              // W7 fields (Pipeline sheet has them after the migration)
+              stageEnteredAt: d.stage_entered_at || d.created_at || new Date().toISOString(),
+              pendingMoveTo: (d.pending_move_to || undefined) as PipelineStage | undefined,
+              pendingMoveAt: d.pending_move_at || undefined,
+              dateAtBorder: d.date_at_border || undefined,
+              dateCustomsCleared: d.date_customs_cleared || undefined,
             }));
             setDeals(mapped);
           }
@@ -1028,6 +1104,7 @@ const PipelinePageInner = () => {
                         deal={deal}
                         onClick={() => setSelectedDeal(deal)}
                         shipmentRisk={shipmentRiskByDeal[deal.id]}
+                        sla={slaByDeal[deal.id]}
                       />
                     ))}
                   </div>
