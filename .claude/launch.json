@@ -4,9 +4,9 @@
     {
       "name": "dev",
       "runtimeExecutable": "/usr/local/bin/node",
-      "runtimeArgs": ["node_modules/.bin/next", "dev"],
+      "runtimeArgs": ["node_modules/.bin/next", "dev", "-p", "55556"],
       "env": { "PATH": "/usr/local/bin:/usr/bin:/bin" },
-      "port": 3000
+      "port": 55556
     }
   ]
 }

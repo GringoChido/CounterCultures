@@ -13,7 +13,8 @@ export type PipelineStage =
   | "won" | "lost"
   // Post-sale fulfillment stages
   | "quote-approved" | "deposit-pending" | "deposit-received"
-  | "ordering" | "in-production" | "shipping" | "received"
+  | "ordering" | "in-production" | "shipping"
+  | "in-customs" | "customs-cleared" | "received"
   | "delivery-scheduled" | "delivered" | "balance-pending"
   | "complete" | "post-delivery-issue";
 
@@ -59,6 +60,8 @@ const STAGE_TO_PHASE: Record<PipelineStage, JourneyPhase> = {
   "ordering": "fulfillment",
   "in-production": "fulfillment",
   "shipping": "fulfillment",
+  "in-customs": "fulfillment",
+  "customs-cleared": "fulfillment",
   "received": "fulfillment",
   "delivery-scheduled": "delivered",
   "delivered": "delivered",

@@ -128,6 +128,8 @@ const stageConfig: Record<
   "ordering":            { label: "Ordering",          color: "text-blue-400",    bgColor: "bg-blue-400" },
   "in-production":       { label: "In Production",     color: "text-violet-400",  bgColor: "bg-violet-400" },
   "shipping":            { label: "Shipping",          color: "text-cyan-400",    bgColor: "bg-cyan-400" },
+  "in-customs":          { label: "In Customs",        color: "text-orange-400",  bgColor: "bg-orange-400" },
+  "customs-cleared":     { label: "Customs Cleared",   color: "text-lime-400",    bgColor: "bg-lime-400" },
   "received":            { label: "Received at CC",    color: "text-teal-400",    bgColor: "bg-teal-400" },
   "delivery-scheduled":  { label: "Delivery Scheduled", color: "text-indigo-400", bgColor: "bg-indigo-400" },
   "delivered":           { label: "Delivered",         color: "text-green-400",   bgColor: "bg-green-400" },
@@ -147,7 +149,8 @@ const salesStages: PipelineStage[] = [
 
 const opsStages: PipelineStage[] = [
   "quote-approved", "deposit-pending", "deposit-received",
-  "ordering", "in-production", "shipping", "received",
+  "ordering", "in-production", "shipping",
+  "in-customs", "customs-cleared", "received",
   "delivery-scheduled", "delivered", "balance-pending",
   "complete", "post-delivery-issue",
 ];
