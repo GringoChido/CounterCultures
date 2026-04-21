@@ -22,8 +22,66 @@ const verify = (payload: string, signature: string): boolean => {
   return timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
 };
 
-export const createSession = async (): Promise<void> => {
-  const payload = `authenticated:${Date.now()}`;
+// ---------------------------------------------------------------------------
+// Session payload parsing
+// ---------------------------------------------------------------------------
+//
+// Session token format:
+//   V1 (legacy):  "authenticated:<timestamp>.<hmac>"
+//   V2 (W7):      "authenticated:<timestamp>:<base64url(email)>.<hmac>"
+//
+// V2 adds an email segment so audit logs can attribute actions to a specific
+// user. V1 tokens remain valid until they expire — `parseSession` returns
+// a session whose email is `null`; callers use PORTAL_EMAIL env as fallback.
+
+interface SessionPayload {
+  valid: boolean;
+  email: string | null; // null for V1 legacy tokens
+  timestamp: number;
+}
+
+const toBase64Url = (s: string): string =>
+  Buffer.from(s, "utf8").toString("base64url");
+
+const fromBase64Url = (s: string): string | null => {
+  try {
+    return Buffer.from(s, "base64url").toString("utf8");
+  } catch {
+    return null;
+  }
+};
+
+const parseToken = (token: string): SessionPayload | null => {
+  const lastDot = token.lastIndexOf(".");
+  if (lastDot === -1) return null;
+
+  const payload = token.slice(0, lastDot);
+  const signature = token.slice(lastDot + 1);
+
+  if (!verify(payload, signature)) return null;
+
+  const parts = payload.split(":");
+  if (parts[0] !== "authenticated") return null;
+
+  const timestamp = Number(parts[1]);
+  if (Number.isNaN(timestamp)) return null;
+
+  const age = (Date.now() - timestamp) / 1000;
+  if (age >= SESSION_MAX_AGE) return null;
+
+  // V2 if a 3rd segment exists; otherwise V1 legacy
+  const email = parts.length >= 3 ? fromBase64Url(parts[2]) : null;
+
+  return { valid: true, email, timestamp };
+};
+
+// ---------------------------------------------------------------------------
+// Public surface
+// ---------------------------------------------------------------------------
+
+export const createSession = async (email: string): Promise<void> => {
+  const emailSegment = toBase64Url(email);
+  const payload = `authenticated:${Date.now()}:${emailSegment}`;
   const signature = sign(payload);
   const token = `${payload}.${signature}`;
 
@@ -46,45 +104,57 @@ export const validateSession = async (): Promise<boolean> => {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
   if (!token) return false;
+  const parsed = parseToken(token);
+  return parsed?.valid === true;
+};
 
-  const lastDot = token.lastIndexOf(".");
-  if (lastDot === -1) return false;
+/**
+ * Returns the current user's email from the session cookie. Falls back to
+ * PORTAL_EMAIL env var when the session is V1 legacy (no email segment).
+ * Returns null when there is no valid session at all.
+ */
+export const getCurrentUserEmail = async (): Promise<string | null> => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  if (!token) return null;
+  const parsed = parseToken(token);
+  if (!parsed?.valid) return null;
+  return parsed.email ?? process.env.PORTAL_EMAIL ?? null;
+};
 
-  const payload = token.slice(0, lastDot);
-  const signature = token.slice(lastDot + 1);
+/**
+ * Request-based variant for API routes that receive NextRequest/Request.
+ * Parses the cookie from the request headers rather than calling
+ * `cookies()` (which is scoped to route handlers).
+ */
+export const getCurrentUserEmailFromRequest = (
+  req: { headers: { get(name: string): string | null } }
+): string | null => {
+  const cookieHeader = req.headers.get("cookie");
+  if (!cookieHeader) return null;
 
-  if (!verify(payload, signature)) return false;
+  const cookieValue = cookieHeader
+    .split(";")
+    .map((p) => p.trim())
+    .find((p) => p.startsWith(`${SESSION_COOKIE}=`))
+    ?.slice(SESSION_COOKIE.length + 1);
+  if (!cookieValue) return null;
 
-  // Check expiry
-  const timestampStr = payload.split(":")[1];
-  const timestamp = Number(timestampStr);
-  if (Number.isNaN(timestamp)) return false;
-
-  const age = (Date.now() - timestamp) / 1000;
-  return age < SESSION_MAX_AGE;
+  const parsed = parseToken(decodeURIComponent(cookieValue));
+  if (!parsed?.valid) return null;
+  return parsed.email ?? process.env.PORTAL_EMAIL ?? null;
 };
 
 /**
  * Lightweight check for middleware (no async cookies() call).
  * Reads the cookie value directly from the request.
  */
-export const validateSessionFromCookie = (cookieValue: string | undefined): boolean => {
+export const validateSessionFromCookie = (
+  cookieValue: string | undefined
+): boolean => {
   if (!cookieValue) return false;
-
-  const lastDot = cookieValue.lastIndexOf(".");
-  if (lastDot === -1) return false;
-
-  const payload = cookieValue.slice(0, lastDot);
-  const signature = cookieValue.slice(lastDot + 1);
-
-  if (!verify(payload, signature)) return false;
-
-  const timestampStr = payload.split(":")[1];
-  const timestamp = Number(timestampStr);
-  if (Number.isNaN(timestamp)) return false;
-
-  const age = (Date.now() - timestamp) / 1000;
-  return age < SESSION_MAX_AGE;
+  const parsed = parseToken(cookieValue);
+  return parsed?.valid === true;
 };
 
 export const verifyCredentials = (email: string, password: string): boolean => {

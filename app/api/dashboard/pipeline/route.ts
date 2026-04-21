@@ -7,6 +7,7 @@ import {
 } from "@/app/lib/dashboard-sheets";
 import { evaluateAndTransition } from "@/app/lib/rule-engine";
 import type { StageRuleTrigger } from "@/app/lib/stage-rules";
+import { getCurrentUserEmailFromRequest } from "@/app/lib/auth";
 
 type PipelineRecord = {
   id: string;
@@ -148,7 +149,10 @@ export const PATCH = async (request: NextRequest) => {
       for (const k of touchedFields) {
         payload[k] = (body as Record<string, unknown>)[k];
       }
-      const actor = request.headers.get("x-actor") ?? "portal";
+      const actor =
+        getCurrentUserEmailFromRequest(request) ??
+        request.headers.get("x-actor") ??
+        "portal";
       ruleResult = await evaluateAndTransition(trigger, body.id, payload, actor);
     }
 

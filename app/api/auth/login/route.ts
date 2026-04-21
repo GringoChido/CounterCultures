@@ -13,7 +13,7 @@ export const POST = async (req: NextRequest) => {
       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
     }
 
-    await createSession();
+    await createSession(email);
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: "Login failed" }, { status: 500 });

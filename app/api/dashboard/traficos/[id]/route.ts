@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { readSheet, findRowIndex, updateRow } from "@/app/lib/dashboard-sheets";
 import { appendTraficoEvent } from "@/app/lib/trafico-events";
 import { onTraficoStatusChange } from "@/app/lib/trafico-deal-bridge";
+import { getCurrentUserEmailFromRequest } from "@/app/lib/auth";
 
 type TraficoRecord = Record<string, string>;
 
@@ -56,16 +57,17 @@ export const PATCH = async (
     // so the rule engine picks up sent-to-broker / crossing-approved
     // transitions from bulk-update UI.
     if (updates.Status && updates.Status !== existing.Status) {
+      const actor = getCurrentUserEmailFromRequest(request) ?? "portal";
       appendTraficoEvent({
         trafico_id: id,
-        actor: "portal",
+        actor,
         event_type: "status_change",
         from_status: existing.Status ?? "",
         to_status: updates.Status,
         message: `Status changed via Traficos PATCH`,
       }).catch((err) => console.error("[Trafico PATCH] event log failed:", err));
 
-      onTraficoStatusChange(id, existing.Status ?? "", updates.Status, "portal").catch(
+      onTraficoStatusChange(id, existing.Status ?? "", updates.Status, actor).catch(
         (err) => console.error("[Trafico PATCH] deal bridge failed:", err)
       );
     }

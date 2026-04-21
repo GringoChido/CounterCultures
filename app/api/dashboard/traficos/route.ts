@@ -7,6 +7,7 @@ import {
 } from "@/app/lib/dashboard-sheets";
 import { appendTraficoEvent } from "@/app/lib/trafico-events";
 import { onTraficoStatusChange } from "@/app/lib/trafico-deal-bridge";
+import { getCurrentUserEmailFromRequest } from "@/app/lib/auth";
 
 type TraficoRecord = {
   TRF_ID: string;
@@ -99,6 +100,7 @@ export const GET = async (request: NextRequest) => {
 };
 
 export const POST = async (request: NextRequest) => {
+  const actor = getCurrentUserEmailFromRequest(request) ?? "portal";
   try {
     const body: TraficoRecord = await request.json();
     const values = TRAFICO_COLUMNS.map((col) => body[col] ?? "");
@@ -108,7 +110,7 @@ export const POST = async (request: NextRequest) => {
     // timeline is never empty. Status auto-logged as the to_status.
     appendTraficoEvent({
       trafico_id: body.TRF_ID,
-      actor: "portal", // single-tenant for v1; per-user identity is Phase 2
+      actor,
       event_type: "status_change",
       from_status: "",
       to_status: body.Status || "collecting",
@@ -123,6 +125,7 @@ export const POST = async (request: NextRequest) => {
 };
 
 export const PUT = async (request: NextRequest) => {
+  const actor = getCurrentUserEmailFromRequest(request) ?? "portal";
   try {
     const body: TraficoRecord = await request.json();
     const { TRF_ID } = body;
@@ -149,7 +152,7 @@ export const PUT = async (request: NextRequest) => {
     if (body.Status && body.Status !== oldStatus) {
       appendTraficoEvent({
         trafico_id: TRF_ID,
-        actor: "portal", // TODO: per-user identity once auth is multi-user
+        actor,
         event_type: "status_change",
         from_status: oldStatus,
         to_status: body.Status,
@@ -158,7 +161,7 @@ export const PUT = async (request: NextRequest) => {
 
       // W7: fire Trafico→Deal bridge — writes date_at_border /
       // date_customs_cleared on any linked Deal + evaluates rule engine.
-      onTraficoStatusChange(TRF_ID, oldStatus, body.Status, "portal").catch(
+      onTraficoStatusChange(TRF_ID, oldStatus, body.Status, actor).catch(
         (err) => console.error("[Traficos PUT] deal bridge failed:", err)
       );
     }
