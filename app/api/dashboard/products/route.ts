@@ -82,13 +82,17 @@ export const GET = async (request: NextRequest) => {
   const limitParam = request.nextUrl.searchParams.get("limit");
 
   try {
-    const [curated, odoo] = await Promise.all([
+    const [curated, odoo, quote] = await Promise.all([
       readSheet<ProductRecord>("Products"),
       readSheet<ProductRecord>("Products_Odoo"),
+      readSheet<ProductRecord>("Products_Quote"),
     ]);
-    let products: (ProductRecord & { source: "curated" | "odoo" })[] = [
+    let products: (ProductRecord & {
+      source: "curated" | "odoo" | "quote";
+    })[] = [
       ...curated.map((p) => ({ ...p, source: "curated" as const })),
       ...odoo.map((p) => ({ ...p, source: "odoo" as const })),
+      ...quote.map((p) => ({ ...p, source: "quote" as const })),
     ];
 
     if (category && category !== "all") {

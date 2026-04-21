@@ -43,7 +43,8 @@ const navItems: NavItem[] = [
   { label: "Today", href: "/dashboard/overview", icon: LayoutDashboard, section: "Home" },
   { label: "Weekly Review", href: "/dashboard/weekly-review", icon: CalendarCheck },
 
-  { label: "Leads", href: "/dashboard/leads", icon: Users, section: "Leads & Deals" },
+  { label: "Customers", href: "/dashboard/customers", icon: Users, section: "Leads & Deals" },
+  { label: "Leads", href: "/dashboard/leads", icon: Users },
   { label: "Pipeline", href: "/dashboard/pipeline", icon: Kanban },
   { label: "Inbox", href: "/dashboard/inbox", icon: Inbox },
   { label: "WhatsApp", href: "/dashboard/whatsapp", icon: MessageCircle },

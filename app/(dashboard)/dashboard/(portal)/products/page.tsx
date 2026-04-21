@@ -39,8 +39,8 @@ interface Product {
   brand: string;
   category: string;
   price: number;
-  availability: "in-stock" | "low-stock" | "out-of-stock" | "made-to-order";
-  source: "curated" | "odoo";
+  availability: "in-stock" | "low-stock" | "out-of-stock" | "made-to-order" | "quote_only";
+  source: "curated" | "odoo" | "quote";
 }
 
 const mapProduct = (s: SheetProduct & { source?: string }): Product => ({
@@ -51,7 +51,10 @@ const mapProduct = (s: SheetProduct & { source?: string }): Product => ({
   category: s.category,
   price: parseFloat(s.price) || 0,
   availability: (s.availability as Product["availability"]) || "in-stock",
-  source: s.source === "odoo" ? "odoo" : "curated",
+  source:
+    s.source === "odoo" ? "odoo"
+      : s.source === "quote" ? "quote"
+      : "curated",
 });
 
 const availabilityVariants: Record<string, BadgeVariant> = {
@@ -59,6 +62,7 @@ const availabilityVariants: Record<string, BadgeVariant> = {
   "low-stock": "warning",
   "out-of-stock": "danger",
   "made-to-order": "info",
+  "quote_only": "warning",
 };
 
 const availabilityLabels: Record<string, string> = {
@@ -66,6 +70,7 @@ const availabilityLabels: Record<string, string> = {
   "low-stock": "Low Stock",
   "out-of-stock": "Out of Stock",
   "made-to-order": "Made to Order",
+  "quote_only": "Quote Only",
 };
 
 const columnHelper = createColumnHelper<Product>();
@@ -106,7 +111,10 @@ const columns = [
     header: "Source",
     cell: (info) => {
       const src = info.getValue();
-      return <StatusBadge label={src === "odoo" ? "Odoo" : "Curated"} variant={src === "odoo" ? "info" : "success"} />;
+      const label = src === "odoo" ? "Odoo" : src === "quote" ? "Quote" : "Curated";
+      const variant: BadgeVariant =
+        src === "odoo" ? "info" : src === "quote" ? "warning" : "success";
+      return <StatusBadge label={label} variant={variant} />;
     },
   }),
 ];

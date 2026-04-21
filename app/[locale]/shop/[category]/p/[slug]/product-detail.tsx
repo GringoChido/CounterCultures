@@ -22,6 +22,7 @@ const availabilityMap = {
   "in-stock": { en: "In Stock", es: "En Stock", color: "text-brand-sage" },
   "made-to-order": { en: "Made to Order (4-8 weeks)", es: "Hecho a Pedido (4-8 semanas)", color: "text-brand-copper" },
   "special-order": { en: "Special Order", es: "Pedido Especial", color: "text-brand-terracotta" },
+  "quote_only": { en: "Quote Only", es: "Solo Cotización", color: "text-brand-terracotta" },
 } as const;
 
 const t = (locale: "en" | "es", key: string) => {

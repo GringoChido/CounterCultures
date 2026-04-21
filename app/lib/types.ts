@@ -15,7 +15,7 @@ export interface Product {
   description: string;
   descriptionEn: string;
   specifications?: Record<string, string>;
-  availability: "in-stock" | "made-to-order" | "special-order";
+  availability: "in-stock" | "made-to-order" | "special-order" | "quote_only";
   featured?: boolean;
   slug: string;
 }

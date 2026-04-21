@@ -27,6 +27,7 @@ type SheetTab =
   | "Trade_Applications"
   | "Products"
   | "Products_Odoo"
+  | "Products_Quote"
   | "Content_Calendar"
   | "Email_Campaigns"
   | "Social_Posts"
@@ -52,7 +53,23 @@ type SheetTab =
   | "FTA_Rates"
   | "Trafico_Events"
   | "Deal_Events"
-  | "Notifications";
+  | "Notifications"
+  | "Odoo_Partners"
+  | "Odoo_Invoices"
+  | "Odoo_Invoice_Lines"
+  | "Odoo_Payments"
+  | "Odoo_Journals"
+  | "Odoo_Payment_Methods"
+  | "Odoo_Payment_Providers"
+  | "Odoo_Sale_Orders"
+  | "Odoo_Sale_Order_Lines"
+  | "Odoo_Purchase_Orders"
+  | "Odoo_Purchase_Order_Lines"
+  | "Odoo_Stock_Quants"
+  | "Odoo_Stock_Locations"
+  | "Odoo_Stock_Warehouses"
+  | "Odoo_Reconciliations"
+  | "Odoo_Full_Reconciliations";
 
 // Read all rows from a sheet tab (returns array of objects using header row as keys)
 const readSheet = async <T extends Record<string, string>>(
