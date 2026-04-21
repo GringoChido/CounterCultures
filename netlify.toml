@@ -3,3 +3,9 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# W7: nightly stale-deal sweep — 8am Mexico City (UTC-6) = 14:00 UTC
+# Schedule also declared in netlify/functions/stale-deal-sweep.ts; this
+# block is the canonical source for Netlify's scheduler.
+[functions."stale-deal-sweep"]
+  schedule = "0 14 * * *"
