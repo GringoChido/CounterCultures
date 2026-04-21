@@ -644,6 +644,18 @@ const LeadsPageInner = () => {
   const router = useRouter();
   const actionParam = searchParams.get("action");
   const sourceParam = searchParams.get("source") ?? undefined;
+  const leadDeepLinkParam = searchParams.get("lead");
+
+  // Deep-link: /dashboard/leads?lead=<id> from Needs You panel / bell. Opens
+  // the lead detail slideout once leads are loaded, then strips the param.
+  useEffect(() => {
+    if (!leadDeepLinkParam || leads.length === 0) return;
+    const hit = leads.find((l) => l.id === leadDeepLinkParam);
+    if (hit) {
+      setSelectedLead(hit);
+      router.replace("/dashboard/leads");
+    }
+  }, [leadDeepLinkParam, leads, router]);
 
   useEffect(() => {
     if (actionParam === "new") {

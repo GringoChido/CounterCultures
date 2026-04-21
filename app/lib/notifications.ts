@@ -343,15 +343,27 @@ const SOURCE_TO_NEEDS_YOU: Record<NotificationSource, NeedsYouItem["source"]> = 
   deal_event: "followup",
 };
 
+/**
+ * Map a notification to the "Needs You" widget row. The href is the
+ * precise fix-this-item destination — NOT a list page. Each source type
+ * has its own deep-link pattern:
+ *   trafico / shipment → /dashboard/shipments/<TRF_ID> (W6 detail view)
+ *   lead               → /dashboard/leads?lead=<id>   (Leads page deep-link)
+ *   deal_event /
+ *   deal_payment       → /dashboard/pipeline?deal=<id> (Pipeline slideout)
+ */
 export const notificationToNeedsYouItem = (n: Notification): NeedsYouItem => {
   const sourceType = n.source_entity_type as NotificationSource;
   const ageHours = (Date.now() - new Date(n.created_at).getTime()) / HOURS;
+  const id = encodeURIComponent(n.source_entity_id);
   const href =
     sourceType === "trafico" || sourceType === "shipment"
-      ? `/dashboard/shipments?trafico=${n.source_entity_id}`
+      ? `/dashboard/shipments/${id}`
       : sourceType === "lead"
-        ? "/dashboard/leads"
-        : "/dashboard";
+        ? `/dashboard/leads?lead=${id}`
+        : sourceType === "deal_event" || sourceType === "deal_payment"
+          ? `/dashboard/pipeline?deal=${id}`
+          : "/dashboard";
   return {
     id: n.notification_id,
     source: SOURCE_TO_NEEDS_YOU[sourceType] ?? "customs",

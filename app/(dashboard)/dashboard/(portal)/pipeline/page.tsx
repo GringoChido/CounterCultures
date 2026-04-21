@@ -548,12 +548,25 @@ const PipelinePageInner = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const newDealActionParam = searchParams.get("action");
+  const dealDeepLinkParam = searchParams.get("deal");
   useEffect(() => {
     if (newDealActionParam === "new") {
       setNewDealOpen(true);
       router.replace("/dashboard/pipeline");
     }
   }, [newDealActionParam, router]);
+
+  // Deep-link: /dashboard/pipeline?deal=<id> from Needs You panel, bell drop-down,
+  // etc. Opens the slideout for that deal once deals are loaded, then strips the
+  // param so a refresh doesn't re-trigger the open.
+  useEffect(() => {
+    if (!dealDeepLinkParam || deals.length === 0) return;
+    const hit = deals.find((d) => d.id === dealDeepLinkParam);
+    if (hit) {
+      setSelectedDeal(hit);
+      router.replace("/dashboard/pipeline");
+    }
+  }, [dealDeepLinkParam, deals, router]);
   const [newDealForm, setNewDealForm] = useState(emptyNewDealForm);
   const [newDealSaving, setNewDealSaving] = useState(false);
   const [brandOptions, setBrandOptions] = useState<BrandOption[]>([]);

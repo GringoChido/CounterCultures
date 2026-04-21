@@ -826,8 +826,10 @@ Counter Cultures`,
     id: "R-14-issue",
     audience: "roger",
     locales: {
-      en: { subject: "🔴 DEAL-{deal_id} · ISSUE flagged", body: "🔴 DEAL-{deal_id} flagged — {issue_type}. {issue_summary}. Recommended: {recommended_action}" },
-      es: { subject: "🔴 DEAL-{deal_id} · INCIDENCIA", body: "🔴 DEAL-{deal_id} con incidencia — {issue_type}. {issue_summary}. Recomendado: {recommended_action}" },
+      // No emoji — severity is already conveyed via the Needs You panel's
+      // danger dot + the bell badge's red ring. Title reads cleanly.
+      en: { subject: "DEAL-{deal_id} · Issue flagged", body: "DEAL-{deal_id} flagged — {issue_type}. {issue_summary}. Recommended: {recommended_action}" },
+      es: { subject: "DEAL-{deal_id} · Incidencia", body: "DEAL-{deal_id} con incidencia — {issue_type}. {issue_summary}. Recomendado: {recommended_action}" },
     },
   },
 
