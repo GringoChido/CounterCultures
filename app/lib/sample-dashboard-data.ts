@@ -321,6 +321,14 @@ export interface PipelineDeal {
 
   // Versioning
   quoteVersions?: { version: number; docId: string; status: "active" | "superseded" }[];
+
+  // W7 — Pipeline Automation (see docs/superpowers/specs/2026-04-20-week7-pipeline-automation-design.md §3.1)
+  stageEnteredAt?: string;       // ISO timestamp — when the deal entered `stage`. Drives SLA timers.
+  pendingMoveTo?: PipelineStage; // Rule-engine target stage during the 2h cool-off for deals > $500K MXN
+  pendingMoveAt?: string;        // ISO timestamp — when pendingMoveTo was set
+  dateAtBorder?: string;         // YYYY-MM-DD — Trafico bridge: triggers in-customs rule
+  dateCustomsCleared?: string;   // YYYY-MM-DD — Trafico bridge: triggers customs-cleared rule
+  requiresCustoms?: boolean;     // false for domestic artisan brands → skip customs stages
 }
 
 export interface ActivityItem {
