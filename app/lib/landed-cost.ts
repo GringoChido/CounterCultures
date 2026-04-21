@@ -392,20 +392,9 @@ export const computeQuoteRisk = (
   return "green";
 };
 
-export interface ShipmentRiskMetrics {
-  delayDays: number;
-  daysInCustomsHours: number;
-  nomStatus: "certified" | "in-progress" | "needs-cert" | "blocked" | "not-applicable" | "partial" | string;
-  daysToEta: number;
-}
-
-export const computeShipmentRisk = (
-  m: ShipmentRiskMetrics
-): "green" | "yellow" | "red" => {
-  if (m.nomStatus === "needs-cert" || m.nomStatus === "blocked") return "red";
-  if (m.delayDays >= 7) return "red";
-  if (m.nomStatus === "in-progress" && m.daysToEta < 14) return "red";
-  if (m.delayDays >= 3 && m.delayDays <= 6) return "yellow";
-  if (m.daysInCustomsHours > 24) return "yellow";
-  return "green";
-};
+// ShipmentRiskMetrics + computeShipmentRisk moved to ./shipment-risk
+// (the pure client-safe module). Re-exported here for callers that were
+// already importing from landed-cost; prefer importing from shipment-risk
+// directly in new code.
+export type { ShipmentRiskMetrics } from "./shipment-risk";
+export { computeShipmentRisk } from "./shipment-risk";

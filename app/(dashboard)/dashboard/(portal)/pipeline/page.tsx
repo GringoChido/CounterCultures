@@ -366,38 +366,79 @@ const PipelinePageInner = () => {
   const [selectedDeal, setSelectedDeal] = useState<PipelineDeal | null>(null);
   const [shipmentRiskByDeal, setShipmentRiskByDeal] = useState<Record<string, ShipmentRisk>>({});
 
-  // One-shot batch read: every Trafico_Item links to a deal_id; for each deal,
-  // the worst Trafico status drives the card's risk badge. W6 uses a coarse
-  // status-based heuristic (issue → red, awaiting-documents/payment-pending →
-  // yellow); precise delay_days math lives in W7 once date tracking is richer.
+  // W7: real shipment risk via deriveShipmentRiskMetrics + computeShipmentRisk.
+  // Batch-fetch Trafico_Items + flat Traficos (for Status_History_JSON +
+  // Initiated_Date) + Brand_NOM_Status; compute per-deal worst-case risk.
+  // Falls back silently if any endpoint is unavailable.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [itemsRes, traficosRes] = await Promise.all([
+        const [itemsRes, traficosRes, nomRes] = await Promise.all([
           fetch("/api/dashboard/trafico-items", { cache: "no-store" }),
           fetch("/api/dashboard/traficos", { cache: "no-store" }),
+          fetch("/api/dashboard/reference/brand-nom-status", { cache: "no-store" }),
         ]);
         if (cancelled) return;
-        // Falls back gracefully if the items list endpoint isn't deployed yet.
-        const items = itemsRes.ok ? ((await itemsRes.json()).items as { TRF_ID: string; Deal_ID: string }[]) : [];
-        const traficos = traficosRes.ok ? ((await traficosRes.json()).traficos as { TRF_ID: string; Status: string }[]) : [];
-        const statusByTrf = new Map(traficos.map((t) => [t.TRF_ID, t.Status]));
+
+        const items = itemsRes.ok
+          ? ((await itemsRes.json()).items as { TRF_ID: string; Deal_ID: string }[])
+          : [];
+        const flatTraficos = traficosRes.ok
+          ? ((await traficosRes.json()).traficos as Record<string, string>[])
+          : [];
+        const nomRows = nomRes.ok
+          ? ((await nomRes.json()).rows as { brand_slug: string; status: string }[])
+          : [];
+
+        // Parse each flat Trafico into enough rich shape for the risk derivation.
+        const trfById = new Map<
+          string,
+          { id: string; status: string; initiatedDate: string; statusHistory: { status: string; timestamp: string }[] }
+        >();
+        for (const t of flatTraficos) {
+          let history: { status: string; timestamp: string }[] = [];
+          try {
+            const raw = t.Status_History_JSON;
+            history = raw ? (JSON.parse(raw) as { status: string; timestamp: string }[]) : [];
+          } catch {
+            history = [];
+          }
+          trfById.set(t.TRF_ID, {
+            id: t.TRF_ID,
+            status: t.Status ?? "",
+            initiatedDate: t.Initiated_Date ?? "",
+            statusHistory: history,
+          });
+        }
+
+        const { deriveShipmentRiskMetrics, computeShipmentRisk } = await import(
+          "@/app/lib/shipment-risk"
+        );
+
+        const dealById = new Map<string, PipelineDeal>(deals.map((d) => [d.id, d]));
         const riskRank = { green: 0, yellow: 1, red: 2 } as const;
         const next: Record<string, ShipmentRisk> = {};
+
         for (const it of items) {
           if (!it.Deal_ID) continue;
-          const status = statusByTrf.get(it.TRF_ID);
-          if (!status) continue;
-          const r: ShipmentRisk =
-            status === "issue"
-              ? "red"
-              : status === "awaiting-documents" || status === "payment-pending"
-                ? "yellow"
-                : "green";
+          const trafico = trfById.get(it.TRF_ID);
+          const deal = dealById.get(it.Deal_ID);
+          if (!trafico || !deal) continue;
+
+          const metrics = deriveShipmentRiskMetrics(
+            // deriveShipmentRiskMetrics types expect the rich Trafico but
+            // only reads .status, .initiatedDate, .statusHistory — our
+            // light shape satisfies that subset.
+            trafico as unknown as Parameters<typeof deriveShipmentRiskMetrics>[0],
+            deal,
+            nomRows
+          );
+          const r = computeShipmentRisk(metrics);
           const prev = next[it.Deal_ID];
           if (!prev || riskRank[r] > riskRank[prev]) next[it.Deal_ID] = r;
         }
+
         if (!cancelled) setShipmentRiskByDeal(next);
       } catch {
         // Silent failure — card just renders without the badge
@@ -406,7 +447,7 @@ const PipelinePageInner = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [deals]);
 
   // Publish open deal to the page-context store so the AI chat widget
   // can resolve "this deal" without the user re-typing the ID.
