@@ -2,15 +2,28 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { DriveHomeFile } from "@/app/lib/google-drive-user";
-import { DriveLayout, ReconnectPrompt } from "@/app/(dashboard)/components/drive/drive-layout";
-import { SuggestedFiles } from "@/app/(dashboard)/components/drive/suggested-files";
-import { FileList } from "@/app/(dashboard)/components/drive/file-list";
-import { FileGrid } from "@/app/(dashboard)/components/drive/file-grid";
-import { Toolbar, type ViewMode } from "@/app/(dashboard)/components/drive/toolbar";
+import {
+  DriveLayout,
+  ReconnectPrompt,
+} from "./drive-layout";
+import { FileList } from "./file-list";
+import { FileGrid } from "./file-grid";
+import { Toolbar, type ViewMode } from "./toolbar";
 
-const DrivePage = () => {
-  const [suggested, setSuggested] = useState<DriveHomeFile[]>([]);
-  const [recent, setRecent] = useState<DriveHomeFile[]>([]);
+interface FileListingProps {
+  title: string;
+  endpoint: string;
+  emptyLabel: string;
+  sectionLabel: string;
+}
+
+export const FileListing = ({
+  title,
+  endpoint,
+  emptyLabel,
+  sectionLabel,
+}: FileListingProps) => {
+  const [files, setFiles] = useState<DriveHomeFile[]>([]);
   const [searchResults, setSearchResults] = useState<DriveHomeFile[] | null>(null);
   const [query, setQuery] = useState("");
   const [view, setView] = useState<ViewMode>("list");
@@ -18,38 +31,32 @@ const DrivePage = () => {
   const [searching, setSearching] = useState(false);
   const [needsReconnect, setNeedsReconnect] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const loadHome = useCallback(async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [suggestedRes, recentRes] = await Promise.all([
-        fetch("/api/dashboard/drive-home?action=suggested"),
-        fetch("/api/dashboard/drive-home?action=recent"),
-      ]);
-      if (suggestedRes.status === 503 || recentRes.status === 503) {
-        const data = await (suggestedRes.status === 503 ? suggestedRes : recentRes).json();
+      const res = await fetch(endpoint);
+      if (res.status === 503) {
+        const data = await res.json();
         setNeedsReconnect(Boolean(data.needsReconnect));
         setError(data.error ?? null);
         return;
       }
-      if (!suggestedRes.ok || !recentRes.ok) throw new Error("Failed to load Drive");
-      const suggestedData = await suggestedRes.json();
-      const recentData = await recentRes.json();
-      setSuggested(suggestedData.files ?? []);
-      setRecent(recentData.files ?? []);
+      if (!res.ok) throw new Error("Failed to load files");
+      const data = await res.json();
+      setFiles(data.files ?? []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load Drive");
+      setError(err instanceof Error ? err.message : "Failed to load files");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [endpoint]);
 
   useEffect(() => {
-    loadHome();
-  }, [loadHome]);
+    load();
+  }, [load]);
 
   useEffect(() => {
     if (searchTimer.current) clearTimeout(searchTimer.current);
@@ -84,57 +91,49 @@ const DrivePage = () => {
 
   if (needsReconnect) {
     return (
-      <DriveLayout title="Drive">
+      <DriveLayout title={title}>
         <ReconnectPrompt />
       </DriveLayout>
     );
   }
 
   const isSearching = searchResults !== null;
-  const listFiles = isSearching ? searchResults : recent;
-  const emptyLabel = isSearching
+  const displayFiles = isSearching ? searchResults : files;
+  const currentEmpty = isSearching
     ? `No files matching "${query}"`
-    : "Your recent files will appear here";
+    : emptyLabel;
 
   return (
-    <DriveLayout title="Drive">
+    <DriveLayout title={title}>
       <Toolbar
         query={query}
         onQueryChange={setQuery}
         view={view}
         onViewChange={setView}
       />
-
-      {error && !needsReconnect && (
+      {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-[13px] text-red-700">
           {error}
         </div>
       )}
-
-      {!isSearching && (
-        <SuggestedFiles files={suggested} loading={loading} />
-      )}
-
       <section>
         <h3 className="text-[11px] uppercase tracking-wider text-dash-text-muted font-semibold mb-3">
-          {isSearching ? `Results for "${query}"` : "Recent"}
+          {isSearching ? `Results for "${query}"` : sectionLabel}
         </h3>
         {view === "list" ? (
           <FileList
-            files={listFiles ?? []}
+            files={displayFiles ?? []}
             loading={loading || searching}
-            emptyLabel={emptyLabel}
+            emptyLabel={currentEmpty}
           />
         ) : (
           <FileGrid
-            files={listFiles ?? []}
+            files={displayFiles ?? []}
             loading={loading || searching}
-            emptyLabel={emptyLabel}
+            emptyLabel={currentEmpty}
           />
         )}
       </section>
     </DriveLayout>
   );
 };
-
-export default DrivePage;
