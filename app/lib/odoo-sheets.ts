@@ -447,3 +447,283 @@ export const getCustomerList = async (): Promise<CustomerListRow[]> => {
     };
   });
 };
+
+// ── Invoice Lines ────────────────────────────────────────────────
+
+export interface OdooInvoiceLine {
+  [key: string]: string;
+  id: string;
+  move_id: string;
+  move_id_id: string;
+  move_name: string;
+  move_type: string;
+  partner_id: string;
+  partner_id_id: string;
+  product_id: string;
+  product_id_id: string;
+  name: string;
+  quantity: string;
+  price_unit: string;
+  discount: string;
+  price_subtotal: string;
+  price_total: string;
+  tax_ids: string;
+  account_id: string;
+  currency_id: string;
+  date: string;
+  date_maturity: string;
+  reconciled: string;
+}
+
+const invoiceLinesCache: Cache<OdooInvoiceLine> = { data: null, ts: 0 };
+
+export const getOdooInvoiceLines = async (): Promise<OdooInvoiceLine[]> => {
+  if (fresh(invoiceLinesCache)) return invoiceLinesCache.data!;
+  invoiceLinesCache.data = await readSheet<OdooInvoiceLine>("Odoo_Invoice_Lines");
+  invoiceLinesCache.ts = Date.now();
+  return invoiceLinesCache.data;
+};
+
+// ── Invoice list + AR Aging ──────────────────────────────────────
+
+export type MoveTypeFilter = "all" | "customer" | "vendor" | "refund";
+export type PaymentStateFilter = "all" | "open" | "paid" | "overdue";
+export type AgingBucket = "current" | "0-30" | "30-60" | "60-90" | "90+";
+
+export interface InvoiceListRow {
+  id: string;
+  name: string;
+  moveType: string;
+  state: string;
+  partnerId: string;
+  partnerName: string;
+  date: string;
+  dueDate: string;
+  total: number;
+  residual: number;
+  currency: string;
+  paymentState: string;
+  cfdiUuid: string;
+  cfdiPolicy: string;
+  cfdiState: string;
+  origin: string;
+  daysOverdue: number;
+  agingBucket: AgingBucket | null;
+  isOverdue: boolean;
+}
+
+const today = () => new Date();
+
+const daysBetween = (isoDate: string, now: Date): number => {
+  if (!isoDate) return 0;
+  const d = new Date(isoDate);
+  if (isNaN(d.getTime())) return 0;
+  return Math.floor((now.getTime() - d.getTime()) / (24 * 60 * 60 * 1000));
+};
+
+const bucketFor = (daysOver: number, isOpen: boolean): AgingBucket | null => {
+  if (!isOpen) return null;
+  if (daysOver <= 0) return "current";
+  if (daysOver <= 30) return "0-30";
+  if (daysOver <= 60) return "30-60";
+  if (daysOver <= 90) return "60-90";
+  return "90+";
+};
+
+const toInvoiceListRow = (i: OdooInvoice, now: Date = today()): InvoiceListRow => {
+  const residual = num(i.amount_residual);
+  const isOpen =
+    i.state === "posted" &&
+    (i.payment_state === "not_paid" || i.payment_state === "partial");
+  const days = i.invoice_date_due ? daysBetween(i.invoice_date_due, now) : 0;
+  return {
+    id: i.id,
+    name: i.name,
+    moveType: i.move_type,
+    state: i.state,
+    partnerId: i.partner_id_id || i.commercial_partner_id_id,
+    partnerName: i.partner_id || i.commercial_partner_id,
+    date: (i.invoice_date || i.date || "").slice(0, 10),
+    dueDate: (i.invoice_date_due || "").slice(0, 10),
+    total: num(i.amount_total) * (i.move_type === "out_refund" || i.move_type === "in_refund" ? -1 : 1),
+    residual,
+    currency: i.currency_id || "MXN",
+    paymentState: i.payment_state || "",
+    cfdiUuid: i.l10n_mx_edi_cfdi_uuid || "",
+    cfdiPolicy: i.l10n_mx_edi_payment_policy || "",
+    cfdiState: i.l10n_mx_edi_cfdi_state || "",
+    origin: i.invoice_origin || "",
+    daysOverdue: isOpen ? Math.max(0, days) : 0,
+    agingBucket: bucketFor(days, isOpen),
+    isOverdue: isOpen && days > 0,
+  };
+};
+
+export interface InvoiceListFilters {
+  q?: string;
+  moveType?: MoveTypeFilter;
+  paymentState?: PaymentStateFilter;
+  agingBucket?: AgingBucket;
+  partnerId?: string;
+  limit?: number;
+  offset?: number;
+  sort?: "date_desc" | "date_asc" | "residual_desc" | "days_overdue_desc" | "partner";
+}
+
+export interface ARAging {
+  current: Record<string, number>;
+  "0-30": Record<string, number>;
+  "30-60": Record<string, number>;
+  "60-90": Record<string, number>;
+  "90+": Record<string, number>;
+  totalOpen: Record<string, number>;
+  invoiceCount: number;
+  overdueCount: number;
+}
+
+export interface InvoiceListResult {
+  invoices: InvoiceListRow[];
+  total: number;
+  offset: number;
+  limit: number;
+  aging: ARAging;
+}
+
+export const getInvoiceList = async (
+  filters: InvoiceListFilters = {}
+): Promise<InvoiceListResult> => {
+  const {
+    q = "",
+    moveType = "customer",
+    paymentState = "all",
+    agingBucket,
+    partnerId,
+    limit = 100,
+    offset = 0,
+    sort = "date_desc",
+  } = filters;
+
+  const now = today();
+  const all = await getOdooInvoices();
+  const rows = all.map((i) => toInvoiceListRow(i, now));
+
+  let filtered = rows;
+
+  // move_type filter
+  if (moveType === "customer") {
+    filtered = filtered.filter((r) => r.moveType === "out_invoice" || r.moveType === "out_refund");
+  } else if (moveType === "vendor") {
+    filtered = filtered.filter((r) => r.moveType === "in_invoice" || r.moveType === "in_refund");
+  } else if (moveType === "refund") {
+    filtered = filtered.filter((r) => r.moveType === "out_refund" || r.moveType === "in_refund");
+  }
+
+  // payment state filter (scoped to posted moves)
+  if (paymentState === "open") {
+    filtered = filtered.filter((r) => r.state === "posted" && (r.paymentState === "not_paid" || r.paymentState === "partial"));
+  } else if (paymentState === "paid") {
+    filtered = filtered.filter((r) => r.paymentState === "paid");
+  } else if (paymentState === "overdue") {
+    filtered = filtered.filter((r) => r.isOverdue);
+  }
+
+  if (agingBucket) {
+    filtered = filtered.filter((r) => r.agingBucket === agingBucket);
+  }
+
+  if (partnerId) {
+    filtered = filtered.filter((r) => r.partnerId === partnerId);
+  }
+
+  if (q) {
+    const needle = q.toLowerCase();
+    filtered = filtered.filter((r) =>
+      `${r.name} ${r.partnerName} ${r.cfdiUuid} ${r.origin}`.toLowerCase().includes(needle)
+    );
+  }
+
+  // Aging panel — always computed on the customer-AR universe regardless of other filters,
+  // so the big number is stable
+  const arUniverse = rows.filter(
+    (r) =>
+      (r.moveType === "out_invoice" || r.moveType === "out_refund") &&
+      r.state === "posted" &&
+      (r.paymentState === "not_paid" || r.paymentState === "partial")
+  );
+  const addBy = (bucket: Record<string, number>, cur: string, amt: number) => {
+    bucket[cur] = (bucket[cur] ?? 0) + amt;
+  };
+  const aging: ARAging = {
+    current: {},
+    "0-30": {},
+    "30-60": {},
+    "60-90": {},
+    "90+": {},
+    totalOpen: {},
+    invoiceCount: arUniverse.length,
+    overdueCount: arUniverse.filter((r) => r.isOverdue).length,
+  };
+  for (const r of arUniverse) {
+    if (!r.agingBucket) continue;
+    addBy(aging[r.agingBucket], r.currency, r.residual);
+    addBy(aging.totalOpen, r.currency, r.residual);
+  }
+
+  // Sort
+  const cmp = (a: InvoiceListRow, b: InvoiceListRow) => {
+    if (sort === "date_asc") return a.date.localeCompare(b.date);
+    if (sort === "residual_desc") return b.residual - a.residual;
+    if (sort === "days_overdue_desc") return b.daysOverdue - a.daysOverdue;
+    if (sort === "partner") return a.partnerName.localeCompare(b.partnerName);
+    return b.date.localeCompare(a.date); // date_desc default
+  };
+  filtered.sort(cmp);
+
+  return {
+    invoices: filtered.slice(offset, offset + limit),
+    total: filtered.length,
+    offset,
+    limit,
+    aging,
+  };
+};
+
+// ── Invoice detail ───────────────────────────────────────────────
+
+export interface InvoiceDetail {
+  invoice: InvoiceListRow & { rawState: string };
+  rawInvoice: OdooInvoice;
+  lines: OdooInvoiceLine[];
+  payments: OdooPayment[];
+}
+
+export const getInvoiceDetail = async (
+  invoiceId: string
+): Promise<InvoiceDetail | null> => {
+  const [invoices, lines, payments] = await Promise.all([
+    getOdooInvoices(),
+    getOdooInvoiceLines(),
+    getOdooPayments(),
+  ]);
+
+  const inv = invoices.find((i) => i.id === invoiceId);
+  if (!inv) return null;
+
+  const invoiceLines = lines.filter((l) => l.move_id_id === invoiceId);
+
+  // Payments where this invoice appears in reconciled_invoice_ids or reconciled_bill_ids
+  // (stored as comma-joined Odoo IDs at extraction time)
+  const linkedPayments = payments.filter((p) => {
+    const ri = (p.reconciled_invoice_ids || "").split(",").map((s) => s.trim());
+    const rb = (p.reconciled_bill_ids || "").split(",").map((s) => s.trim());
+    return ri.includes(invoiceId) || rb.includes(invoiceId);
+  });
+
+  const row = toInvoiceListRow(inv);
+  return {
+    invoice: { ...row, rawState: inv.state },
+    rawInvoice: inv,
+    lines: invoiceLines,
+    payments: linkedPayments,
+  };
+};
