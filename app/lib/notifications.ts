@@ -25,7 +25,10 @@ export type NotificationSource =
   | "trafico"
   | "lead"
   | "shipment"
-  | "deal_payment";
+  | "deal_payment"
+  | "deal_event";  // W8: R-*/F-* alerts fired by the rule engine
+
+export type DeliveryChannel = "email" | "whatsapp" | "dashboard" | "";
 
 export type Notification = Record<string, string> & {
   notification_id: string;
@@ -38,16 +41,27 @@ export type Notification = Record<string, string> & {
   status: NotificationStatus;
   created_at: string;
   acked_at: string;
+  // W8 columns
+  deliver_after: string;
+  delivery_channel: string;
+  recipient_email: string;
+  recipient_phone: string;
 };
 
 export interface AppendNotificationInput {
-  notification_id: string;
+  /** Auto-generated when omitted. Callers pass an explicit ID for upsert semantics. */
+  notification_id?: string;
   severity: NotificationSeverity;
   audience: NotificationAudience;
   title: string;
   body?: string;
   source_entity_type: NotificationSource;
   source_entity_id: string;
+  // W8 additions (all optional)
+  deliver_after?: string;
+  delivery_channel?: DeliveryChannel;
+  recipient_email?: string;
+  recipient_phone?: string;
 }
 
 const COLUMNS: (keyof Notification)[] = [
@@ -61,17 +75,30 @@ const COLUMNS: (keyof Notification)[] = [
   "status",
   "created_at",
   "acked_at",
+  "deliver_after",
+  "delivery_channel",
+  "recipient_email",
+  "recipient_phone",
 ];
+
+const newNotificationId = (): string =>
+  `NOTIF-${Date.now()}-${Math.floor(Math.random() * 1000).toString().padStart(3, "0")}`;
 
 export const appendNotification = async (
   input: AppendNotificationInput
 ): Promise<Notification> => {
-  const existing = await readSheet<Notification>("Notifications");
-  const hit = existing.find((n) => n.notification_id === input.notification_id);
-  if (hit) return hit;
+  // Upsert semantics only when a stable id is supplied by the caller
+  // (the 3 sync sources use deterministic ids so dedupe works across runs).
+  // Ad-hoc alerts from the dispatcher get a fresh id each call.
+  const hasExplicitId = typeof input.notification_id === "string" && input.notification_id.length > 0;
+  if (hasExplicitId) {
+    const existing = await readSheet<Notification>("Notifications");
+    const hit = existing.find((n) => n.notification_id === input.notification_id);
+    if (hit) return hit;
+  }
 
   const row: Notification = {
-    notification_id: input.notification_id,
+    notification_id: hasExplicitId ? (input.notification_id as string) : newNotificationId(),
     severity: input.severity,
     audience: input.audience,
     title: input.title,
@@ -81,6 +108,10 @@ export const appendNotification = async (
     status: "unread",
     created_at: new Date().toISOString(),
     acked_at: "",
+    deliver_after: input.deliver_after ?? "",
+    delivery_channel: input.delivery_channel ?? "",
+    recipient_email: input.recipient_email ?? "",
+    recipient_phone: input.recipient_phone ?? "",
   };
   await appendRow(
     "Notifications",
@@ -274,9 +305,10 @@ export const syncNotificationsFromSources = async (
       const before = await readSheet<Notification>("Notifications");
       const existingIds = new Set(before.map((n) => n.notification_id));
       for (const input of derived) {
-        if (existingIds.has(input.notification_id)) continue;
+        const id = input.notification_id;
+        if (id && existingIds.has(id)) continue;
         await appendNotification(input);
-        existingIds.add(input.notification_id);
+        if (id) existingIds.add(id);
         added++;
       }
       lastSyncAt = Date.now();
@@ -308,6 +340,7 @@ const SOURCE_TO_NEEDS_YOU: Record<NotificationSource, NeedsYouItem["source"]> = 
   lead: "followup",
   shipment: "shipment-delay",
   deal_payment: "shipment-delay",
+  deal_event: "followup",
 };
 
 export const notificationToNeedsYouItem = (n: Notification): NeedsYouItem => {
