@@ -16,11 +16,13 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server";
-import { readSheet } from "@/app/lib/dashboard-sheets";
+import { readSheet, findRowIndex, updateRow } from "@/app/lib/dashboard-sheets";
 import { getSlaColor } from "@/app/lib/sla-timers";
 import { appendDealEvent, getDealEvents } from "@/app/lib/deal-events";
 import { evaluateAndTransition } from "@/app/lib/rule-engine";
+import { dispatchAlertsForTransition } from "@/app/lib/alert-dispatcher";
 import type { PipelineDeal, PipelineStage } from "@/app/lib/sample-dashboard-data";
+import type { Notification } from "@/app/lib/notifications";
 
 const COOLOFF_MS = 2 * 60 * 60 * 1000;
 
@@ -81,6 +83,8 @@ export const GET = async (request: NextRequest) => {
   let breachEventsEmitted = 0;
   let pendingMovesExecuted = 0;
   let issuesFlagged = 0;
+  let alertsReplayed = 0;
+  let queuedDeliveriesReleased = 0;
   const errors: string[] = [];
 
   for (const row of pipelineRows) {
@@ -172,6 +176,101 @@ export const GET = async (request: NextRequest) => {
     }
   }
 
+  // -------------------------------------------------------------------------
+  // (4) W8: Replay missed alerts — find stage_change events older than 6h
+  //     with no matching alert_fired follow-up, and re-dispatch.
+  //     Catches Resend / Meta outages during the original transition.
+  // -------------------------------------------------------------------------
+  try {
+    const allEvents = await getDealEvents();
+    const sixHoursAgo = now.getTime() - 6 * 60 * 60 * 1000;
+    const oneWeekAgo = now.getTime() - 7 * 24 * 60 * 60 * 1000;
+
+    const staleStageChanges = allEvents.filter((e) => {
+      if (e.event_type !== "stage_change") return false;
+      const ts = Date.parse(e.timestamp);
+      if (!Number.isFinite(ts)) return false;
+      return ts < sixHoursAgo && ts > oneWeekAgo;
+    });
+
+    const pipelineById = new Map(pipelineRows.map((r) => [r.id, rowToDeal(r)]));
+
+    for (const sc of staleStageChanges) {
+      const dealRow = pipelineById.get(sc.deal_id);
+      if (!dealRow) continue;
+
+      // Any alert_fired for this deal newer than the stage_change?
+      const scTs = Date.parse(sc.timestamp);
+      const followUp = allEvents.some(
+        (e) =>
+          e.event_type === "alert_fired" &&
+          e.deal_id === sc.deal_id &&
+          e.trigger_rule_id === sc.trigger_rule_id &&
+          Date.parse(e.timestamp) >= scTs
+      );
+      if (followUp) continue;
+
+      try {
+        await dispatchAlertsForTransition({
+          ruleId: sc.trigger_rule_id,
+          dealId: sc.deal_id,
+          fromStage: sc.from_stage as PipelineStage,
+          toStage: sc.to_stage as PipelineStage,
+          deal: dealRow,
+          actor: "system-replay",
+        });
+        alertsReplayed++;
+      } catch (err) {
+        errors.push(`replay ${sc.deal_id}: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    }
+  } catch (err) {
+    errors.push(`replay-scan: ${err instanceof Error ? err.message : String(err)}`);
+  }
+
+  // -------------------------------------------------------------------------
+  // (5) W8: Release queued quiet-hour deliveries — Notifications rows with
+  //     deliver_after ≤ now and status="unread" and delivery_channel set.
+  //     We mark them acked (status="acked") to prevent re-processing.
+  //     Per-channel re-send is out of scope for this pass — the row staying
+  //     in Notifications is surfaced via the bell; full re-send to email
+  //     / WhatsApp lands once Meta approval is in (W8 follow-up).
+  // -------------------------------------------------------------------------
+  try {
+    const notifs = await readSheet<Notification>("Notifications");
+    for (const n of notifs) {
+      if (n.status !== "unread") continue;
+      if (!n.deliver_after) continue;
+      if (!n.delivery_channel || n.delivery_channel === "dashboard") continue;
+      const deliverAt = Date.parse(n.deliver_after);
+      if (!Number.isFinite(deliverAt) || deliverAt > now.getTime()) continue;
+
+      try {
+        const rowIdx = await findRowIndex("Notifications", "notification_id", n.notification_id);
+        if (rowIdx === null) continue;
+
+        const ackedRow: Notification = {
+          ...n,
+          status: "acked",
+          acked_at: now.toISOString(),
+        };
+        const headers = Object.keys(n);
+        await updateRow(
+          "Notifications",
+          rowIdx,
+          headers.map((h) => ackedRow[h] ?? "")
+        );
+        queuedDeliveriesReleased++;
+      } catch (err) {
+        errors.push(
+          `release ${n.notification_id}: ${err instanceof Error ? err.message : String(err)}`
+        );
+      }
+    }
+  } catch (err) {
+    errors.push(`release-scan: ${err instanceof Error ? err.message : String(err)}`);
+  }
+
   return NextResponse.json({
     swept,
     yellow: yellowCount,
@@ -179,6 +278,8 @@ export const GET = async (request: NextRequest) => {
     breachEventsEmitted,
     pendingMovesExecuted,
     issuesFlagged,
+    alertsReplayed,
+    queuedDeliveriesReleased,
     errors: errors.length > 0 ? errors : undefined,
     ranAt: now.toISOString(),
   });
