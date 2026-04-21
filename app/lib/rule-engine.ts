@@ -289,7 +289,7 @@ const loadDeal = async (dealId: string): Promise<PipelineDeal | null> => {
  * Writes a partial field map to the Pipeline row for a given deal_id.
  * Preserves unspecified columns; updates only what's in `fields`.
  */
-const writePipelineFields = async (
+export const writePipelineFields = async (
   dealId: string,
   fields: Record<string, string>
 ): Promise<void> => {

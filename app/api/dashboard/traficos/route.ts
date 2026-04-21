@@ -6,6 +6,7 @@ import {
   updateRow,
 } from "@/app/lib/dashboard-sheets";
 import { appendTraficoEvent } from "@/app/lib/trafico-events";
+import { onTraficoStatusChange } from "@/app/lib/trafico-deal-bridge";
 
 type TraficoRecord = {
   TRF_ID: string;
@@ -154,6 +155,12 @@ export const PUT = async (request: NextRequest) => {
         to_status: body.Status,
         message: `Status changed via Traficos PUT`,
       }).catch((err) => console.error("[Traficos PUT] event log failed:", err));
+
+      // W7: fire Trafico→Deal bridge — writes date_at_border /
+      // date_customs_cleared on any linked Deal + evaluates rule engine.
+      onTraficoStatusChange(TRF_ID, oldStatus, body.Status, "portal").catch(
+        (err) => console.error("[Traficos PUT] deal bridge failed:", err)
+      );
     }
 
     return NextResponse.json({ success: true });

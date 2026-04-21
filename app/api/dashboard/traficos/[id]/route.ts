@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { readSheet, findRowIndex, updateRow } from "@/app/lib/dashboard-sheets";
+import { appendTraficoEvent } from "@/app/lib/trafico-events";
+import { onTraficoStatusChange } from "@/app/lib/trafico-deal-bridge";
 
 type TraficoRecord = Record<string, string>;
 
@@ -49,6 +51,24 @@ export const PATCH = async (
     const headers = Object.keys(existing);
     const values = headers.map((h) => merged[h] ?? "");
     await updateRow("Traficos", rowIdx, values);
+
+    // W7: if Status changed, audit-log it AND fire the Trafico→Deal bridge
+    // so the rule engine picks up sent-to-broker / crossing-approved
+    // transitions from bulk-update UI.
+    if (updates.Status && updates.Status !== existing.Status) {
+      appendTraficoEvent({
+        trafico_id: id,
+        actor: "portal",
+        event_type: "status_change",
+        from_status: existing.Status ?? "",
+        to_status: updates.Status,
+        message: `Status changed via Traficos PATCH`,
+      }).catch((err) => console.error("[Trafico PATCH] event log failed:", err));
+
+      onTraficoStatusChange(id, existing.Status ?? "", updates.Status, "portal").catch(
+        (err) => console.error("[Trafico PATCH] deal bridge failed:", err)
+      );
+    }
 
     return NextResponse.json({ success: true });
   } catch (err) {
