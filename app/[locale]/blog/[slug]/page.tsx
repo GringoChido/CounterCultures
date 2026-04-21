@@ -93,10 +93,10 @@ const BlogPostPage = async ({ params }: BlogPostPageProps) => {
       <article className="pt-32 pb-20 md:pt-40 md:pb-28">
           <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
             <Link
-              href="/blog"
+              href={`/${locale}/blog`}
               className="font-body font-medium text-xs tracking-wider text-brand-terracotta uppercase hover:text-brand-copper transition-colors"
             >
-              ← Back to Journal
+              {locale === "es" ? "← Volver al Journal" : "← Back to Journal"}
             </Link>
 
             <h1 className="mt-8 font-display text-4xl md:text-5xl font-light tracking-wide text-brand-charcoal leading-tight">

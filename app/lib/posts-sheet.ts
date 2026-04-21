@@ -43,8 +43,8 @@ const rowToArticle = (r: PostRow): Article & { status: string; driveFileId: stri
     : "Craft") as ArticlePillar;
   return {
     slug: r.slug,
-    title: { en: r.title_en, es: r.title_es || r.title_en },
-    excerpt: { en: r.excerpt_en, es: r.excerpt_es || r.excerpt_en },
+    title: { en: r.title_en || r.title_es, es: r.title_es || r.title_en },
+    excerpt: { en: r.excerpt_en || r.excerpt_es, es: r.excerpt_es || r.excerpt_en },
     pillar,
     date: r.date || new Date().toISOString().slice(0, 10),
     readTime: r.readTime || "5 min",
@@ -52,7 +52,7 @@ const rowToArticle = (r: PostRow): Article & { status: string; driveFileId: stri
     author: r.author || "Counter Cultures",
     featured: r.featured === "true" || r.featured === "TRUE",
     editorsPick: r.editorsPick === "true" || r.editorsPick === "TRUE",
-    body: { en: r.body_en, es: r.body_es || r.body_en },
+    body: { en: r.body_en || r.body_es, es: r.body_es || r.body_en },
     relatedSlugs: (r.relatedSlugs || "").split(",").map((s) => s.trim()).filter(Boolean),
     brandSlugs: (r.brandSlugs || "").split(",").map((s) => s.trim()).filter(Boolean),
     status: r.status || "published",

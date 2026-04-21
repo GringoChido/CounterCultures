@@ -1,7 +1,8 @@
 "use client";
 
 import { forwardRef, type ButtonHTMLAttributes } from "react";
-import Link from "next/link";
+import { Link } from "@/app/i18n/navigation";
+import NextLink from "next/link";
 
 type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "whatsapp";
 type ButtonSize = "sm" | "md" | "lg";
@@ -38,6 +39,17 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const classes = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`;
 
     if (href) {
+      // External links, mailto:, tel:, hashes → use regular anchor-like Link
+      // Locale-independent internal paths (/dashboard, /api) → bypass locale prefixing
+      const isExternal = /^(https?:|mailto:|tel:|#)/.test(href);
+      const bypassLocale = href.startsWith("/dashboard") || href.startsWith("/api");
+      if (isExternal || bypassLocale) {
+        return (
+          <NextLink href={href} className={classes}>
+            {children}
+          </NextLink>
+        );
+      }
       return (
         <Link href={href} className={classes}>
           {children}

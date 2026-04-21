@@ -56,11 +56,15 @@ export const OurStoryContent = () => {
     <Header locale={locale} />
     <main>
       <CategoryHero
-        eyebrow="Our Story"
-        title="Where Two Worlds Meet"
-        description="For 20 years, Counter Cultures has been the bridge between the world's finest fixture manufacturers and Mexico's master artisans."
+        eyebrow={locale === "es" ? "Nuestra Historia" : "Our Story"}
+        title={locale === "es" ? "Donde Dos Mundos Se Encuentran" : "Where Two Worlds Meet"}
+        description={
+          locale === "es"
+            ? "Durante 20 años, Counter Cultures ha sido el puente entre los mejores fabricantes de accesorios del mundo y los maestros artesanos de México."
+            : "For 20 years, Counter Cultures has been the bridge between the world's finest fixture manufacturers and Mexico's master artisans."
+        }
         imageSrc="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=75&auto=format"
-        ctaLabel="Visit the Showroom"
+        ctaLabel={locale === "es" ? "Visita el Showroom" : "Visit the Showroom"}
         ctaHref="/showroom"
       />
 

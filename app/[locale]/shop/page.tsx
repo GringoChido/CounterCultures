@@ -100,14 +100,15 @@ const ShopPage = async ({ params }: ShopPageProps) => {
         <section className="py-10 md:py-20 bg-brand-linen border-b border-brand-stone/10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-stone uppercase">
-              The Collection
+              {isEs ? "La Colección" : "The Collection"}
             </span>
             <h1 className="mt-3 font-display text-4xl md:text-6xl font-light tracking-wide text-brand-charcoal">
-              Shop All
+              {isEs ? "Tienda Completa" : "Shop All"}
             </h1>
             <p className="mt-4 font-body text-base text-brand-stone max-w-xl">
-              Faucets, sinks, bathtubs, toilets, showers, kitchen fixtures, and
-              artisanal door hardware — curated for the discerning home.
+              {isEs
+                ? "Grifería, lavabos, bañeras, inodoros, regaderas, accesorios de cocina y herrajes artesanales de puerta — curados para el hogar exigente."
+                : "Faucets, sinks, bathtubs, toilets, showers, kitchen fixtures, and artisanal door hardware — curated for the discerning home."}
             </p>
           </div>
         </section>
