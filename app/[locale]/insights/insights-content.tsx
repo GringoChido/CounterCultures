@@ -36,8 +36,6 @@ export const InsightsContent = ({
       ? articles
       : articles.filter((a) => a.pillar === activePillar);
 
-  const featured = articles.find((a) => a.featured);
-  const editorsPicks = articles.filter((a) => a.editorsPick && !a.featured);
   const gridArticles = filtered.slice(0, visibleCount);
   const hasMore = visibleCount < filtered.length;
 
@@ -86,106 +84,6 @@ export const InsightsContent = ({
             </div>
           </div>
         </section>
-
-        {/* Featured Article */}
-        {featured && (
-          <section className="py-12 md:py-20 bg-brand-linen">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <AnimatedSection>
-                <Link
-                  href={`/${locale}/insights/${featured.slug}`}
-                  className="group block md:grid md:grid-cols-2 gap-10"
-                >
-                  <div className="aspect-[16/10] rounded-lg overflow-hidden bg-brand-stone/10">
-                    <div
-                      className="w-full h-full transition-transform duration-500 group-hover:scale-105"
-                      style={{
-                        backgroundImage: `url('${featured.image.startsWith("http") ? featured.image.replace("q=80", "q=75").replace(/&?auto=format/g, "") + "&auto=format" : featured.image}')`,
-                        backgroundSize: "cover",
-                        backgroundPosition: "center",
-                      }}
-                    />
-                  </div>
-                  <div className="mt-5 md:mt-0 flex flex-col justify-center">
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`inline-block px-3 py-1 text-[10px] font-body font-semibold tracking-wider text-white uppercase rounded ${pillarColors[featured.pillar]}`}
-                      >
-                        {pillarLabels[featured.pillar][locale]}
-                      </span>
-                      <span className="font-body font-semibold text-[10px] text-brand-terracotta uppercase tracking-wider">
-                        {locale === "es" ? "Artículo Destacado" : "Featured"}
-                      </span>
-                    </div>
-                    <h2 className="mt-4 font-display text-3xl md:text-4xl font-light text-brand-charcoal tracking-wide group-hover:text-brand-terracotta transition-colors">
-                      {featured.title[locale]}
-                    </h2>
-                    <p className="mt-3 font-body text-base text-brand-stone leading-relaxed">
-                      {featured.excerpt[locale]}
-                    </p>
-                    <div className="mt-4 flex items-center gap-3 font-body font-medium text-xs text-brand-stone uppercase tracking-wider">
-                      <span>{formatDate(featured.date)}</span>
-                      <span>·</span>
-                      <span>{featured.readTime}</span>
-                    </div>
-                  </div>
-                </Link>
-              </AnimatedSection>
-            </div>
-          </section>
-        )}
-
-        {/* Editor's Picks */}
-        {editorsPicks.length > 0 && (
-          <section className="py-12 md:py-20 bg-white">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <AnimatedSection>
-                <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
-                  {locale === "es" ? "Selección del Editor" : "Editor's Picks"}
-                </span>
-              </AnimatedSection>
-              <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
-                {editorsPicks.slice(0, 3).map((article) => (
-                  <AnimatedSection key={article.slug}>
-                    <Link
-                      href={`/${locale}/insights/${article.slug}`}
-                      className="group block"
-                    >
-                      <div className="aspect-[16/10] rounded-lg overflow-hidden bg-brand-stone/10">
-                        <div
-                          className="w-full h-full transition-transform duration-500 group-hover:scale-105"
-                          style={{
-                            backgroundImage: `url('${article.image.startsWith("http") ? article.image.replace("q=80", "q=75").replace(/&?auto=format/g, "") + "&auto=format" : article.image}')`,
-                            backgroundSize: "cover",
-                            backgroundPosition: "center",
-                          }}
-                        />
-                      </div>
-                      <div className="mt-4">
-                        <span
-                          className={`inline-block px-3 py-1 text-[10px] font-body font-semibold tracking-wider text-white uppercase rounded ${pillarColors[article.pillar]}`}
-                        >
-                          {pillarLabels[article.pillar][locale]}
-                        </span>
-                        <h3 className="mt-3 font-display text-xl text-brand-charcoal group-hover:text-brand-terracotta transition-colors">
-                          {article.title[locale]}
-                        </h3>
-                        <p className="mt-2 font-body text-sm text-brand-stone leading-relaxed line-clamp-3">
-                          {article.excerpt[locale]}
-                        </p>
-                        <div className="mt-3 flex items-center gap-3 font-body font-medium text-[10px] text-brand-stone uppercase tracking-wider">
-                          <span>{formatDate(article.date)}</span>
-                          <span>·</span>
-                          <span>{article.readTime}</span>
-                        </div>
-                      </div>
-                    </Link>
-                  </AnimatedSection>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
 
         {/* Pillar Filter + Content Grid */}
         <section className="py-12 md:py-20 bg-brand-linen">
