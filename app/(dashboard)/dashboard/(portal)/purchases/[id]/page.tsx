@@ -12,6 +12,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
+import { AttachmentsPanel } from "@/app/(dashboard)/components/attachments-panel";
 
 interface PORow {
   id: string;
@@ -365,6 +366,8 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
           </div>
         )}
       </section>
+
+      <AttachmentsPanel resModel="purchase.order" resId={order.id} />
     </div>
   );
 };

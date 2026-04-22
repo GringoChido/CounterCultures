@@ -1627,3 +1627,67 @@ export const getInvoiceDetail = async (
     payments: linkedPayments,
   };
 };
+
+// ── Attachments (mirrored to Drive) ──────────────────────────────
+
+export interface OdooAttachment {
+  [key: string]: string;
+  id: string;
+  res_model: string;
+  res_id: string;
+  res_name: string;
+  name: string;
+  mimetype: string;
+  file_size: string;
+  create_date: string;
+  drive_file_id: string;
+  drive_view_url: string;
+  drive_download_url: string;
+}
+
+export interface AttachmentRow {
+  id: string;
+  name: string;
+  mimetype: string;
+  fileSize: number;
+  createdAt: string;
+  driveFileId: string;
+  viewUrl: string;
+  downloadUrl: string;
+}
+
+const attachmentsCache: Cache<OdooAttachment> = { data: null, ts: 0 };
+
+export const getOdooAttachments = async (): Promise<OdooAttachment[]> => {
+  if (fresh(attachmentsCache)) return attachmentsCache.data!;
+  try {
+    attachmentsCache.data = await readSheet<OdooAttachment>("Odoo_Attachments");
+  } catch {
+    attachmentsCache.data = [];
+  }
+  attachmentsCache.ts = Date.now();
+  return attachmentsCache.data;
+};
+
+const toAttachmentRow = (a: OdooAttachment): AttachmentRow => ({
+  id: a.id,
+  name: a.name,
+  mimetype: a.mimetype,
+  fileSize: num(a.file_size),
+  createdAt: (a.create_date || "").slice(0, 10),
+  driveFileId: a.drive_file_id,
+  viewUrl: a.drive_view_url,
+  downloadUrl: a.drive_download_url,
+});
+
+export const getAttachmentsFor = async (
+  resModel: string,
+  resId: string
+): Promise<AttachmentRow[]> => {
+  if (!resId) return [];
+  const all = await getOdooAttachments();
+  return all
+    .filter((a) => a.res_model === resModel && a.res_id === resId)
+    .map(toAttachmentRow)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+};

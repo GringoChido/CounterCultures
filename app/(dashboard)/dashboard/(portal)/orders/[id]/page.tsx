@@ -11,6 +11,7 @@ import {
   FileText,
 } from "lucide-react";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
+import { AttachmentsPanel } from "@/app/(dashboard)/components/attachments-panel";
 
 interface OrderRow {
   id: string;
@@ -365,6 +366,8 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
         )}
       </section>
+
+      <AttachmentsPanel resModel="sale.order" resId={order.id} />
     </div>
   );
 };

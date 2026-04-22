@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
+import { AttachmentsPanel } from "@/app/(dashboard)/components/attachments-panel";
 
 interface InvoiceListRow {
   id: string;
@@ -548,6 +549,9 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
         )}
       </section>
+
+      {/* Attachments mirrored from Odoo → Drive */}
+      <AttachmentsPanel resModel="account.move" resId={invoice.id} />
     </div>
   );
 };
