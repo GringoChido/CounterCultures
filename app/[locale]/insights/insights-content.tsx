@@ -135,11 +135,21 @@ export const InsightsContent = ({
                       />
                     </div>
                     <div className="mt-4 flex flex-col flex-1">
-                      <span
-                        className={`inline-block w-fit px-3 py-1 text-[10px] font-body font-semibold tracking-wider text-white uppercase rounded ${pillarColors[article.pillar]}`}
-                      >
-                        {pillarLabels[article.pillar][locale]}
-                      </span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span
+                          className={`inline-block w-fit px-3 py-1 text-[10px] font-body font-semibold tracking-wider text-white uppercase rounded ${pillarColors[article.pillar]}`}
+                        >
+                          {pillarLabels[article.pillar][locale]}
+                        </span>
+                        {locale === "en" && article.isSpanishOnly && (
+                          <span
+                            className="inline-block w-fit px-2 py-1 text-[10px] font-body font-semibold tracking-wider uppercase rounded border border-brand-stone/40 text-brand-stone"
+                            title="Article body is in Spanish"
+                          >
+                            Español
+                          </span>
+                        )}
+                      </div>
                       <h3 className="mt-3 font-display text-xl text-brand-charcoal group-hover:text-brand-terracotta transition-colors min-h-[3rem]">
                         {article.title[locale]}
                       </h3>

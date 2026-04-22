@@ -17,6 +17,10 @@ export interface Article {
    * Blog Manager and the "More about this brand" footer on the storefront
    * article detail page. Must match a slug in the Brand Kit Sheet. */
   brandSlugs?: string[];
+  /** Flagged by the sheet reader when title_en/es and excerpt_en/es are
+   * identical + look Spanish — used to badge cards on EN listing so users
+   * know the article body is in Spanish before clicking. */
+  isSpanishOnly?: boolean;
 }
 
 export const pillarColors: Record<ArticlePillar, string> = {

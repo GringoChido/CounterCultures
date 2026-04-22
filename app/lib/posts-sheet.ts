@@ -197,15 +197,9 @@ export const getAllArticles = async (
   // Sheet articles (all of them, since they may not be in hardcoded)
   for (const a of sheet) merged.push(a);
 
-  let out = opts.includeDrafts
+  const out = opts.includeDrafts
     ? merged
     : merged.filter((a) => !("status" in a) || a.status !== "draft");
-
-  // Hide Spanish-only posts from EN listing — the content isn't actually
-  // in English so showing it there is confusing. ES still sees them.
-  if (opts.locale === "en") {
-    out = out.filter((a) => !a.isSpanishOnly);
-  }
 
   return out;
 };
