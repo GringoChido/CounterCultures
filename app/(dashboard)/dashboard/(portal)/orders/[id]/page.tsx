@@ -13,6 +13,7 @@ import {
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { AttachmentsPanel } from "@/app/(dashboard)/components/attachments-panel";
 import { MessagesPanel } from "@/app/(dashboard)/components/messages-panel";
+import { stripHtml } from "@/app/lib/strip-html";
 
 interface OrderRow {
   id: string;
@@ -249,7 +250,7 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
           </h2>
           {rawOrder.note ? (
             <p className="text-sm text-dash-text whitespace-pre-wrap line-clamp-6">
-              {rawOrder.note}
+              {stripHtml(rawOrder.note)}
             </p>
           ) : (
             <p className="text-sm text-dash-text-secondary italic">No notes on this order.</p>

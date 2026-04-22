@@ -70,6 +70,8 @@ type SheetTab =
   | "Odoo_Stock_Warehouses"
   | "Odoo_Reconciliations"
   | "Odoo_Full_Reconciliations"
+  | "Odoo_Attachments"
+  | "Odoo_Messages"
   | "Posts";
 
 // Read all rows from a sheet tab (returns array of objects using header row as keys)
