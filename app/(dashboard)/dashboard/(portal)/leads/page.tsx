@@ -481,6 +481,31 @@ const BrandChips = ({ slugs }: { slugs: string[] }) => {
 };
 
 const columns = [
+  columnHelper.display({
+    id: "select",
+    header: ({ table }) => (
+      <input
+        type="checkbox"
+        checked={table.getIsAllRowsSelected()}
+        aria-label="Select all rows"
+        onChange={table.getToggleAllRowsSelectedHandler()}
+        onClick={(e) => e.stopPropagation()}
+        className="accent-brand-copper cursor-pointer"
+      />
+    ),
+    cell: ({ row }) => (
+      <input
+        type="checkbox"
+        checked={row.getIsSelected()}
+        disabled={!row.getCanSelect()}
+        aria-label={`Select ${row.original.name}`}
+        onChange={row.getToggleSelectedHandler()}
+        onClick={(e) => e.stopPropagation()}
+        className="accent-brand-copper cursor-pointer"
+      />
+    ),
+    enableSorting: false,
+  }),
   columnHelper.accessor("name", {
     header: "Name",
     cell: (info) => (
@@ -677,6 +702,60 @@ const LeadsPageInner = () => {
   const [activityNote, setActivityNote] = useState("");
   const [activityType, setActivityType] = useState<"call" | "email" | "meeting" | "note" | "whatsapp">("call");
   const addActivity = useActivityStore((s) => s.addActivity);
+  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+  const [bulkRunning, setBulkRunning] = useState(false);
+
+  const selectedIds = useMemo(
+    () => Object.keys(rowSelection).filter((id) => rowSelection[id]),
+    [rowSelection]
+  );
+
+  const clearSelection = useCallback(() => setRowSelection({}), []);
+
+  const bulkMarkContacted = useCallback(async () => {
+    if (selectedIds.length === 0 || bulkRunning) return;
+    setBulkRunning(true);
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const results = await Promise.allSettled(
+        selectedIds.map((id) =>
+          fetch("/api/dashboard/leads", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id,
+              status: "contacted",
+              last_contact_date: today,
+            }),
+          }).then((r) => {
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          })
+        )
+      );
+      const failed = results.filter((r) => r.status === "rejected").length;
+      const ok = selectedIds.length - failed;
+      if (ok) toast.success(`Marked ${ok} as contacted`);
+      if (failed) toast.error(`${failed} update${failed === 1 ? "" : "s"} failed`);
+      // Optimistic local update
+      setLeads((prev) =>
+        prev.map((l) =>
+          selectedIds.includes(l.id)
+            ? { ...l, status: "contacted", lastContactDate: today }
+            : l
+        )
+      );
+      clearSelection();
+    } finally {
+      setBulkRunning(false);
+    }
+  }, [selectedIds, bulkRunning, clearSelection]);
+
+  const bulkExport = useCallback(() => {
+    if (selectedIds.length === 0) return;
+    const subset = leads.filter((l) => selectedIds.includes(l.id));
+    exportLeadsToCSV(subset);
+    toast.success(`Exported ${subset.length} lead${subset.length === 1 ? "" : "s"}`);
+  }, [selectedIds, leads]);
 
   const fetchLeads = useCallback(async () => {
     try {
@@ -892,6 +971,46 @@ const LeadsPageInner = () => {
         </div>
       </div>
 
+      {selectedIds.length > 0 ? (
+        <div className="flex items-center justify-between gap-3 px-4 py-3 bg-brand-copper/10 border border-brand-copper/20 rounded-xl">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-dash-text">
+              {selectedIds.length} selected
+            </span>
+            <button
+              type="button"
+              onClick={clearSelection}
+              className="text-xs text-dash-text-secondary hover:text-dash-text underline underline-offset-2 cursor-pointer"
+            >
+              Clear
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={bulkMarkContacted}
+              disabled={bulkRunning}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer disabled:opacity-50"
+            >
+              {bulkRunning ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                <Mail className="w-3 h-3" />
+              )}
+              Mark as contacted
+            </button>
+            <button
+              type="button"
+              onClick={bulkExport}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-dash-border text-dash-text rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
+            >
+              <Download className="w-3 h-3" />
+              Export CSV
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       {/* Table */}
       <DataTable
         data={filteredLeads}
@@ -899,6 +1018,9 @@ const LeadsPageInner = () => {
         searchKey="name"
         searchPlaceholder="Search leads..."
         onRowClick={(lead) => setSelectedLead(lead)}
+        rowSelection={rowSelection}
+        onRowSelectionChange={setRowSelection}
+        getRowId={(lead) => lead.id}
       />
 
       {/* Slide-out Detail */}

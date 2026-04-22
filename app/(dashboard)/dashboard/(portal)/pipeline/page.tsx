@@ -1256,10 +1256,42 @@ const PipelinePageInner = () => {
                         {selectedDeal.currency}
                       </span>
                     </p>
-                    <p>
-                      <span className="text-dash-text-secondary">Stage:</span>{" "}
-                      {stageConfig[selectedDeal.stage]?.label ??
-                        selectedDeal.stage}
+                    <p className="flex items-center gap-2">
+                      <span className="text-dash-text-secondary">Stage:</span>
+                      <select
+                        value={selectedDeal.stage}
+                        onChange={(e) => {
+                          const newStage = e.target.value as PipelineStage;
+                          const oldStage = selectedDeal.stage;
+                          if (newStage === oldStage) return;
+                          setDeals((prev) =>
+                            prev.map((d) =>
+                              d.id === selectedDeal.id
+                                ? { ...d, stage: newStage }
+                                : d
+                            )
+                          );
+                          setSelectedDeal((d) =>
+                            d ? { ...d, stage: newStage } : d
+                          );
+                          addActivity({
+                            type: "deal",
+                            description: `Moved "${selectedDeal.name}" from ${stageConfig[oldStage].label} → ${stageConfig[newStage].label}`,
+                            contactName: selectedDeal.contactName,
+                            dealId: selectedDeal.id,
+                          });
+                          toast.success(
+                            `Stage changed to ${stageConfig[newStage].label}`
+                          );
+                        }}
+                        className="text-xs bg-dash-bg border border-dash-border rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
+                      >
+                        {stages.map((s) => (
+                          <option key={s} value={s}>
+                            {stageConfig[s]?.label ?? s}
+                          </option>
+                        ))}
+                      </select>
                     </p>
                     <p>
                       <span className="text-dash-text-secondary">

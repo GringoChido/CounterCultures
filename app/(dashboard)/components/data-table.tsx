@@ -10,6 +10,7 @@ import {
   flexRender,
   type ColumnDef,
   type SortingState,
+  type RowSelectionState,
 } from "@tanstack/react-table";
 import { ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
 
@@ -21,6 +22,14 @@ interface DataTableProps<T> {
   searchPlaceholder?: string;
   pageSize?: number;
   onRowClick?: (row: T) => void;
+  // Row selection (optional). Passing a state + setter enables
+  // tanstack's built-in selection; the consumer renders its own
+  // bulk-action UI above the table.
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: (state: RowSelectionState) => void;
+  // Stable row id (e.g. `id`). Required for selection to survive
+  // sorting/filtering.
+  getRowId?: (row: T) => string;
 }
 
 const DataTable = <T,>({
@@ -30,16 +39,35 @@ const DataTable = <T,>({
   searchPlaceholder = "Search...",
   pageSize = 10,
   onRowClick,
+  rowSelection,
+  onRowSelectionChange,
+  getRowId,
 }: DataTableProps<T>) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
+  const selectionEnabled = Boolean(rowSelection && onRowSelectionChange);
 
   const table = useReactTable({
     data,
     columns,
-    state: { sorting, globalFilter },
+    state: {
+      sorting,
+      globalFilter,
+      ...(selectionEnabled && rowSelection ? { rowSelection } : {}),
+    },
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
+    onRowSelectionChange: onRowSelectionChange
+      ? (updater) => {
+          const next =
+            typeof updater === "function"
+              ? updater(rowSelection ?? {})
+              : updater;
+          onRowSelectionChange(next);
+        }
+      : undefined,
+    enableRowSelection: selectionEnabled,
+    getRowId: getRowId,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
