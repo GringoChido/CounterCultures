@@ -15,6 +15,13 @@ const ErrorBoundary = ({ error, reset }: ErrorBoundaryProps) => {
       digest: error.digest,
       stack: error.stack,
     });
+    // Report to Sentry when DSN is configured. Dynamic import keeps
+    // Sentry out of the bundle if it's not being used.
+    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+      import("@sentry/nextjs")
+        .then((Sentry) => Sentry.captureException(error))
+        .catch(() => {});
+    }
   }, [error]);
 
   return (

@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createColumnHelper } from "@tanstack/react-table";
 import { format, differenceInDays, isPast, parseISO } from "date-fns";
-import { Plus, Filter, Download, Mail, MessageCircle, ClipboardList, Loader2, Save, X, ChevronDown, AlertTriangle } from "lucide-react";
+import { Plus, Filter, Download, Mail, MessageCircle, ClipboardList, Loader2, Save, X, ChevronDown, AlertTriangle, Briefcase } from "lucide-react";
+import { toast } from "sonner";
 import { useActivityStore } from "@/app/lib/stores/activity-store";
 import { usePageContextStore } from "@/app/lib/stores/page-context-store";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
@@ -538,8 +539,55 @@ const columns = [
     cell: (info) => {
       const lead = info.row.original;
       const waPhone = lead.phone.replace(/\s+/g, "").replace(/^\+/, "");
+
+      const handleConvertToDeal = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const confirmed =
+          typeof window === "undefined"
+            ? true
+            : window.confirm(
+                `Create a new deal from ${lead.name}? Opens the pipeline after creation.`
+              );
+        if (!confirmed) return;
+        try {
+          const payload = {
+            id: "",
+            name: lead.name,
+            company: "",
+            stage: "Quote Approved",
+            value: lead.value ?? "",
+            probability: "20",
+            expected_close: "",
+            owner: "Roger",
+            source: lead.source || "lead-conversion",
+            notes: `Converted from lead ${lead.id} on ${new Date().toISOString().slice(0, 10)}`,
+            brand_slugs: (lead.brandSlugs ?? []).join("|"),
+            source_message_id: lead.id,
+          };
+          const res = await fetch("/api/dashboard/pipeline", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = (await res.json()) as { id: string };
+          toast.success(`Deal ${data.id} created from lead`);
+          // Update lead status in the background
+          void fetch("/api/dashboard/leads", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: lead.id, status: "quoted" }),
+          });
+          window.location.href = `/dashboard/pipeline?deal=${encodeURIComponent(data.id)}`;
+        } catch (err) {
+          toast.error(
+            err instanceof Error ? err.message : "Failed to create deal"
+          );
+        }
+      };
+
       return (
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity md:opacity-100">
           <a
             href={`https://wa.me/${waPhone}`}
             target="_blank"
@@ -564,6 +612,13 @@ const columns = [
             title="Log Activity"
           >
             <ClipboardList className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={handleConvertToDeal}
+            className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-indigo-500/10 text-indigo-500 transition-colors cursor-pointer"
+            title="Convert to Deal"
+          >
+            <Briefcase className="w-3.5 h-3.5" />
           </button>
         </div>
       );

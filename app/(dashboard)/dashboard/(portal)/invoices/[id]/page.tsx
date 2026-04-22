@@ -10,7 +10,11 @@ import {
   ExternalLink,
   Copy,
   Check,
+  Send,
+  MessageCircle,
+  Mail,
 } from "lucide-react";
+import { toast } from "sonner";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 
 interface InvoiceListRow {
@@ -117,6 +121,138 @@ const moveTypeLabel = (t: string) => {
   if (t === "in_invoice") return "Vendor Bill";
   if (t === "in_refund") return "Vendor Credit Note";
   return t;
+};
+
+// V3 S11: bilingual payment reminder templates. Each template returns a
+// (subject, body) pair filled with the invoice metadata. Rendered in the
+// reminder bar below the KPI strip on overdue/unpaid invoices.
+type ReminderTemplate = {
+  id: string;
+  label: string;
+  subject: (ctx: ReminderContext) => string;
+  body: (ctx: ReminderContext) => string;
+};
+
+type ReminderContext = {
+  invoiceName: string;
+  partnerName: string;
+  amount: string;
+  dueDate: string;
+  daysOverdue: number;
+};
+
+const REMINDER_TEMPLATES: ReminderTemplate[] = [
+  {
+    id: "soft-es",
+    label: "Recordatorio suave (ES)",
+    subject: ({ invoiceName }) => `Recordatorio de pago — ${invoiceName}`,
+    body: ({ partnerName, invoiceName, amount, dueDate }) =>
+      `Hola ${partnerName},\n\nTe escribimos como recordatorio amistoso sobre la factura ${invoiceName} por ${amount}, con fecha de vencimiento ${dueDate}. Si ya realizaste el pago, por favor ignora este mensaje. Si necesitas el enlace de pago o la ficha bancaria, con gusto te lo enviamos.\n\nGracias,\nCounter Cultures`,
+  },
+  {
+    id: "soft-en",
+    label: "Soft reminder (EN)",
+    subject: ({ invoiceName }) => `Friendly payment reminder — ${invoiceName}`,
+    body: ({ partnerName, invoiceName, amount, dueDate }) =>
+      `Hi ${partnerName},\n\nJust a friendly reminder that invoice ${invoiceName} for ${amount} was due on ${dueDate}. If payment is already on its way, please disregard. Happy to re-send the Stripe link or bank details — just let me know.\n\nThanks,\nCounter Cultures`,
+  },
+  {
+    id: "firm-es",
+    label: "Vencido (ES)",
+    subject: ({ invoiceName, daysOverdue }) =>
+      `Factura ${invoiceName} vencida (${daysOverdue} días)`,
+    body: ({ partnerName, invoiceName, amount, dueDate, daysOverdue }) =>
+      `Hola ${partnerName},\n\nLa factura ${invoiceName} por ${amount} venció el ${dueDate} (${daysOverdue} días vencida). Por favor indícanos la fecha estimada de pago o, si hay alguna incidencia, ponte en contacto directamente. Queremos resolverlo cuanto antes.\n\nSaludos,\nCounter Cultures`,
+  },
+  {
+    id: "firm-en",
+    label: "Overdue (EN)",
+    subject: ({ invoiceName, daysOverdue }) =>
+      `Invoice ${invoiceName} overdue (${daysOverdue} days)`,
+    body: ({ partnerName, invoiceName, amount, dueDate, daysOverdue }) =>
+      `Hi ${partnerName},\n\nInvoice ${invoiceName} for ${amount} was due on ${dueDate} and is now ${daysOverdue} days overdue. Can you confirm when we can expect payment, or flag if there's any issue we should resolve first?\n\nThanks,\nCounter Cultures`,
+  },
+];
+
+const ReminderBar = ({ ctx }: { ctx: ReminderContext }) => {
+  const [tplId, setTplId] = useState(REMINDER_TEMPLATES[0].id);
+  const tpl = REMINDER_TEMPLATES.find((t) => t.id === tplId) ?? REMINDER_TEMPLATES[0];
+  const subject = tpl.subject(ctx);
+  const body = tpl.body(ctx);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(`Subject: ${subject}\n\n${body}`);
+      toast.success("Reminder copied to clipboard");
+    } catch {
+      toast.error("Copy failed");
+    }
+  };
+
+  const mailto = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const wa = `https://wa.me/?text=${encodeURIComponent(body)}`;
+
+  return (
+    <section className="bg-amber-50 border border-amber-200 rounded p-4 mb-6">
+      <div className="flex items-center gap-2 mb-3">
+        <AlertCircle className="w-4 h-4 text-amber-700" />
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-amber-800">
+          Payment reminder
+        </h2>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <label className="text-xs text-amber-800">
+          Template
+          <select
+            value={tplId}
+            onChange={(e) => setTplId(e.target.value)}
+            className="ml-2 text-xs bg-white border border-amber-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-400"
+          >
+            {REMINDER_TEMPLATES.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="flex items-center gap-1.5 ml-auto">
+          <button
+            type="button"
+            onClick={copy}
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs border border-amber-300 bg-white rounded hover:border-amber-500 transition-colors cursor-pointer text-amber-800"
+          >
+            <Copy className="w-3 h-3" />
+            Copy
+          </button>
+          <a
+            href={mailto}
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs border border-amber-300 bg-white rounded hover:border-amber-500 transition-colors text-amber-800"
+          >
+            <Mail className="w-3 h-3" />
+            Email
+          </a>
+          <a
+            href={wa}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs border border-emerald-300 bg-white rounded hover:border-emerald-500 transition-colors text-emerald-700"
+          >
+            <MessageCircle className="w-3 h-3" />
+            WhatsApp
+          </a>
+        </div>
+      </div>
+      <details className="mt-3">
+        <summary className="cursor-pointer text-[11px] text-amber-800/80 hover:text-amber-900">
+          Preview
+        </summary>
+        <div className="mt-2 bg-white rounded border border-amber-200 p-3 text-xs text-dash-text whitespace-pre-wrap">
+          <p className="font-medium mb-2">{subject}</p>
+          {body}
+        </div>
+      </details>
+    </section>
+  );
 };
 
 const CopyableUUID = ({ uuid }: { uuid: string }) => {
@@ -254,6 +390,21 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
         </div>
       </div>
+
+      {invoice.residual > 0 &&
+      (invoice.paymentState === "not_paid" ||
+        invoice.paymentState === "partial" ||
+        invoice.isOverdue) ? (
+        <ReminderBar
+          ctx={{
+            invoiceName: invoice.name,
+            partnerName: invoice.partnerName,
+            amount: fmt(invoice.residual, invoice.currency),
+            dueDate: invoice.dueDate || "—",
+            daysOverdue: Math.max(0, invoice.daysOverdue || 0),
+          }}
+        />
+      ) : null}
 
       {/* Partner + CFDI cards */}
       <div className="grid md:grid-cols-2 gap-4 mb-6">

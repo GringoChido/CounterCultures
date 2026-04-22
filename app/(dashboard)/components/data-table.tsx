@@ -102,7 +102,7 @@ const DataTable = <T,>({
             {table.getRowModel().rows.map((row) => (
               <tr
                 key={row.id}
-                className={`border-b border-dash-border last:border-0 hover:bg-dash-bg/50 transition-colors ${
+                className={`group border-b border-dash-border last:border-0 hover:bg-dash-bg/50 transition-colors ${
                   onRowClick ? "cursor-pointer" : ""
                 }`}
                 onClick={() => onRowClick?.(row.original)}

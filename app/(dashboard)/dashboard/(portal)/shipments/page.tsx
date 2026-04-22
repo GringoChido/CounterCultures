@@ -28,6 +28,9 @@ import {
   Ship,
   CheckCircle2,
   Clock,
+  MessageCircle,
+  Flag,
+  ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
@@ -247,6 +250,7 @@ const ShipmentsPage = () => {
                   <th className="pb-3 pt-4">Initiated</th>
                   <th className="pb-3 pt-4">Days in Customs</th>
                   <th className="pb-3 pt-4">Status</th>
+                  <th className="pb-3 pt-4 pr-5 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -260,7 +264,7 @@ const ShipmentsPage = () => {
                   return (
                     <tr
                       key={t.TRF_ID}
-                      className="group border-b border-dash-border/50 hover:bg-dash-bg/50 text-dash-text cursor-pointer transition-colors"
+                      className="group border-b border-dash-border/50 hover:bg-dash-bg/40 text-dash-text cursor-pointer transition-colors"
                       onClick={() => {
                         window.location.href = detailHref;
                       }}
@@ -319,6 +323,43 @@ const ShipmentsPage = () => {
                         >
                           {cfg?.label.en ?? t.Status}
                         </span>
+                      </td>
+                      <td className="py-3 pr-5">
+                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 md:opacity-100 transition-opacity">
+                          <Link
+                            href={detailHref}
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center justify-center w-7 h-7 rounded-md hover:bg-brand-copper/10 text-dash-text-secondary hover:text-brand-copper transition-colors"
+                            title="View detail"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </Link>
+                          {t.Broker_Name ? (
+                            <a
+                              href={`https://wa.me/?text=${encodeURIComponent(
+                                `Hi, checking on pedimento ${t.Pedimento_Number || t.TRF_ID}`
+                              )}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-flex items-center justify-center w-7 h-7 rounded-md hover:bg-emerald-500/10 text-dash-text-secondary hover:text-emerald-500 transition-colors"
+                              title={`Message ${t.Broker_Name}`}
+                            >
+                              <MessageCircle className="w-3.5 h-3.5" />
+                            </a>
+                          ) : null}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.location.href = `${detailHref}?flag=1`;
+                            }}
+                            className="inline-flex items-center justify-center w-7 h-7 rounded-md hover:bg-red-500/10 text-dash-text-secondary hover:text-red-500 transition-colors cursor-pointer"
+                            title="Flag issue"
+                          >
+                            <Flag className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

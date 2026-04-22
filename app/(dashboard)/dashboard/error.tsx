@@ -15,6 +15,11 @@ const DashboardError = ({ error, reset }: DashboardErrorProps) => {
       digest: error.digest,
       stack: error.stack,
     });
+    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+      import("@sentry/nextjs")
+        .then((Sentry) => Sentry.captureException(error))
+        .catch(() => {});
+    }
   }, [error]);
 
   return (
