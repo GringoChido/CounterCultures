@@ -312,12 +312,14 @@ const DealCard = ({ deal, onClick, shipmentRisk, sla }: DealCardProps) => {
       {deal.brandSlugs && deal.brandSlugs.length > 0 && (
         <div className="flex flex-wrap gap-1 mb-1.5">
           {deal.brandSlugs.slice(0, 3).map((slug) => (
-            <span
+            <Link
               key={slug}
-              className="px-1.5 py-0.5 bg-brand-copper/10 text-brand-copper border border-brand-copper/20 rounded text-[9px] leading-tight"
+              href={`/dashboard/brands/${slug}`}
+              onClick={(e) => e.stopPropagation()}
+              className="px-1.5 py-0.5 bg-brand-copper/10 text-brand-copper border border-brand-copper/20 rounded text-[9px] leading-tight hover:bg-brand-copper/20 transition-colors"
             >
               {slug}
-            </span>
+            </Link>
           ))}
           {deal.brandSlugs.length > 3 && (
             <span className="text-[9px] text-dash-text-secondary self-center">

@@ -343,11 +343,11 @@ const ShipmentDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
 
 const BackLink = () => (
   <Link
-    href="/dashboard/customs"
+    href="/dashboard/shipments"
     className="inline-flex items-center gap-1 text-xs text-dash-text-secondary hover:text-brand-copper transition-colors"
   >
     <ArrowLeft className="w-3 h-3" />
-    All Tráficos
+    All Shipments
   </Link>
 );
 

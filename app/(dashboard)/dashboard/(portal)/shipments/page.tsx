@@ -256,15 +256,21 @@ const ShipmentsPage = () => {
                   const hoursInCustoms = hoursInCustomsFromHistory(t.Status_History_JSON);
                   const daysInCustoms = Math.floor(hoursInCustoms / 24);
 
+                  const detailHref = `/dashboard/shipments/${encodeURIComponent(t.TRF_ID)}`;
                   return (
                     <tr
                       key={t.TRF_ID}
-                      className="border-b border-dash-border/50 hover:bg-dash-bg/50 text-dash-text"
+                      className="group border-b border-dash-border/50 hover:bg-dash-bg/50 text-dash-text cursor-pointer transition-colors"
+                      onClick={() => {
+                        window.location.href = detailHref;
+                      }}
+                      role="link"
                     >
                       <td className="px-5 py-3 font-mono text-xs font-medium">
                         <Link
-                          href={`/dashboard/shipments/${encodeURIComponent(t.TRF_ID)}`}
+                          href={detailHref}
                           className="text-brand-copper hover:underline"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           {t.Trafico_Number || t.TRF_ID}
                         </Link>

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import type { Brand, CategorySlug } from "@/app/lib/brand-kit-types";
 import { CATEGORY_LABELS } from "@/app/lib/brand-kit-types";
+import { BrandRelated } from "@/app/(dashboard)/components/brand-related";
 
 const STOCKED_OPTIONS: Array<{ value: string; label: string }> = [
   { value: "", label: "Untagged" },
@@ -582,6 +583,13 @@ const BrandEditPage = () => {
           </section>
         </aside>
       </div>
+
+      <section className="space-y-3">
+        <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-dash-text-secondary">
+          Related
+        </h2>
+        <BrandRelated brandSlug={form.slug} brandName={form.name} />
+      </section>
     </div>
   );
 };

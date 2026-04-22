@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback, Suspense } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createColumnHelper } from "@tanstack/react-table";
 import { format, differenceInDays, isPast, parseISO } from "date-fns";
@@ -462,12 +463,14 @@ const BrandChips = ({ slugs }: { slugs: string[] }) => {
   return (
     <div className="flex flex-wrap gap-1 items-center">
       {shown.map((s) => (
-        <span
+        <Link
           key={s}
-          className="px-1.5 py-0.5 bg-brand-copper/10 text-brand-copper border border-brand-copper/20 rounded text-[10px] leading-tight"
+          href={`/dashboard/brands/${s}`}
+          onClick={(e) => e.stopPropagation()}
+          className="px-1.5 py-0.5 bg-brand-copper/10 text-brand-copper border border-brand-copper/20 rounded text-[10px] leading-tight hover:bg-brand-copper/20 transition-colors"
         >
           {s}
-        </span>
+        </Link>
       ))}
       {extra > 0 && (
         <span className="text-[10px] text-dash-text-secondary">+{extra}</span>

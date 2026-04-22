@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { createColumnHelper } from "@tanstack/react-table";
 import { Plus, Package, Loader2, Save, X } from "lucide-react";
 import { toast } from "sonner";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
+import { useProductInsert } from "@/app/(dashboard)/components/product-insert-context";
 import { PRODUCT_CATEGORIES } from "@/app/lib/constants";
 import type { CategoryKey } from "@/app/lib/constants";
+import type { Product as FullProduct } from "@/app/lib/types";
 
 // Maps 1:1 to the actual Products sheet headers
 interface SheetProduct {
@@ -55,6 +57,45 @@ const mapProduct = (s: SheetProduct & { source?: string }): Product => ({
     s.source === "odoo" ? "odoo"
       : s.source === "quote" ? "quote"
       : "curated",
+});
+
+// Coerce a SheetProduct (string-fields from the Sheets API) to the full
+// Product shape the ProductPreview panel expects. Only used for preview —
+// the table display still uses the leaner Product interface.
+const toFullProduct = (s: SheetProduct): FullProduct => ({
+  id: s.slug || s.id || s.sku,
+  sku: s.sku,
+  brand: s.brand,
+  name: s.name,
+  nameEn: s.nameEn,
+  category: ((["bathroom", "kitchen", "hardware"] as const).includes(
+    s.category as "bathroom" | "kitchen" | "hardware"
+  )
+    ? s.category
+    : "hardware") as FullProduct["category"],
+  subcategory: s.subcategory,
+  price: parseFloat(s.price) || 0,
+  tradePrice: parseFloat(s.tradePrice) || undefined,
+  currency: (s.currency === "USD" ? "USD" : "MXN"),
+  finishes: s.finishes
+    ? s.finishes.split(/[|,]/).map((v) => v.trim()).filter(Boolean)
+    : [],
+  images: s.images
+    ? s.images.split(/[|,]/).map((v) => v.trim()).filter(Boolean)
+    : [],
+  artisanal: s.artisanal === "true" || s.artisanal === "TRUE",
+  description: s.description,
+  descriptionEn: s.descriptionEn,
+  availability:
+    s.availability === "made-to-order"
+      ? "made-to-order"
+      : s.availability === "special-order"
+        ? "special-order"
+        : s.availability === "quote_only"
+          ? "quote_only"
+          : "in-stock",
+  featured: s.featured === "true" || s.featured === "TRUE",
+  slug: s.slug,
 });
 
 const availabilityVariants: Record<string, BadgeVariant> = {
@@ -269,6 +310,17 @@ const ProductsPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<SheetProduct>(EMPTY_PRODUCT);
+  const fullProductsRef = useRef<Map<string, SheetProduct>>(new Map());
+  const { openPreview } = useProductInsert();
+
+  const handleRowClick = useCallback(
+    (row: Record<string, unknown>) => {
+      const id = (row as unknown as Product).id;
+      const sheet = fullProductsRef.current.get(id);
+      if (sheet) openPreview(toFullProduct(sheet));
+    },
+    [openPreview]
+  );
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -277,7 +329,17 @@ const ProductsPage = () => {
       const res = await fetch("/api/dashboard/products");
       if (!res.ok) throw new Error("Failed to fetch products");
       const data = await res.json();
-      setProducts((data.products as SheetProduct[]).map(mapProduct));
+      const sheetProducts = data.products as SheetProduct[];
+      const mapped = sheetProducts.map(mapProduct);
+      // Keep a parallel id → SheetProduct index so onRowClick can hand
+      // the full shape to the ProductPreview panel without another fetch.
+      const index = new Map<string, SheetProduct>();
+      for (let i = 0; i < sheetProducts.length; i++) {
+        const sp = sheetProducts[i];
+        index.set(mapped[i].id, sp);
+      }
+      fullProductsRef.current = index;
+      setProducts(mapped);
     } catch (err) {
       console.error(err);
       setError("Unable to load products from CRM.");
@@ -338,6 +400,7 @@ const ProductsPage = () => {
         columns={columns as never}
         searchKey="name"
         searchPlaceholder="Search products..."
+        onRowClick={handleRowClick}
       />
 
       <SlideOut

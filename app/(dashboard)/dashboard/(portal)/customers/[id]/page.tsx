@@ -404,8 +404,23 @@ const OrdersList = ({
         </thead>
         <tbody>
           {orders.map((o) => (
-            <tr key={o.id} className="border-b border-dash-border/50">
-              <td className="p-3 font-mono text-xs">{o.name}</td>
+            <tr
+              key={o.id}
+              className="border-b border-dash-border/50 hover:bg-dash-bg/50 cursor-pointer transition-colors"
+              onClick={() => {
+                window.location.href = `/dashboard/orders/${o.id}`;
+              }}
+              role="link"
+            >
+              <td className="p-3 font-mono text-xs">
+                <Link
+                  href={`/dashboard/orders/${o.id}`}
+                  className="text-brand-copper hover:underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {o.name}
+                </Link>
+              </td>
               <td className="p-3 text-xs">{dateOnly(o.date_order)}</td>
               <td className="p-3">
                 <StatusBadge label={o.state} variant={stateVariant(o.state)} />
@@ -453,9 +468,21 @@ const InvoicesList = ({
             return (
               <tr
                 key={i.id}
-                className={`border-b border-dash-border/50 ${open ? "bg-brand-terracotta/5" : ""}`}
+                className={`border-b border-dash-border/50 hover:bg-dash-bg/50 cursor-pointer transition-colors ${open ? "bg-brand-terracotta/5" : ""}`}
+                onClick={() => {
+                  window.location.href = `/dashboard/invoices/${i.id}`;
+                }}
+                role="link"
               >
-                <td className="p-3 font-mono text-xs">{i.name}</td>
+                <td className="p-3 font-mono text-xs">
+                  <Link
+                    href={`/dashboard/invoices/${i.id}`}
+                    className="text-brand-copper hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {i.name}
+                  </Link>
+                </td>
                 <td className="p-3 text-xs">{dateOnly(i.invoice_date)}</td>
                 <td className="p-3 text-xs">{dateOnly(i.invoice_date_due)}</td>
                 <td className="p-3">
@@ -507,8 +534,23 @@ const PaymentsList = ({ payments }: { payments: OdooPayment[] }) => {
         </thead>
         <tbody>
           {payments.map((p) => (
-            <tr key={p.id} className="border-b border-dash-border/50">
-              <td className="p-3 font-mono text-xs">{p.name}</td>
+            <tr
+              key={p.id}
+              className="border-b border-dash-border/50 hover:bg-dash-bg/50 cursor-pointer transition-colors"
+              onClick={() => {
+                window.location.href = `/dashboard/payments/${p.id}`;
+              }}
+              role="link"
+            >
+              <td className="p-3 font-mono text-xs">
+                <Link
+                  href={`/dashboard/payments/${p.id}`}
+                  className="text-brand-copper hover:underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {p.name}
+                </Link>
+              </td>
               <td className="p-3 text-xs">{dateOnly(p.date)}</td>
               <td className="p-3">
                 <StatusBadge label={p.state} variant={stateVariant(p.state)} />

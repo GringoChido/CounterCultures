@@ -6,6 +6,7 @@ import { NewSinceLastCheck } from "@/app/(dashboard)/components/new-since-last-c
 import { TodayActiveDeals } from "@/app/(dashboard)/components/today-active-deals";
 import { MorningSalesHealth } from "@/app/(dashboard)/components/morning-sales-health";
 import { TodayKpiRail } from "@/app/(dashboard)/components/today-kpi-rail";
+import { ActivityFeed } from "@/app/(dashboard)/components/activity-feed";
 
 const greetingFor = (date: Date): string => {
   const h = date.getHours();
@@ -37,8 +38,9 @@ const OverviewPage = () => {
             <MorningSalesHealth />
           </div>
         </div>
-        <aside className="lg:sticky lg:top-4 self-start">
+        <aside className="lg:sticky lg:top-4 self-start space-y-4">
           <TodayKpiRail />
+          <ActivityFeed limit={12} />
         </aside>
       </div>
     </div>

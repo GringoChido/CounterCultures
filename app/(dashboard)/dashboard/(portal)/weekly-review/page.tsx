@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   TrendingUp,
   AlertCircle,
@@ -15,6 +16,8 @@ import {
   Users,
   BarChart3,
   Loader2,
+  MessageCircle,
+  ExternalLink,
 } from "lucide-react";
 import { computeSalesHealth } from "@/app/lib/sales-health";
 import {
@@ -442,23 +445,35 @@ const WeeklyReviewPage = () => {
                 return (
                   <div
                     key={deal.id}
-                    className="flex items-center justify-between py-2 border-b border-dash-border last:border-0"
+                    className="group flex items-center justify-between gap-3 py-2 border-b border-dash-border last:border-0"
                   >
-                    <div>
-                      <p className="text-sm font-medium text-dash-text">
+                    <Link
+                      href={`/dashboard/pipeline?deal=${encodeURIComponent(deal.id)}`}
+                      className="flex-1 min-w-0 hover:text-brand-copper transition-colors"
+                    >
+                      <p className="text-sm font-medium text-dash-text truncate">
                         {deal.name}
                       </p>
-                      <p className="text-xs text-dash-text-secondary">
+                      <p className="text-xs text-dash-text-secondary truncate">
                         {deal.company || "—"} · {deal.owner || "Unassigned"}
                       </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs font-medium text-red-400">
-                        {daysOverdue}d overdue
-                      </p>
-                      <p className="text-xs text-dash-text-secondary">
-                        {formatCurrency(parseNum(deal.value))}
-                      </p>
+                    </Link>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="text-right">
+                        <p className="text-xs font-medium text-red-400">
+                          {daysOverdue}d overdue
+                        </p>
+                        <p className="text-xs text-dash-text-secondary">
+                          {formatCurrency(parseNum(deal.value))}
+                        </p>
+                      </div>
+                      <Link
+                        href={`/dashboard/pipeline?deal=${encodeURIComponent(deal.id)}`}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 text-xs border border-dash-border rounded hover:border-brand-copper hover:text-brand-copper transition-colors text-dash-text-secondary"
+                      >
+                        Follow Up
+                        <ArrowRight className="w-3 h-3" />
+                      </Link>
                     </div>
                   </div>
                 );
@@ -499,26 +514,58 @@ const WeeklyReviewPage = () => {
                     /* ignore */
                   }
                 }
+                const phoneDigits = (lead.phone || "").replace(/[^\d+]/g, "").replace(/^\+/, "");
+                const contactHref = phoneDigits
+                  ? `https://wa.me/${phoneDigits}`
+                  : lead.email
+                    ? `mailto:${lead.email}`
+                    : null;
+                const contactLabel = phoneDigits ? "WhatsApp" : lead.email ? "Email" : "Open";
+                const ContactIcon = phoneDigits ? MessageCircle : Mail;
                 return (
                   <div
                     key={lead.id}
-                    className="flex items-center justify-between py-2 border-b border-dash-border last:border-0"
+                    className="group flex items-center justify-between gap-3 py-2 border-b border-dash-border last:border-0"
                   >
-                    <div>
-                      <p className="text-sm font-medium text-dash-text">
+                    <Link
+                      href={`/dashboard/leads?lead=${encodeURIComponent(lead.id)}`}
+                      className="flex-1 min-w-0 hover:text-brand-copper transition-colors"
+                    >
+                      <p className="text-sm font-medium text-dash-text truncate">
                         {lead.name}
                       </p>
-                      <p className="text-xs text-dash-text-secondary">
+                      <p className="text-xs text-dash-text-secondary truncate">
                         {lead.source || "—"} · {lead.contact_type || "—"}
                       </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs font-medium text-amber-400">
-                        {info}
-                      </p>
-                      <p className="text-xs text-dash-text-secondary">
-                        {lead.status || "—"}
-                      </p>
+                    </Link>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className="text-right">
+                        <p className="text-xs font-medium text-amber-400">
+                          {info}
+                        </p>
+                        <p className="text-xs text-dash-text-secondary">
+                          {lead.status || "—"}
+                        </p>
+                      </div>
+                      {contactHref ? (
+                        <a
+                          href={contactHref}
+                          target={phoneDigits ? "_blank" : undefined}
+                          rel={phoneDigits ? "noopener noreferrer" : undefined}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs border border-dash-border rounded hover:border-brand-copper hover:text-brand-copper transition-colors text-dash-text-secondary"
+                        >
+                          <ContactIcon className="w-3 h-3" />
+                          {contactLabel}
+                        </a>
+                      ) : (
+                        <Link
+                          href={`/dashboard/leads?lead=${encodeURIComponent(lead.id)}`}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs border border-dash-border rounded hover:border-brand-copper hover:text-brand-copper transition-colors text-dash-text-secondary"
+                        >
+                          Open
+                          <ExternalLink className="w-3 h-3" />
+                        </Link>
+                      )}
                     </div>
                   </div>
                 );
@@ -564,9 +611,10 @@ const WeeklyReviewPage = () => {
                 .sort((a, b) => parseNum(b.value) - parseNum(a.value))
                 .slice(0, 3)
                 .map((deal) => (
-                  <div
+                  <Link
                     key={deal.id}
-                    className="flex items-center justify-between py-1.5"
+                    href={`/dashboard/pipeline?deal=${encodeURIComponent(deal.id)}`}
+                    className="flex items-center justify-between py-1.5 hover:bg-dash-bg/50 rounded px-2 -mx-2 transition-colors"
                   >
                     <span className="text-sm text-dash-text truncate mr-2">
                       {deal.name}
@@ -574,7 +622,7 @@ const WeeklyReviewPage = () => {
                     <span className="text-sm font-medium text-brand-copper shrink-0">
                       {formatCurrency(parseNum(deal.value))}
                     </span>
-                  </div>
+                  </Link>
                 ))}
             </div>
           ) : (
