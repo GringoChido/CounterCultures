@@ -46,6 +46,7 @@ const navItems: NavItem[] = [
   { label: "Customers", href: "/dashboard/customers", icon: Users, section: "Leads & Deals" },
   { label: "Orders", href: "/dashboard/orders", icon: Kanban },
   { label: "Invoices", href: "/dashboard/invoices", icon: FileText },
+  { label: "Payments", href: "/dashboard/payments", icon: CreditCard },
   { label: "Leads", href: "/dashboard/leads", icon: Users },
   { label: "Pipeline", href: "/dashboard/pipeline", icon: Kanban },
   { label: "Inbox", href: "/dashboard/inbox", icon: Inbox },

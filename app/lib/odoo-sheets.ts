@@ -448,6 +448,240 @@ export const getCustomerList = async (): Promise<CustomerListRow[]> => {
   });
 };
 
+// ── Payments: list, summary, detail ──────────────────────────────
+
+export type PaymentTypeFilter = "all" | "inbound" | "outbound";
+export type PaymentStateFilterPay = "all" | "draft" | "posted" | "cancel" | "sent";
+
+export interface PaymentListRow {
+  id: string;
+  name: string;
+  state: string;
+  paymentType: string; // inbound | outbound
+  partnerId: string;
+  partnerName: string;
+  amount: number;
+  currency: string;
+  journalName: string;
+  journalId: string;
+  methodName: string;
+  date: string;
+  memo: string;
+  cfdiUuid: string;
+  reconciledInvoiceCount: number;
+  reconciledBillCount: number;
+}
+
+const toPaymentRow = (p: OdooPayment): PaymentListRow => {
+  const invoiceIds = (p.reconciled_invoice_ids || "")
+    .split(",").map((s) => s.trim()).filter(Boolean);
+  const billIds = (p.reconciled_bill_ids || "")
+    .split(",").map((s) => s.trim()).filter(Boolean);
+  return {
+    id: p.id,
+    name: p.name,
+    state: p.state,
+    paymentType: p.payment_type,
+    partnerId: p.partner_id_id,
+    partnerName: p.partner_id || "",
+    amount: num(p.amount),
+    currency: p.currency_id || "MXN",
+    journalName: p.journal_id || "",
+    journalId: p.journal_id_id || "",
+    methodName: p.payment_method_line_id || p.payment_method_id || "",
+    date: (p.date || "").slice(0, 10),
+    memo: p.memo || "",
+    cfdiUuid: p.l10n_mx_edi_cfdi_uuid || "",
+    reconciledInvoiceCount: invoiceIds.length,
+    reconciledBillCount: billIds.length,
+  };
+};
+
+export interface PaymentListFilters {
+  q?: string;
+  paymentType?: PaymentTypeFilter;
+  state?: PaymentStateFilterPay;
+  journalId?: string;
+  partnerId?: string;
+  currency?: string;
+  since?: string; // ISO date
+  until?: string;
+  limit?: number;
+  offset?: number;
+  sort?: "date_desc" | "date_asc" | "amount_desc" | "partner";
+}
+
+export interface JournalSummary {
+  name: string;
+  journalId: string;
+  count: number;
+  totalByCurrency: Record<string, number>;
+  inboundByCurrency: Record<string, number>;
+  outboundByCurrency: Record<string, number>;
+  lastDate: string;
+}
+
+export interface PaymentsSummary {
+  inbound: { count: number; totalByCurrency: Record<string, number> };
+  outbound: { count: number; totalByCurrency: Record<string, number> };
+  last30Inbound: Record<string, number>;
+  last30Outbound: Record<string, number>;
+  journals: JournalSummary[]; // sorted by count desc
+  totalPayments: number;
+  unreconciledCount: number;
+}
+
+export interface PaymentListResult {
+  payments: PaymentListRow[];
+  total: number;
+  offset: number;
+  limit: number;
+  summary: PaymentsSummary;
+}
+
+const dayOffsetISO = (days: number): string => {
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  return d.toISOString().slice(0, 10);
+};
+
+export const getPaymentList = async (
+  filters: PaymentListFilters = {}
+): Promise<PaymentListResult> => {
+  const {
+    q = "",
+    paymentType = "all",
+    state = "all",
+    journalId,
+    partnerId,
+    currency,
+    since,
+    until,
+    limit = 200,
+    offset = 0,
+    sort = "date_desc",
+  } = filters;
+
+  const all = await getOdooPayments();
+  const rows = all.map(toPaymentRow);
+
+  // Summary — always over full set
+  const addBy = (b: Record<string, number>, cur: string, amt: number) => {
+    b[cur] = (b[cur] ?? 0) + amt;
+  };
+  const since30 = dayOffsetISO(30);
+  const journalAgg = new Map<string, JournalSummary>();
+  const summary: PaymentsSummary = {
+    inbound:  { count: 0, totalByCurrency: {} },
+    outbound: { count: 0, totalByCurrency: {} },
+    last30Inbound:  {},
+    last30Outbound: {},
+    journals: [],
+    totalPayments: rows.length,
+    unreconciledCount: 0,
+  };
+  for (const r of rows) {
+    if (r.paymentType === "inbound") {
+      summary.inbound.count++;
+      addBy(summary.inbound.totalByCurrency, r.currency, r.amount);
+      if (r.date >= since30) addBy(summary.last30Inbound, r.currency, r.amount);
+    } else if (r.paymentType === "outbound") {
+      summary.outbound.count++;
+      addBy(summary.outbound.totalByCurrency, r.currency, r.amount);
+      if (r.date >= since30) addBy(summary.last30Outbound, r.currency, r.amount);
+    }
+    if (r.state === "posted" && r.reconciledInvoiceCount === 0 && r.reconciledBillCount === 0) {
+      summary.unreconciledCount++;
+    }
+    // Journal aggregation
+    const key = r.journalId || r.journalName || "unknown";
+    let j = journalAgg.get(key);
+    if (!j) {
+      j = {
+        name: r.journalName || "Unknown",
+        journalId: r.journalId,
+        count: 0,
+        totalByCurrency: {},
+        inboundByCurrency: {},
+        outboundByCurrency: {},
+        lastDate: "",
+      };
+      journalAgg.set(key, j);
+    }
+    j.count++;
+    addBy(j.totalByCurrency, r.currency, r.amount);
+    if (r.paymentType === "inbound")  addBy(j.inboundByCurrency,  r.currency, r.amount);
+    if (r.paymentType === "outbound") addBy(j.outboundByCurrency, r.currency, r.amount);
+    if (r.date > j.lastDate) j.lastDate = r.date;
+  }
+  summary.journals = [...journalAgg.values()].sort((a, b) => b.count - a.count);
+
+  // Filter
+  let filtered = rows;
+  if (paymentType !== "all") filtered = filtered.filter((r) => r.paymentType === paymentType);
+  if (state !== "all")        filtered = filtered.filter((r) => r.state === state);
+  if (journalId)              filtered = filtered.filter((r) => r.journalId === journalId);
+  if (partnerId)              filtered = filtered.filter((r) => r.partnerId === partnerId);
+  if (currency)               filtered = filtered.filter((r) => r.currency === currency);
+  if (since)                  filtered = filtered.filter((r) => r.date >= since);
+  if (until)                  filtered = filtered.filter((r) => r.date <= until);
+  if (q) {
+    const needle = q.toLowerCase();
+    filtered = filtered.filter((r) =>
+      `${r.name} ${r.partnerName} ${r.memo} ${r.cfdiUuid} ${r.journalName}`.toLowerCase().includes(needle)
+    );
+  }
+
+  const cmp = (a: PaymentListRow, b: PaymentListRow) => {
+    if (sort === "date_asc")   return a.date.localeCompare(b.date);
+    if (sort === "amount_desc") return b.amount - a.amount;
+    if (sort === "partner")    return a.partnerName.localeCompare(b.partnerName);
+    return b.date.localeCompare(a.date);
+  };
+  filtered.sort(cmp);
+
+  return {
+    payments: filtered.slice(offset, offset + limit),
+    total: filtered.length,
+    offset,
+    limit,
+    summary,
+  };
+};
+
+export interface PaymentDetail {
+  payment: PaymentListRow & { rawState: string };
+  rawPayment: OdooPayment;
+  invoices: OdooInvoice[];
+  bills: OdooInvoice[];
+}
+
+export const getPaymentDetail = async (paymentId: string): Promise<PaymentDetail | null> => {
+  const [payments, allInvoices] = await Promise.all([
+    getOdooPayments(),
+    getOdooInvoices(),
+  ]);
+  const p = payments.find((x) => x.id === paymentId);
+  if (!p) return null;
+
+  const invoiceIds = new Set(
+    (p.reconciled_invoice_ids || "").split(",").map((s) => s.trim()).filter(Boolean)
+  );
+  const billIds = new Set(
+    (p.reconciled_bill_ids || "").split(",").map((s) => s.trim()).filter(Boolean)
+  );
+  const invoices = allInvoices.filter((i) => invoiceIds.has(i.id));
+  const bills    = allInvoices.filter((i) => billIds.has(i.id));
+
+  const row = toPaymentRow(p);
+  return {
+    payment: { ...row, rawState: p.state },
+    rawPayment: p,
+    invoices,
+    bills,
+  };
+};
+
 // ── Sale Order Lines ─────────────────────────────────────────────
 
 export interface OdooSaleOrderLine {
