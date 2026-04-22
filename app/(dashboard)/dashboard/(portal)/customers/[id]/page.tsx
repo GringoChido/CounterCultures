@@ -16,8 +16,10 @@ import {
   Loader2,
   AlertCircle,
   ExternalLink,
+  MessageCircle,
 } from "lucide-react";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
+import { MessagesPanel } from "@/app/(dashboard)/components/messages-panel";
 
 interface OdooPartner {
   id: string;
@@ -111,7 +113,7 @@ interface CustomerProfile {
   openAR: OdooInvoice[];
 }
 
-type Tab = "overview" | "quotes" | "orders" | "invoices" | "payments";
+type Tab = "overview" | "quotes" | "orders" | "invoices" | "payments" | "messages";
 
 const fmt = (n: string | number, cur = "MXN") => {
   const v = typeof n === "string" ? parseFloat(n) : n;
@@ -205,6 +207,7 @@ const CustomerDetailPage = ({
     { key: "orders", label: "Orders", count: confirmedOrders.length, icon: ShoppingCart },
     { key: "invoices", label: "Invoices", count: customerInvoices.length, icon: Receipt },
     { key: "payments", label: "Payments", count: payments.length, icon: CreditCard },
+    { key: "messages", label: "Messages", count: 0, icon: MessageCircle },
   ];
 
   return (
@@ -325,6 +328,9 @@ const CustomerDetailPage = ({
       {tab === "orders" && <OrdersList orders={confirmedOrders} empty="No confirmed orders yet." />}
       {tab === "invoices" && <InvoicesList invoices={customerInvoices} openAR={openAR} />}
       {tab === "payments" && <PaymentsList payments={payments} />}
+      {tab === "messages" && (
+        <MessagesPanel mode={{ partnerId: partner.id }} title="Customer communications" limit={50} />
+      )}
     </div>
   );
 };

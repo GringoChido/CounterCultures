@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { AttachmentsPanel } from "@/app/(dashboard)/components/attachments-panel";
+import { MessagesPanel } from "@/app/(dashboard)/components/messages-panel";
 
 interface InvoiceListRow {
   id: string;
@@ -552,6 +553,9 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
 
       {/* Attachments mirrored from Odoo → Drive */}
       <AttachmentsPanel resModel="account.move" resId={invoice.id} />
+
+      {/* Chatter — emails and comments logged on this invoice */}
+      <MessagesPanel mode={{ resModel: "account.move", resId: invoice.id }} />
     </div>
   );
 };

@@ -1691,3 +1691,115 @@ export const getAttachmentsFor = async (
     .map(toAttachmentRow)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 };
+
+// ── Messages (Odoo chatter) ──────────────────────────────────────
+
+export interface OdooMessage {
+  [key: string]: string;
+  id: string;
+  message_type: string; // email | comment
+  date: string;
+  model: string;
+  res_id: string;
+  record_name: string;
+  subject: string;
+  author_id: string;
+  author_id_id: string;
+  email_from: string;
+  body_text: string;
+  body: string;
+  attachment_ids: string;
+  partner_ids: string;
+  parent_id: string;
+  parent_id_id: string;
+}
+
+export interface MessageRow {
+  id: string;
+  messageType: string;
+  date: string;
+  subject: string;
+  author: string;
+  authorId: string;
+  emailFrom: string;
+  bodyText: string;
+  bodyHtml: string;
+  attachmentCount: number;
+  recipientCount: number;
+}
+
+const messagesCache: Cache<OdooMessage> = { data: null, ts: 0 };
+
+export const getOdooMessages = async (): Promise<OdooMessage[]> => {
+  if (fresh(messagesCache)) return messagesCache.data!;
+  try {
+    messagesCache.data = await readSheet<OdooMessage>("Odoo_Messages");
+  } catch {
+    messagesCache.data = [];
+  }
+  messagesCache.ts = Date.now();
+  return messagesCache.data;
+};
+
+const toMessageRow = (m: OdooMessage): MessageRow => {
+  const splitIds = (s: string) =>
+    (s || "").split(",").map((x) => x.trim()).filter(Boolean);
+  return {
+    id: m.id,
+    messageType: m.message_type,
+    date: m.date || "",
+    subject: m.subject || "",
+    author: m.author_id || m.email_from || "",
+    authorId: m.author_id_id,
+    emailFrom: m.email_from,
+    bodyText: m.body_text || "",
+    bodyHtml: m.body || "",
+    attachmentCount: splitIds(m.attachment_ids).length,
+    recipientCount: splitIds(m.partner_ids).length,
+  };
+};
+
+export const getMessagesFor = async (
+  resModel: string,
+  resId: string
+): Promise<MessageRow[]> => {
+  if (!resId) return [];
+  const all = await getOdooMessages();
+  return all
+    .filter((m) => m.model === resModel && m.res_id === resId)
+    .map(toMessageRow)
+    .sort((a, b) => b.date.localeCompare(a.date));
+};
+
+// Aggregate across a customer's invoices/orders — "everything with this partner"
+export const getMessagesForPartner = async (
+  partnerIdInt: string
+): Promise<MessageRow[]> => {
+  if (!partnerIdInt) return [];
+  const [messages, invoices, orders] = await Promise.all([
+    getOdooMessages(),
+    getOdooInvoices(),
+    getOdooSaleOrders(),
+  ]);
+  const invoiceIds = new Set(
+    invoices
+      .filter(
+        (i) =>
+          i.partner_id_id === partnerIdInt ||
+          i.commercial_partner_id_id === partnerIdInt
+      )
+      .map((i) => i.id)
+  );
+  const orderIds = new Set(
+    orders.filter((o) => o.partner_id_id === partnerIdInt).map((o) => o.id)
+  );
+  return messages
+    .filter((m) => {
+      if (m.model === "res.partner" && m.res_id === partnerIdInt) return true;
+      if (m.model === "account.move" && invoiceIds.has(m.res_id)) return true;
+      if (m.model === "sale.order" && orderIds.has(m.res_id)) return true;
+      return false;
+    })
+    .map(toMessageRow)
+    .sort((a, b) => b.date.localeCompare(a.date));
+};
