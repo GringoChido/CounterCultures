@@ -133,6 +133,48 @@ const handlePaymentSucceeded = async (
   }
 };
 
+// V3: payment_intent.succeeded — fires for checkout/payment-link flows that
+// don't produce invoices. If the PaymentIntent carries metadata.deal_id, we
+// advance that deal via the rule engine using metadata.allocated_to (deposit
+// | balance | full). Invoice-driven payments still go through
+// handlePaymentSucceeded above.
+const handlePaymentIntentSucceeded = async (
+  pi: Stripe.PaymentIntent
+): Promise<void> => {
+  const dealId = pi.metadata?.deal_id;
+  if (!dealId) {
+    // Not a portal-initiated payment intent — ignore silently (common: one-off
+    // Stripe charges from dashboard).
+    return;
+  }
+
+  const amount = (pi.amount_received ?? pi.amount ?? 0) / 100;
+  const allocated = pi.metadata?.allocated_to ?? "full";
+
+  await logActivity(
+    "payment_intent_succeeded",
+    `PI ${pi.id} succeeded for deal ${dealId}: $${amount} MXN (${allocated})`
+  );
+
+  try {
+    await evaluateAndTransition(
+      "stripe_payment",
+      dealId,
+      {
+        allocated_to: allocated,
+        amount,
+        invoice_id: pi.id,
+      },
+      "stripe"
+    );
+  } catch (err) {
+    console.error(
+      `[Stripe Webhook] rule engine failed for PI ${pi.id}/${dealId}:`,
+      err instanceof Error ? err.message : err
+    );
+  }
+};
+
 const handlePaymentFailed = async (invoice: Stripe.Invoice): Promise<void> => {
   const stripeInvoiceId = invoice.id ?? "";
   if (!stripeInvoiceId) return;
@@ -184,6 +226,12 @@ export const dispatchStripeEvent = async (
         return "processed";
       case "invoice.payment_failed":
         await handlePaymentFailed(event.data.object as Stripe.Invoice);
+        markProcessed(event.id);
+        return "processed";
+      case "payment_intent.succeeded":
+        await handlePaymentIntentSucceeded(
+          event.data.object as Stripe.PaymentIntent
+        );
         markProcessed(event.id);
         return "processed";
       default:

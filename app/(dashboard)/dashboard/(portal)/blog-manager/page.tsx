@@ -151,9 +151,10 @@ const BlogManagerPage = () => {
   const totalViews = posts.reduce((sum, p) => sum + p.views, 0);
   const [formOpen, setFormOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [newPost, setNewPost] = useState({ title: "", pillar: BLOG_PILLARS[0] as string, author: "Roger Gonzalez", notes: "" });
+  const [newPost, setNewPost] = useState({ title: "", pillar: BLOG_PILLARS[0] as string, author: "Roger Gonzalez", notes: "", brandSlugs: "" });
   const [linkedProducts, setLinkedProducts] = useState<{ name: string; slug: string; brand: string; image: string }[]>([]);
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const { consumeInsert, pendingInsert, openCommandPalette } = useProductInsert();
 
   useEffect(() => {
@@ -175,7 +176,7 @@ const BlogManagerPage = () => {
           <p className="text-sm text-dash-text-secondary mt-1">Create and manage blog content</p>
         </div>
         <button
-          onClick={() => { setNewPost({ title: "", pillar: BLOG_PILLARS[0], author: "Roger Gonzalez", notes: "" }); setFormOpen(true); }}
+          onClick={() => { setNewPost({ title: "", pillar: BLOG_PILLARS[0], author: "Roger Gonzalez", notes: "", brandSlugs: "" }); setFormOpen(true); }}
           className="flex items-center gap-2 px-4 py-2 bg-brand-copper text-white rounded-lg text-sm font-medium hover:bg-brand-copper/90 transition-colors cursor-pointer"
         >
           <Plus className="w-4 h-4" />
@@ -254,7 +255,7 @@ const BlogManagerPage = () => {
                   <div key={lp.slug} className="flex items-center gap-2 px-2 py-1 bg-dash-bg border border-dash-border rounded-lg text-xs text-dash-text">
                     {lp.image && (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={lp.image} alt="" className="w-5 h-5 rounded object-cover" />
+                      <img src={lp.image} alt={lp.name} className="w-5 h-5 rounded object-cover" />
                     )}
                     <span>{lp.name}</span>
                     <button onClick={() => setLinkedProducts((prev) => prev.filter((p) => p.slug !== lp.slug))} className="text-dash-text-secondary hover:text-red-400 cursor-pointer">
@@ -273,15 +274,41 @@ const BlogManagerPage = () => {
             </button>
           </div>
           <div>
+            <label className="block text-xs font-medium text-dash-text-secondary mb-1">Brand Tags</label>
+            <input
+              type="text"
+              className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper"
+              value={newPost.brandSlugs}
+              onChange={(e) => setNewPost((p) => ({ ...p, brandSlugs: e.target.value }))}
+              placeholder="kohler, dornbracht, waterworks (comma separated)"
+            />
+            <p className="mt-1 text-[11px] text-dash-text-muted">
+              These slugs drive the reciprocal link on each brand page.
+            </p>
+          </div>
+          <div>
             <label className="block text-xs font-medium text-dash-text-secondary mb-1">Notes / Brief</label>
             <textarea className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper h-32 resize-none" value={newPost.notes} onChange={(e) => setNewPost((p) => ({ ...p, notes: e.target.value }))} placeholder="Key points, target keywords, audience, call-to-action..." />
           </div>
           <div className="flex gap-3 pt-2">
             <button
+              type="button"
+              disabled={!newPost.title}
+              onClick={() => setPreviewOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 border border-dash-border text-dash-text-secondary rounded-lg text-sm font-medium hover:border-brand-copper hover:text-brand-copper transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              <Eye className="w-4 h-4" />
+              Preview
+            </button>
+            <button
               disabled={saving || !newPost.title}
               onClick={async () => {
                 setSaving(true);
                 try {
+                  const brandList = newPost.brandSlugs
+                    .split(/[,\s]+/)
+                    .map((s) => s.trim().toLowerCase())
+                    .filter(Boolean);
                   const res = await fetch("/api/dashboard/content-calendar", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -293,6 +320,7 @@ const BlogManagerPage = () => {
                       status: "draft",
                       author: newPost.author,
                       notes: `Pillar: ${newPost.pillar}. ${newPost.notes}`,
+                      brandSlugs: brandList.join("|"),
                     }),
                   });
                   if (!res.ok) throw new Error("Failed");
@@ -392,6 +420,88 @@ const BlogManagerPage = () => {
             </div>
           </div>
         )}
+      </SlideOut>
+
+      <SlideOut
+        open={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        title="Preview — New Post"
+      >
+        <div className="space-y-4">
+          <p className="text-[11px] uppercase tracking-[0.14em] text-dash-text-muted">
+            {newPost.pillar} · {newPost.author} ·{" "}
+            {format(new Date(), "MMM d, yyyy")}
+          </p>
+          <h1 className="font-serif text-3xl leading-tight text-dash-text">
+            {newPost.title || "Untitled post"}
+          </h1>
+          {newPost.brandSlugs ? (
+            <div className="flex flex-wrap gap-1.5">
+              {newPost.brandSlugs
+                .split(/[,\s]+/)
+                .map((s) => s.trim())
+                .filter(Boolean)
+                .map((slug) => (
+                  <span
+                    key={slug}
+                    className="px-2 py-0.5 text-[11px] bg-brand-copper/10 text-brand-copper rounded-full"
+                  >
+                    {slug}
+                  </span>
+                ))}
+            </div>
+          ) : null}
+
+          {linkedProducts.length > 0 ? (
+            <div className="border border-dash-border rounded-lg p-4 bg-dash-surface-2">
+              <p className="text-[11px] uppercase tracking-[0.14em] text-dash-text-muted mb-2">
+                Embedded products
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                {linkedProducts.map((lp) => (
+                  <div
+                    key={lp.slug}
+                    className="flex items-center gap-2 bg-dash-surface rounded border border-dash-border p-2"
+                  >
+                    {lp.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={lp.image}
+                        alt={lp.name}
+                        className="w-10 h-10 rounded object-cover"
+                      />
+                    ) : null}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-dash-text truncate">
+                        {lp.name}
+                      </p>
+                      <p className="text-[11px] text-dash-text-secondary truncate">
+                        {lp.brand}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.14em] text-dash-text-muted mb-1">
+              Brief / Notes
+            </p>
+            <p className="text-sm text-dash-text whitespace-pre-wrap">
+              {newPost.notes || (
+                <span className="text-dash-text-muted">No notes yet.</span>
+              )}
+            </p>
+          </div>
+
+          <p className="text-[11px] text-dash-text-muted pt-2 border-t border-dash-border">
+            This is a pre-publish preview. The final article layout, hero
+            image, and body copy are added in the CMS after the draft is
+            created.
+          </p>
+        </div>
       </SlideOut>
     </div>
   );

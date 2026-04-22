@@ -434,7 +434,7 @@ export const ContentCalendarView = () => {
               <div className="flex items-center gap-2 p-2 bg-dash-bg border border-dash-border rounded-lg">
                 {linkedProduct.image && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={linkedProduct.image} alt="" className="w-8 h-8 rounded object-cover" />
+                  <img src={linkedProduct.image} alt={linkedProduct.name} className="w-8 h-8 rounded object-cover" />
                 )}
                 <span className="text-sm text-dash-text flex-1 truncate">{linkedProduct.name}</span>
                 <button onClick={() => setLinkedProduct(null)} className="text-dash-text-secondary hover:text-red-400 cursor-pointer">

@@ -141,7 +141,7 @@ const Hero = ({ locale = "en" }: { locale?: string }) => {
         >
           <Image
             src={slide.image}
-            alt=""
+            alt={slide.title[lang]}
             fill
             priority={current === 0}
             sizes="100vw"

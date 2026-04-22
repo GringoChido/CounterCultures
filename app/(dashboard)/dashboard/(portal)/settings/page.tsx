@@ -4,6 +4,7 @@ import { useCallback, useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { User, Bell, Link2, Users, Check, X, ExternalLink, CheckCircle2, Mail, Loader2, AlertCircle } from "lucide-react";
+import { IntegrationHealthPanel } from "@/app/(dashboard)/components/integration-health-panel";
 
 interface NotificationSetting {
   id: string;
@@ -202,6 +203,8 @@ const SettingsPageInner = () => {
           ))}
         </div>
       </div>
+
+      <IntegrationHealthPanel />
 
       <GmailIntegrationCard />
 

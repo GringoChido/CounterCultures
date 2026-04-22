@@ -563,7 +563,7 @@ const StripePage = () => {
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-3">
                             {p.images[0] && (
-                              <img src={p.images[0]} alt="" className="w-8 h-8 rounded object-cover" />
+                              <img src={p.images[0]} alt={p.name} className="w-8 h-8 rounded object-cover" />
                             )}
                             <span className="font-medium text-dash-text">{p.name}</span>
                           </div>

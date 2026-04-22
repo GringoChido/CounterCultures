@@ -20,7 +20,7 @@ const Thumbnail = ({ file }: { file: DriveHomeFile }) => {
       // eslint-disable-next-line @next/next/no-img-element
       <img
         src={file.thumbnailLink}
-        alt=""
+        alt={file.name ? `Thumbnail for ${file.name}` : "File thumbnail"}
         onError={() => setFailed(true)}
         className="w-full h-full object-cover"
       />

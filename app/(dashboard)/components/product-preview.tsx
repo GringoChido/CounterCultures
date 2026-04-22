@@ -96,7 +96,7 @@ export const ProductPreview = () => {
                           }`}
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={img} alt="" className="w-full h-full object-cover" />
+                          <img src={img} alt={`${p.name} thumbnail ${i + 1}`} className="w-full h-full object-cover" />
                         </button>
                       ))}
                     </div>

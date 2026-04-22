@@ -11,6 +11,8 @@ import {
   ChevronUp,
   User,
   Loader2,
+  EyeOff,
+  ExternalLink,
 } from "lucide-react";
 import { StatusBadge } from "@/app/(dashboard)/components/status-badge";
 import type { SocialComment, SocialPlatform } from "@/app/lib/social/types";
@@ -31,9 +33,69 @@ export function CommentsPanel({ comments }: CommentsPanelProps) {
   const [sendingReply, setSendingReply] = useState(false);
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
   const [localComments, setLocalComments] = useState(comments);
+  const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const handleLike = async (commentId: string) => {
+    if (busyId) return;
+    const wasLiked = likedIds.has(commentId);
+    setBusyId(commentId);
+    // Optimistic toggle
+    setLikedIds((prev) => {
+      const next = new Set(prev);
+      if (wasLiked) next.delete(commentId);
+      else next.add(commentId);
+      return next;
+    });
+    setLocalComments((prev) =>
+      prev.map((c) =>
+        c.id === commentId
+          ? { ...c, likeCount: Math.max(0, c.likeCount + (wasLiked ? -1 : 1)) }
+          : c
+      )
+    );
+    try {
+      // Best-effort Meta Graph call. If the endpoint rejects (e.g. env
+      // vars missing), we silently keep the optimistic state. The panel
+      // is primarily a triage tool — a like persisted locally is still
+      // useful as "I've processed this".
+      await fetch("/api/social/comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          commentId,
+          action: wasLiked ? "unlike" : "like",
+        }),
+      });
+    } catch {
+      // ignore
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleHide = async (commentId: string) => {
+    if (busyId) return;
+    setBusyId(commentId);
+    setHiddenIds((prev) => new Set(prev).add(commentId));
+    try {
+      await fetch("/api/social/comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ commentId, action: "hide" }),
+      });
+    } catch {
+      // ignore — comment stays hidden locally
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   const filtered = localComments.filter(
-    (c) => platformFilter === "all" || c.platform === platformFilter
+    (c) =>
+      !hiddenIds.has(c.id) &&
+      (platformFilter === "all" || c.platform === platformFilter)
   );
 
   const unrepliedCount = filtered.filter((c) => c.replies.length === 0).length;
@@ -166,14 +228,49 @@ export function CommentsPanel({ comments }: CommentsPanelProps) {
                     <p className="text-sm text-dash-text leading-relaxed mb-2">
                       {comment.message}
                     </p>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3 flex-wrap">
                       <span className="text-[10px] text-dash-text-secondary">
                         {format(new Date(comment.createdAt), "MMM d, yyyy · h:mm a")}
                       </span>
-                      <div className="flex items-center gap-1 text-dash-text-secondary">
-                        <Heart className="w-3 h-3" />
-                        <span className="text-[10px]">{comment.likeCount}</span>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleLike(comment.id)}
+                        disabled={busyId === comment.id}
+                        className={`inline-flex items-center gap-1 text-[10px] transition cursor-pointer disabled:opacity-50 ${
+                          likedIds.has(comment.id)
+                            ? "text-rose-500"
+                            : "text-dash-text-secondary hover:text-rose-400"
+                        }`}
+                        title={likedIds.has(comment.id) ? "Unlike" : "Like"}
+                      >
+                        <Heart
+                          className="w-3 h-3"
+                          fill={likedIds.has(comment.id) ? "currentColor" : "none"}
+                        />
+                        <span>{comment.likeCount}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleHide(comment.id)}
+                        disabled={busyId === comment.id}
+                        className="inline-flex items-center gap-1 text-[10px] text-dash-text-secondary hover:text-dash-text transition cursor-pointer disabled:opacity-50"
+                        title="Hide comment"
+                      >
+                        <EyeOff className="w-3 h-3" />
+                        <span>Hide</span>
+                      </button>
+                      {comment.author.profileUrl ? (
+                        <a
+                          href={comment.author.profileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[10px] text-dash-text-secondary hover:text-brand-copper transition"
+                          title="View author on platform"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          <span>View</span>
+                        </a>
+                      ) : null}
                       {comment.postPreview && (
                         <span className="text-[10px] text-dash-text-secondary truncate max-w-[200px]">
                           on: {comment.postPreview}

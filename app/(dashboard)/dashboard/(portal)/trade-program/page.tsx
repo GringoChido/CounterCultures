@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Users, Clock, Percent, DollarSign, CheckCircle2, XCircle, Briefcase, TrendingUp, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
@@ -67,6 +68,36 @@ const TradeProgramPage = () => {
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
   const [pendingApplications, setPendingApplications] = useState<Application[]>(fallbackApplications);
   const [appsLoading, setAppsLoading] = useState(true);
+  const [actingOn, setActingOn] = useState<string | null>(null);
+
+  const handleDecision = async (
+    app: Application,
+    decision: "approved" | "rejected"
+  ) => {
+    if (actingOn) return;
+    setActingOn(app.id);
+    try {
+      const res = await fetch("/api/dashboard/trade-program", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: app.id, status: decision }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setPendingApplications((prev) => prev.filter((a) => a.id !== app.id));
+      if (selectedApp?.id === app.id) setSelectedApp(null);
+      toast.success(
+        decision === "approved"
+          ? `Approved: ${app.company}`
+          : `Declined: ${app.company}`
+      );
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to update application"
+      );
+    } finally {
+      setActingOn(null);
+    }
+  };
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -190,8 +221,23 @@ const TradeProgramPage = () => {
 
       {/* Pending Applications */}
       <div className="bg-dash-surface rounded-xl border border-dash-border p-5">
-        <h3 className="text-sm font-semibold text-dash-text mb-4">Pending Applications ({pendingApplications.length})</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-semibold text-dash-text">
+            Pending Applications ({pendingApplications.length})
+          </h3>
+          {appsLoading ? (
+            <span className="inline-flex items-center gap-1 text-xs text-dash-text-muted">
+              <Loader2 className="w-3 h-3 animate-spin" />
+              Loading…
+            </span>
+          ) : null}
+        </div>
         <div className="space-y-3">
+          {pendingApplications.length === 0 ? (
+            <p className="text-sm text-dash-text-muted py-6 text-center">
+              No pending applications.
+            </p>
+          ) : null}
           {pendingApplications.map((app) => (
             <div key={app.id} className="flex items-center justify-between py-3 border-b border-dash-border last:border-0">
               <div>
@@ -206,10 +252,26 @@ const TradeProgramPage = () => {
                 >
                   Review
                 </button>
-                <button className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer" title="Approve">
-                  <CheckCircle2 className="w-4 h-4" />
+                <button
+                  type="button"
+                  onClick={() => handleDecision(app, "approved")}
+                  disabled={actingOn === app.id}
+                  className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer disabled:opacity-50"
+                  title="Approve"
+                >
+                  {actingOn === app.id ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4" />
+                  )}
                 </button>
-                <button className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer" title="Decline">
+                <button
+                  type="button"
+                  onClick={() => handleDecision(app, "rejected")}
+                  disabled={actingOn === app.id}
+                  className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer disabled:opacity-50"
+                  title="Decline"
+                >
                   <XCircle className="w-4 h-4" />
                 </button>
               </div>
@@ -252,11 +314,25 @@ const TradeProgramPage = () => {
               <NotesPanel entityType="trade_app" entityId={selectedApp.id} />
             </div>
             <div className="flex items-center gap-3 pt-4 border-t border-dash-border">
-              <button className="flex-1 py-2.5 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors cursor-pointer flex items-center justify-center gap-2">
-                <CheckCircle2 className="w-4 h-4" />
+              <button
+                type="button"
+                onClick={() => handleDecision(selectedApp, "approved")}
+                disabled={actingOn === selectedApp.id}
+                className="flex-1 py-2.5 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                {actingOn === selectedApp.id ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="w-4 h-4" />
+                )}
                 Approve
               </button>
-              <button className="flex-1 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors cursor-pointer flex items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => handleDecision(selectedApp, "rejected")}
+                disabled={actingOn === selectedApp.id}
+                className="flex-1 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+              >
                 <XCircle className="w-4 h-4" />
                 Decline
               </button>

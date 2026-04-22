@@ -1,10 +1,54 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
-import { MessageCircle, Send, Phone, MoreVertical, Search, Check, CheckCheck, Package } from "lucide-react";
+import {
+  MessageCircle,
+  Send,
+  Phone,
+  MoreVertical,
+  Search,
+  Check,
+  CheckCheck,
+  Package,
+  UserPlus,
+  Link2,
+  ChevronDown,
+  Sparkles,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useProductInsert } from "@/app/(dashboard)/components/product-insert-context";
+
+// V3: bilingual quick-reply templates. Tapping a template drops its text
+// into the compose field. Placeholders {{name}} are filled from the
+// active conversation.
+type QuickTemplate = { id: string; label: string; text: (name: string) => string };
+const QUICK_TEMPLATES: QuickTemplate[] = [
+  {
+    id: "deposit-reminder-es",
+    label: "Recordatorio depósito",
+    text: (name) =>
+      `Hola ${name}, un recordatorio amistoso sobre el depósito del 50% para iniciar tu pedido. ¿Te gustaría que te enviemos el enlace de pago?`,
+  },
+  {
+    id: "shipping-update-en",
+    label: "Shipping update",
+    text: (name) =>
+      `Hi ${name}, quick update on your order — your shipment has cleared customs and is on its way. ETA 3–5 business days.`,
+  },
+  {
+    id: "thanks-review-en",
+    label: "Thanks / review",
+    text: (name) =>
+      `Thank you ${name}! We'd love a short review if you have a moment — it really helps our artisans. Reply here and we'll take care of the rest.`,
+  },
+  {
+    id: "spec-sheet-es",
+    label: "Ficha técnica",
+    text: (name) =>
+      `Hola ${name}, aquí te comparto la ficha técnica completa. Si necesitas medidas específicas o acabados, me avisas.`,
+  },
+];
 
 interface Conversation {
   id: string;
@@ -89,14 +133,125 @@ const sampleMessages: Record<string, Message[]> = {
   ],
 };
 
+type OpenDeal = { id: string; customer: string; stage: string };
+
 const WhatsAppPage = () => {
   const [selectedConversation, setSelectedConversation] = useState<string>("1");
   const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [openDeals, setOpenDeals] = useState<OpenDeal[]>([]);
+  const [attachMenuOpen, setAttachMenuOpen] = useState(false);
+  const [dealsLoading, setDealsLoading] = useState(false);
+  const [creatingLead, setCreatingLead] = useState(false);
+  const [attaching, setAttaching] = useState(false);
+  const attachMenuRef = useRef<HTMLDivElement>(null);
   const { consumeInsert, pendingInsert, openCommandPalette } = useProductInsert();
 
   const handleSendProduct = () => {
     openCommandPalette();
+  };
+
+  // Close the attach-to-deal dropdown on outside click.
+  useEffect(() => {
+    if (!attachMenuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (attachMenuRef.current && !attachMenuRef.current.contains(e.target as Node)) {
+        setAttachMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [attachMenuOpen]);
+
+  // Lazy-load open deals once when the user first opens the attach menu.
+  const loadOpenDealsIfNeeded = async () => {
+    if (openDeals.length > 0 || dealsLoading) return;
+    setDealsLoading(true);
+    try {
+      const res = await fetch("/api/dashboard/pipeline");
+      if (res.ok) {
+        const data = (await res.json()) as {
+          deals?: { id: string; customer_name?: string; stage?: string }[];
+        };
+        const deals = (data.deals ?? [])
+          .filter((d) => d.stage && !/complete|lost/i.test(d.stage))
+          .slice(0, 25)
+          .map((d) => ({
+            id: d.id,
+            customer: d.customer_name ?? "",
+            stage: d.stage ?? "",
+          }));
+        setOpenDeals(deals);
+      }
+    } catch (err) {
+      console.error("[WhatsApp] load deals failed:", err);
+    } finally {
+      setDealsLoading(false);
+    }
+  };
+
+  const handleCreateLead = async () => {
+    if (!activeConversation || creatingLead) return;
+    setCreatingLead(true);
+    try {
+      const res = await fetch("/api/dashboard/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: activeConversation.name,
+          phone: activeConversation.phone,
+          email: "",
+          source: "whatsapp",
+          status: "new",
+          contact_type: "prospect",
+          interest: activeConversation.lastMessage,
+          value: "",
+          next_followup: "",
+          last_contact_date: new Date().toISOString().slice(0, 10),
+          brand_slugs: "",
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = (await res.json()) as { id: string };
+      toast.success(`Lead created: ${data.id}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create lead");
+    } finally {
+      setCreatingLead(false);
+    }
+  };
+
+  const handleAttachToDeal = async (dealId: string) => {
+    if (!activeConversation || attaching) return;
+    setAttaching(true);
+    try {
+      // Log as an Activity_Log row so the deal history surfaces the link.
+      // Uses the existing /api/dashboard/activities endpoint — no new
+      // backend required.
+      const res = await fetch("/api/dashboard/activities", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "whatsapp_attached",
+          description: `WhatsApp conversation linked: ${activeConversation.phone} (${activeConversation.name}) — ${activeConversation.lastMessage}`,
+          contactName: activeConversation.name,
+          dealId,
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      toast.success(`Conversation linked to ${dealId}`);
+      setAttachMenuOpen(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to attach");
+    } finally {
+      setAttaching(false);
+    }
+  };
+
+  const applyTemplate = (tpl: QuickTemplate) => {
+    if (!activeConversation) return;
+    const firstName = activeConversation.name.split(" ")[0];
+    setMessageInput(tpl.text(firstName));
   };
 
   useEffect(() => {
@@ -186,9 +341,74 @@ const WhatsAppPage = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button className="p-2 rounded-lg hover:bg-dash-bg transition-colors cursor-pointer">
-                    <Phone className="w-4 h-4 text-dash-text-secondary" />
+                  <button
+                    type="button"
+                    onClick={handleCreateLead}
+                    disabled={creatingLead}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-dash-border hover:border-brand-copper hover:text-brand-copper transition-colors cursor-pointer disabled:opacity-50 text-dash-text-secondary"
+                    title="Create Lead from this conversation"
+                  >
+                    <UserPlus className="w-3.5 h-3.5" />
+                    <span>{creatingLead ? "Creating…" : "Create Lead"}</span>
                   </button>
+
+                  <div className="relative" ref={attachMenuRef}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAttachMenuOpen((v) => !v);
+                        loadOpenDealsIfNeeded();
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-dash-border hover:border-brand-copper hover:text-brand-copper transition-colors cursor-pointer text-dash-text-secondary"
+                      aria-haspopup="listbox"
+                      aria-expanded={attachMenuOpen}
+                    >
+                      <Link2 className="w-3.5 h-3.5" />
+                      <span>Attach to Deal</span>
+                      <ChevronDown
+                        className={`w-3 h-3 transition ${attachMenuOpen ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                    {attachMenuOpen ? (
+                      <div className="absolute right-0 mt-1 w-72 max-h-80 overflow-auto bg-dash-surface border border-dash-border rounded-lg shadow-lg z-50 py-1">
+                        {dealsLoading ? (
+                          <p className="px-3 py-2 text-xs text-dash-text-muted">
+                            Loading open deals…
+                          </p>
+                        ) : openDeals.length === 0 ? (
+                          <p className="px-3 py-2 text-xs text-dash-text-muted">
+                            No open deals found.
+                          </p>
+                        ) : (
+                          <ul role="listbox">
+                            {openDeals.map((d) => (
+                              <li key={d.id}>
+                                <button
+                                  type="button"
+                                  onClick={() => handleAttachToDeal(d.id)}
+                                  disabled={attaching}
+                                  className="w-full text-left px-3 py-2 text-xs hover:bg-dash-bg transition flex flex-col gap-0.5"
+                                >
+                                  <span className="font-medium text-dash-text">{d.id}</span>
+                                  <span className="text-dash-text-secondary truncate">
+                                    {d.customer || "—"} · {d.stage}
+                                  </span>
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <a
+                    href={`tel:${activeConversation.phone.replace(/\s+/g, "")}`}
+                    className="p-2 rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
+                    title={`Call ${activeConversation.phone}`}
+                  >
+                    <Phone className="w-4 h-4 text-dash-text-secondary" />
+                  </a>
                   <button className="p-2 rounded-lg hover:bg-dash-bg transition-colors cursor-pointer">
                     <MoreVertical className="w-4 h-4 text-dash-text-secondary" />
                   </button>
@@ -220,7 +440,24 @@ const WhatsAppPage = () => {
                 ))}
               </div>
 
-              <div className="p-4 border-t border-dash-border">
+              <div className="px-4 pt-3 pb-1 border-t border-dash-border flex flex-wrap gap-1.5">
+                <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.14em] text-dash-text-muted mr-1">
+                  <Sparkles className="w-3 h-3" />
+                  Templates
+                </span>
+                {QUICK_TEMPLATES.map((tpl) => (
+                  <button
+                    key={tpl.id}
+                    type="button"
+                    onClick={() => applyTemplate(tpl)}
+                    className="text-[11px] px-2 py-1 rounded-full border border-dash-border bg-dash-surface hover:border-brand-copper hover:text-brand-copper transition text-dash-text-secondary"
+                  >
+                    {tpl.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="px-4 pt-2 pb-4">
                 <div className="flex items-center gap-3">
                   <button
                     onClick={handleSendProduct}

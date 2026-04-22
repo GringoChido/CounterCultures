@@ -341,7 +341,7 @@ export function CommandPalette({
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={item.productData.images[0]}
-            alt=""
+            alt={item.title || "Product"}
             className="w-9 h-9 rounded-md object-cover shrink-0"
           />
         ) : (

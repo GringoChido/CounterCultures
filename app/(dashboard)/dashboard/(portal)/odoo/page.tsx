@@ -195,7 +195,11 @@ const OdooPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-dash-text">Odoo</h1>
+            <h1 className="text-2xl font-bold text-dash-text">Odoo Data Import</h1>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+              <AlertTriangle className="w-3 h-3" />
+              Retiring
+            </span>
             {connected !== null && (
               <span
                 className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
@@ -209,12 +213,14 @@ const OdooPage = () => {
                 ) : (
                   <XCircle className="w-3 h-3" />
                 )}
-                {connected ? `Connected \u00B7 v${serverVersion}` : "Disconnected"}
+                {connected ? `API v${serverVersion}` : "API key expired"}
               </span>
             )}
           </div>
           <p className="text-sm text-dash-text-secondary mt-1">
-            Accounting, sales orders, invoices & purchase orders from Odoo
+            Read-only data import from Odoo. Accounting is moving to the
+            portal — this view exists for historical extraction only, not
+            live two-way sync.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -233,7 +239,7 @@ const OdooPage = () => {
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-brand-copper rounded-lg hover:bg-brand-copper/90 transition-colors disabled:opacity-50 cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-            Refresh
+            Run Extraction
           </button>
         </div>
       </div>
