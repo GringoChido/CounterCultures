@@ -101,6 +101,9 @@ const fallbackMonthlyRevenue = SAMPLE_REVENUE_TREND;
 
 const SalesAnalyticsPage = () => {
   const [tab, setTab] = useState<Tab>("overview");
+  // Brand filter is settable from the Revenue tab's bar chart / list, and
+  // applied on the Deals tab. Click-to-filter is V1 Rule 7.
+  const [brandFilter, setBrandFilter] = useState<string | null>(null);
   const [monthlyRevenue, setMonthlyRevenue] = useState<MonthlyPoint[]>(
     fallbackMonthlyRevenue
   );
@@ -344,13 +347,23 @@ const SalesAnalyticsPage = () => {
       ) : null}
 
       {tab === "deals" ? (
-        <DealsTab deals={deals} loading={dealsLoading} />
+        <DealsTab
+          deals={deals}
+          loading={dealsLoading}
+          brandFilter={brandFilter}
+          onClearBrandFilter={() => setBrandFilter(null)}
+        />
       ) : null}
 
       {tab === "revenue" ? (
         <RevenueTab
           monthlyRevenue={monthlyRevenue}
           brandRanking={brandRanking}
+          activeBrand={brandFilter}
+          onBrandClick={(slug) => {
+            setBrandFilter(slug);
+            setTab("deals");
+          }}
         />
       ) : null}
 
@@ -449,18 +462,55 @@ const OverviewTab = ({
 const DealsTab = ({
   deals,
   loading,
+  brandFilter,
+  onClearBrandFilter,
 }: {
   deals: Deal[];
   loading: boolean;
+  brandFilter: string | null;
+  onClearBrandFilter: () => void;
 }) => {
-  if (loading && deals.length === 0) return <TabLoader />;
-  if (!loading && deals.length === 0)
-    return <EmptyState label="No deals in the pipeline yet." />;
+  const filtered = brandFilter
+    ? deals.filter((d) =>
+        (d.brand_slugs || "")
+          .split("|")
+          .map((s) => s.trim().toLowerCase())
+          .includes(brandFilter.toLowerCase())
+      )
+    : deals;
+
+  if (loading && filtered.length === 0) return <TabLoader />;
+  if (!loading && filtered.length === 0) {
+    return (
+      <div>
+        {brandFilter ? (
+          <FilterChipRow
+            label={`Brand: ${brandFilter}`}
+            onClear={onClearBrandFilter}
+          />
+        ) : null}
+        <EmptyState
+          label={
+            brandFilter
+              ? `No deals tagged to "${brandFilter}".`
+              : "No deals in the pipeline yet."
+          }
+        />
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-dash-surface border border-dash-border rounded-xl overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+    <div>
+      {brandFilter ? (
+        <FilterChipRow
+          label={`Brand: ${brandFilter}`}
+          onClear={onClearBrandFilter}
+        />
+      ) : null}
+      <div className="bg-dash-surface border border-dash-border rounded-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-dash-border text-left text-xs uppercase tracking-wider text-dash-text-secondary">
               <th className="px-5 py-3">Deal</th>
@@ -471,7 +521,7 @@ const DealsTab = ({
             </tr>
           </thead>
           <tbody>
-            {deals.slice(0, 100).map((d) => (
+            {filtered.slice(0, 100).map((d) => (
               <tr
                 key={d.id}
                 className="border-b border-dash-border/50 last:border-0 hover:bg-dash-bg/50 transition-colors"
@@ -519,6 +569,7 @@ const DealsTab = ({
           </tbody>
         </table>
       </div>
+      </div>
     </div>
   );
 };
@@ -526,9 +577,13 @@ const DealsTab = ({
 const RevenueTab = ({
   monthlyRevenue,
   brandRanking,
+  activeBrand,
+  onBrandClick,
 }: {
   monthlyRevenue: MonthlyPoint[];
   brandRanking: { slug: string; revenue: number; deals: number }[];
+  activeBrand: string | null;
+  onBrandClick: (slug: string) => void;
 }) => (
   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
     <ChartCard title="Monthly Revenue" subtitle="Last 6 months (MXN)">
@@ -576,36 +631,47 @@ const RevenueTab = ({
       {brandRanking.length === 0 ? (
         <EmptyState label="No closed-deal revenue attributed to brands yet." />
       ) : (
-        <ul className="space-y-2">
-          {brandRanking.slice(0, 10).map((b) => {
-            const max = brandRanking[0].revenue || 1;
-            const pct = (b.revenue / max) * 100;
-            return (
-              <li key={b.slug}>
-                <Link
-                  href={`/dashboard/brands/${b.slug}`}
-                  className="flex items-center gap-3 hover:text-brand-copper transition-colors"
-                >
-                  <span className="text-xs text-dash-text w-24 truncate">
-                    {b.slug}
-                  </span>
-                  <div className="flex-1 h-2 bg-dash-bg rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-brand-copper transition-all"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <span className="text-xs font-medium text-brand-copper w-16 text-right">
-                    {formatCurrency(b.revenue)}
-                  </span>
-                  <span className="text-[11px] text-dash-text-secondary w-10 text-right">
-                    {b.deals}d
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+        <>
+          <p className="text-[11px] text-dash-text-muted mb-2">
+            Click a brand to filter the Deals tab.
+          </p>
+          <ul className="space-y-2">
+            {brandRanking.slice(0, 10).map((b) => {
+              const max = brandRanking[0].revenue || 1;
+              const pct = (b.revenue / max) * 100;
+              const isActive = activeBrand === b.slug;
+              return (
+                <li key={b.slug}>
+                  <button
+                    type="button"
+                    onClick={() => onBrandClick(b.slug)}
+                    className={`w-full flex items-center gap-3 cursor-pointer transition-colors text-left ${
+                      isActive
+                        ? "text-brand-copper"
+                        : "text-dash-text hover:text-brand-copper"
+                    }`}
+                  >
+                    <span className="text-xs w-24 truncate">{b.slug}</span>
+                    <div className="flex-1 h-2 bg-dash-bg rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all ${
+                          isActive ? "bg-brand-terracotta" : "bg-brand-copper"
+                        }`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <span className="text-xs font-medium text-brand-copper w-16 text-right">
+                      {formatCurrency(b.revenue)}
+                    </span>
+                    <span className="text-[11px] text-dash-text-secondary w-10 text-right">
+                      {b.deals}d
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </>
       )}
     </div>
   </div>
@@ -753,6 +819,35 @@ const CustomersTab = ({
     </div>
   );
 };
+
+const FilterChipRow = ({
+  label,
+  onClear,
+}: {
+  label: string;
+  onClear: () => void;
+}) => (
+  <div className="mb-3 flex items-center gap-2">
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs bg-brand-copper/10 text-brand-copper rounded-full border border-brand-copper/20">
+      {label}
+      <button
+        type="button"
+        onClick={onClear}
+        className="hover:text-brand-terracotta transition-colors cursor-pointer"
+        aria-label="Clear filter"
+      >
+        ×
+      </button>
+    </span>
+    <button
+      type="button"
+      onClick={onClear}
+      className="text-[11px] text-dash-text-secondary hover:text-dash-text underline underline-offset-2 cursor-pointer"
+    >
+      Clear filters
+    </button>
+  </div>
+);
 
 const TabLoader = () => (
   <div className="flex items-center justify-center py-12 text-xs text-dash-text-muted">

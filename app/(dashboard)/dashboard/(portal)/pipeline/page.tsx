@@ -45,6 +45,7 @@ import {
   Shield,
   Calculator,
   AlertTriangle,
+  ClipboardList,
 } from "lucide-react";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { PipelineJourneyPlayer } from "@/app/(dashboard)/components/pipeline-journey-player";
@@ -247,6 +248,30 @@ const DealCard = ({ deal, onClick, shipmentRisk, sla }: DealCardProps) => {
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
+  const handleQuickNote = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const note = window.prompt(`Log activity for ${deal.id}:`, "");
+    if (!note) return;
+    void fetch("/api/dashboard/activities", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        type: "note",
+        description: note,
+        contactName: deal.contactName,
+        dealId: deal.id,
+      }),
+    })
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then(() => toast.success("Activity logged"))
+      .catch((err) =>
+        toast.error(err instanceof Error ? err.message : "Failed to log")
+      );
+  };
+
   const riskTitle = {
     red: "Linked Tráfico has an issue or critical hold",
     yellow: "Linked Tráfico awaiting documents or payment",
@@ -282,6 +307,13 @@ const DealCard = ({ deal, onClick, shipmentRisk, sla }: DealCardProps) => {
             title={`WhatsApp ${deal.contactName}`}
           >
             <MessageCircle className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={handleQuickNote}
+            className="p-1 rounded hover:bg-brand-copper/10 text-dash-text-secondary hover:text-brand-copper transition-colors cursor-pointer"
+            title="Log activity"
+          >
+            <ClipboardList className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>

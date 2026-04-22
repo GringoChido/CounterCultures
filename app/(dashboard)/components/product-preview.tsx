@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -12,9 +12,147 @@ import {
   ChevronDown,
   ChevronUp,
   Gem,
+  FileText,
+  Download,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useProductInsert } from "./product-insert-context";
+
+// V3 S17b: Spec-sheet library per product. Searches Drive for PDFs that
+// look like spec sheets matching the product's SKU / brand and renders
+// download links. Silently empty when nothing matches — this is an
+// optional convenience, not a blocker.
+type SpecFile = {
+  id: string;
+  name: string;
+  webViewLink: string;
+  mimeType: string;
+  size?: string;
+  modifiedTime?: string;
+};
+
+const useSpecSheets = (sku: string, brand: string) => {
+  const [files, setFiles] = useState<SpecFile[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [attempted, setAttempted] = useState(false);
+
+  useEffect(() => {
+    let aborted = false;
+    if (!sku && !brand) return;
+    setLoading(true);
+    setAttempted(false);
+    // Query Drive for files whose full-text content includes the SKU. We
+    // filter client-side to PDFs. Falls back to brand search if nothing
+    // matches on SKU.
+    const run = async () => {
+      try {
+        const primary = sku
+          ? await fetch(
+              `/api/dashboard/drive?action=search&q=${encodeURIComponent(sku)}&pageSize=10`,
+              { cache: "no-store" }
+            )
+          : null;
+        let hits: SpecFile[] = [];
+        if (primary && primary.ok) {
+          const data = (await primary.json()) as { files?: SpecFile[] };
+          hits = (data.files ?? []).filter((f) =>
+            /pdf/i.test(f.mimeType || "")
+          );
+        }
+        if (hits.length === 0 && brand) {
+          const fallback = await fetch(
+            `/api/dashboard/drive?action=search&q=${encodeURIComponent(`${brand} spec`)}&pageSize=10`,
+            { cache: "no-store" }
+          );
+          if (fallback.ok) {
+            const data = (await fallback.json()) as { files?: SpecFile[] };
+            hits = (data.files ?? []).filter((f) =>
+              /pdf/i.test(f.mimeType || "")
+            );
+          }
+        }
+        if (!aborted) setFiles(hits.slice(0, 5));
+      } catch {
+        /* ignore — show empty state */
+      } finally {
+        if (!aborted) {
+          setLoading(false);
+          setAttempted(true);
+        }
+      }
+    };
+    run();
+    return () => {
+      aborted = true;
+    };
+  }, [sku, brand]);
+
+  return { files, loading, attempted };
+};
+
+const SpecSheetsSection = ({ sku, brand }: { sku: string; brand: string }) => {
+  const { files, loading, attempted } = useSpecSheets(sku, brand);
+
+  const requestSpec = async () => {
+    try {
+      await fetch("/api/dashboard/activities", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "spec_sheet_requested",
+          description: `Spec sheet requested for ${brand} SKU ${sku}`,
+        }),
+      });
+      toast.success("Request sent to Roger — he'll track it down");
+    } catch {
+      toast.error("Request failed — try again or email Roger directly");
+    }
+  };
+
+  return (
+    <div className="mb-6">
+      <p className="text-xs font-medium text-dash-text-secondary mb-2 flex items-center gap-1.5">
+        <FileText className="w-3 h-3" />
+        Spec Sheets
+      </p>
+      {loading ? (
+        <div className="flex items-center gap-2 text-xs text-dash-text-muted py-3">
+          <Loader2 className="w-3 h-3 animate-spin" />
+          Looking for spec sheets…
+        </div>
+      ) : files.length > 0 ? (
+        <ul className="space-y-1.5">
+          {files.map((f) => (
+            <li key={f.id}>
+              <a
+                href={f.webViewLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-3 py-2 bg-dash-bg border border-dash-border rounded hover:border-brand-copper hover:bg-dash-bg/70 transition-colors text-xs"
+              >
+                <FileText className="w-3.5 h-3.5 text-brand-copper shrink-0" />
+                <span className="flex-1 truncate text-dash-text">{f.name}</span>
+                <Download className="w-3 h-3 text-dash-text-secondary shrink-0" />
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : attempted ? (
+        <div className="text-xs text-dash-text-muted bg-dash-bg/50 border border-dash-border rounded p-3">
+          <p className="mb-1.5">No spec sheet on file for this product.</p>
+          <button
+            type="button"
+            onClick={requestSpec}
+            className="text-brand-copper hover:underline cursor-pointer"
+          >
+            Request spec sheet →
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+};
 
 const availabilityConfig: Record<string, { label: string; bg: string; text: string }> = {
   "in-stock": { label: "In Stock", bg: "bg-emerald-500/10", text: "text-emerald-400" },
@@ -214,6 +352,10 @@ export const ProductPreview = () => {
                     )}
                   </div>
                 )}
+              </div>
+
+              <div className="px-6 pt-4">
+                <SpecSheetsSection sku={p.sku || ""} brand={p.brand || ""} />
               </div>
             </div>
 
