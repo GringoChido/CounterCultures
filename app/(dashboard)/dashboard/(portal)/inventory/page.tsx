@@ -133,6 +133,15 @@ const InventoryPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sp = new URLSearchParams(window.location.search);
+    if (sp.get("lowStockOnly") === "true") setLowStockOnly(true);
+    if (sp.get("outOfStockOnly") === "true") setOutOfStockOnly(true);
+    const urlLoc = sp.get("locationId");
+    if (urlLoc) setLocationId(urlLoc);
+  }, []);
+
+  useEffect(() => {
     const timer = setTimeout(async () => {
       setLoading(true);
       try {

@@ -7,6 +7,7 @@ import { TodayActiveDeals } from "@/app/(dashboard)/components/today-active-deal
 import { MorningSalesHealth } from "@/app/(dashboard)/components/morning-sales-health";
 import { TodayKpiRail } from "@/app/(dashboard)/components/today-kpi-rail";
 import { ActivityFeed } from "@/app/(dashboard)/components/activity-feed";
+import { CommandCenter } from "@/app/(dashboard)/components/command-center";
 
 const greetingFor = (date: Date): string => {
   const h = date.getHours();
@@ -28,6 +29,8 @@ const OverviewPage = () => {
           · {greeting} Roger
         </p>
       </div>
+
+      <CommandCenter />
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_220px] gap-6">
         <div className="space-y-4 min-w-0">

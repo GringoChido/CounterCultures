@@ -242,6 +242,17 @@ const PurchasesPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sp = new URLSearchParams(window.location.search);
+    const urlState = sp.get("state");
+    const urlInv = sp.get("invoiceStatus");
+    const urlStuck = sp.get("stuckOnly");
+    if (urlState) setState(urlState as POStateFilter);
+    if (urlInv) setInvoiceStatus(urlInv as POInvoiceFilter);
+    if (urlStuck === "true") setStuckOnly(true);
+  }, []);
+
+  useEffect(() => {
     const timer = setTimeout(async () => {
       setLoading(true);
       try {
