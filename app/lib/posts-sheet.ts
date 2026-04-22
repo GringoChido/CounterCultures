@@ -39,6 +39,22 @@ interface PostRow {
 const VALID_PILLARS: ArticlePillar[] = ["Design", "Product", "Trade", "Craft"];
 
 /**
+ * Detect posts where title_en/es are identical AND the content reads as
+ * Spanish (common Spanish articles + function words). The Drive importer
+ * copied Spanish source text into both locale fields, so the language
+ * toggle looks broken when EN shows Spanish content.
+ */
+const SPANISH_SIGNALS = /\b(la|el|los|las|un|una|del|con|para|por|que|ese|este|esta|son|está|sus|hay|más)\b/gi;
+const looksSpanish = (s: string): boolean => {
+  if (!s || s.length < 20) return false;
+  const matches = s.match(SPANISH_SIGNALS);
+  return (matches?.length ?? 0) >= 2;
+};
+
+const isSpanishOnlyPost = (en: string, es: string): boolean =>
+  en === es && looksSpanish(en);
+
+/**
  * Clean text coming out of the Posts sheet.
  * The Drive importer dumps raw HTML + BOM + Windows line endings verbatim, so
  * we normalise here at read time.
@@ -97,7 +113,9 @@ const splitBloatedTitle = (
   return { title: head, spillover: tail };
 };
 
-const rowToArticle = (r: PostRow): Article & { status: string; driveFileId: string } => {
+const rowToArticle = (
+  r: PostRow
+): Article & { status: string; driveFileId: string; isSpanishOnly: boolean } => {
   const pillar = (VALID_PILLARS.includes(r.pillar as ArticlePillar)
     ? r.pillar
     : "Craft") as ArticlePillar;
@@ -110,6 +128,10 @@ const rowToArticle = (r: PostRow): Article & { status: string; driveFileId: stri
 
   const bodyEn = clean(r.body_en || r.body_es) || titleEn.spillover;
   const bodyEs = clean(r.body_es || r.body_en) || titleEs.spillover;
+
+  const spanishOnly =
+    isSpanishOnlyPost(titleEn.title, titleEs.title) ||
+    isSpanishOnlyPost(excerptEn, excerptEs);
 
   return {
     slug: r.slug,
@@ -127,17 +149,20 @@ const rowToArticle = (r: PostRow): Article & { status: string; driveFileId: stri
     brandSlugs: (r.brandSlugs || "").split(",").map((s) => s.trim()).filter(Boolean),
     status: r.status || "published",
     driveFileId: r.driveFileId || "",
+    isSpanishOnly: spanishOnly,
   };
 };
 
 // ── Cache ────────────────────────────────────────────────────────
 
-let cachedPosts: (Article & { status: string; driveFileId: string })[] | null = null;
+let cachedPosts:
+  | (Article & { status: string; driveFileId: string; isSpanishOnly: boolean })[]
+  | null = null;
 let cacheTimestamp = 0;
 const CACHE_TTL = 5 * 60 * 1000;
 
 export const getSheetPosts = async (): Promise<
-  (Article & { status: string; driveFileId: string })[]
+  (Article & { status: string; driveFileId: string; isSpanishOnly: boolean })[]
 > => {
   const now = Date.now();
   if (cachedPosts && now - cacheTimestamp < CACHE_TTL) return cachedPosts;
@@ -159,12 +184,12 @@ export const getSheetPosts = async (): Promise<
  * For public-facing: filter to status === 'published'.
  */
 export const getAllArticles = async (
-  opts: { includeDrafts?: boolean } = {}
+  opts: { includeDrafts?: boolean; locale?: "en" | "es" } = {}
 ): Promise<Article[]> => {
   const sheet = await getSheetPosts();
   const sheetBySlug = new Map(sheet.map((a) => [a.slug, a]));
 
-  const merged: (Article & { status?: string })[] = [];
+  const merged: (Article & { status?: string; isSpanishOnly?: boolean })[] = [];
   // Hardcoded first, unless overridden by sheet
   for (const a of hardcodedArticles) {
     if (!sheetBySlug.has(a.slug)) merged.push(a);
@@ -172,20 +197,36 @@ export const getAllArticles = async (
   // Sheet articles (all of them, since they may not be in hardcoded)
   for (const a of sheet) merged.push(a);
 
-  return opts.includeDrafts
+  let out = opts.includeDrafts
     ? merged
     : merged.filter((a) => !("status" in a) || a.status !== "draft");
+
+  // Hide Spanish-only posts from EN listing — the content isn't actually
+  // in English so showing it there is confusing. ES still sees them.
+  if (opts.locale === "en") {
+    out = out.filter((a) => !a.isSpanishOnly);
+  }
+
+  return out;
 };
 
 export const getAllArticlesWithStatus = async (): Promise<
-  (Article & { status: string; source: "hardcoded" | "sheet" })[]
+  (Article & {
+    status: string;
+    source: "hardcoded" | "sheet";
+    isSpanishOnly: boolean;
+  })[]
 > => {
   const sheet = await getSheetPosts();
   const sheetBySlug = new Map(sheet.map((a) => [a.slug, a]));
-  const out: (Article & { status: string; source: "hardcoded" | "sheet" })[] = [];
+  const out: (Article & {
+    status: string;
+    source: "hardcoded" | "sheet";
+    isSpanishOnly: boolean;
+  })[] = [];
   for (const a of hardcodedArticles) {
     if (sheetBySlug.has(a.slug)) continue;
-    out.push({ ...a, status: "published", source: "hardcoded" });
+    out.push({ ...a, status: "published", source: "hardcoded", isSpanishOnly: false });
   }
   for (const a of sheet) out.push({ ...a, source: "sheet" });
   return out;

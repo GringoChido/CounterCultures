@@ -64,7 +64,7 @@ export const generateMetadata = async ({
 const InsightsPage = async ({ params }: InsightsPageProps) => {
   const { locale } = await params;
   const isEs = locale === "es";
-  const articles = await getAllArticles();
+  const articles = await getAllArticles({ locale: isEs ? "es" : "en" });
 
   // ItemList JSON-LD — GEO: enumerate articles for AI discovery
   const itemListJsonLd = {
