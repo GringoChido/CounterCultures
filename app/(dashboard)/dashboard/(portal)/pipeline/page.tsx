@@ -899,6 +899,42 @@ const PipelinePageInner = () => {
     setActiveDeal(deal ?? null);
   };
 
+  // Persists a stage change to the Pipeline sheet via PATCH. Optimistic
+  // UI is already applied by the caller; we only handle rollback +
+  // notification here. The PATCH route also fires the rule engine on
+  // stage transitions, so this is the trigger point for any downstream
+  // automation (SLA, alerts, deal_events).
+  const persistStageChange = useCallback(
+    async (dealId: string, newStage: PipelineStage, oldStage: PipelineStage) => {
+      try {
+        const res = await fetch("/api/dashboard/pipeline", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: dealId,
+            stage: newStage,
+            stage_entered_at: new Date().toISOString(),
+          }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      } catch (err) {
+        // Roll back the optimistic UI update
+        setDeals((prev) =>
+          prev.map((d) =>
+            d.id === dealId ? { ...d, stage: oldStage } : d
+          )
+        );
+        setSelectedDeal((cur) =>
+          cur && cur.id === dealId ? { ...cur, stage: oldStage } : cur
+        );
+        toast.error(
+          `Couldn't save stage change: ${err instanceof Error ? err.message : "network error"}`
+        );
+      }
+    },
+    []
+  );
+
   const handleDragEnd = (event: DragEndEvent) => {
     setActiveDeal(null);
     const { active, over } = event;
@@ -951,6 +987,7 @@ const PipelinePageInner = () => {
         contactName: movedDeal.contactName,
         dealId: movedDeal.id,
       });
+      void persistStageChange(movedDeal.id, targetStage, oldStage);
     }
   };
 
@@ -1282,6 +1319,11 @@ const PipelinePageInner = () => {
                           });
                           toast.success(
                             `Stage changed to ${stageConfig[newStage].label}`
+                          );
+                          void persistStageChange(
+                            selectedDeal.id,
+                            newStage,
+                            oldStage
                           );
                         }}
                         className="text-xs bg-dash-bg border border-dash-border rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
