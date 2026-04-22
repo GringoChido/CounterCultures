@@ -54,6 +54,8 @@ const navItems: NavItem[] = [
 
   { label: "Brands", href: "/dashboard/brands", icon: Award, section: "Catalog" },
   { label: "Products", href: "/dashboard/products", icon: Package },
+  { label: "Inventory", href: "/dashboard/inventory", icon: Package },
+  { label: "Purchase Orders", href: "/dashboard/purchases", icon: Truck },
   { label: "Shipments & Customs", href: "/dashboard/shipments", icon: Truck },
 
   { label: "Email Campaigns", href: "/dashboard/email-campaigns", icon: Mail, section: "Marketing" },

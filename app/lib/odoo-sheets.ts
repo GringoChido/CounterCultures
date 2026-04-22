@@ -448,6 +448,392 @@ export const getCustomerList = async (): Promise<CustomerListRow[]> => {
   });
 };
 
+// ── Inventory: stock quants + locations ──────────────────────────
+
+export interface OdooStockQuant {
+  [key: string]: string;
+  id: string;
+  product_id: string;
+  product_id_id: string;
+  location_id: string;
+  location_id_id: string;
+  quantity: string;
+  reserved_quantity: string;
+  available_quantity: string;
+  inventory_date: string;
+  in_date: string;
+  lot_id: string;
+  product_uom_id: string;
+}
+
+const stockQuantsCache: Cache<OdooStockQuant> = { data: null, ts: 0 };
+
+export const getOdooStockQuants = async (): Promise<OdooStockQuant[]> => {
+  if (fresh(stockQuantsCache)) return stockQuantsCache.data!;
+  stockQuantsCache.data = await readSheet<OdooStockQuant>("Odoo_Stock_Quants");
+  stockQuantsCache.ts = Date.now();
+  return stockQuantsCache.data;
+};
+
+export interface InventoryRow {
+  id: string;
+  productId: string;
+  productName: string;
+  locationId: string;
+  locationName: string;
+  onHand: number;
+  reserved: number;
+  available: number;
+  inDate: string; // when it arrived
+  lotId: string;
+}
+
+const toInventoryRow = (q: OdooStockQuant): InventoryRow => ({
+  id: q.id,
+  productId: q.product_id_id,
+  productName: q.product_id || "",
+  locationId: q.location_id_id,
+  locationName: q.location_id || "",
+  onHand: num(q.quantity),
+  reserved: num(q.reserved_quantity),
+  available: num(q.available_quantity) || num(q.quantity) - num(q.reserved_quantity),
+  inDate: (q.in_date || "").slice(0, 10),
+  lotId: q.lot_id || "",
+});
+
+export interface InventorySummary {
+  totalUnits: number;
+  totalProducts: number;
+  totalLocations: number;
+  lowStock: number;
+  outOfStock: number;
+  byLocation: Array<{
+    name: string;
+    locationId: string;
+    productCount: number;
+    totalUnits: number;
+  }>;
+}
+
+export interface InventoryListFilters {
+  q?: string;
+  locationId?: string;
+  lowStockOnly?: boolean;
+  outOfStockOnly?: boolean;
+  sort?: "product" | "location" | "onhand_desc" | "onhand_asc" | "in_date_desc";
+  limit?: number;
+  offset?: number;
+}
+
+export interface InventoryListResult {
+  items: InventoryRow[];
+  total: number;
+  offset: number;
+  limit: number;
+  summary: InventorySummary;
+}
+
+export const getInventoryList = async (
+  filters: InventoryListFilters = {}
+): Promise<InventoryListResult> => {
+  const {
+    q = "",
+    locationId,
+    lowStockOnly,
+    outOfStockOnly,
+    sort = "product",
+    limit = 500,
+    offset = 0,
+  } = filters;
+
+  const quants = await getOdooStockQuants();
+  const rows = quants.map(toInventoryRow);
+
+  // Summary
+  const locAgg = new Map<string, { name: string; locationId: string; productSet: Set<string>; totalUnits: number }>();
+  const uniqueProducts = new Set<string>();
+  let lowStock = 0;
+  let outOfStock = 0;
+  for (const r of rows) {
+    uniqueProducts.add(r.productId);
+    if (r.onHand <= 0) outOfStock++;
+    else if (r.onHand < 5) lowStock++;
+    const key = r.locationId || r.locationName;
+    let l = locAgg.get(key);
+    if (!l) {
+      l = { name: r.locationName, locationId: r.locationId, productSet: new Set(), totalUnits: 0 };
+      locAgg.set(key, l);
+    }
+    l.productSet.add(r.productId);
+    l.totalUnits += r.onHand;
+  }
+  const summary: InventorySummary = {
+    totalUnits: rows.reduce((s, r) => s + r.onHand, 0),
+    totalProducts: uniqueProducts.size,
+    totalLocations: locAgg.size,
+    lowStock,
+    outOfStock,
+    byLocation: [...locAgg.values()]
+      .map((l) => ({
+        name: l.name,
+        locationId: l.locationId,
+        productCount: l.productSet.size,
+        totalUnits: l.totalUnits,
+      }))
+      .sort((a, b) => b.totalUnits - a.totalUnits),
+  };
+
+  // Filter
+  let filtered = rows;
+  if (locationId) filtered = filtered.filter((r) => r.locationId === locationId);
+  if (lowStockOnly) filtered = filtered.filter((r) => r.onHand > 0 && r.onHand < 5);
+  if (outOfStockOnly) filtered = filtered.filter((r) => r.onHand <= 0);
+  if (q) {
+    const needle = q.toLowerCase();
+    filtered = filtered.filter(
+      (r) =>
+        r.productName.toLowerCase().includes(needle) ||
+        r.lotId.toLowerCase().includes(needle)
+    );
+  }
+
+  const cmp = (a: InventoryRow, b: InventoryRow) => {
+    if (sort === "location") return a.locationName.localeCompare(b.locationName) || a.productName.localeCompare(b.productName);
+    if (sort === "onhand_desc") return b.onHand - a.onHand;
+    if (sort === "onhand_asc") return a.onHand - b.onHand;
+    if (sort === "in_date_desc") return (b.inDate || "").localeCompare(a.inDate || "");
+    return a.productName.localeCompare(b.productName);
+  };
+  filtered.sort(cmp);
+
+  return {
+    items: filtered.slice(offset, offset + limit),
+    total: filtered.length,
+    offset,
+    limit,
+    summary,
+  };
+};
+
+// ── Purchase Orders: list, pipeline, detail ──────────────────────
+
+export interface OdooPurchaseOrderLine {
+  [key: string]: string;
+  id: string;
+  order_id: string;
+  order_id_id: string;
+  partner_id: string;
+  product_id: string;
+  product_id_id: string;
+  name: string;
+  product_qty: string;
+  qty_received: string;
+  qty_invoiced: string;
+  price_unit: string;
+  discount: string;
+  price_subtotal: string;
+  price_tax: string;
+  price_total: string;
+  date_planned: string;
+  sequence: string;
+}
+
+const purchaseOrdersCache: Cache<OdooPurchaseOrder> = { data: null, ts: 0 };
+const purchaseLinesCache: Cache<OdooPurchaseOrderLine> = { data: null, ts: 0 };
+
+export const getOdooPurchaseOrders = async (): Promise<OdooPurchaseOrder[]> => {
+  if (fresh(purchaseOrdersCache)) return purchaseOrdersCache.data!;
+  purchaseOrdersCache.data = await readSheet<OdooPurchaseOrder>("Odoo_Purchase_Orders");
+  purchaseOrdersCache.ts = Date.now();
+  return purchaseOrdersCache.data;
+};
+
+export const getOdooPurchaseOrderLines = async (): Promise<OdooPurchaseOrderLine[]> => {
+  if (fresh(purchaseLinesCache)) return purchaseLinesCache.data!;
+  purchaseLinesCache.data = await readSheet<OdooPurchaseOrderLine>("Odoo_Purchase_Order_Lines");
+  purchaseLinesCache.ts = Date.now();
+  return purchaseLinesCache.data;
+};
+
+export type POStateFilter = "all" | "draft" | "sent" | "purchase" | "done" | "cancel";
+export type POInvoiceFilter = "all" | "no" | "to invoice" | "invoiced";
+
+export interface POListRow {
+  id: string;
+  name: string;
+  state: string;
+  vendorId: string;
+  vendorName: string;
+  currency: string;
+  dateOrder: string;
+  amountTotal: number;
+  invoiceStatus: string;
+  daysOpen: number;
+  isOverdue: boolean; // past date_planned and not done
+}
+
+const toPORow = (p: OdooPurchaseOrder, now: Date = today()): POListRow => {
+  const days = p.date_order ? daysBetween(p.date_order, now) : 0;
+  const isOpen = p.state === "purchase" || p.state === "sent" || p.state === "draft";
+  return {
+    id: p.id,
+    name: p.name,
+    state: p.state,
+    vendorId: p.partner_id_id,
+    vendorName: p.partner_id,
+    currency: p.currency_id || "USD",
+    dateOrder: (p.date_order || "").slice(0, 10),
+    amountTotal: num(p.amount_total),
+    invoiceStatus: p.invoice_status || "",
+    daysOpen: days,
+    isOverdue: isOpen && days > 60, // open >60d is "stuck"
+  };
+};
+
+export interface POPipelineSummary {
+  draft: { count: number; totalByCurrency: Record<string, number> };
+  sent: { count: number; totalByCurrency: Record<string, number> };
+  purchase: { count: number; totalByCurrency: Record<string, number> };
+  done: { count: number; totalByCurrency: Record<string, number> };
+  cancel: { count: number; totalByCurrency: Record<string, number> };
+  awaitingInvoice: { count: number; totalByCurrency: Record<string, number> };
+  stuck: { count: number; totalByCurrency: Record<string, number> };
+}
+
+export interface POListFilters {
+  q?: string;
+  state?: POStateFilter;
+  invoiceStatus?: POInvoiceFilter;
+  vendorId?: string;
+  stuckOnly?: boolean;
+  limit?: number;
+  offset?: number;
+  sort?: "date_desc" | "date_asc" | "total_desc" | "days_open_desc" | "vendor";
+}
+
+export interface POListResult {
+  orders: POListRow[];
+  total: number;
+  offset: number;
+  limit: number;
+  pipeline: POPipelineSummary;
+}
+
+export const getPurchaseOrderList = async (
+  filters: POListFilters = {}
+): Promise<POListResult> => {
+  const {
+    q = "",
+    state = "all",
+    invoiceStatus = "all",
+    vendorId,
+    stuckOnly,
+    limit = 200,
+    offset = 0,
+    sort = "date_desc",
+  } = filters;
+
+  const now = today();
+  const allPOs = await getOdooPurchaseOrders();
+  const rows = allPOs.map((p) => toPORow(p, now));
+
+  // Pipeline
+  const addBy = (b: Record<string, number>, cur: string, amt: number) => {
+    b[cur] = (b[cur] ?? 0) + amt;
+  };
+  const pipeline: POPipelineSummary = {
+    draft:            { count: 0, totalByCurrency: {} },
+    sent:             { count: 0, totalByCurrency: {} },
+    purchase:         { count: 0, totalByCurrency: {} },
+    done:             { count: 0, totalByCurrency: {} },
+    cancel:           { count: 0, totalByCurrency: {} },
+    awaitingInvoice:  { count: 0, totalByCurrency: {} },
+    stuck:            { count: 0, totalByCurrency: {} },
+  };
+  for (const r of rows) {
+    const bucket = (pipeline as unknown as Record<string, { count: number; totalByCurrency: Record<string, number> }>)[r.state];
+    if (bucket) {
+      bucket.count++;
+      addBy(bucket.totalByCurrency, r.currency, r.amountTotal);
+    }
+    if (r.invoiceStatus === "to invoice") {
+      pipeline.awaitingInvoice.count++;
+      addBy(pipeline.awaitingInvoice.totalByCurrency, r.currency, r.amountTotal);
+    }
+    if (r.isOverdue) {
+      pipeline.stuck.count++;
+      addBy(pipeline.stuck.totalByCurrency, r.currency, r.amountTotal);
+    }
+  }
+
+  let filtered = rows;
+  if (state !== "all") filtered = filtered.filter((r) => r.state === state);
+  if (invoiceStatus !== "all") filtered = filtered.filter((r) => r.invoiceStatus === invoiceStatus);
+  if (vendorId) filtered = filtered.filter((r) => r.vendorId === vendorId);
+  if (stuckOnly) filtered = filtered.filter((r) => r.isOverdue);
+  if (q) {
+    const needle = q.toLowerCase();
+    filtered = filtered.filter((r) =>
+      `${r.name} ${r.vendorName}`.toLowerCase().includes(needle)
+    );
+  }
+
+  const cmp = (a: POListRow, b: POListRow) => {
+    if (sort === "date_asc") return a.dateOrder.localeCompare(b.dateOrder);
+    if (sort === "total_desc") return b.amountTotal - a.amountTotal;
+    if (sort === "days_open_desc") return b.daysOpen - a.daysOpen;
+    if (sort === "vendor") return a.vendorName.localeCompare(b.vendorName);
+    return b.dateOrder.localeCompare(a.dateOrder);
+  };
+  filtered.sort(cmp);
+
+  return {
+    orders: filtered.slice(offset, offset + limit),
+    total: filtered.length,
+    offset,
+    limit,
+    pipeline,
+  };
+};
+
+export interface PurchaseOrderDetail {
+  order: POListRow & { rawState: string };
+  rawOrder: OdooPurchaseOrder;
+  lines: OdooPurchaseOrderLine[];
+  bills: OdooInvoice[];
+}
+
+export const getPurchaseOrderDetail = async (
+  orderId: string
+): Promise<PurchaseOrderDetail | null> => {
+  const [pos, lines, invoices] = await Promise.all([
+    getOdooPurchaseOrders(),
+    getOdooPurchaseOrderLines(),
+    getOdooInvoices(),
+  ]);
+  const p = pos.find((x) => x.id === orderId);
+  if (!p) return null;
+
+  const poLines = lines
+    .filter((l) => l.order_id_id === orderId)
+    .sort((a, b) => Number(a.sequence || 0) - Number(b.sequence || 0));
+
+  // Bills: account.move where move_type is in_invoice and invoice_origin == PO name
+  const bills = invoices.filter(
+    (i) =>
+      (i.move_type === "in_invoice" || i.move_type === "in_refund") &&
+      i.invoice_origin === p.name
+  );
+
+  const row = toPORow(p);
+  return {
+    order: { ...row, rawState: p.state },
+    rawOrder: p,
+    lines: poLines,
+    bills,
+  };
+};
+
 // ── Payments: list, summary, detail ──────────────────────────────
 
 export type PaymentTypeFilter = "all" | "inbound" | "outbound";
