@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import Link from "next/link";
 import { createColumnHelper } from "@tanstack/react-table";
-import { Plus, Package, Loader2, Save, X } from "lucide-react";
+import { Plus, Package, Loader2, Save, X, Archive } from "lucide-react";
 import { toast } from "sonner";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
@@ -386,13 +387,22 @@ const ProductsPage = () => {
             {products.length} products &middot; {inStock} in stock &middot; {lowStock} low stock
           </p>
         </div>
-        <button
-          onClick={() => { setEditingProduct(EMPTY_PRODUCT); setFormOpen(true); }}
-          className="flex items-center gap-2 px-4 py-2 bg-brand-copper text-white rounded-lg text-sm font-medium hover:bg-brand-copper/90 transition-colors cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          Add Product
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/dashboard/products/catalog"
+            className="flex items-center gap-2 px-4 py-2 border border-dash-border text-dash-text rounded-lg text-sm font-medium hover:bg-dash-bg transition-colors cursor-pointer"
+          >
+            <Archive className="w-4 h-4" />
+            Full catalog (354k)
+          </Link>
+          <button
+            onClick={() => { setEditingProduct(EMPTY_PRODUCT); setFormOpen(true); }}
+            className="flex items-center gap-2 px-4 py-2 bg-brand-copper text-white rounded-lg text-sm font-medium hover:bg-brand-copper/90 transition-colors cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            Add Product
+          </button>
+        </div>
       </div>
 
       <DataTable

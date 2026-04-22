@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { QuoteCatalog } from "./quote-catalog";
-import { getAllQuoteBrands } from "@/app/lib/sheets";
+import {
+  getQuoteCatalogBrands,
+  getCatalogStats,
+} from "@/app/lib/products-full";
 
 export const revalidate = 300;
 
@@ -18,11 +21,11 @@ export const generateMetadata = async ({
   const { locale } = await params;
   const isEs = locale === "es";
   const title = isEs
-    ? "Catálogo Especial — Solicita Cotización"
-    : "Special Order Catalog — Request a Quote";
+    ? "Catálogo Completo — Solicita Cotización"
+    : "Full Catalog — Request a Quote";
   const description = isEs
-    ? "Más de 700 SKUs especiales de nuestros proveedores: California Faucets, Brizo, Delta, Emtek y más. Solicita cotización directamente."
-    : "700+ special-order SKUs from California Faucets, Brizo, Delta, Emtek and more. Request a quote directly.";
+    ? "Más de 350,000 SKUs de nuestros proveedores: Emtek, Brizo, Delta, California Faucets y más. Solicita cotización directamente."
+    : "350,000+ SKUs from our distributor partners: Emtek, Brizo, Delta, California Faucets and more. Request a quote directly.";
   return {
     title,
     description,
@@ -41,7 +44,10 @@ export const generateMetadata = async ({
 const QuoteShopPage = async ({ params }: QuoteShopProps) => {
   const { locale } = await params;
   const isEs = locale === "es";
-  const brands = await getAllQuoteBrands();
+  const [brandCounts, stats] = await Promise.all([
+    getQuoteCatalogBrands(),
+    getCatalogStats(),
+  ]);
 
   return (
     <>
@@ -50,20 +56,24 @@ const QuoteShopPage = async ({ params }: QuoteShopProps) => {
         <section className="py-10 md:py-16 bg-brand-linen border-b border-brand-stone/10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-stone uppercase">
-              {isEs ? "Catálogo Especial" : "Special Order Catalog"}
+              {isEs ? "Catálogo Completo" : "Full Catalog"}
             </span>
             <h1 className="mt-3 font-display text-4xl md:text-6xl font-light tracking-wide text-brand-charcoal">
               {isEs ? "Solicita Cotización" : "Request a Quote"}
             </h1>
             <p className="mt-4 font-body text-base text-brand-stone max-w-2xl">
               {isEs
-                ? "Más de 700 SKUs especiales disponibles bajo pedido. Busca por SKU, nombre o marca y envía tu solicitud — te respondemos en menos de 24 horas."
-                : "Over 700 special-order SKUs available from our distributor partners. Search by SKU, name, or brand and send your request — we respond within 24 hours."}
+                ? `Más de ${stats.total.toLocaleString("es-MX")} SKUs de nuestros proveedores. Busca por SKU, nombre o marca — respondemos tu cotización en menos de 24 horas hábiles.`
+                : `Over ${stats.total.toLocaleString("en-US")} SKUs from our distributor partners. Search by SKU, name, or brand — we respond with pricing and lead time within 24 business hours.`}
             </p>
           </div>
         </section>
 
-        <QuoteCatalog locale={locale as "en" | "es"} brands={brands} />
+        <QuoteCatalog
+          locale={locale as "en" | "es"}
+          brandCounts={brandCounts}
+          totalProducts={stats.total}
+        />
       </main>
       <Footer locale={locale} />
     </>

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
-import { getQuoteProductBySlug } from "@/app/lib/sheets";
+import { getQuoteCatalogBySlug } from "@/app/lib/products-full";
 import { QuoteForm } from "./quote-form-client";
 
 export const revalidate = 300;
@@ -18,7 +18,7 @@ export const generateMetadata = async ({
   params,
 }: QuoteDetailProps): Promise<Metadata> => {
   const { locale, slug } = await params;
-  const product = await getQuoteProductBySlug(slug);
+  const product = await getQuoteCatalogBySlug(slug);
   if (!product) return {};
   const isEs = locale === "es";
   return {
@@ -33,7 +33,7 @@ export const generateMetadata = async ({
 
 const QuoteDetailPage = async ({ params }: QuoteDetailProps) => {
   const { locale, slug } = await params;
-  const product = await getQuoteProductBySlug(slug);
+  const product = await getQuoteCatalogBySlug(slug);
   if (!product) notFound();
   const isEs = locale === "es";
 
