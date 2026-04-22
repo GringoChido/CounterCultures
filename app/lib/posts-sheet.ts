@@ -12,6 +12,7 @@
 import { readSheet } from "./dashboard-sheets";
 import type { Article, ArticlePillar } from "./articles";
 import { articles as hardcodedArticles } from "./articles";
+import { stripHtml } from "./strip-html";
 
 interface PostRow {
   [key: string]: string;
@@ -37,14 +38,83 @@ interface PostRow {
 
 const VALID_PILLARS: ArticlePillar[] = ["Design", "Product", "Trade", "Craft"];
 
+/**
+ * Clean text coming out of the Posts sheet.
+ * The Drive importer dumps raw HTML + BOM + Windows line endings verbatim, so
+ * we normalise here at read time.
+ */
+const clean = (s: string): string => {
+  if (!s) return "";
+  return stripHtml(s)
+    .replace(/^\uFEFF/, "") // BOM
+    .replace(/\r\n?/g, "\n")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+};
+
+/**
+ * Some posts were imported with the entire body crammed into the title field.
+ * If a "title" is absurdly long, peel off the first natural break as the real
+ * title and return the remainder as body spillover.
+ */
+const splitBloatedTitle = (
+  raw: string
+): { title: string; spillover: string } => {
+  // Re-insert missing spaces at camelCase boundaries first: "saludablesLa" → "saludables La"
+  // The Drive importer strips paragraph breaks and glues heading-to-body directly.
+  const t = clean(raw).replace(/([a-záéíóúñ])([A-ZÁÉÍÓÚÑ])/g, "$1 $2");
+  if (t.length <= 120) return { title: t, spillover: "" };
+
+  const breaks = ["\n", ". ", ": ", "? ", "! ", " – ", " — "];
+  const punctIdx = Math.min(
+    ...breaks
+      .map((b) => t.indexOf(b))
+      .filter((i) => i > 8 && i < 120)
+      .concat(Infinity)
+  );
+
+  // Second-sentence heuristic: after any punct-split, further split on the first
+  // "Word followed by another Word group that looks like a sentence start" — e.g.
+  // the original heading was "Consejos saludables" + new paragraph "La magia…"
+  let idx: number;
+  if (Number.isFinite(punctIdx)) {
+    idx = punctIdx;
+  } else {
+    // No punct break — look for "lowercase SPACE Capital" which usually marks
+    // a heading→paragraph boundary that lost its newline in import.
+    const m = t.slice(0, 120).match(/[a-záéíóúñ]\s+[A-ZÁÉÍÓÚÑ]/);
+    if (m && m.index !== undefined && m.index > 8) {
+      idx = m.index + 1; // split at the space, before the capital
+    } else {
+      const firstSpace = t.indexOf(" ", 40);
+      idx = firstSpace > 0 && firstSpace < 80 ? firstSpace : 80;
+    }
+  }
+
+  const head = t.slice(0, idx).replace(/[:.?!–—]\s*$/, "").trim();
+  const tail = t.slice(idx).replace(/^[:.?!–—\s]+/, "").trim();
+  return { title: head, spillover: tail };
+};
+
 const rowToArticle = (r: PostRow): Article & { status: string; driveFileId: string } => {
   const pillar = (VALID_PILLARS.includes(r.pillar as ArticlePillar)
     ? r.pillar
     : "Craft") as ArticlePillar;
+
+  const titleEn = splitBloatedTitle(r.title_en || r.title_es);
+  const titleEs = splitBloatedTitle(r.title_es || r.title_en);
+
+  const excerptEn = clean(r.excerpt_en || r.excerpt_es) || titleEn.spillover.slice(0, 280);
+  const excerptEs = clean(r.excerpt_es || r.excerpt_en) || titleEs.spillover.slice(0, 280);
+
+  const bodyEn = clean(r.body_en || r.body_es) || titleEn.spillover;
+  const bodyEs = clean(r.body_es || r.body_en) || titleEs.spillover;
+
   return {
     slug: r.slug,
-    title: { en: r.title_en || r.title_es, es: r.title_es || r.title_en },
-    excerpt: { en: r.excerpt_en || r.excerpt_es, es: r.excerpt_es || r.excerpt_en },
+    title: { en: titleEn.title, es: titleEs.title },
+    excerpt: { en: excerptEn, es: excerptEs },
     pillar,
     date: r.date || new Date().toISOString().slice(0, 10),
     readTime: r.readTime || "5 min",
@@ -52,7 +122,7 @@ const rowToArticle = (r: PostRow): Article & { status: string; driveFileId: stri
     author: r.author || "Counter Cultures",
     featured: r.featured === "true" || r.featured === "TRUE",
     editorsPick: r.editorsPick === "true" || r.editorsPick === "TRUE",
-    body: { en: r.body_en || r.body_es, es: r.body_es || r.body_en },
+    body: { en: bodyEn, es: bodyEs },
     relatedSlugs: (r.relatedSlugs || "").split(",").map((s) => s.trim()).filter(Boolean),
     brandSlugs: (r.brandSlugs || "").split(",").map((s) => s.trim()).filter(Boolean),
     status: r.status || "published",
