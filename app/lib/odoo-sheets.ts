@@ -448,6 +448,286 @@ export const getCustomerList = async (): Promise<CustomerListRow[]> => {
   });
 };
 
+// ── Sale Order Lines ─────────────────────────────────────────────
+
+export interface OdooSaleOrderLine {
+  [key: string]: string;
+  id: string;
+  order_id: string;
+  order_id_id: string;
+  order_partner_id: string;
+  product_id: string;
+  product_id_id: string;
+  product_uom_qty: string;
+  qty_delivered: string;
+  qty_invoiced: string;
+  price_unit: string;
+  discount: string;
+  price_subtotal: string;
+  price_tax: string;
+  price_total: string;
+  currency_id: string;
+  name: string;
+  sequence: string;
+}
+
+const saleOrderLinesCache: Cache<OdooSaleOrderLine> = { data: null, ts: 0 };
+
+export const getOdooSaleOrderLines = async (): Promise<OdooSaleOrderLine[]> => {
+  if (fresh(saleOrderLinesCache)) return saleOrderLinesCache.data!;
+  saleOrderLinesCache.data = await readSheet<OdooSaleOrderLine>(
+    "Odoo_Sale_Order_Lines"
+  );
+  saleOrderLinesCache.ts = Date.now();
+  return saleOrderLinesCache.data;
+};
+
+// ── Sale Order list + detail ─────────────────────────────────────
+
+export type OrderStateFilter =
+  | "all"
+  | "quote"           // draft + sent
+  | "draft"
+  | "sent"
+  | "sale"            // confirmed
+  | "done"
+  | "cancel";
+
+export type InvoiceStatusFilter =
+  | "all"
+  | "no"
+  | "to invoice"
+  | "invoiced"
+  | "upselling";
+
+export interface OrderListRow {
+  id: string;
+  name: string;
+  state: string;
+  partnerId: string;
+  partnerName: string;
+  salesperson: string;
+  pricelist: string;
+  paymentTerm: string;
+  currency: string;
+  dateOrder: string;
+  validityDate: string;
+  commitmentDate: string;
+  amountUntaxed: number;
+  amountTax: number;
+  amountTotal: number;
+  invoiceStatus: string;
+  linkedInvoiceCount: number;
+  daysOpen: number;
+  isStale: boolean; // quote sitting too long
+  origin: string;
+}
+
+const toOrderListRow = (
+  o: OdooSaleOrder,
+  now: Date = today(),
+  invoiceIndex: Map<string, number> = new Map()
+): OrderListRow => {
+  const invoiceIds = (o.invoice_ids || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const linkedInvoiceCount = invoiceIds.length;
+  const days = o.date_order ? daysBetween(o.date_order, now) : 0;
+  const isQuote = o.state === "draft" || o.state === "sent";
+  return {
+    id: o.id,
+    name: o.name,
+    state: o.state,
+    partnerId: o.partner_id_id,
+    partnerName: o.partner_id,
+    salesperson: o.user_id || "",
+    pricelist: o.pricelist_id || "",
+    paymentTerm: o.payment_term_id || "",
+    currency: o.currency_id || "MXN",
+    dateOrder: (o.date_order || "").slice(0, 10),
+    validityDate: (o.validity_date || "").slice(0, 10),
+    commitmentDate: (o.commitment_date || "").slice(0, 10),
+    amountUntaxed: num(o.amount_untaxed),
+    amountTax: num(o.amount_tax),
+    amountTotal: num(o.amount_total),
+    invoiceStatus: o.invoice_status || "",
+    linkedInvoiceCount: invoiceIndex.get(o.id) ?? linkedInvoiceCount,
+    daysOpen: days,
+    isStale: isQuote && days > 30,
+    origin: "",
+  };
+};
+
+export interface OrderListFilters {
+  q?: string;
+  state?: OrderStateFilter;
+  invoiceStatus?: InvoiceStatusFilter;
+  partnerId?: string;
+  staleOnly?: boolean;
+  limit?: number;
+  offset?: number;
+  sort?: "date_desc" | "date_asc" | "total_desc" | "days_open_desc" | "partner";
+}
+
+export interface OrderPipelineSummary {
+  draft: { count: number; totalByCurrency: Record<string, number> };
+  sent: { count: number; totalByCurrency: Record<string, number> };
+  sale: { count: number; totalByCurrency: Record<string, number> };
+  done: { count: number; totalByCurrency: Record<string, number> };
+  cancel: { count: number; totalByCurrency: Record<string, number> };
+  toInvoice: { count: number; totalByCurrency: Record<string, number> };
+  staleQuotes: { count: number; totalByCurrency: Record<string, number> };
+}
+
+export interface OrderListResult {
+  orders: OrderListRow[];
+  total: number;
+  offset: number;
+  limit: number;
+  pipeline: OrderPipelineSummary;
+}
+
+export const getOrderList = async (
+  filters: OrderListFilters = {}
+): Promise<OrderListResult> => {
+  const {
+    q = "",
+    state = "all",
+    invoiceStatus = "all",
+    partnerId,
+    staleOnly,
+    limit = 200,
+    offset = 0,
+    sort = "date_desc",
+  } = filters;
+
+  const now = today();
+  const orders = await getOdooSaleOrders();
+
+  // Build an invoice_ids -> count index by splitting comma-joined references
+  const invoiceIndex = new Map<string, number>();
+  for (const o of orders) {
+    const ids = (o.invoice_ids || "").split(",").map((s) => s.trim()).filter(Boolean);
+    invoiceIndex.set(o.id, ids.length);
+  }
+
+  const allRows = orders.map((o) => toOrderListRow(o, now, invoiceIndex));
+
+  // Pipeline summary (always computed over the full set)
+  const addBy = (bucket: Record<string, number>, cur: string, amt: number) => {
+    bucket[cur] = (bucket[cur] ?? 0) + amt;
+  };
+  const pipeline: OrderPipelineSummary = {
+    draft:        { count: 0, totalByCurrency: {} },
+    sent:         { count: 0, totalByCurrency: {} },
+    sale:         { count: 0, totalByCurrency: {} },
+    done:         { count: 0, totalByCurrency: {} },
+    cancel:       { count: 0, totalByCurrency: {} },
+    toInvoice:    { count: 0, totalByCurrency: {} },
+    staleQuotes:  { count: 0, totalByCurrency: {} },
+  };
+  for (const r of allRows) {
+    const bucket = (pipeline as unknown as Record<string, { count: number; totalByCurrency: Record<string, number> }>)[r.state];
+    if (bucket) {
+      bucket.count++;
+      addBy(bucket.totalByCurrency, r.currency, r.amountTotal);
+    }
+    if (r.invoiceStatus === "to invoice") {
+      pipeline.toInvoice.count++;
+      addBy(pipeline.toInvoice.totalByCurrency, r.currency, r.amountTotal);
+    }
+    if (r.isStale) {
+      pipeline.staleQuotes.count++;
+      addBy(pipeline.staleQuotes.totalByCurrency, r.currency, r.amountTotal);
+    }
+  }
+
+  let filtered = allRows;
+
+  if (state !== "all") {
+    if (state === "quote") {
+      filtered = filtered.filter((r) => r.state === "draft" || r.state === "sent");
+    } else {
+      filtered = filtered.filter((r) => r.state === state);
+    }
+  }
+
+  if (invoiceStatus !== "all") {
+    filtered = filtered.filter((r) => r.invoiceStatus === invoiceStatus);
+  }
+
+  if (partnerId) {
+    filtered = filtered.filter((r) => r.partnerId === partnerId);
+  }
+
+  if (staleOnly) {
+    filtered = filtered.filter((r) => r.isStale);
+  }
+
+  if (q) {
+    const needle = q.toLowerCase();
+    filtered = filtered.filter((r) =>
+      `${r.name} ${r.partnerName} ${r.salesperson}`.toLowerCase().includes(needle)
+    );
+  }
+
+  const cmp = (a: OrderListRow, b: OrderListRow) => {
+    if (sort === "date_asc") return a.dateOrder.localeCompare(b.dateOrder);
+    if (sort === "total_desc") return b.amountTotal - a.amountTotal;
+    if (sort === "days_open_desc") return b.daysOpen - a.daysOpen;
+    if (sort === "partner") return a.partnerName.localeCompare(b.partnerName);
+    return b.dateOrder.localeCompare(a.dateOrder);
+  };
+  filtered.sort(cmp);
+
+  return {
+    orders: filtered.slice(offset, offset + limit),
+    total: filtered.length,
+    offset,
+    limit,
+    pipeline,
+  };
+};
+
+export interface OrderDetail {
+  order: OrderListRow & { rawState: string };
+  rawOrder: OdooSaleOrder;
+  lines: OdooSaleOrderLine[];
+  invoices: OdooInvoice[];
+}
+
+export const getOrderDetail = async (orderId: string): Promise<OrderDetail | null> => {
+  const [orders, lines, invoices] = await Promise.all([
+    getOdooSaleOrders(),
+    getOdooSaleOrderLines(),
+    getOdooInvoices(),
+  ]);
+  const o = orders.find((x) => x.id === orderId);
+  if (!o) return null;
+
+  const orderLines = lines
+    .filter((l) => l.order_id_id === orderId)
+    .sort((a, b) => Number(a.sequence || 0) - Number(b.sequence || 0));
+
+  // Linked invoices: invoice.invoice_origin === order.name
+  // OR order.invoice_ids contains the invoice id.
+  const idSet = new Set(
+    (o.invoice_ids || "").split(",").map((s) => s.trim()).filter(Boolean)
+  );
+  const linkedInvoices = invoices.filter(
+    (i) => idSet.has(i.id) || (i.invoice_origin && i.invoice_origin === o.name)
+  );
+
+  const row = toOrderListRow(o);
+  return {
+    order: { ...row, rawState: o.state },
+    rawOrder: o,
+    lines: orderLines,
+    invoices: linkedInvoices,
+  };
+};
+
 // ── Invoice Lines ────────────────────────────────────────────────
 
 export interface OdooInvoiceLine {
