@@ -431,6 +431,75 @@ const emptyNewDealForm = {
   brandSlugs: [] as string[],
 };
 
+// Inline editable number cell for line-item qty/price fields. Commits on
+// blur or Enter; Escape reverts. Scoped to this file — not worth a shared
+// component until a second caller appears.
+const EditableNumber = ({
+  value,
+  prefix,
+  suffix,
+  onCommit,
+  min = 0,
+  step = 1,
+  className = "",
+}: {
+  value: number;
+  prefix?: string;
+  suffix?: string;
+  onCommit: (next: number) => void;
+  min?: number;
+  step?: number;
+  className?: string;
+}) => {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(String(value));
+  useEffect(() => {
+    setDraft(String(value));
+  }, [value]);
+  const commit = () => {
+    setEditing(false);
+    const next = parseFloat(draft);
+    if (!Number.isFinite(next) || next === value) return;
+    if (next < min) return;
+    onCommit(next);
+  };
+  if (!editing) {
+    return (
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        className={`text-left hover:bg-dash-surface px-1 -mx-1 rounded cursor-text ${className}`}
+        title="Click to edit"
+      >
+        {prefix ?? ""}
+        {value.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+        {suffix ?? ""}
+      </button>
+    );
+  }
+  return (
+    <input
+      autoFocus
+      type="number"
+      step={step}
+      min={min}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          (e.target as HTMLInputElement).blur();
+        } else if (e.key === "Escape") {
+          setDraft(String(value));
+          setEditing(false);
+        }
+      }}
+      className={`w-full bg-dash-surface border border-brand-copper rounded px-1 -mx-1 outline-none ${className}`}
+    />
+  );
+};
+
 const PipelinePageInner = () => {
   const [deals, setDeals] = useState(SAMPLE_PIPELINE);
   const [loading, setLoading] = useState(true);
@@ -913,6 +982,55 @@ const PipelinePageInner = () => {
           cur && cur.id === dealId ? { ...cur, lineItems: prev } : cur
         );
         toast.error("Could not remove");
+      }
+    },
+    [selectedDeal?.id, selectedDeal?.lineItems]
+  );
+
+  // PATCH a line item field. Optimistic update — local recompute of margin
+  // keeps the UI snappy; server response replaces with authoritative row.
+  const handleUpdateLineItem = useCallback(
+    async (
+      itemId: string,
+      patch: { quantity?: number; dealerCost?: number; quotedPrice?: number; shippingCost?: number }
+    ) => {
+      if (!selectedDeal?.id) return;
+      const dealId = selectedDeal.id;
+      const prev = selectedDeal.lineItems ?? [];
+      // Optimistic local recompute
+      setSelectedDeal((cur) =>
+        cur && cur.id === dealId
+          ? {
+              ...cur,
+              lineItems: prev.map((i) => {
+                if (i.id !== itemId) return i;
+                const qty = patch.quantity ?? i.quantity;
+                const dc = patch.dealerCost ?? i.dealerCost;
+                const qp = patch.quotedPrice ?? i.quotedPrice;
+                const ship = patch.shippingCost ?? i.shippingCost;
+                const marginAmount = (qp - dc) * qty;
+                const marginPercent = qp > 0 ? Math.round(((qp - dc) / qp) * 1000) / 10 : 0;
+                return { ...i, quantity: qty, dealerCost: dc, quotedPrice: qp, shippingCost: ship, marginAmount, marginPercent };
+              }),
+            }
+          : cur
+      );
+      try {
+        const res = await fetch(
+          `/api/dashboard/deals/${encodeURIComponent(dealId)}/line-items`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ itemId, ...patch }),
+          }
+        );
+        if (!res.ok) throw new Error("Failed");
+      } catch (e) {
+        console.error("[Pipeline] update line item failed", e);
+        setSelectedDeal((cur) =>
+          cur && cur.id === dealId ? { ...cur, lineItems: prev } : cur
+        );
+        toast.error("Could not update");
       }
     },
     [selectedDeal?.id, selectedDeal?.lineItems]
@@ -1802,15 +1920,32 @@ const PipelinePageInner = () => {
                           <div className="grid grid-cols-4 gap-2 text-[11px]">
                             <div>
                               <p className="text-dash-text-secondary">Qty</p>
-                              <p className="text-dash-text font-medium">{item.quantity}</p>
+                              <EditableNumber
+                                value={item.quantity}
+                                min={1}
+                                onCommit={(q) => handleUpdateLineItem(item.id, { quantity: q })}
+                                className="text-dash-text font-medium"
+                              />
                             </div>
                             <div>
                               <p className="text-dash-text-secondary">Dealer Cost</p>
-                              <p className="text-dash-text font-medium">${item.dealerCost.toLocaleString()}</p>
+                              <EditableNumber
+                                value={item.dealerCost}
+                                prefix="$"
+                                step={0.01}
+                                onCommit={(v) => handleUpdateLineItem(item.id, { dealerCost: v })}
+                                className="text-dash-text font-medium"
+                              />
                             </div>
                             <div>
                               <p className="text-dash-text-secondary">Quoted</p>
-                              <p className="text-brand-copper font-medium">${item.quotedPrice.toLocaleString()}</p>
+                              <EditableNumber
+                                value={item.quotedPrice}
+                                prefix="$"
+                                step={0.01}
+                                onCommit={(v) => handleUpdateLineItem(item.id, { quotedPrice: v })}
+                                className="text-brand-copper font-medium"
+                              />
                             </div>
                             <div>
                               <p className="text-dash-text-secondary">Margin</p>
@@ -1819,33 +1954,52 @@ const PipelinePageInner = () => {
                               </p>
                             </div>
                           </div>
-                          {item.leadTime && (
-                            <p className="text-[10px] text-dash-text-secondary">Lead time: {item.leadTime} &bull; Shipping: ${item.shippingCost.toLocaleString()}</p>
-                          )}
+                          <div className="flex items-center gap-3 text-[10px] text-dash-text-secondary">
+                            <span>Shipping:</span>
+                            <EditableNumber
+                              value={item.shippingCost}
+                              prefix="$"
+                              step={0.01}
+                              onCommit={(v) => handleUpdateLineItem(item.id, { shippingCost: v })}
+                              className="text-dash-text"
+                            />
+                            {item.leadTime && <span>&bull; Lead time: {item.leadTime}</span>}
+                          </div>
                         </div>
                       ))}
                     </div>
-                    {/* Totals */}
-                    <div className="bg-dash-bg rounded-lg p-3 border border-dash-border">
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div>
-                          <p className="text-dash-text-secondary">Total Quoted</p>
-                          <p className="text-dash-text font-semibold">${(selectedDeal.totalQuoted ?? 0).toLocaleString()} MXN</p>
+                    {/* Totals — derived live from line items */}
+                    {(() => {
+                      const items = selectedDeal.lineItems ?? [];
+                      const totalQuoted = items.reduce((s, i) => s + i.quotedPrice * i.quantity, 0);
+                      const totalDealerCost = items.reduce((s, i) => s + i.dealerCost * i.quantity, 0);
+                      const totalShipping = items.reduce((s, i) => s + i.shippingCost, 0);
+                      const netMargin = totalQuoted - totalDealerCost - totalShipping;
+                      const marginPercent = totalQuoted > 0 ? Math.round((netMargin / totalQuoted) * 1000) / 10 : 0;
+                      const marginColor = marginPercent >= 35 ? "text-green-400" : marginPercent >= 20 ? "text-amber-400" : "text-red-400";
+                      return (
+                        <div className="bg-dash-bg rounded-lg p-3 border border-dash-border">
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                              <p className="text-dash-text-secondary">Total Quoted</p>
+                              <p className="text-dash-text font-semibold">${totalQuoted.toLocaleString(undefined, { maximumFractionDigits: 2 })} MXN</p>
+                            </div>
+                            <div>
+                              <p className="text-dash-text-secondary">Total Dealer Cost</p>
+                              <p className="text-dash-text font-semibold">${totalDealerCost.toLocaleString(undefined, { maximumFractionDigits: 2 })} MXN</p>
+                            </div>
+                            <div>
+                              <p className="text-dash-text-secondary">Total Shipping</p>
+                              <p className="text-dash-text font-semibold">${totalShipping.toLocaleString(undefined, { maximumFractionDigits: 2 })} MXN</p>
+                            </div>
+                            <div>
+                              <p className="text-dash-text-secondary">Net Margin</p>
+                              <p className={`${marginColor} font-semibold`}>{marginPercent}% <span className="text-[10px] text-dash-text-secondary font-normal">(${netMargin.toLocaleString(undefined, { maximumFractionDigits: 0 })})</span></p>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-dash-text-secondary">Total Dealer Cost</p>
-                          <p className="text-dash-text font-semibold">${(selectedDeal.totalDealerCost ?? 0).toLocaleString()} MXN</p>
-                        </div>
-                        <div>
-                          <p className="text-dash-text-secondary">Total Shipping</p>
-                          <p className="text-dash-text font-semibold">${(selectedDeal.totalShipping ?? 0).toLocaleString()} MXN</p>
-                        </div>
-                        <div>
-                          <p className="text-dash-text-secondary">Net Margin</p>
-                          <p className="text-green-400 font-semibold">{selectedDeal.marginPercent ?? 0}%</p>
-                        </div>
-                      </div>
-                    </div>
+                      );
+                    })()}
                   </>
                 )}
               </div>
