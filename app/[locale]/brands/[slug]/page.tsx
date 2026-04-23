@@ -406,8 +406,8 @@ const BrandPage = async ({ params }: BrandPageProps) => {
                   </h2>
                   <p className="mt-4 font-body text-base text-brand-stone max-w-xl">
                     {isEs
-                      ? `Más allá de la colección curada: todo el catálogo autorizado de ${brand.name} buscable por SKU, acabado y colección. Importación directa, cotización en 24 horas hábiles.`
-                      : `Beyond the curated edit: every authorized ${brand.name} SKU, searchable by finish, collection, and size. Factory-direct import, 24-hour quote turnaround.`}
+                      ? `Más allá de la colección curada: cada pieza autorizada de ${brand.name} que podemos importar, buscable por modelo, acabado o colección. Precio de fábrica y cotización en 24 horas hábiles.`
+                      : `Beyond our curated selection: every authorized ${brand.name} piece we can source, searchable by model, finish, or collection. Factory-direct pricing, quotes within 24 hours.`}
                   </p>
                 </div>
                 <Link

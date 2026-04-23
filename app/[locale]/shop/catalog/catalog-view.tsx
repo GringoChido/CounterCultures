@@ -57,7 +57,7 @@ const T = {
     sortAlpha: "Name A–Z",
     sortPriceAsc: "Price low → high",
     sortPriceDesc: "Price high → low",
-    searchPlaceholder: "Search by SKU, name, or brand…",
+    searchPlaceholder: "Search by brand, model, or name…",
     typeHint: (min: number) =>
       `Type at least ${min} characters, or pick a brand from the list.`,
     resultsFound: (n: number) =>
@@ -100,7 +100,7 @@ const T = {
     sortAlpha: "Nombre A–Z",
     sortPriceAsc: "Precio menor → mayor",
     sortPriceDesc: "Precio mayor → menor",
-    searchPlaceholder: "Busca por SKU, nombre o marca…",
+    searchPlaceholder: "Busca por marca, modelo o nombre…",
     typeHint: (min: number) =>
       `Escribe al menos ${min} caracteres o elige una marca.`,
     resultsFound: (n: number) =>

@@ -26,8 +26,8 @@ export const generateMetadata = async ({
       ? "Catálogo completo — Counter Cultures"
       : "Full Catalog — Counter Cultures",
     description: isEs
-      ? "Explora más de 350,000 SKUs de Brizo, Kohler, TOTO, Emtek, Blanco, California Faucets, Sun Valley Bronze y más. Solicita cotización directa."
-      : "Explore 350,000+ SKUs from Brizo, Kohler, TOTO, Emtek, Blanco, California Faucets, Sun Valley Bronze and more. Request a quote directly.",
+      ? "Explora más de 350,000 piezas de Brizo, Kohler, TOTO, Emtek, Blanco, California Faucets, Sun Valley Bronze y más. Cotización directa en 24 horas."
+      : "Explore 350,000+ fixtures from Brizo, Kohler, TOTO, Emtek, Blanco, California Faucets, Sun Valley Bronze and more. Direct quotes within 24 hours.",
     alternates: {
       canonical: `${BASE_URL}/${locale}/shop/catalog`,
       languages: {
@@ -83,8 +83,8 @@ const CatalogPage = async ({ params }: CatalogPageProps) => {
                 </h1>
                 <p className="mt-5 font-body text-[15px] md:text-base text-brand-stone max-w-xl leading-relaxed">
                   {isEs
-                    ? `Todo el catálogo autorizado de nuestros proveedores en un solo lugar: ${stats.brandCount} marcas, importación directa, respuesta de cotización en 24 horas hábiles. Esta es la herramienta que usan arquitectos y especificadores con proyectos reales.`
-                    : `Our full distributor catalog in one place: ${stats.brandCount} brands, factory-direct import, 24-hour quote turnaround. The tool architects and specifiers actually use on real projects.`}
+                    ? `El catálogo autorizado completo de cada marca que manejamos, en un solo lugar: ${stats.brandCount} marcas, precio directo de fábrica y cotización en 24 horas hábiles — todo lo que necesitas para especificar tu proyecto con confianza.`
+                    : `The complete authorized catalog from every brand we carry, in one place: ${stats.brandCount} brands, factory-direct pricing, and quotes returned within 24 hours — everything you need to specify your project with confidence.`}
                 </p>
               </div>
               <div className="hidden lg:block">

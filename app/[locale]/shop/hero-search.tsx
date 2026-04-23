@@ -11,12 +11,12 @@ interface HeroSearchProps {
 
 const T = {
   en: {
-    placeholder: "Search by brand, SKU, or finish…",
+    placeholder: "Search by brand, model, or finish…",
     cta: "Open catalog",
     hint: (n: string) => `Search ${n} pieces across 160 brands`,
   },
   es: {
-    placeholder: "Busca por marca, SKU o acabado…",
+    placeholder: "Busca por marca, modelo o acabado…",
     cta: "Abrir catálogo",
     hint: (n: string) => `Busca ${n} piezas en 160 marcas`,
   },

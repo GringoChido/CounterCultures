@@ -175,8 +175,8 @@ const ShopPage = async ({ params }: ShopPageProps) => {
             </h1>
             <p className="mt-5 font-body text-base md:text-lg text-brand-stone max-w-2xl leading-relaxed">
               {isEs
-                ? "Curaduría propia de Roger de las piezas que ponemos en proyectos reales — más un catálogo completo de 354,449 SKUs de nuestros proveedores autorizados, buscable por marca o acabado."
-                : "Roger's personal curation of pieces we put into real projects — plus our full authorized-distributor catalog of 354,449 SKUs, searchable by brand or finish."}
+                ? "Piezas seleccionadas a mano para nuestro showroom en San Miguel de Allende — y el catálogo autorizado completo de cada marca que manejamos, con precio de fábrica y cotización en 24 horas hábiles."
+                : "Hand-picked fixtures for our San Miguel de Allende showroom — plus the full authorized catalog from every brand we carry, with factory-direct pricing and a 24-hour quote turnaround."}
             </p>
             {fullStats.total > 0 && (
               <HeroSearch
@@ -187,51 +187,21 @@ const ShopPage = async ({ params }: ShopPageProps) => {
           </div>
         </section>
 
-        {/* Recently Specified — real sales data from Odoo */}
-        <RecentlySpecifiedRow
-          items={recentlySpecified}
-          locale={locale as "en" | "es"}
-        />
-
-        {/* Featured Brands band */}
-        <FeaturedBrandsBand
-          locale={locale as "en" | "es"}
-          brands={featuredBrands}
-        />
-
-        {/* Curated editorial grid */}
-        <section className="py-14 md:py-20 bg-white">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-10">
-            <p className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-copper uppercase">
-              {isEs ? "Curado para México" : "Curated for Mexico"}
-            </p>
-            <h2 className="mt-3 font-display text-3xl md:text-4xl font-light tracking-wide text-brand-charcoal leading-[1.1]">
-              {isEs
-                ? "Piezas que Roger tiene en el showroom."
-                : "Pieces Roger actually has in the showroom."}
-            </h2>
-            <p className="mt-3 font-body text-sm text-brand-stone max-w-xl">
-              {isEs
-                ? "Selección curada a mano con imágenes, acabados y descripciones propias — el núcleo del salón."
-                : "Hand-picked selection with our own imagery, finishes, and descriptions — the showroom core."}
-            </p>
-          </div>
-          <ShopCatalog initialProducts={products} />
-        </section>
-
-        {/* Full catalog CTA band — bridges curated shop to the 354k vault */}
+        {/* Full catalog CTA band — directly under the hero so visitors
+            searching for a specific brand or SKU have a big, obvious
+            entry point into the Vault. */}
         {fullStats.total > 0 && (
-          <section className="bg-brand-charcoal text-white py-14 md:py-20 border-t border-brand-stone/20">
+          <section className="bg-brand-charcoal text-white py-14 md:py-20 border-b border-brand-stone/20">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="grid lg:grid-cols-[1.5fr_auto] gap-8 items-end">
                 <div>
                   <span className="font-body font-semibold text-[11px] tracking-[0.25em] uppercase text-brand-copper">
-                    {isEs ? "No ves lo que buscas?" : "Don't see what you're looking for?"}
+                    {isEs ? "¿No ves lo que buscas?" : "Don't see what you're looking for?"}
                   </span>
                   <h2 className="mt-3 font-display text-3xl md:text-5xl font-light tracking-wide leading-[1.05]">
                     {isEs ? (
                       <>
-                        Explora las{" "}
+                        Busca entre las{" "}
                         <span className="italic text-brand-copper">
                           {fullStats.total.toLocaleString("es-MX")} piezas
                         </span>{" "}
@@ -249,8 +219,8 @@ const ShopPage = async ({ params }: ShopPageProps) => {
                   </h2>
                   <p className="mt-4 font-body text-base text-white/70 max-w-xl">
                     {isEs
-                      ? `${fullStats.brandCount} marcas autorizadas, búsqueda por SKU y acabado, solicitud de cotización en un toque. La herramienta que usan arquitectos y especificadores.`
-                      : `${fullStats.brandCount} authorized brands, search by SKU or finish, one-tap quote request. The tool architects and specifiers actually use.`}
+                      ? `${fullStats.brandCount} marcas autorizadas. Busca por marca, modelo o acabado. Solicita cotización directa con tiempos de entrega confirmados.`
+                      : `${fullStats.brandCount} authorized brands. Search by brand, model number, or finish. Request a direct quote with confirmed lead times.`}
                   </p>
                 </div>
                 <Link
@@ -263,6 +233,38 @@ const ShopPage = async ({ params }: ShopPageProps) => {
             </div>
           </section>
         )}
+
+        {/* Recently Specified */}
+        <RecentlySpecifiedRow
+          items={recentlySpecified}
+          locale={locale as "en" | "es"}
+        />
+
+        {/* Featured Brands band */}
+        <FeaturedBrandsBand
+          locale={locale as "en" | "es"}
+          brands={featuredBrands}
+        />
+
+        {/* Curated editorial grid */}
+        <section className="py-14 md:py-20 bg-white">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-10">
+            <p className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-copper uppercase">
+              {isEs ? "En el showroom" : "On the floor"}
+            </p>
+            <h2 className="mt-3 font-display text-3xl md:text-4xl font-light tracking-wide text-brand-charcoal leading-[1.1]">
+              {isEs
+                ? "En exhibición en nuestro showroom de San Miguel."
+                : "On display in our San Miguel showroom."}
+            </h2>
+            <p className="mt-3 font-body text-sm text-brand-stone max-w-xl">
+              {isEs
+                ? "Una selección curada con fotografía propia, opciones de acabados y fichas técnicas — las piezas que tenemos en piso para que las veas y toques en persona."
+                : "A hand-picked selection with our own photography, finish options, and full specs — the pieces we keep on the floor so you can see and touch them in person."}
+            </p>
+          </div>
+          <ShopCatalog initialProducts={products} />
+        </section>
       </main>
       <Footer locale={locale} />
     </>

@@ -13,8 +13,8 @@ interface RecentlySpecifiedRowProps {
 const T = {
   en: {
     eyebrow: "Recently specified",
-    headline: "What architects are actually putting in projects.",
-    subhead: "Ranked by real Odoo sales data — not an editor's guess.",
+    headline: "What's actually going into homes and projects this year.",
+    subhead: "Ranked by real order history — not an editor's pick.",
     specifiedIn: (n: number) =>
       n === 1 ? "1 project" : `${n} projects`,
     from: "from",
@@ -22,8 +22,8 @@ const T = {
   },
   es: {
     eyebrow: "Recientemente especificado",
-    headline: "Lo que los arquitectos están poniendo en proyectos reales.",
-    subhead: "Ordenado por ventas reales en Odoo — no por intuición.",
+    headline: "Lo que realmente se está instalando en casas y proyectos este año.",
+    subhead: "Ordenado por historial de pedidos real — no por intuición del editor.",
     specifiedIn: (n: number) =>
       n === 1 ? "1 proyecto" : `${n} proyectos`,
     from: "desde",
