@@ -47,6 +47,7 @@ import {
   AlertTriangle,
   ClipboardList,
   Trash2,
+  Share2,
 } from "lucide-react";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { PipelineJourneyPlayer } from "@/app/(dashboard)/components/pipeline-journey-player";
@@ -60,6 +61,7 @@ import { NotesPanel } from "@/app/(dashboard)/components/notes-panel";
 import { ShareButton } from "@/app/(dashboard)/components/share-button";
 import { ThreadOnDealPanel } from "@/app/(dashboard)/components/thread-on-deal-panel";
 import { ProductPicker } from "@/app/(dashboard)/components/product-picker";
+import { ShareQuoteModal } from "@/app/(dashboard)/components/share-quote-modal";
 import type { ProductFull } from "@/app/lib/products-full";
 import {
   SAMPLE_PIPELINE,
@@ -828,6 +830,7 @@ const PipelinePageInner = () => {
   const [lineItemsLoading, setLineItemsLoading] = useState(false);
   const [productPickerOpen, setProductPickerOpen] = useState(false);
   const [addingItem, setAddingItem] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
 
   // Customs tab state — Traficos linked to this deal via Trafico_Items
   const [dealTraficos, setDealTraficos] = useState<TraficoSummary[]>([]);
@@ -1868,15 +1871,26 @@ const PipelinePageInner = () => {
                   </h4>
                   <div className="flex items-center gap-2">
                     {(selectedDeal.lineItems ?? []).length > 0 && (
-                      <a
-                        href={`/dashboard/quotes/${encodeURIComponent(selectedDeal.id)}/print?auto=1`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-dash-border text-dash-text rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
-                      >
-                        <FileText className="w-3.5 h-3.5" />
-                        Quote PDF
-                      </a>
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setShareModalOpen(true)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-dash-border text-dash-text rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
+                          title="Send to customer"
+                        >
+                          <Share2 className="w-3.5 h-3.5" />
+                          Share
+                        </button>
+                        <a
+                          href={`/dashboard/quotes/${encodeURIComponent(selectedDeal.id)}/print?auto=1`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-dash-border text-dash-text rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          PDF
+                        </a>
+                      </>
                     )}
                     <button
                       onClick={() => setProductPickerOpen(true)}
@@ -2958,6 +2972,12 @@ const PipelinePageInner = () => {
         <ProductPicker
           onSelect={handleAddProduct}
           onClose={() => setProductPickerOpen(false)}
+        />
+      )}
+      {shareModalOpen && selectedDeal && (
+        <ShareQuoteModal
+          dealId={selectedDeal.id}
+          onClose={() => setShareModalOpen(false)}
         />
       )}
     </div>

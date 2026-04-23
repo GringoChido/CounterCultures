@@ -208,6 +208,74 @@ const handlePaymentFailed = async (invoice: Stripe.Invoice): Promise<void> => {
 };
 
 // ---------------------------------------------------------------------------
+// Checkout Session → Quote Deposit paid
+// ---------------------------------------------------------------------------
+
+/**
+ * Fires when a customer pays their quote deposit via the Stripe payment link
+ * minted by /api/dashboard/deals/[id]/share. The link carries metadata
+ * {dealId, kind:"quote_deposit"}, which we use here to advance the deal
+ * past Discovery and log the payment.
+ */
+const handleCheckoutSessionCompleted = async (
+  session: Stripe.Checkout.Session
+): Promise<void> => {
+  const dealId = (session.metadata?.dealId ?? "").toString().trim();
+  const kind = (session.metadata?.kind ?? "").toString();
+  if (!dealId || kind !== "quote_deposit") {
+    // Not our deposit flow — ignore quietly.
+    return;
+  }
+
+  const amount = (session.amount_total ?? 0) / 100;
+  const currency = (session.currency ?? "mxn").toUpperCase();
+  const email =
+    session.customer_details?.email ?? session.customer_email ?? "";
+  const sessionId = session.id;
+  const paymentIntentId =
+    typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : session.payment_intent?.id ?? "";
+
+  // Append a Deal_Payments row so the payment shows in deal history.
+  try {
+    await appendRow("Deal_Payments", [
+      `PAY-${Date.now()}`,
+      dealId,
+      amount.toString(),
+      currency,
+      "paid",
+      "quote_deposit",
+      new Date().toISOString(),
+      sessionId,
+      paymentIntentId,
+      email,
+    ]);
+  } catch (err) {
+    console.error("[Stripe Webhook] Failed to append Deal_Payments row:", err);
+  }
+
+  // Fire rule engine so any configured stage transitions apply automatically.
+  try {
+    await evaluateAndTransition(
+      "stripe_payment",
+      dealId,
+      { kind: "quote_deposit", amount, currency, sessionId },
+      "stripe-webhook"
+    );
+  } catch (err) {
+    console.error("[Stripe Webhook] rule engine failed:", err);
+  }
+
+  await logActivity(
+    "quote_deposit_paid",
+    `Deal ${dealId}: ${currency} ${amount} deposit paid${
+      email ? ` by ${email}` : ""
+    } (session ${sessionId})`
+  );
+};
+
+// ---------------------------------------------------------------------------
 // Public: dispatch
 // ---------------------------------------------------------------------------
 
@@ -231,6 +299,12 @@ export const dispatchStripeEvent = async (
       case "payment_intent.succeeded":
         await handlePaymentIntentSucceeded(
           event.data.object as Stripe.PaymentIntent
+        );
+        markProcessed(event.id);
+        return "processed";
+      case "checkout.session.completed":
+        await handleCheckoutSessionCompleted(
+          event.data.object as Stripe.Checkout.Session
         );
         markProcessed(event.id);
         return "processed";

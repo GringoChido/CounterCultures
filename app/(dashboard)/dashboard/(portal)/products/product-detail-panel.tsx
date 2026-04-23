@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import type { ProductFull } from "@/app/lib/products-full";
 import { useActiveOrderStore, type ActiveOrder } from "@/app/lib/stores/active-order-store";
+import { CustomerCombobox } from "@/app/(dashboard)/components/customer-combobox";
 
 interface DealOption {
   id: string;
@@ -597,13 +598,11 @@ const ProductDetailPanel = ({
           {walkInOpen ? (
             <div className="space-y-2">
               <div className="grid grid-cols-2 gap-2">
-                <input
+                <CustomerCombobox
                   autoFocus
-                  type="text"
                   value={walkInCompany}
-                  onChange={(e) => setWalkInCompany(e.target.value)}
-                  placeholder="Customer / company *"
-                  className="px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper"
+                  onChange={(v) => setWalkInCompany(v)}
+                  placeholder="Customer / company * (type to find or add)"
                 />
                 <input
                   type="text"
