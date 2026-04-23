@@ -46,6 +46,7 @@ import {
   Calculator,
   AlertTriangle,
   ClipboardList,
+  Trash2,
 } from "lucide-react";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { PipelineJourneyPlayer } from "@/app/(dashboard)/components/pipeline-journey-player";
@@ -58,6 +59,8 @@ import { PreviewPanel, type PreviewFile } from "@/app/(dashboard)/components/pre
 import { NotesPanel } from "@/app/(dashboard)/components/notes-panel";
 import { ShareButton } from "@/app/(dashboard)/components/share-button";
 import { ThreadOnDealPanel } from "@/app/(dashboard)/components/thread-on-deal-panel";
+import { ProductPicker } from "@/app/(dashboard)/components/product-picker";
+import type { ProductFull } from "@/app/lib/products-full";
 import {
   SAMPLE_PIPELINE,
   LOST_STAGES,
@@ -752,11 +755,168 @@ const PipelinePageInner = () => {
   const [dealDocs, setDealDocs] = useState<DocumentRecord[]>([]);
   const [docsLoading, setDocsLoading] = useState(false);
 
+  // Line Items tab state — lazy-loaded from Deal_Line_Items sheet
+  const [lineItemsLoading, setLineItemsLoading] = useState(false);
+  const [productPickerOpen, setProductPickerOpen] = useState(false);
+  const [addingItem, setAddingItem] = useState(false);
+
   // Customs tab state — Traficos linked to this deal via Trafico_Items
   const [dealTraficos, setDealTraficos] = useState<TraficoSummary[]>([]);
   const [traficosLoading, setTraficosLoading] = useState(false);
   const [creatingTrafico, setCreatingTrafico] = useState(false);
   const [richMap, setRichMap] = useState<Record<string, HydratedTrafico | null>>({});
+
+  // Lazy-load line items from Deal_Line_Items when the Line Items tab
+  // is opened. Stored separately from the Pipeline row so multi-row items
+  // don't need a JSON column and can be reconciled with POs cleanly.
+  useEffect(() => {
+    if (!selectedDeal?.id || dealTab !== "line-items") return;
+    const dealId = selectedDeal.id;
+    setLineItemsLoading(true);
+    fetch(`/api/dashboard/deals/${encodeURIComponent(dealId)}/line-items`, {
+      cache: "no-store",
+    })
+      .then((r) => (r.ok ? r.json() : { items: [] }))
+      .then((d) => {
+        const items: DealLineItem[] = ((d.items ?? []) as Array<{
+          id: string;
+          sku: string;
+          productName: string;
+          brand: string;
+          finish: string;
+          quantity: number;
+          dealerCost: number;
+          quotedPrice: number;
+          msrp: number;
+          shippingCost: number;
+          leadTime: string;
+          status: string;
+          marginAmount: number;
+          marginPercent: number;
+          hsCode: string;
+          countryOfOrigin: string;
+        }>).map((r) => ({
+          id: r.id,
+          productName: r.productName,
+          sku: r.sku,
+          brand: r.brand,
+          finish: r.finish || undefined,
+          quantity: r.quantity,
+          dealerCost: r.dealerCost,
+          quotedPrice: r.quotedPrice,
+          msrp: r.msrp,
+          shippingCost: r.shippingCost,
+          leadTime: r.leadTime || undefined,
+          status: (r.status as DealLineItem["status"]) || "current",
+          marginAmount: r.marginAmount,
+          marginPercent: r.marginPercent,
+          hsCode: r.hsCode || undefined,
+          countryOfOrigin: (r.countryOfOrigin as DealLineItem["countryOfOrigin"]) || undefined,
+        }));
+        setSelectedDeal((cur) => (cur && cur.id === dealId ? { ...cur, lineItems: items } : cur));
+      })
+      .catch((e) => console.error("[Pipeline] lineItems fetch failed", e))
+      .finally(() => setLineItemsLoading(false));
+  }, [selectedDeal?.id, dealTab]);
+
+  const handleAddProduct = useCallback(
+    async (product: ProductFull) => {
+      if (!selectedDeal?.id) return;
+      const dealId = selectedDeal.id;
+      setAddingItem(true);
+      try {
+        const res = await fetch(
+          `/api/dashboard/deals/${encodeURIComponent(dealId)}/line-items`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ productId: product.id, quantity: 1 }),
+          }
+        );
+        if (!res.ok) throw new Error("Failed");
+        const data = await res.json();
+        const r = data.item as {
+          id: string;
+          sku: string;
+          productName: string;
+          brand: string;
+          finish: string;
+          quantity: number;
+          dealerCost: number;
+          quotedPrice: number;
+          msrp: number;
+          shippingCost: number;
+          leadTime: string;
+          status: string;
+          marginAmount: number;
+          marginPercent: number;
+        };
+        const added: DealLineItem = {
+          id: r.id,
+          productName: r.productName,
+          sku: r.sku,
+          brand: r.brand,
+          finish: r.finish || undefined,
+          quantity: r.quantity,
+          dealerCost: r.dealerCost,
+          quotedPrice: r.quotedPrice,
+          msrp: r.msrp,
+          shippingCost: r.shippingCost,
+          leadTime: r.leadTime || undefined,
+          status: (r.status as DealLineItem["status"]) || "current",
+          marginAmount: r.marginAmount,
+          marginPercent: r.marginPercent,
+        };
+        setSelectedDeal((cur) =>
+          cur && cur.id === dealId
+            ? { ...cur, lineItems: [...(cur.lineItems ?? []), added] }
+            : cur
+        );
+        toast.success(`Added ${r.sku || r.productName} to deal`);
+        setProductPickerOpen(false);
+      } catch (e) {
+        console.error("[Pipeline] add line item failed", e);
+        toast.error("Could not add product");
+      } finally {
+        setAddingItem(false);
+      }
+    },
+    [selectedDeal?.id]
+  );
+
+  const handleRemoveLineItem = useCallback(
+    async (itemId: string) => {
+      if (!selectedDeal?.id) return;
+      const dealId = selectedDeal.id;
+      const prev = selectedDeal.lineItems ?? [];
+      // Optimistic
+      setSelectedDeal((cur) =>
+        cur && cur.id === dealId
+          ? { ...cur, lineItems: prev.filter((i) => i.id !== itemId) }
+          : cur
+      );
+      try {
+        const res = await fetch(
+          `/api/dashboard/deals/${encodeURIComponent(dealId)}/line-items`,
+          {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ itemId }),
+          }
+        );
+        if (!res.ok) throw new Error("Failed");
+        toast.success("Removed");
+      } catch (e) {
+        console.error("[Pipeline] remove line item failed", e);
+        // Roll back
+        setSelectedDeal((cur) =>
+          cur && cur.id === dealId ? { ...cur, lineItems: prev } : cur
+        );
+        toast.error("Could not remove");
+      }
+    },
+    [selectedDeal?.id, selectedDeal?.lineItems]
+  );
 
   useEffect(() => {
     if (!selectedDeal?.id || dealTab !== "customs") return;
@@ -1584,33 +1744,60 @@ const PipelinePageInner = () => {
             {/* Line Items Tab */}
             {dealTab === "line-items" && (
               <div className="space-y-4">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
-                  Product Line Items
-                </h4>
-                {(selectedDeal.lineItems ?? []).length === 0 ? (
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
+                    Product Line Items
+                  </h4>
+                  <button
+                    onClick={() => setProductPickerOpen(true)}
+                    disabled={addingItem}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {addingItem ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Plus className="w-3.5 h-3.5" />
+                    )}
+                    Add product
+                  </button>
+                </div>
+                {lineItemsLoading ? (
+                  <div className="text-center py-8">
+                    <Loader2 className="w-6 h-6 text-dash-text-secondary animate-spin mx-auto" />
+                  </div>
+                ) : (selectedDeal.lineItems ?? []).length === 0 ? (
                   <div className="text-center py-8">
                     <Package className="w-10 h-10 text-dash-text-secondary/30 mx-auto mb-2" />
                     <p className="text-sm text-dash-text-secondary">No line items yet</p>
-                    <p className="text-xs text-dash-text-secondary/60 mt-1">Add structured product data to this deal</p>
+                    <p className="text-xs text-dash-text-secondary/60 mt-1">Click <span className="text-brand-copper">Add product</span> to search the 354k Odoo catalog</p>
                   </div>
                 ) : (
                   <>
                     <div className="space-y-2">
                       {(selectedDeal.lineItems ?? []).map((item) => (
                         <div key={item.id} className="bg-dash-bg rounded-lg p-3 space-y-2">
-                          <div className="flex items-start justify-between">
-                            <div>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
                               <p className="text-sm font-medium text-dash-text">{item.productName}</p>
                               <p className="text-[11px] text-dash-text-secondary">{item.brand} &bull; SKU: {item.sku}{item.finish ? ` \u2022 ${item.finish}` : ""}</p>
                             </div>
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                              item.status === "current" ? "bg-green-500/10 text-green-400" :
-                              item.status === "custom" ? "bg-violet-500/10 text-violet-400" :
-                              item.status === "special-order" ? "bg-amber-500/10 text-amber-400" :
-                              "bg-red-500/10 text-red-400"
-                            }`}>
-                              {item.status}
-                            </span>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                                item.status === "current" ? "bg-green-500/10 text-green-400" :
+                                item.status === "custom" ? "bg-violet-500/10 text-violet-400" :
+                                item.status === "special-order" ? "bg-amber-500/10 text-amber-400" :
+                                "bg-red-500/10 text-red-400"
+                              }`}>
+                                {item.status}
+                              </span>
+                              <button
+                                onClick={() => handleRemoveLineItem(item.id)}
+                                className="p-1 rounded hover:bg-red-500/10 text-dash-text-secondary hover:text-red-400 transition-colors cursor-pointer"
+                                title="Remove"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </div>
                           <div className="grid grid-cols-4 gap-2 text-[11px]">
                             <div>
@@ -2599,6 +2786,13 @@ const PipelinePageInner = () => {
           </div>
         </div>
       </SlideOut>
+
+      {productPickerOpen && selectedDeal && (
+        <ProductPicker
+          onSelect={handleAddProduct}
+          onClose={() => setProductPickerOpen(false)}
+        />
+      )}
     </div>
   );
 };

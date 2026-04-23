@@ -28,6 +28,7 @@ type SheetTab =
   | "Products"
   | "Products_Odoo"
   | "Products_Quote"
+  | "Deal_Line_Items"
   | "Content_Calendar"
   | "Email_Campaigns"
   | "Social_Posts"
