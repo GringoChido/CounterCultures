@@ -1866,18 +1866,31 @@ const PipelinePageInner = () => {
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
                     Product Line Items
                   </h4>
-                  <button
-                    onClick={() => setProductPickerOpen(true)}
-                    disabled={addingItem}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer disabled:opacity-50"
-                  >
-                    {addingItem ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Plus className="w-3.5 h-3.5" />
+                  <div className="flex items-center gap-2">
+                    {(selectedDeal.lineItems ?? []).length > 0 && (
+                      <a
+                        href={`/dashboard/quotes/${encodeURIComponent(selectedDeal.id)}/print?auto=1`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-dash-border text-dash-text rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        Quote PDF
+                      </a>
                     )}
-                    Add product
-                  </button>
+                    <button
+                      onClick={() => setProductPickerOpen(true)}
+                      disabled={addingItem}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      {addingItem ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Plus className="w-3.5 h-3.5" />
+                      )}
+                      Add product
+                    </button>
+                  </div>
                 </div>
                 {lineItemsLoading ? (
                   <div className="text-center py-8">
