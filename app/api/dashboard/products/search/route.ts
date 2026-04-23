@@ -4,9 +4,21 @@ import {
   getBrandCounts,
   getCatalogStats,
   type ProductCategory,
+  type SearchSort,
 } from "@/app/lib/products-full";
+import {
+  getMostSpecifiedScores,
+  getInShowroomIds,
+} from "@/app/lib/catalog-signals";
 
 const VALID_CATEGORIES: ProductCategory[] = ["bathroom", "kitchen", "hardware"];
+const VALID_SORTS: SearchSort[] = [
+  "relevance",
+  "most_specified",
+  "alpha",
+  "price_asc",
+  "price_desc",
+];
 
 export const GET = async (req: NextRequest) => {
   const sp = req.nextUrl.searchParams;
@@ -24,8 +36,19 @@ export const GET = async (req: NextRequest) => {
   const limit = Math.min(Math.max(Number(sp.get("limit") ?? 100), 1), 500);
   const offset = Math.max(Number(sp.get("offset") ?? 0), 0);
   const includeFacets = sp.get("facets") === "true";
+  const rawSort = sp.get("sort") ?? "relevance";
+  const sort: SearchSort = VALID_SORTS.includes(rawSort as SearchSort)
+    ? (rawSort as SearchSort)
+    : "relevance";
+  // Signals are computed by default so the UI always has In-Showroom badges
+  // and projectCount — they're cached, so the cost is one map lookup.
+  const withSignals = sp.get("signals") !== "false";
 
   try {
+    const [specScores, inShowroomIds] = withSignals
+      ? await Promise.all([getMostSpecifiedScores(), getInShowroomIds()])
+      : [undefined, undefined];
+
     const result = await searchProducts({
       q,
       brand,
@@ -34,6 +57,9 @@ export const GET = async (req: NextRequest) => {
       saleOnly,
       limit,
       offset,
+      sort,
+      specScores,
+      inShowroomIds,
     });
 
     if (!includeFacets) {

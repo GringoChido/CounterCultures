@@ -10,6 +10,7 @@ import {
   Palette,
   Layers,
   Info,
+  TrendingUp,
 } from "lucide-react";
 import type { ProductFull } from "@/app/lib/products-full";
 import { useProjectListStore } from "@/app/lib/stores/project-list-store";
@@ -31,7 +32,7 @@ interface ProductDrawerProps {
   onPickProduct: (p: ProductFull) => void;
 }
 
-type TabKey = "overview" | "variants" | "related";
+type TabKey = "overview" | "variants" | "related" | "also_specified";
 
 const T = {
   en: {
@@ -45,8 +46,12 @@ const T = {
     overview: "Overview",
     variants: "Finishes & variants",
     related: "More from this brand",
+    alsoSpecified: "Also specified with",
     noVariants: "No finish variants detectable from this SKU.",
     noRelated: (brand: string) => `No other ${brand} products in catalog.`,
+    noAlsoSpecified: "Not enough project history yet to pair this with anything.",
+    alsoSpecifiedHint:
+      "Products that consistently ship alongside this one — real pairings, not algorithmic guesses.",
     addToProject: "Add to project list",
     inProject: "✓ Added to project",
     requestQuote: "Request a quote",
@@ -64,8 +69,12 @@ const T = {
     overview: "Resumen",
     variants: "Acabados y variantes",
     related: "Más de esta marca",
+    alsoSpecified: "Especificados en conjunto",
     noVariants: "Sin variantes detectables desde este SKU.",
     noRelated: (brand: string) => `No hay más productos de ${brand} en catálogo.`,
+    noAlsoSpecified: "Aún no hay suficiente historial para sugerir combinaciones.",
+    alsoSpecifiedHint:
+      "Productos que acompañan consistentemente a este — patrones reales de proyectos, no sugerencias algorítmicas.",
     addToProject: "Agregar al proyecto",
     inProject: "✓ Agregado al proyecto",
     requestQuote: "Solicitar cotización",
@@ -115,7 +124,9 @@ const ProductDrawer = ({
   const [variants, setVariants] = useState<Variant[]>([]);
   const [skuRoot, setSkuRoot] = useState<string | null>(null);
   const [sameBrand, setSameBrand] = useState<ProductFull[]>([]);
+  const [alsoSpecified, setAlsoSpecified] = useState<ProductFull[]>([]);
   const [loadingRel, setLoadingRel] = useState(false);
+  const [loadingAlso, setLoadingAlso] = useState(false);
   const [qtyInput, setQtyInput] = useState("1");
 
   const projectHas = useProjectListStore((s) => s.has);
@@ -126,6 +137,7 @@ const ProductDrawer = ({
     setTab("overview");
     setVariants([]);
     setSameBrand([]);
+    setAlsoSpecified([]);
     setSkuRoot(null);
     setQtyInput("1");
   }, [product.id]);
@@ -154,6 +166,26 @@ const ProductDrawer = ({
       cancelled = true;
     };
   }, [product.id, product.sku, product.brand]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingAlso(true);
+    fetch(`/api/dashboard/products/also-specified?id=${product.id}&limit=8`, {
+      cache: "no-store",
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (cancelled || !d) return;
+        setAlsoSpecified((d.items ?? []) as ProductFull[]);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setLoadingAlso(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [product.id]);
 
   const handleAdd = () => {
     const q = Math.max(1, parseInt(qtyInput) || 1);
@@ -211,6 +243,13 @@ const ProductDrawer = ({
                 key: "variants" as TabKey,
                 label: variants.length ? `${t.variants} (${variants.length})` : t.variants,
                 Icon: Palette,
+              },
+              {
+                key: "also_specified" as TabKey,
+                label: alsoSpecified.length
+                  ? `${t.alsoSpecified} (${alsoSpecified.length})`
+                  : t.alsoSpecified,
+                Icon: TrendingUp,
               },
               {
                 key: "related" as TabKey,
@@ -342,6 +381,61 @@ const ProductDrawer = ({
                         </div>
                         <div className="font-body text-xs shrink-0 text-brand-charcoal">
                           {fmtPrice(v.listPrice, v.currency, locale)}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {tab === "also_specified" && (
+            <div className="space-y-3">
+              {loadingAlso ? (
+                <div className="py-12 text-center">
+                  <Loader2 className="w-6 h-6 text-brand-stone animate-spin mx-auto" />
+                </div>
+              ) : alsoSpecified.length === 0 ? (
+                <p className="py-12 text-center text-sm font-body text-brand-stone">
+                  {t.noAlsoSpecified}
+                </p>
+              ) : (
+                <>
+                  <p className="text-xs font-body text-brand-stone italic leading-relaxed">
+                    {t.alsoSpecifiedHint}
+                  </p>
+                  <div className="grid grid-cols-1 gap-2">
+                    {alsoSpecified.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => onPickProduct(p)}
+                        className="flex items-center gap-3 text-left p-3 border border-brand-stone/15 hover:border-brand-copper hover:bg-brand-linen transition-colors cursor-pointer w-full"
+                      >
+                        <div className="w-12 h-12 shrink-0">
+                          <ProductVisual
+                            id={p.id}
+                            brand={p.brand}
+                            sku={p.sku}
+                            name={p.name || p.sku}
+                            aspect="1/1"
+                            size="tile"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-body text-[10px] text-brand-copper uppercase tracking-[0.15em] truncate">
+                            {p.brand || "—"}
+                          </div>
+                          <div className="font-body text-sm text-brand-charcoal truncate">
+                            {p.name || p.sku}
+                          </div>
+                          <div className="font-mono text-[10px] text-brand-stone truncate">
+                            {p.sku || "—"}
+                          </div>
+                        </div>
+                        <div className="font-body text-xs shrink-0 text-brand-charcoal whitespace-nowrap">
+                          {fmtPrice(p.listPrice, p.currency, locale)}
                         </div>
                       </button>
                     ))}

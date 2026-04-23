@@ -180,6 +180,13 @@ const getCache = async (): Promise<Cache> => {
   return loading;
 };
 
+export type SearchSort =
+  | "relevance"
+  | "most_specified"
+  | "alpha"
+  | "price_asc"
+  | "price_desc";
+
 export interface SearchOptions {
   q?: string;
   brand?: string;
@@ -188,10 +195,20 @@ export interface SearchOptions {
   saleOnly?: boolean;
   limit?: number;
   offset?: number;
+  sort?: SearchSort;
+  /** When provided, decorate returned items with signal flags and sort
+   *  most_specified using this score map. */
+  specScores?: Map<string, { weightedScore: number; projectCount: number }>;
+  inShowroomIds?: Set<string>;
+}
+
+export interface ProductFullWithSignals extends ProductFull {
+  inShowroom?: boolean;
+  projectCount?: number;
 }
 
 export interface SearchResult {
-  items: ProductFull[];
+  items: ProductFullWithSignals[];
   total: number;
   offset: number;
   limit: number;
@@ -242,6 +259,9 @@ export const searchProducts = async (
     saleOnly,
     limit = 100,
     offset = 0,
+    sort = "relevance",
+    specScores,
+    inShowroomIds,
   } = opts;
 
   const c = await getCache();
@@ -264,21 +284,58 @@ export const searchProducts = async (
       if (saleOnly && !p.saleOk) continue;
       scored.push({ p, s });
     }
-    scored.sort((a, b) => b.s - a.s || a.p._sku.localeCompare(b.p._sku));
+    if (sort === "most_specified" && specScores) {
+      // Blend relevance × spec boost so best-matching + most-specified float up.
+      scored.sort((a, b) => {
+        const sA = a.s * (1 + Math.log(1 + (specScores.get(a.p.id)?.projectCount ?? 0)));
+        const sB = b.s * (1 + Math.log(1 + (specScores.get(b.p.id)?.projectCount ?? 0)));
+        return sB - sA || a.p._sku.localeCompare(b.p._sku);
+      });
+    } else if (sort === "alpha") {
+      scored.sort((a, b) =>
+        (a.p.name || a.p.sku).localeCompare(b.p.name || b.p.sku)
+      );
+    } else if (sort === "price_asc") {
+      scored.sort((a, b) => a.p.listPrice - b.p.listPrice);
+    } else if (sort === "price_desc") {
+      scored.sort((a, b) => b.p.listPrice - a.p.listPrice);
+    } else {
+      scored.sort((a, b) => b.s - a.s || a.p._sku.localeCompare(b.p._sku));
+    }
     matched = scored.map((x) => x.p);
   } else {
-    // No query — just filter + sort by sku for stable browse.
+    // No query — filter pool, then sort if requested.
     matched = pool.filter((p) => {
       if (category !== "all" && p.category !== category) return false;
       if (activeOnly && !p.active) return false;
       if (saleOnly && !p.saleOk) return false;
       return true;
     });
-    // Already sorted by id at extract time; for alpha-browse keep as-is to
-    // avoid a 354k sort on empty-query calls.
+    if (sort === "most_specified" && specScores) {
+      matched = [...matched].sort((a, b) => {
+        const sA = specScores.get(a.id)?.weightedScore ?? 0;
+        const sB = specScores.get(b.id)?.weightedScore ?? 0;
+        return sB - sA || a._sku.localeCompare(b._sku);
+      });
+    } else if (sort === "alpha") {
+      matched = [...matched].sort((a, b) =>
+        (a.name || a.sku).localeCompare(b.name || b.sku)
+      );
+    } else if (sort === "price_asc") {
+      matched = [...matched].sort((a, b) => a.listPrice - b.listPrice);
+    } else if (sort === "price_desc") {
+      matched = [...matched].sort((a, b) => b.listPrice - a.listPrice);
+    }
   }
 
-  const items = matched.slice(offset, offset + limit).map(stripIndex);
+  const page = matched.slice(offset, offset + limit);
+  const items: ProductFullWithSignals[] = page.map((p) => {
+    const base: ProductFullWithSignals = stripIndex(p);
+    if (inShowroomIds?.has(p.id)) base.inShowroom = true;
+    const spec = specScores?.get(p.id);
+    if (spec && spec.projectCount > 0) base.projectCount = spec.projectCount;
+    return base;
+  });
   return {
     items,
     total: matched.length,

@@ -13,14 +13,16 @@ import {
   List,
   Plus,
   Check,
+  MapPin,
+  TrendingUp,
 } from "lucide-react";
-import type { ProductFull, BrandCount } from "@/app/lib/products-full";
+import type { ProductFull, ProductFullWithSignals, BrandCount } from "@/app/lib/products-full";
 import { useProjectListStore } from "@/app/lib/stores/project-list-store";
 import { ProductVisual } from "@/app/components/product-visual";
 import { ProductDrawer } from "./product-drawer";
 
 interface SearchResponse {
-  items: ProductFull[];
+  items: ProductFullWithSignals[];
   total: number;
   offset: number;
   limit: number;
@@ -34,7 +36,7 @@ interface CatalogViewProps {
 }
 
 type Category = "all" | "bathroom" | "kitchen" | "hardware";
-type SortKey = "recent" | "alpha" | "price-asc" | "price-desc";
+type SortKey = "most_specified" | "relevance" | "alpha" | "price_asc" | "price_desc";
 type ViewMode = "grid" | "table";
 
 const PAGE_SIZE = 60;
@@ -53,10 +55,13 @@ const T = {
     searchBrands: "Search brands…",
     allBrands: "All brands",
     sortBy: "Sort by",
-    sortRecent: "Newly added",
+    sortMostSpecified: "Most specified",
+    sortRelevance: "Best match",
     sortAlpha: "Name A–Z",
     sortPriceAsc: "Price low → high",
     sortPriceDesc: "Price high → low",
+    inShowroom: "In Showroom",
+    specifiedCount: (n: number) => `${n} project${n === 1 ? "" : "s"}`,
     searchPlaceholder: "Search by brand, model, or name…",
     typeHint: (min: number) =>
       `Type at least ${min} characters, or pick a brand from the list.`,
@@ -96,10 +101,13 @@ const T = {
     searchBrands: "Buscar marcas…",
     allBrands: "Todas las marcas",
     sortBy: "Ordenar",
-    sortRecent: "Agregados recientemente",
+    sortMostSpecified: "Más especificados",
+    sortRelevance: "Más relevante",
     sortAlpha: "Nombre A–Z",
     sortPriceAsc: "Precio menor → mayor",
     sortPriceDesc: "Precio mayor → menor",
+    inShowroom: "En showroom",
+    specifiedCount: (n: number) => `${n} proyecto${n === 1 ? "" : "s"}`,
     searchPlaceholder: "Busca por marca, modelo o nombre…",
     typeHint: (min: number) =>
       `Escribe al menos ${min} caracteres o elige una marca.`,
@@ -136,20 +144,13 @@ const formatPrice = (p: number, cur: string, locale: string) =>
       })}`
     : "—";
 
-// Sort client-side within a page of results. Server returns by relevance
-// when a query is present; sort applies after for stable display ordering.
-const sortPage = (items: ProductFull[], key: SortKey): ProductFull[] => {
-  if (key === "recent") return items;
-  const sorted = [...items];
-  if (key === "alpha") {
-    sorted.sort((a, b) => (a.name || a.sku).localeCompare(b.name || b.sku));
-  } else if (key === "price-asc") {
-    sorted.sort((a, b) => a.listPrice - b.listPrice);
-  } else if (key === "price-desc") {
-    sorted.sort((a, b) => b.listPrice - a.listPrice);
-  }
-  return sorted;
-};
+const VALID_SORTS: SortKey[] = [
+  "most_specified",
+  "relevance",
+  "alpha",
+  "price_asc",
+  "price_desc",
+];
 
 const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) => {
   const t = T[locale];
@@ -163,9 +164,12 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
   const [category, setCategory] = useState<Category>(
     (searchParams.get("category") as Category) || "all"
   );
-  const [sortKey, setSortKey] = useState<SortKey>(
-    (searchParams.get("sort") as SortKey) || "recent"
-  );
+  const [sortKey, setSortKey] = useState<SortKey>(() => {
+    const raw = searchParams.get("sort");
+    return raw && VALID_SORTS.includes(raw as SortKey)
+      ? (raw as SortKey)
+      : "most_specified";
+  });
   const [viewMode, setViewMode] = useState<ViewMode>(
     (searchParams.get("view") as ViewMode) || "grid"
   );
@@ -186,7 +190,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
     if (query.trim().length >= MIN_QUERY) params.set("q", query.trim());
     if (brand) params.set("brand", brand);
     if (category !== "all") params.set("category", category);
-    if (sortKey !== "recent") params.set("sort", sortKey);
+    if (sortKey !== "most_specified") params.set("sort", sortKey);
     if (viewMode !== "grid") params.set("view", viewMode);
     if (offset > 0) params.set("offset", String(offset));
     const qs = params.toString();
@@ -212,6 +216,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
         if (query.trim().length >= MIN_QUERY) p.set("q", query.trim());
         if (brand) p.set("brand", brand);
         if (category !== "all") p.set("category", category);
+        p.set("sort", sortKey);
         p.set("limit", String(PAGE_SIZE));
         p.set("offset", String(offset));
         const res = await fetch(`/api/dashboard/products/search?${p}`);
@@ -220,7 +225,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
       });
     }, 180);
     return () => clearTimeout(id);
-  }, [query, brand, category, offset]);
+  }, [query, brand, category, sortKey, offset]);
 
   const filteredBrands = useMemo(() => {
     if (!brandFilter) return brandCounts;
@@ -228,10 +233,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
     return brandCounts.filter((b) => b.brand.toLowerCase().includes(n));
   }, [brandCounts, brandFilter]);
 
-  const sortedItems = useMemo(
-    () => (result ? sortPage(result.items, sortKey) : []),
-    [result, sortKey]
-  );
+  const sortedItems = useMemo(() => result?.items ?? [], [result]);
 
   const totalPages = result ? Math.ceil(result.total / PAGE_SIZE) : 0;
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
@@ -241,7 +243,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
     setQuery("");
     setBrand("");
     setCategory("all");
-    setSortKey("recent");
+    setSortKey("most_specified");
     setOffset(0);
   }, []);
 
@@ -413,10 +415,11 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
                   onChange={(e) => setSortKey(e.target.value as SortKey)}
                   className="appearance-none h-full pl-4 pr-9 py-3 border border-brand-stone/20 bg-white text-sm font-body text-brand-charcoal focus:outline-none focus:border-brand-copper cursor-pointer"
                 >
-                  <option value="recent">{t.sortRecent}</option>
+                  <option value="most_specified">{t.sortMostSpecified}</option>
+                  <option value="relevance">{t.sortRelevance}</option>
                   <option value="alpha">{t.sortAlpha}</option>
-                  <option value="price-asc">{t.sortPriceAsc}</option>
-                  <option value="price-desc">{t.sortPriceDesc}</option>
+                  <option value="price_asc">{t.sortPriceAsc}</option>
+                  <option value="price_desc">{t.sortPriceDesc}</option>
                 </select>
                 <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-stone" />
               </div>
@@ -600,7 +603,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
 // ───────────────────────────────────────────────────────────────────────
 
 interface ProductCardProps {
-  product: ProductFull;
+  product: ProductFullWithSignals;
   locale: "en" | "es";
   inProject: boolean;
   onOpen: () => void;
@@ -615,7 +618,7 @@ const ProductCard = ({ product, locale, inProject, onOpen, onAdd, t }: ProductCa
       <button
         type="button"
         onClick={onOpen}
-        className="block cursor-pointer overflow-hidden"
+        className="block cursor-pointer overflow-hidden relative"
       >
         <ProductVisual
           id={product.id}
@@ -626,6 +629,18 @@ const ProductCard = ({ product, locale, inProject, onOpen, onAdd, t }: ProductCa
           size="card"
           className="group-hover:[&>img]:scale-[1.02] [&>img]:transition-transform [&>img]:duration-500"
         />
+        {product.inShowroom && (
+          <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-1 bg-brand-charcoal/90 text-white font-body text-[10px] tracking-[0.1em] uppercase backdrop-blur-sm">
+            <MapPin className="w-3 h-3" />
+            {t.inShowroom}
+          </span>
+        )}
+        {product.projectCount && product.projectCount > 1 ? (
+          <span className="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-1 bg-brand-copper/95 text-white font-body text-[10px] tracking-[0.1em] uppercase backdrop-blur-sm">
+            <TrendingUp className="w-3 h-3" />
+            {t.specifiedCount(product.projectCount)}
+          </span>
+        ) : null}
       </button>
       <div className="p-4 flex flex-col flex-1">
         <div className="flex items-start justify-between gap-2 mb-1">
@@ -683,7 +698,7 @@ const ProductCard = ({ product, locale, inProject, onOpen, onAdd, t }: ProductCa
 // ───────────────────────────────────────────────────────────────────────
 
 interface ProductTableProps {
-  items: ProductFull[];
+  items: ProductFullWithSignals[];
   locale: "en" | "es";
   onOpen: (p: ProductFull) => void;
   onAdd: (p: ProductFull) => void;
@@ -725,8 +740,20 @@ const ProductTable = ({ items, locale, onOpen, onAdd, isInProject, t }: ProductT
                 </div>
               </td>
               <td className="px-4 py-3">
-                <div className="font-body text-[10px] text-brand-copper uppercase tracking-[0.15em]">
-                  {p.brand || "—"} · {p.category}
+                <div className="flex items-center gap-2 font-body text-[10px] text-brand-copper uppercase tracking-[0.15em]">
+                  <span>{p.brand || "—"} · {p.category}</span>
+                  {p.inShowroom && (
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-brand-charcoal text-white tracking-[0.1em]">
+                      <MapPin className="w-2.5 h-2.5" />
+                      {t.inShowroom}
+                    </span>
+                  )}
+                  {p.projectCount && p.projectCount > 1 ? (
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-brand-copper/10 text-brand-copper tracking-[0.1em]">
+                      <TrendingUp className="w-2.5 h-2.5" />
+                      {t.specifiedCount(p.projectCount)}
+                    </span>
+                  ) : null}
                 </div>
                 <div className="font-body text-sm text-brand-charcoal mt-0.5 line-clamp-1">
                   {p.name || p.sku}
