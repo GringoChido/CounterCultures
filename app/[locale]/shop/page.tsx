@@ -3,8 +3,13 @@ import Link from "next/link";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { ShopCatalog } from "./shop-catalog";
+import { HeroSearch } from "./hero-search";
+import { RecentlySpecifiedRow } from "./recently-specified-row";
+import { FeaturedBrandsBand } from "./featured-brands-band";
 import { getProducts } from "@/app/lib/sheets";
-import { getCatalogStats } from "@/app/lib/products-full";
+import { getCatalogStats, getBrandCounts } from "@/app/lib/products-full";
+import { getBrands } from "@/app/lib/brand-kit-sheets";
+import { getRecentlySpecified } from "@/app/lib/recently-specified";
 
 export const revalidate = 300;
 
@@ -65,13 +70,57 @@ export const generateMetadata = async ({
   };
 };
 
+// Flagship brands spotlighted in the Featured Brands band (ordered).
+const FLAGSHIP_SLUGS = [
+  "brizo",
+  "kohler",
+  "toto",
+  "california-faucets",
+  "blanco",
+  "emtek",
+  "sun-valley-bronze",
+  "badeloft",
+];
+
+const PRE_STAGED_HEROES: Record<string, string> = {
+  kohler: "/Assets/BRANDS/kohler-hero.webp",
+  toto: "/Assets/BRANDS/toto-hero.webp",
+  brizo: "/Assets/BRANDS/brizo-hero.webp",
+  blanco: "/Assets/BRANDS/blanco-hero.webp",
+  "california-faucets": "/Assets/BRANDS/california-faucets-hero.webp",
+  "sun-valley-bronze": "/Assets/BRANDS/sun-valley-bronze-hero.webp",
+  emtek: "/Assets/BRANDS/emtek-hero.avif",
+  badeloft: "/Assets/BRANDS/badeloft-hero.webp",
+};
+
 const ShopPage = async ({ params }: ShopPageProps) => {
   const { locale } = await params;
   const isEs = locale === "es";
-  const [products, fullStats] = await Promise.all([
-    getProducts(),
-    getCatalogStats().catch(() => ({ total: 0, brandCount: 0 })),
-  ]);
+  const [products, fullStats, brandCounts, allBrands, recentlySpecified] =
+    await Promise.all([
+      getProducts(),
+      getCatalogStats().catch(() => ({ total: 0, brandCount: 0 })),
+      getBrandCounts().catch(() => []),
+      getBrands().catch(() => []),
+      getRecentlySpecified(12).catch(() => []),
+    ]);
+
+  // Build featured brand cards: flagship slug order + catalog counts + hero
+  const brandByslug = new Map(allBrands.map((b) => [b.slug, b]));
+  const countByName = new Map(
+    brandCounts.map((b) => [b.brand.toLowerCase(), b.count])
+  );
+  const featuredBrands = FLAGSHIP_SLUGS.flatMap((slug) => {
+    const b = brandByslug.get(slug);
+    if (!b) return [];
+    return [
+      {
+        ...b,
+        catalogCount: countByName.get(b.name.toLowerCase()) ?? 0,
+        heroImage: PRE_STAGED_HEROES[slug],
+      },
+    ];
+  });
 
   // BreadcrumbList JSON-LD
   const breadcrumbJsonLd = {
@@ -101,24 +150,74 @@ const ShopPage = async ({ params }: ShopPageProps) => {
       />
       <Header locale={locale} />
       <main className="pt-16 md:pt-20">
-        {/* Hero */}
-        <section className="py-10 md:py-20 bg-brand-linen border-b border-brand-stone/10">
+        {/* Hero with search */}
+        <section className="py-14 md:py-24 bg-brand-linen border-b border-brand-stone/10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-stone uppercase">
+            <span className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-stone uppercase">
               {isEs ? "La Colección" : "The Collection"}
             </span>
-            <h1 className="mt-3 font-display text-4xl md:text-6xl font-light tracking-wide text-brand-charcoal">
-              {isEs ? "Tienda Completa" : "Shop All"}
+            <h1 className="mt-3 font-display text-4xl md:text-6xl font-light tracking-wide text-brand-charcoal leading-[1.05] max-w-4xl">
+              {isEs ? (
+                <>
+                  La cocina, el baño y el herraje{" "}
+                  <span className="italic text-brand-copper">
+                    que los arquitectos realmente especifican.
+                  </span>
+                </>
+              ) : (
+                <>
+                  The kitchen, bath, and hardware{" "}
+                  <span className="italic text-brand-copper">
+                    architects actually specify.
+                  </span>
+                </>
+              )}
             </h1>
-            <p className="mt-4 font-body text-base text-brand-stone max-w-xl">
+            <p className="mt-5 font-body text-base md:text-lg text-brand-stone max-w-2xl leading-relaxed">
               {isEs
-                ? "Grifería, lavabos, bañeras, inodoros, regaderas, accesorios de cocina y herrajes artesanales de puerta — curados para el hogar exigente."
-                : "Faucets, sinks, bathtubs, toilets, showers, kitchen fixtures, and artisanal door hardware — curated for the discerning home."}
+                ? "Curaduría propia de Roger de las piezas que ponemos en proyectos reales — más un catálogo completo de 354,449 SKUs de nuestros proveedores autorizados, buscable por marca o acabado."
+                : "Roger's personal curation of pieces we put into real projects — plus our full authorized-distributor catalog of 354,449 SKUs, searchable by brand or finish."}
             </p>
+            {fullStats.total > 0 && (
+              <HeroSearch
+                locale={locale as "en" | "es"}
+                catalogSize={fullStats.total}
+              />
+            )}
           </div>
         </section>
 
-        <ShopCatalog initialProducts={products} />
+        {/* Recently Specified — real sales data from Odoo */}
+        <RecentlySpecifiedRow
+          items={recentlySpecified}
+          locale={locale as "en" | "es"}
+        />
+
+        {/* Featured Brands band */}
+        <FeaturedBrandsBand
+          locale={locale as "en" | "es"}
+          brands={featuredBrands}
+        />
+
+        {/* Curated editorial grid */}
+        <section className="py-14 md:py-20 bg-white">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-10">
+            <p className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-copper uppercase">
+              {isEs ? "Curado para México" : "Curated for Mexico"}
+            </p>
+            <h2 className="mt-3 font-display text-3xl md:text-4xl font-light tracking-wide text-brand-charcoal leading-[1.1]">
+              {isEs
+                ? "Piezas que Roger tiene en el showroom."
+                : "Pieces Roger actually has in the showroom."}
+            </h2>
+            <p className="mt-3 font-body text-sm text-brand-stone max-w-xl">
+              {isEs
+                ? "Selección curada a mano con imágenes, acabados y descripciones propias — el núcleo del salón."
+                : "Hand-picked selection with our own imagery, finishes, and descriptions — the showroom core."}
+            </p>
+          </div>
+          <ShopCatalog initialProducts={products} />
+        </section>
 
         {/* Full catalog CTA band — bridges curated shop to the 354k vault */}
         {fullStats.total > 0 && (
