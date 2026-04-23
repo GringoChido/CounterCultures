@@ -6,7 +6,7 @@ import { Footer } from "@/app/components/layout/footer";
 import { getQuoteCatalogBySlug } from "@/app/lib/products-full";
 import { QuoteForm } from "./quote-form-client";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 const BASE_URL = "https://countercultures.mx";
 

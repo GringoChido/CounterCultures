@@ -7,7 +7,7 @@ import {
   getCatalogStats,
 } from "@/app/lib/products-full";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 const BASE_URL = "https://countercultures.mx";
 

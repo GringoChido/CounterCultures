@@ -56,17 +56,22 @@ interface Cache {
 let cache: Cache | null = null;
 let loading: Promise<Cache> | null = null;
 
+const EMPTY_CACHE: Cache = {
+  products: [],
+  byBrand: new Map(),
+  brandCounts: [],
+  categoryCounts: { bathroom: 0, kitchen: 0, hardware: 0 },
+  ts: 0,
+};
+
 const normalizeCategory = (c: string): ProductCategory => {
   if (c === "kitchen" || c === "hardware") return c;
   return "bathroom";
 };
 
 const load = async (): Promise<Cache> => {
-  if (!SHEET_ID) {
-    throw new Error(
-      "GOOGLE_SHEETS_ID_PRODUCTS_FULL env var is not set. Set it in .env.local."
-    );
-  }
+  // SHEET_ID presence is guarded by getCache; this is a second belt.
+  if (!SHEET_ID) return EMPTY_CACHE;
 
   const auth = new google.auth.GoogleAuth({
     credentials: {
@@ -157,14 +162,21 @@ const load = async (): Promise<Cache> => {
 const getCache = async (): Promise<Cache> => {
   if (cache && Date.now() - cache.ts < TTL_MS) return cache;
   if (loading) return loading;
-  loading = load().then((c) => {
-    cache = c;
-    loading = null;
-    return c;
-  }).catch((err) => {
-    loading = null;
-    throw err;
-  });
+  // If env isn't configured (e.g. at build time on Netlify before the secret
+  // is set), return an empty cache instead of throwing — lets static export
+  // succeed and the real data hydrates on the first real request after deploy.
+  if (!SHEET_ID) return EMPTY_CACHE;
+  loading = load()
+    .then((c) => {
+      cache = c;
+      loading = null;
+      return c;
+    })
+    .catch((err) => {
+      loading = null;
+      console.error("[products-full] load failed:", err);
+      return EMPTY_CACHE;
+    });
   return loading;
 };
 
