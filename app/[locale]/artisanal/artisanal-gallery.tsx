@@ -25,6 +25,8 @@ const ArtisanalGallery = ({ products }: ArtisanalGalleryProps) => (
           {products.map((product, i) => (
             <AnimatedSection key={product.id} delay={i * 0.08}>
               <ProductCard
+                id={product.id}
+                sku={product.sku}
                 brand={product.brand}
                 name={product.name}
                 nameEn={product.nameEn}

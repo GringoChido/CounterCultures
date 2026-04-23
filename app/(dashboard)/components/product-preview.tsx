@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useProductInsert } from "./product-insert-context";
+import { ProductVisual } from "@/app/components/product-visual";
 
 // V3 S17b: Spec-sheet library per product. Searches Drive for PDFs that
 // look like spec sheets matching the product's SKU / brand and renders
@@ -212,9 +213,11 @@ export const ProductPreview = () => {
 
             {/* Scrollable content */}
             <div className="flex-1 overflow-y-auto">
-              {/* Image gallery */}
-              {p.images.length > 0 && (
-                <div className="relative">
+              {/* Hero visual — uses ProductVisual so imageless products
+                  get the branded typographic fallback consistent with
+                  the public catalog. */}
+              <div className="relative">
+                {p.images.length > 0 ? (
                   <div className="aspect-[4/3] bg-dash-bg overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -223,24 +226,34 @@ export const ProductPreview = () => {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  {p.images.length > 1 && (
-                    <div className="flex gap-2 px-6 py-3 overflow-x-auto">
-                      {p.images.map((img, i) => (
-                        <button
-                          key={i}
-                          onClick={() => setActiveImage(i)}
-                          className={`w-14 h-14 rounded-lg overflow-hidden shrink-0 border-2 transition-colors cursor-pointer ${
-                            i === activeImage ? "border-brand-copper" : "border-transparent opacity-60 hover:opacity-100"
-                          }`}
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={img} alt={`${p.name} thumbnail ${i + 1}`} className="w-full h-full object-cover" />
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+                ) : (
+                  <ProductVisual
+                    id={p.id}
+                    brand={p.brand}
+                    sku={p.sku}
+                    name={p.nameEn || p.name}
+                    aspect="4/3"
+                    size="hero"
+                    forceTypography
+                  />
+                )}
+                {p.images.length > 1 && (
+                  <div className="flex gap-2 px-6 py-3 overflow-x-auto">
+                    {p.images.map((img, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setActiveImage(i)}
+                        className={`w-14 h-14 rounded-lg overflow-hidden shrink-0 border-2 transition-colors cursor-pointer ${
+                          i === activeImage ? "border-brand-copper" : "border-transparent opacity-60 hover:opacity-100"
+                        }`}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={img} alt={`${p.name} thumbnail ${i + 1}`} className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               <div className="px-6 py-5 space-y-5">
                 {/* Header section */}

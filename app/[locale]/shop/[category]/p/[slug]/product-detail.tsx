@@ -6,6 +6,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { ChevronRight, MessageCircle, ChevronDown, Download, Sparkles } from "lucide-react";
 import { ProductCard, formatPrice } from "@/app/components/ui/product-card";
+import { ProductVisual } from "@/app/components/product-visual";
 import type { Product } from "@/app/lib/types";
 import { SITE_CONFIG } from "@/app/lib/constants";
 
@@ -53,6 +54,7 @@ const ProductDetail = ({
 }: ProductDetailProps) => {
   const [selectedFinish, setSelectedFinish] = useState(product.finishes[0] || "");
   const [selectedImage, setSelectedImage] = useState(0);
+  const [imgErrored, setImgErrored] = useState(false);
   const [specsOpen, setSpecsOpen] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
@@ -138,14 +140,27 @@ const ProductDetail = ({
                 animate={{ opacity: 1 }}
                 className="relative aspect-square bg-brand-sand/20 overflow-hidden"
               >
-                <Image
-                  src={product.images[selectedImage] || product.images[0]}
-                  alt={`${product.nameEn} by ${product.brand}`}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  priority
-                  className="object-cover"
-                />
+                {product.images[selectedImage] && !imgErrored ? (
+                  <Image
+                    src={product.images[selectedImage] || product.images[0]}
+                    alt={`${product.nameEn} by ${product.brand}`}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    priority
+                    className="object-cover"
+                    onError={() => setImgErrored(true)}
+                  />
+                ) : (
+                  <ProductVisual
+                    id={product.id}
+                    brand={product.brand}
+                    sku={product.sku}
+                    name={product.nameEn || product.name}
+                    aspect="1/1"
+                    size="hero"
+                    forceTypography
+                  />
+                )}
               </motion.div>
               {product.images.length > 1 && (
                 <div className="flex gap-2 sm:gap-3 mt-3 md:mt-4 overflow-x-auto pb-1">
@@ -335,6 +350,8 @@ const ProductDetail = ({
               {crossSells.map((p) => (
                 <ProductCard
                   key={p.id}
+                  id={p.id}
+                  sku={p.sku}
                   brand={p.brand}
                   name={p.name}
                   nameEn={p.nameEn}

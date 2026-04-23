@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { Eye } from "lucide-react";
 import type { Product } from "@/app/lib/types";
+import { ProductVisual } from "@/app/components/product-visual";
 
 interface ProductCardProps {
   product: Product;
@@ -16,6 +17,8 @@ const formatPrice = (price: number) =>
 
 const ProductCard = ({ product, locale = "en" }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [imgErrored, setImgErrored] = useState(false);
+  const hasImage = !!product.images[0] && !imgErrored;
 
   return (
     <Link href={`/${locale}/shop/${product.category}/p/${product.slug}`} className="group block h-full">
@@ -24,14 +27,27 @@ const ProductCard = ({ product, locale = "en" }: ProductCardProps) => {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <Image
-          src={product.images[0] || ""}
-          alt={product.nameEn}
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1536px) 33vw, 25vw"
-          className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
-          priority={false}
-        />
+        {hasImage ? (
+          <Image
+            src={product.images[0] || ""}
+            alt={product.nameEn}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1536px) 33vw, 25vw"
+            className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+            priority={false}
+            onError={() => setImgErrored(true)}
+          />
+        ) : (
+          <ProductVisual
+            id={product.id}
+            brand={product.brand}
+            sku={product.sku}
+            name={product.nameEn || product.name}
+            aspect="1/1"
+            size="card"
+            forceTypography
+          />
+        )}
 
         {product.artisanal && (
           <span className="absolute top-3 left-3 font-body font-semibold text-[10px] tracking-[0.15em] uppercase bg-brand-copper text-white px-2.5 py-1 z-10">

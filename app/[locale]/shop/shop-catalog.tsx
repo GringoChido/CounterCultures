@@ -82,6 +82,8 @@ const ShopCatalog = ({ initialProducts, initialCategory }: ShopCatalogProps) => 
                 {visibleProducts.map((product) => (
                   <ProductCard
                     key={product.id}
+                    id={product.id}
+                    sku={product.sku}
                     brand={product.brand}
                     name={product.name}
                     nameEn={product.nameEn}
