@@ -9,9 +9,14 @@ import {
   SlidersHorizontal,
   Package,
   ChevronDown,
+  LayoutGrid,
+  List,
+  Plus,
+  Check,
 } from "lucide-react";
 import type { ProductFull, BrandCount } from "@/app/lib/products-full";
 import { useProjectListStore } from "@/app/lib/stores/project-list-store";
+import { ProductVisual } from "@/app/components/product-visual";
 import { ProductDrawer } from "./product-drawer";
 
 interface SearchResponse {
@@ -30,6 +35,7 @@ interface CatalogViewProps {
 
 type Category = "all" | "bathroom" | "kitchen" | "hardware";
 type SortKey = "recent" | "alpha" | "price-asc" | "price-desc";
+type ViewMode = "grid" | "table";
 
 const PAGE_SIZE = 60;
 const MIN_QUERY = 2;
@@ -69,6 +75,14 @@ const T = {
     inProject: "In project list",
     openDetails: "View",
     mobileFilters: "Filters",
+    viewGrid: "Grid",
+    viewTable: "Table",
+    colProduct: "Product",
+    colSku: "SKU",
+    colBrand: "Brand",
+    colFinish: "Finish",
+    colPrice: "Price",
+    colAction: "",
   },
   es: {
     filters: "Filtros",
@@ -104,6 +118,14 @@ const T = {
     inProject: "En el proyecto",
     openDetails: "Ver",
     mobileFilters: "Filtros",
+    viewGrid: "Cuadrícula",
+    viewTable: "Tabla",
+    colProduct: "Producto",
+    colSku: "SKU",
+    colBrand: "Marca",
+    colFinish: "Acabado",
+    colPrice: "Precio",
+    colAction: "",
   },
 };
 
@@ -144,6 +166,9 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
   const [sortKey, setSortKey] = useState<SortKey>(
     (searchParams.get("sort") as SortKey) || "recent"
   );
+  const [viewMode, setViewMode] = useState<ViewMode>(
+    (searchParams.get("view") as ViewMode) || "grid"
+  );
   const [offset, setOffset] = useState(Number(searchParams.get("offset") ?? 0));
 
   const [brandFilter, setBrandFilter] = useState("");
@@ -162,10 +187,11 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
     if (brand) params.set("brand", brand);
     if (category !== "all") params.set("category", category);
     if (sortKey !== "recent") params.set("sort", sortKey);
+    if (viewMode !== "grid") params.set("view", viewMode);
     if (offset > 0) params.set("offset", String(offset));
     const qs = params.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
-  }, [query, brand, category, sortKey, offset, router, pathname]);
+  }, [query, brand, category, sortKey, viewMode, offset, router, pathname]);
 
   // Reset pagination when filters change
   useEffect(() => {
@@ -354,6 +380,33 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
                   <Loader2 className="absolute right-10 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-stone animate-spin" />
                 )}
               </div>
+              {/* Grid/Table view toggle — hidden on tiny screens */}
+              <div className="hidden sm:flex border border-brand-stone/20 bg-white">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("grid")}
+                  title={t.viewGrid}
+                  className={`flex items-center gap-1.5 px-3 text-sm font-body transition-colors cursor-pointer ${
+                    viewMode === "grid"
+                      ? "bg-brand-charcoal text-white"
+                      : "text-brand-charcoal hover:bg-brand-linen"
+                  }`}
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("table")}
+                  title={t.viewTable}
+                  className={`flex items-center gap-1.5 px-3 text-sm font-body transition-colors cursor-pointer ${
+                    viewMode === "table"
+                      ? "bg-brand-charcoal text-white"
+                      : "text-brand-charcoal hover:bg-brand-linen"
+                  }`}
+                >
+                  <List className="w-4 h-4" />
+                </button>
+              </div>
               <div className="relative">
                 <select
                   value={sortKey}
@@ -410,8 +463,8 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
               )}
             </div>
 
-            {/* Grid */}
-            {result && sortedItems.length > 0 ? (
+            {/* Grid or table */}
+            {result && sortedItems.length > 0 && viewMode === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {sortedItems.map((p) => (
                   <ProductCard
@@ -435,6 +488,25 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
                   />
                 ))}
               </div>
+            ) : result && sortedItems.length > 0 && viewMode === "table" ? (
+              <ProductTable
+                items={sortedItems}
+                locale={locale}
+                onOpen={(p) => setSelected(p)}
+                onAdd={(p) =>
+                  projectAdd({
+                    id: p.id,
+                    sku: p.sku,
+                    name: p.name,
+                    brand: p.brand,
+                    category: p.category,
+                    currency: p.currency,
+                    listPrice: p.listPrice,
+                  })
+                }
+                isInProject={(id) => projectHas(id)}
+                t={t}
+              />
             ) : result && sortedItems.length === 0 && !isPending ? (
               <div className="py-24 text-center">
                 <Package className="w-10 h-10 text-brand-stone/40 mx-auto mb-3" />
@@ -537,28 +609,23 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product, locale, inProject, onOpen, onAdd, t }: ProductCardProps) => {
-  const [imgErrored, setImgErrored] = useState(false);
   const price = formatPrice(product.listPrice, product.currency, locale);
   return (
     <div className="group bg-white border border-brand-stone/15 hover:border-brand-copper/60 transition-colors flex flex-col">
       <button
         type="button"
         onClick={onOpen}
-        className="block aspect-[4/3] bg-brand-linen overflow-hidden cursor-pointer"
+        className="block cursor-pointer overflow-hidden"
       >
-        {imgErrored ? (
-          <div className="w-full h-full flex items-center justify-center">
-            <Package className="w-8 h-8 text-brand-stone/30" />
-          </div>
-        ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={`/products/odoo/${product.id}.jpg`}
-            alt={product.name || product.sku}
-            onError={() => setImgErrored(true)}
-            className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
-          />
-        )}
+        <ProductVisual
+          id={product.id}
+          brand={product.brand}
+          sku={product.sku}
+          name={product.name || product.sku}
+          aspect="4/3"
+          size="card"
+          className="group-hover:[&>img]:scale-[1.02] [&>img]:transition-transform [&>img]:duration-500"
+        />
       </button>
       <div className="p-4 flex flex-col flex-1">
         <div className="flex items-start justify-between gap-2 mb-1">
@@ -609,5 +676,115 @@ const ProductCard = ({ product, locale, inProject, onOpen, onAdd, t }: ProductCa
     </div>
   );
 };
+
+// ───────────────────────────────────────────────────────────────────────
+// Table view — compact data-dense row format, architect-preferred for
+// scanning 60+ SKUs at a time.
+// ───────────────────────────────────────────────────────────────────────
+
+interface ProductTableProps {
+  items: ProductFull[];
+  locale: "en" | "es";
+  onOpen: (p: ProductFull) => void;
+  onAdd: (p: ProductFull) => void;
+  isInProject: (id: string) => boolean;
+  t: typeof T["en"];
+}
+
+const ProductTable = ({ items, locale, onOpen, onAdd, isInProject, t }: ProductTableProps) => (
+  <div className="border border-brand-stone/15 bg-white overflow-hidden">
+    <table className="w-full text-sm">
+      <thead className="bg-brand-linen/60 border-b border-brand-stone/15">
+        <tr className="font-body text-[10px] text-brand-stone uppercase tracking-[0.15em]">
+          <th className="text-left px-4 py-3 font-semibold w-16">{t.colSku}</th>
+          <th className="text-left px-4 py-3 font-semibold">{t.colProduct}</th>
+          <th className="text-left px-4 py-3 font-semibold hidden md:table-cell">{t.colBrand}</th>
+          <th className="text-right px-4 py-3 font-semibold hidden sm:table-cell">{t.colPrice}</th>
+          <th className="px-4 py-3 w-28" />
+        </tr>
+      </thead>
+      <tbody>
+        {items.map((p) => {
+          const inList = isInProject(p.id);
+          return (
+            <tr
+              key={p.id}
+              className="border-t border-brand-stone/10 hover:bg-brand-linen/40 transition-colors cursor-pointer"
+              onClick={() => onOpen(p)}
+            >
+              <td className="px-4 py-3">
+                <div className="w-12 h-12">
+                  <ProductVisual
+                    id={p.id}
+                    brand={p.brand}
+                    sku={p.sku}
+                    name={p.name || p.sku}
+                    aspect="1/1"
+                    size="tile"
+                  />
+                </div>
+              </td>
+              <td className="px-4 py-3">
+                <div className="font-body text-[10px] text-brand-copper uppercase tracking-[0.15em]">
+                  {p.brand || "—"} · {p.category}
+                </div>
+                <div className="font-body text-sm text-brand-charcoal mt-0.5 line-clamp-1">
+                  {p.name || p.sku}
+                </div>
+                <div className="font-mono text-[10px] text-brand-stone mt-0.5 truncate">
+                  {p.sku || "—"}
+                </div>
+              </td>
+              <td className="px-4 py-3 hidden md:table-cell font-body text-sm text-brand-stone">
+                {p.brand || "—"}
+              </td>
+              <td className="px-4 py-3 hidden sm:table-cell text-right font-body text-sm text-brand-charcoal whitespace-nowrap">
+                {p.listPrice > 0 ? (
+                  <span>
+                    <span className="text-brand-stone text-[10px] tracking-wider uppercase mr-1">
+                      {locale === "es" ? "desde" : "from"}
+                    </span>
+                    {formatPrice(p.listPrice, p.currency, locale)}
+                  </span>
+                ) : (
+                  <span className="text-brand-stone text-xs italic">
+                    {locale === "es" ? "Cotizar" : "Quote"}
+                  </span>
+                )}
+              </td>
+              <td className="px-4 py-3 text-right">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAdd(p);
+                  }}
+                  disabled={inList}
+                  className={`inline-flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-body font-medium rounded transition-colors cursor-pointer disabled:cursor-default ${
+                    inList
+                      ? "bg-brand-copper/10 text-brand-copper border border-brand-copper/30"
+                      : "bg-brand-copper text-white hover:bg-brand-copper/90"
+                  }`}
+                >
+                  {inList ? (
+                    <>
+                      <Check className="w-3 h-3" />
+                      <span className="hidden sm:inline">{t.inProject}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-3 h-3" />
+                      <span className="hidden sm:inline">{t.addToProject}</span>
+                    </>
+                  )}
+                </button>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+);
 
 export { CatalogView };

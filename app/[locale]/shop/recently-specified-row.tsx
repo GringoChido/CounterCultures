@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { Package, TrendingUp } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 import type { RecentlySpecifiedTile } from "@/app/lib/recently-specified";
+import { ProductVisual } from "@/app/components/product-visual";
 
 interface RecentlySpecifiedRowProps {
   items: RecentlySpecifiedTile[];
@@ -40,7 +40,6 @@ const Tile = ({
   locale: "en" | "es";
   t: (typeof T)["en"];
 }) => {
-  const [err, setErr] = useState(false);
   const price =
     item.listPrice > 0
       ? `${item.currency} ${item.listPrice.toLocaleString(
@@ -56,21 +55,17 @@ const Tile = ({
       href={href}
       className="group shrink-0 w-[260px] snap-start bg-white border border-brand-stone/15 hover:border-brand-copper/60 transition-colors"
     >
-      <div className="relative aspect-[4/3] bg-brand-linen overflow-hidden">
-        {err ? (
-          <div className="w-full h-full flex items-center justify-center">
-            <Package className="w-8 h-8 text-brand-stone/30" />
-          </div>
-        ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={`/products/odoo/${item.id}.jpg`}
-            alt={item.name || item.sku}
-            onError={() => setErr(true)}
-            className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
-          />
-        )}
-        {/* Project count badge */}
+      <div className="relative">
+        <ProductVisual
+          id={item.id}
+          brand={item.brand}
+          sku={item.sku}
+          name={item.name || item.sku}
+          aspect="4/3"
+          size="card"
+          className="group-hover:[&>img]:scale-[1.02] [&>img]:transition-transform [&>img]:duration-500"
+        />
+        {/* Project count badge — overlays both image and typographic cards */}
         <div className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-1 bg-brand-charcoal/90 text-white text-[10px] font-body tracking-wide backdrop-blur-sm">
           <TrendingUp className="w-3 h-3 text-brand-copper" />
           {t.specifiedIn(item.projectCount)}

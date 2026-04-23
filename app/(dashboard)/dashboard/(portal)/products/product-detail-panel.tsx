@@ -18,6 +18,7 @@ import {
 import type { ProductFull } from "@/app/lib/products-full";
 import { useActiveOrderStore, type ActiveOrder } from "@/app/lib/stores/active-order-store";
 import { CustomerCombobox } from "@/app/(dashboard)/components/customer-combobox";
+import { ProductVisual } from "@/app/components/product-visual";
 
 interface DealOption {
   id: string;
@@ -74,25 +75,28 @@ interface ProductDetailPanelProps {
 
 type TabKey = "overview" | "variants" | "same-brand" | "history";
 
-const ProductImage = ({ id, name }: { id: string; name: string }) => {
-  const [errored, setErrored] = useState(false);
-  if (errored) {
-    return (
-      <div className="w-full aspect-[4/3] bg-dash-bg border border-dash-border rounded-lg flex items-center justify-center">
-        <Package className="w-10 h-10 text-dash-text-secondary/40" />
-      </div>
-    );
-  }
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={`/products/odoo/${id}.jpg`}
-      alt={name}
-      onError={() => setErrored(true)}
-      className="w-full aspect-[4/3] object-cover bg-dash-bg border border-dash-border rounded-lg"
+const ProductImage = ({
+  id,
+  brand,
+  sku,
+  name,
+}: {
+  id: string;
+  brand: string;
+  sku: string;
+  name: string;
+}) => (
+  <div className="border border-dash-border rounded-lg overflow-hidden">
+    <ProductVisual
+      id={id}
+      brand={brand}
+      sku={sku}
+      name={name}
+      aspect="4/3"
+      size="hero"
     />
-  );
-};
+  </div>
+);
 
 const formatPrice = (p: number, cur: string) =>
   p > 0
@@ -394,7 +398,12 @@ const ProductDetailPanel = ({
         <div className="flex-1 overflow-y-auto px-6 py-4">
           {tab === "overview" && (
             <div className="space-y-4">
-              <ProductImage id={product.id} name={product.name || product.sku} />
+              <ProductImage
+                id={product.id}
+                brand={product.brand}
+                sku={product.sku}
+                name={product.name || product.sku}
+              />
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <div className="text-xs text-dash-text-secondary mb-0.5">List price</div>

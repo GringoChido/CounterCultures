@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import type { ProductFull } from "@/app/lib/products-full";
 import { useProjectListStore } from "@/app/lib/stores/project-list-store";
+import { ProductVisual } from "@/app/components/product-visual";
 
 interface Variant {
   id: string;
@@ -80,25 +81,28 @@ const fmtPrice = (p: number, cur: string, locale: string) =>
       })}`
     : "—";
 
-const ProductImage = ({ id, name }: { id: string; name: string }) => {
-  const [err, setErr] = useState(false);
-  if (err) {
-    return (
-      <div className="w-full aspect-[4/3] bg-brand-linen border border-brand-stone/15 flex items-center justify-center">
-        <Package className="w-12 h-12 text-brand-stone/30" />
-      </div>
-    );
-  }
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={`/products/odoo/${id}.jpg`}
-      alt={name}
-      onError={() => setErr(true)}
-      className="w-full aspect-[4/3] object-cover bg-brand-linen border border-brand-stone/15"
+const ProductImage = ({
+  id,
+  brand,
+  sku,
+  name,
+}: {
+  id: string;
+  brand: string;
+  sku: string;
+  name: string;
+}) => (
+  <div className="border border-brand-stone/15">
+    <ProductVisual
+      id={id}
+      brand={brand}
+      sku={sku}
+      name={name}
+      aspect="4/3"
+      size="hero"
     />
-  );
-};
+  </div>
+);
 
 const ProductDrawer = ({
   product,
@@ -235,7 +239,12 @@ const ProductDrawer = ({
         <div className="flex-1 overflow-y-auto px-6 py-5">
           {tab === "overview" && (
             <div className="space-y-5">
-              <ProductImage id={product.id} name={product.name || product.sku} />
+              <ProductImage
+                id={product.id}
+                brand={product.brand}
+                sku={product.sku}
+                name={product.name || product.sku}
+              />
               <div className="grid grid-cols-2 gap-4 text-sm font-body">
                 <div>
                   <div className="text-[10px] tracking-[0.18em] uppercase text-brand-stone mb-1">
