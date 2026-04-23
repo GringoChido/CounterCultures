@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { ShopCatalog } from "./shop-catalog";
 import { getProducts } from "@/app/lib/sheets";
+import { getCatalogStats } from "@/app/lib/products-full";
 
 export const revalidate = 300;
 
@@ -66,7 +68,10 @@ export const generateMetadata = async ({
 const ShopPage = async ({ params }: ShopPageProps) => {
   const { locale } = await params;
   const isEs = locale === "es";
-  const products = await getProducts();
+  const [products, fullStats] = await Promise.all([
+    getProducts(),
+    getCatalogStats().catch(() => ({ total: 0, brandCount: 0 })),
+  ]);
 
   // BreadcrumbList JSON-LD
   const breadcrumbJsonLd = {
@@ -114,6 +119,51 @@ const ShopPage = async ({ params }: ShopPageProps) => {
         </section>
 
         <ShopCatalog initialProducts={products} />
+
+        {/* Full catalog CTA band — bridges curated shop to the 354k vault */}
+        {fullStats.total > 0 && (
+          <section className="bg-brand-charcoal text-white py-14 md:py-20 border-t border-brand-stone/20">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <div className="grid lg:grid-cols-[1.5fr_auto] gap-8 items-end">
+                <div>
+                  <span className="font-body font-semibold text-[11px] tracking-[0.25em] uppercase text-brand-copper">
+                    {isEs ? "No ves lo que buscas?" : "Don't see what you're looking for?"}
+                  </span>
+                  <h2 className="mt-3 font-display text-3xl md:text-5xl font-light tracking-wide leading-[1.05]">
+                    {isEs ? (
+                      <>
+                        Explora las{" "}
+                        <span className="italic text-brand-copper">
+                          {fullStats.total.toLocaleString("es-MX")} piezas
+                        </span>{" "}
+                        del catálogo completo.
+                      </>
+                    ) : (
+                      <>
+                        Search all{" "}
+                        <span className="italic text-brand-copper">
+                          {fullStats.total.toLocaleString("en-US")} pieces
+                        </span>{" "}
+                        in the full catalog.
+                      </>
+                    )}
+                  </h2>
+                  <p className="mt-4 font-body text-base text-white/70 max-w-xl">
+                    {isEs
+                      ? `${fullStats.brandCount} marcas autorizadas, búsqueda por SKU y acabado, solicitud de cotización en un toque. La herramienta que usan arquitectos y especificadores.`
+                      : `${fullStats.brandCount} authorized brands, search by SKU or finish, one-tap quote request. The tool architects and specifiers actually use.`}
+                  </p>
+                </div>
+                <Link
+                  href={`/${locale}/shop/catalog`}
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-brand-copper text-white font-body font-semibold text-sm tracking-wide hover:bg-brand-copper/90 transition-colors whitespace-nowrap"
+                >
+                  {isEs ? "Abrir catálogo completo" : "Open full catalog"} →
+                </Link>
+              </div>
+            </div>
+          </section>
+        )}
       </main>
       <Footer locale={locale} />
     </>
