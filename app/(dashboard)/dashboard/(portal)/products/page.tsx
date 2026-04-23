@@ -1,5 +1,6 @@
 import { getBrandCounts, getCatalogStats } from "@/app/lib/products-full";
 import { CatalogSearch } from "./catalog-search";
+import { ActiveOrderBanner } from "./active-order-banner";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,7 @@ const ProductsPage = async () => {
 
   return (
     <div className="space-y-6">
+      <ActiveOrderBanner />
       <div>
         <h2 className="text-2xl font-bold text-dash-text">Products</h2>
         <p className="text-sm text-dash-text-secondary mt-1">

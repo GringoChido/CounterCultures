@@ -307,6 +307,70 @@ export const getProductById = async (
   return p ? stripIndex(p) : null;
 };
 
+// ── Variants (same SKU family, different finish) ────────────────────────
+// Heuristic: many SKUs end with a short alphanumeric "finish code" suffix
+// separated by "-" (e.g. Brizo "BRI- 63054LF-GL" / "-PC" / "-BN"). Strip
+// that suffix to get the SKU root, then find all products sharing it.
+
+const SKU_FINISH_SUFFIX = /^(.+?)[-_ ]([A-Z0-9]{1,6})$/i;
+
+/** Extract the SKU root if a plausible finish suffix exists. Returns null
+ *  if no variant split is detectable (e.g. Emtek monolithic SKUs). */
+export const extractSkuRoot = (sku: string): string | null => {
+  if (!sku) return null;
+  const m = SKU_FINISH_SUFFIX.exec(sku.trim());
+  if (!m) return null;
+  const root = m[1].trim();
+  // Reject weird short roots that would match thousands of unrelated SKUs.
+  if (root.length < 4) return null;
+  return root;
+};
+
+export interface ProductVariant extends ProductFull {
+  finishCode: string; // the trailing segment that differs across variants
+}
+
+export const getVariants = async (
+  sku: string,
+  excludeId?: string
+): Promise<ProductVariant[]> => {
+  const root = extractSkuRoot(sku);
+  if (!root) return [];
+  const c = await getCache();
+  const rootLower = root.toLowerCase();
+  const out: ProductVariant[] = [];
+  for (const p of c.products) {
+    if (excludeId && p.id === excludeId) continue;
+    // Case-insensitive prefix match against the root
+    if (!p._sku.startsWith(rootLower)) continue;
+    // Must have a distinct finish-code tail (not the exact same SKU)
+    if (p._sku === sku.toLowerCase()) continue;
+    // Parse the finish tail from the full sku (preserving case)
+    const m = SKU_FINISH_SUFFIX.exec(p.sku);
+    if (!m) continue;
+    out.push({ ...stripIndex(p), finishCode: m[2] });
+    if (out.length >= 50) break;
+  }
+  // Sort by finish code for stable rendering
+  out.sort((a, b) => a.finishCode.localeCompare(b.finishCode));
+  return out;
+};
+
+// ── Same-brand recommendations ──────────────────────────────────────────
+
+export const getSameBrand = async (
+  brand: string,
+  excludeId: string,
+  limit = 10
+): Promise<ProductFull[]> => {
+  const c = await getCache();
+  const pool = c.byBrand.get(brand) ?? [];
+  return pool
+    .filter((p) => p.id !== excludeId && p.saleOk)
+    .slice(0, limit)
+    .map(stripIndex);
+};
+
 export const getCatalogStats = async (): Promise<{
   total: number;
   brandCount: number;

@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useMemo, useTransition } from "react";
 import { Search, Loader2, Package, X } from "lucide-react";
-import { SlideOut } from "@/app/(dashboard)/components/slide-out";
 import type { ProductFull, BrandCount } from "@/app/lib/products-full";
+import { ProductDetailPanel } from "./product-detail-panel";
 
 interface SearchResponse {
   items: ProductFull[];
@@ -83,9 +83,7 @@ const CatalogSearch = ({ brandCounts, totalProducts }: CatalogSearchProps) => {
           </label>
           <select
             value={category}
-            onChange={(e) =>
-              setCategory(e.target.value as typeof category)
-            }
+            onChange={(e) => setCategory(e.target.value as typeof category)}
             className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper"
           >
             <option value="all">All categories</option>
@@ -168,12 +166,9 @@ const CatalogSearch = ({ brandCounts, totalProducts }: CatalogSearchProps) => {
           )}
         </div>
 
-        {/* Status */}
         <div className="text-xs text-dash-text-secondary flex items-center gap-3 flex-wrap">
           {!result && query.trim().length < MIN_QUERY && !brand && category === "all" && (
-            <span>
-              Type at least {MIN_QUERY} characters, pick a brand, or pick a category.
-            </span>
+            <span>Type at least {MIN_QUERY} characters, pick a brand, or pick a category.</span>
           )}
           {result && (
             <>
@@ -181,9 +176,7 @@ const CatalogSearch = ({ brandCounts, totalProducts }: CatalogSearchProps) => {
                 {result.total.toLocaleString()} match{result.total === 1 ? "" : "es"}
               </span>
               <span>·</span>
-              <span>
-                page {currentPage} of {totalPages.toLocaleString()}
-              </span>
+              <span>page {currentPage} of {totalPages.toLocaleString()}</span>
               <span>·</span>
               <span>{result.elapsedMs}ms</span>
               {result.cacheAgeMs > 60_000 && (
@@ -196,7 +189,6 @@ const CatalogSearch = ({ brandCounts, totalProducts }: CatalogSearchProps) => {
           )}
         </div>
 
-        {/* Active filter chips */}
         {(brand || category !== "all") && (
           <div className="flex items-center gap-2 flex-wrap">
             {brand && (
@@ -222,7 +214,6 @@ const CatalogSearch = ({ brandCounts, totalProducts }: CatalogSearchProps) => {
           </div>
         )}
 
-        {/* Results table */}
         {result && result.items.length > 0 && (
           <div className="border border-dash-border rounded-lg overflow-hidden">
             <table className="w-full text-sm">
@@ -264,13 +255,10 @@ const CatalogSearch = ({ brandCounts, totalProducts }: CatalogSearchProps) => {
         {result && result.items.length === 0 && !isPending && (
           <div className="border border-dash-border border-dashed rounded-lg py-12 text-center">
             <Package className="w-8 h-8 text-dash-text-secondary mx-auto mb-2" />
-            <p className="text-sm text-dash-text-secondary">
-              No products match these filters.
-            </p>
+            <p className="text-sm text-dash-text-secondary">No products match these filters.</p>
           </div>
         )}
 
-        {/* Pagination */}
         {result && totalPages > 1 && (
           <div className="flex items-center justify-between pt-2">
             <button
@@ -282,14 +270,11 @@ const CatalogSearch = ({ brandCounts, totalProducts }: CatalogSearchProps) => {
               ← Previous
             </button>
             <span className="text-xs text-dash-text-secondary">
-              Showing {offset + 1}–{Math.min(offset + PAGE_SIZE, result.total)} of{" "}
-              {result.total.toLocaleString()}
+              Showing {offset + 1}–{Math.min(offset + PAGE_SIZE, result.total)} of {result.total.toLocaleString()}
             </span>
             <button
               type="button"
-              onClick={() =>
-                setOffset(Math.min(result.total - PAGE_SIZE, offset + PAGE_SIZE))
-              }
+              onClick={() => setOffset(Math.min(result.total - PAGE_SIZE, offset + PAGE_SIZE))}
               disabled={offset + PAGE_SIZE >= result.total}
               className="px-3 py-1.5 text-sm border border-dash-border rounded-lg text-dash-text hover:bg-dash-bg disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             >
@@ -299,64 +284,13 @@ const CatalogSearch = ({ brandCounts, totalProducts }: CatalogSearchProps) => {
         )}
       </section>
 
-      {/* Product detail slideout */}
-      <SlideOut
-        open={selected !== null}
-        onClose={() => setSelected(null)}
-        title={selected?.name || "Product"}
-      >
-        {selected && (
-          <div className="space-y-4 text-sm">
-            <div>
-              <div className="text-xs text-dash-text-secondary mb-1">SKU</div>
-              <div className="font-mono text-dash-text">{selected.sku || "—"}</div>
-            </div>
-            <div>
-              <div className="text-xs text-dash-text-secondary mb-1">Name</div>
-              <div className="text-dash-text">{selected.name || "—"}</div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <div className="text-xs text-dash-text-secondary mb-1">Brand</div>
-                <div className="text-dash-text">{selected.brand || "—"}</div>
-              </div>
-              <div>
-                <div className="text-xs text-dash-text-secondary mb-1">Category</div>
-                <div className="text-dash-text capitalize">{selected.category}</div>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <div className="text-xs text-dash-text-secondary mb-1">List Price</div>
-                <div className="text-dash-text font-medium">
-                  {formatPrice(selected.listPrice, selected.currency)}
-                </div>
-              </div>
-              <div>
-                <div className="text-xs text-dash-text-secondary mb-1">UoM</div>
-                <div className="text-dash-text">{selected.uom}</div>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <div className="text-xs text-dash-text-secondary mb-1">Active</div>
-                <div className="text-dash-text">{selected.active ? "Yes" : "No"}</div>
-              </div>
-              <div>
-                <div className="text-xs text-dash-text-secondary mb-1">Can Sell</div>
-                <div className="text-dash-text">{selected.saleOk ? "Yes" : "No"}</div>
-              </div>
-            </div>
-            <div>
-              <div className="text-xs text-dash-text-secondary mb-1">Odoo ID</div>
-              <div className="font-mono text-xs text-dash-text-secondary">{selected.id}</div>
-            </div>
-            <div className="pt-3 border-t border-dash-border text-xs text-dash-text-secondary">
-              Read-only snapshot. Edit in Odoo, then re-run extraction.
-            </div>
-          </div>
-        )}
-      </SlideOut>
+      {selected && (
+        <ProductDetailPanel
+          product={selected}
+          onClose={() => setSelected(null)}
+          onPickProduct={(p) => setSelected(p)}
+        />
+      )}
     </div>
   );
 };
