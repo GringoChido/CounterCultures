@@ -8,8 +8,10 @@ import { CategoryHero } from "@/app/components/sections/category-hero";
 import { ShopCatalog } from "@/app/[locale]/shop/shop-catalog";
 import { getProductsByBrand } from "@/app/lib/sheets";
 import { getBrandBySlug, getBrands } from "@/app/lib/brand-kit-sheets";
+import { getBrandSummary } from "@/app/lib/products-full";
 import { articles, pillarColors, pillarLabels } from "@/app/lib/articles";
-import { Shield, Wrench, HeadphonesIcon, ArrowUpRight } from "lucide-react";
+import { Shield, Wrench, HeadphonesIcon, ArrowUpRight, Package } from "lucide-react";
+import { BrandSignatureTile } from "./brand-signature-tile";
 
 interface BrandPageProps {
   params: Promise<{ slug: string; locale: string }>;
@@ -121,6 +123,12 @@ const BrandPage = async ({ params }: BrandPageProps) => {
   // someone lands here directly, still render — helps SEO for the brand name.
   const products = await getProductsByBrand(brand.name);
   const heroImage = PRE_STAGED_HEROES[slug];
+
+  // Full-catalog summary — connects the editorial brand page to the 354k Vault.
+  const catalogSummary = await getBrandSummary(brand.name, {
+    featuredIds: brand.featuredProductIds ?? [],
+    limit: 8,
+  });
 
   const description =
     (isEs ? brand.descriptionEs : brand.descriptionEn) ||
@@ -366,6 +374,99 @@ const BrandPage = async ({ params }: BrandPageProps) => {
           <div id="products">
             <ShopCatalog initialProducts={products} />
           </div>
+        )}
+
+        {/* Full Catalog — the Vault, filtered to this brand. Only show when
+            the brand actually has catalog items (avoids dead sections on
+            request-state brands with no Odoo footprint). */}
+        {catalogSummary.count > 0 && (
+          <section className="py-16 md:py-24 bg-brand-linen border-y border-brand-stone/10">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <div className="grid lg:grid-cols-[1fr_auto] gap-6 items-end mb-10">
+                <div>
+                  <p className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-copper uppercase">
+                    {isEs ? "Catálogo completo" : "Full Catalog"}
+                  </p>
+                  <h2 className="mt-3 font-display text-3xl md:text-5xl font-light tracking-wide text-brand-charcoal leading-[1.05]">
+                    {isEs ? (
+                      <>
+                        <span className="italic">
+                          {catalogSummary.count.toLocaleString("es-MX")} piezas
+                        </span>{" "}
+                        de {brand.name} disponibles para especificar.
+                      </>
+                    ) : (
+                      <>
+                        <span className="italic">
+                          {catalogSummary.count.toLocaleString("en-US")} {brand.name} pieces
+                        </span>{" "}
+                        available to specify.
+                      </>
+                    )}
+                  </h2>
+                  <p className="mt-4 font-body text-base text-brand-stone max-w-xl">
+                    {isEs
+                      ? `Más allá de la colección curada: todo el catálogo autorizado de ${brand.name} buscable por SKU, acabado y colección. Importación directa, cotización en 24 horas hábiles.`
+                      : `Beyond the curated edit: every authorized ${brand.name} SKU, searchable by finish, collection, and size. Factory-direct import, 24-hour quote turnaround.`}
+                  </p>
+                </div>
+                <Link
+                  href={`/${locale}/shop/catalog?brand=${encodeURIComponent(brand.name)}`}
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-brand-charcoal text-white font-body font-semibold text-sm tracking-wide hover:bg-brand-charcoal/90 transition-colors whitespace-nowrap"
+                >
+                  {isEs ? "Abrir catálogo" : "Open catalog"} →
+                </Link>
+              </div>
+
+              {/* Category breakdown chips */}
+              {Object.values(catalogSummary.categoryCounts).some((c) => c > 0) && (
+                <div className="mb-8 flex flex-wrap gap-2">
+                  {(["bathroom", "kitchen", "hardware"] as const)
+                    .filter((c) => catalogSummary.categoryCounts[c] > 0)
+                    .map((c) => (
+                      <Link
+                        key={c}
+                        href={`/${locale}/shop/catalog?brand=${encodeURIComponent(brand.name)}&category=${c}`}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-brand-stone/20 hover:border-brand-copper transition-colors font-body text-xs"
+                      >
+                        <span className="text-[10px] tracking-[0.18em] uppercase text-brand-stone">
+                          {isEs
+                            ? c === "bathroom" ? "Baño" : c === "kitchen" ? "Cocina" : "Herrajes"
+                            : c === "bathroom" ? "Bathroom" : c === "kitchen" ? "Kitchen" : "Hardware"}
+                        </span>
+                        <span className="font-mono text-[11px] text-brand-copper">
+                          {catalogSummary.categoryCounts[c].toLocaleString()}
+                        </span>
+                      </Link>
+                    ))}
+                </div>
+              )}
+
+              {/* Signature collection grid — featured or top N */}
+              {catalogSummary.signature.length > 0 && (
+                <>
+                  <p className="font-body text-[11px] tracking-[0.25em] text-brand-stone uppercase mb-5">
+                    {isEs
+                      ? brand.featuredProductIds?.length
+                        ? "Selección del showroom"
+                        : "Del catálogo"
+                      : brand.featuredProductIds?.length
+                        ? "Signature selection"
+                        : "From the catalog"}
+                  </p>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {catalogSummary.signature.map((p) => (
+                      <BrandSignatureTile
+                        key={p.id}
+                        product={p}
+                        locale={locale as "en" | "es"}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </section>
         )}
 
         {/* Request-a-Quote band — shown when no products (request-state or

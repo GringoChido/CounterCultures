@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { getBrands } from "@/app/lib/brand-kit-sheets";
+import { getBrandCounts } from "@/app/lib/products-full";
 import type { CategorySlug } from "@/app/lib/brand-kit-types";
 import { BrandsGrid } from "./brands-grid";
 
@@ -154,7 +155,15 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
   const isEs = locale === "es";
   const localeKey = (locale === "es" ? "es" : "en") as "en" | "es";
 
-  const allBrands = await getBrands();
+  const [allBrands, catalogBrandCounts] = await Promise.all([
+    getBrands(),
+    getBrandCounts().catch(() => []),
+  ]);
+
+  // Index catalog counts by brand name for O(1) lookups when building cards.
+  const catalogCountByName = new Map(
+    catalogBrandCounts.map((b) => [b.brand.toLowerCase(), b.count])
+  );
 
   // Shape brands for the client grid. External-state brands link out to
   // their own site; others route internally.
@@ -168,6 +177,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
         b.stockedState === "external"
           ? b.externalUrl || b.websiteUrl
           : undefined;
+      const catalogCount = catalogCountByName.get(b.name.toLowerCase()) ?? 0;
       return {
         slug: b.slug,
         name: b.name,
@@ -183,6 +193,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
         internalHref: `/${locale}/brands/${b.slug}`,
         isFeatured: b.isFeatured,
         displayOrder: b.displayOrder ?? 999,
+        catalogCount,
       };
     })
     .sort((a, b) => a.name.localeCompare(b.name));

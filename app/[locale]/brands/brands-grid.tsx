@@ -22,6 +22,7 @@ interface BrandCardData {
   stockedState: string;
   externalHref?: string;
   internalHref: string;
+  catalogCount?: number;
 }
 
 interface BrandsGridProps {
@@ -262,12 +263,24 @@ const BrandCard = ({ brand, isEs }: BrandCardProps) => {
             {brand.description}
           </p>
         )}
-        {isExternal && (
-          <span className="mt-auto pt-3 flex items-center gap-1.5 text-[10px] text-brand-stone/50 tracking-wider uppercase">
-            <ArrowUpRight className="w-3 h-3" />
-            {isEs ? "Sitio externo" : "External site"}
-          </span>
-        )}
+        <div className="mt-auto pt-3 flex items-center justify-between gap-2">
+          {brand.catalogCount && brand.catalogCount > 0 ? (
+            <span className="font-body text-[10px] tracking-[0.15em] uppercase text-brand-stone/70">
+              <span className="font-mono text-brand-copper">
+                {brand.catalogCount.toLocaleString()}
+              </span>{" "}
+              {isEs ? "piezas" : "pieces"}
+            </span>
+          ) : (
+            <span />
+          )}
+          {isExternal && (
+            <span className="flex items-center gap-1.5 text-[10px] text-brand-stone/50 tracking-wider uppercase">
+              <ArrowUpRight className="w-3 h-3" />
+              {isEs ? "Sitio externo" : "External site"}
+            </span>
+          )}
+        </div>
       </div>
     </>
   );

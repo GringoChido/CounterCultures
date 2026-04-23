@@ -371,6 +371,66 @@ export const getSameBrand = async (
     .map(stripIndex);
 };
 
+// ── Brand Atelier: summary + signature collection ──────────────────────
+
+export interface BrandSummary {
+  brand: string;
+  count: number;
+  saleableCount: number;
+  categoryCounts: Record<ProductCategory, number>;
+  signature: ProductFull[]; // top N products, preferring specified featuredIds
+}
+
+/**
+ * Brand-level aggregate used by /brands/[slug] pages. Matches on the
+ * canonical brand name as it appears in the catalog. When `featuredIds`
+ * is provided, those products are placed first (in order) before filling
+ * the rest from the brand's saleable pool.
+ */
+export const getBrandSummary = async (
+  brandName: string,
+  { featuredIds = [], limit = 12 }: { featuredIds?: string[]; limit?: number } = {}
+): Promise<BrandSummary> => {
+  const c = await getCache();
+  const pool = c.byBrand.get(brandName) ?? [];
+  const saleable = pool.filter((p) => p.saleOk);
+
+  const categoryCounts: Record<ProductCategory, number> = {
+    bathroom: 0,
+    kitchen: 0,
+    hardware: 0,
+  };
+  for (const p of pool) categoryCounts[p.category]++;
+
+  // Signature: featured IDs first (in order), then fill with remaining saleable
+  const byId = new Map(saleable.map((p) => [p.id, p]));
+  const seen = new Set<string>();
+  const signature: IndexedProduct[] = [];
+  for (const id of featuredIds) {
+    const hit = byId.get(id);
+    if (hit && !seen.has(hit.id)) {
+      signature.push(hit);
+      seen.add(hit.id);
+      if (signature.length >= limit) break;
+    }
+  }
+  for (const p of saleable) {
+    if (signature.length >= limit) break;
+    if (!seen.has(p.id)) {
+      signature.push(p);
+      seen.add(p.id);
+    }
+  }
+
+  return {
+    brand: brandName,
+    count: pool.length,
+    saleableCount: saleable.length,
+    categoryCounts,
+    signature: signature.map(stripIndex),
+  };
+};
+
 export const getCatalogStats = async (): Promise<{
   total: number;
   brandCount: number;
