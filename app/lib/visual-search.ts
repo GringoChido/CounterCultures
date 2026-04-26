@@ -122,37 +122,68 @@ export const analyzeImage = async (
 };
 
 /**
- * Two-pass search: brand-scoped first if a brand was identified, then a
- * broader fallback if the brand-scoped pool is thin. Keeps results tight when
- * we recognize the maker, broad when we don't.
+ * Cascading match strategy. The model's searchQuery is descriptive prose
+ * ("Brizo pull-down brass kitchen faucet"), which won't substring-match
+ * SKUs or product names. So we degrade gracefully:
+ *
+ *   1. Brand + category, no query — show the maker's range in that category
+ *   2. Brand alone — broaden to all categories from this brand
+ *   3. Category + single best descriptive term — when no brand was identified
+ *   4. Single descriptive term globally — last resort
+ *
+ * Returns the first strategy that yields any matches, so an architect who
+ * snaps a recognizable Brizo faucet always lands on a curated brand grid.
  */
 export const matchVisualToCatalog = async (
   attrs: VisualAttributes,
   limit = 24
 ): Promise<{ matches: ProductFull[]; totalMatched: number }> => {
-  const q = attrs.searchQuery || attrs.descriptiveTerms.join(" ") || attrs.productType || "";
-
+  // 1. Brand + category — most common architect intent
   if (attrs.brand) {
-    const brandFirst = await searchProducts({
-      q,
+    const r = await searchProducts({
       brand: attrs.brand,
       category: attrs.category ?? "all",
       saleOnly: true,
       limit,
     });
-    if (brandFirst.items.length >= 4) {
-      return { matches: brandFirst.items, totalMatched: brandFirst.total };
+    if (r.items.length > 0) {
+      return { matches: r.items, totalMatched: r.total };
     }
   }
 
-  // Broader pass — drop the brand filter, keep category if present
-  const broad = await searchProducts({
-    q,
-    category: attrs.category ?? "all",
-    saleOnly: true,
-    limit,
-  });
-  return { matches: broad.items, totalMatched: broad.total };
+  // 2. Brand alone, drop category
+  if (attrs.brand) {
+    const r = await searchProducts({
+      brand: attrs.brand,
+      saleOnly: true,
+      limit,
+    });
+    if (r.items.length > 0) {
+      return { matches: r.items, totalMatched: r.total };
+    }
+  }
+
+  // 3. Category + best descriptive term
+  const term = attrs.descriptiveTerms[0] || attrs.productType || "";
+  if (term) {
+    const r = await searchProducts({
+      q: term,
+      category: attrs.category ?? "all",
+      saleOnly: true,
+      limit,
+    });
+    if (r.items.length > 0) {
+      return { matches: r.items, totalMatched: r.total };
+    }
+  }
+
+  // 4. Term globally
+  if (term) {
+    const r = await searchProducts({ q: term, saleOnly: true, limit });
+    return { matches: r.items, totalMatched: r.total };
+  }
+
+  return { matches: [], totalMatched: 0 };
 };
 
 export const visualSearch = async (
