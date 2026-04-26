@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { ShoppingBag, ChevronDown, X, Trash2, Loader2, Send, Check } from "lucide-react";
+import { ShoppingBag, X, Trash2, Loader2, Send, Check, FileUp } from "lucide-react";
 import { toast } from "sonner";
 import { useProjectListStore } from "@/app/lib/stores/project-list-store";
+import { PdfDropModal, type PdfDropResult } from "@/app/components/pdf-drop-modal";
 
 const T = {
   en: {
@@ -25,6 +26,8 @@ const T = {
     thanks: "Thanks — we'll get back within 24 hours.",
     error: "Could not send the request. Please try again or email info@countercultures.com.mx",
     viewList: "View list",
+    dropPdf: "Drop spec PDF",
+    addedFromPdf: (n: number) => `Added ${n} item${n === 1 ? "" : "s"} from PDF`,
   },
   es: {
     yourProject: "Tu lista de proyecto",
@@ -45,6 +48,8 @@ const T = {
     thanks: "Gracias — te respondemos en menos de 24 horas.",
     error: "No pudimos enviar la solicitud. Intenta de nuevo o escribe a info@countercultures.com.mx",
     viewList: "Ver lista",
+    dropPdf: "Soltar PDF de especificación",
+    addedFromPdf: (n: number) => `${n} artículo${n === 1 ? "" : "s"} agregado${n === 1 ? "" : "s"} del PDF`,
   },
 };
 
@@ -55,11 +60,13 @@ interface ProjectListBarProps {
 const ProjectListBar = ({ locale }: ProjectListBarProps) => {
   const t = T[locale];
   const items = useProjectListStore((s) => s.items);
+  const add = useProjectListStore((s) => s.add);
   const updateQty = useProjectListStore((s) => s.updateQty);
   const remove = useProjectListStore((s) => s.remove);
   const clear = useProjectListStore((s) => s.clear);
 
   const [expanded, setExpanded] = useState(false);
+  const [pdfOpen, setPdfOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -70,9 +77,25 @@ const ProjectListBar = ({ locale }: ProjectListBarProps) => {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  if (items.length === 0 && !expanded) return null;
-
   const totalQty = items.reduce((s, i) => s + i.quantity, 0);
+
+  const handlePdfCommit = async (results: PdfDropResult[]) => {
+    for (const r of results) {
+      add(
+        {
+          id: r.product.id,
+          sku: r.product.sku,
+          name: r.product.name,
+          brand: r.product.brand,
+          category: r.product.category,
+          currency: r.product.currency,
+          listPrice: r.product.listPrice,
+        },
+        r.quantity
+      );
+    }
+    toast.success(t.addedFromPdf(results.length));
+  };
 
   const submit = async () => {
     if (!name.trim() || !email.trim()) {
@@ -128,20 +151,45 @@ const ProjectListBar = ({ locale }: ProjectListBarProps) => {
 
   return (
     <>
-      {/* Floating pill */}
-      {!expanded && items.length > 0 && (
-        <button
-          type="button"
-          onClick={() => setExpanded(true)}
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-3 px-5 py-3 bg-brand-copper text-white shadow-lg hover:bg-brand-copper/90 transition-colors cursor-pointer rounded-full"
-        >
-          <ShoppingBag className="w-4 h-4" />
-          <span className="font-body text-sm font-medium">
-            {t.itemCount(items.length)}
-          </span>
-          <span className="font-body text-xs opacity-80">{t.viewList} →</span>
-        </button>
+      {/* Floating actions — PDF drop is always visible; project-list pill
+          appears once the user has staged something. */}
+      {!expanded && (
+        <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2">
+          {items.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setExpanded(true)}
+              className="flex items-center gap-3 px-5 py-3 bg-brand-copper text-white shadow-lg hover:bg-brand-copper/90 transition-colors cursor-pointer rounded-full"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              <span className="font-body text-sm font-medium">
+                {t.itemCount(items.length)}
+              </span>
+              <span className="font-body text-xs opacity-80">{t.viewList} →</span>
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setPdfOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-brand-charcoal text-white shadow-lg hover:bg-brand-charcoal/90 transition-colors cursor-pointer rounded-full"
+            title={t.dropPdf}
+          >
+            <FileUp className="w-4 h-4" />
+            <span className="font-body text-xs font-medium tracking-wide">
+              {t.dropPdf}
+            </span>
+          </button>
+        </div>
       )}
+
+      <PdfDropModal
+        open={pdfOpen}
+        onClose={() => setPdfOpen(false)}
+        onCommit={handlePdfCommit}
+        locale={locale}
+        theme="public"
+      />
+
 
       {/* Expanded sheet */}
       {expanded && (

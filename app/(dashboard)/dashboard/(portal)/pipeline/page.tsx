@@ -48,6 +48,7 @@ import {
   ClipboardList,
   Trash2,
   Share2,
+  FileUp,
 } from "lucide-react";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { PipelineJourneyPlayer } from "@/app/(dashboard)/components/pipeline-journey-player";
@@ -62,6 +63,7 @@ import { ShareButton } from "@/app/(dashboard)/components/share-button";
 import { ThreadOnDealPanel } from "@/app/(dashboard)/components/thread-on-deal-panel";
 import { ProductPicker } from "@/app/(dashboard)/components/product-picker";
 import { ShareQuoteModal } from "@/app/(dashboard)/components/share-quote-modal";
+import { PdfDropModal, type PdfDropResult } from "@/app/components/pdf-drop-modal";
 import type { ProductFull } from "@/app/lib/products-full";
 import {
   SAMPLE_PIPELINE,
@@ -829,6 +831,8 @@ const PipelinePageInner = () => {
   // Line Items tab state — lazy-loaded from Deal_Line_Items sheet
   const [lineItemsLoading, setLineItemsLoading] = useState(false);
   const [productPickerOpen, setProductPickerOpen] = useState(false);
+  const [pdfDropOpen, setPdfDropOpen] = useState(false);
+  const [pdfImporting, setPdfImporting] = useState(false);
   const [addingItem, setAddingItem] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
 
@@ -1070,6 +1074,91 @@ const PipelinePageInner = () => {
         toast.error("Could not add product");
       } finally {
         setAddingItem(false);
+      }
+    },
+    [selectedDeal?.id]
+  );
+
+  /**
+   * Bulk-add confirmed PDF matches to the deal. Sequential to avoid Sheets
+   * write conflicts; failure on any one row leaves the others applied.
+   */
+  const handlePdfImport = useCallback(
+    async (results: PdfDropResult[]) => {
+      if (!selectedDeal?.id || results.length === 0) return;
+      const dealId = selectedDeal.id;
+      setPdfImporting(true);
+      const added: DealLineItem[] = [];
+      let failures = 0;
+      for (const r of results) {
+        try {
+          const res = await fetch(
+            `/api/dashboard/deals/${encodeURIComponent(dealId)}/line-items`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                productId: r.product.id,
+                quantity: r.quantity,
+                ...(r.finish && { finish: r.finish }),
+              }),
+            }
+          );
+          if (!res.ok) {
+            failures++;
+            continue;
+          }
+          const data = await res.json();
+          const row = data.item as {
+            id: string;
+            sku: string;
+            productName: string;
+            brand: string;
+            finish: string;
+            quantity: number;
+            dealerCost: number;
+            quotedPrice: number;
+            msrp: number;
+            shippingCost: number;
+            leadTime: string;
+            status: string;
+            marginAmount: number;
+            marginPercent: number;
+          };
+          added.push({
+            id: row.id,
+            productName: row.productName,
+            sku: row.sku,
+            brand: row.brand,
+            finish: row.finish || undefined,
+            quantity: row.quantity,
+            dealerCost: row.dealerCost,
+            quotedPrice: row.quotedPrice,
+            msrp: row.msrp,
+            shippingCost: row.shippingCost,
+            leadTime: row.leadTime || undefined,
+            status: (row.status as DealLineItem["status"]) || "current",
+            marginAmount: row.marginAmount,
+            marginPercent: row.marginPercent,
+          });
+        } catch {
+          failures++;
+        }
+      }
+      if (added.length > 0) {
+        setSelectedDeal((cur) =>
+          cur && cur.id === dealId
+            ? { ...cur, lineItems: [...(cur.lineItems ?? []), ...added] }
+            : cur
+        );
+      }
+      setPdfImporting(false);
+      if (failures === 0) {
+        toast.success(`Imported ${added.length} line items from PDF`);
+      } else {
+        toast.warning(
+          `Imported ${added.length}; ${failures} failed — retry or add manually`
+        );
       }
     },
     [selectedDeal?.id]
@@ -2011,6 +2100,19 @@ const PipelinePageInner = () => {
                         </a>
                       </>
                     )}
+                    <button
+                      onClick={() => setPdfDropOpen(true)}
+                      disabled={pdfImporting}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-dash-border text-dash-text rounded-lg hover:bg-dash-bg transition-colors cursor-pointer disabled:opacity-50"
+                      title="Drop a spec PDF and we'll extract every product reference"
+                    >
+                      {pdfImporting ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <FileUp className="w-3.5 h-3.5" />
+                      )}
+                      Drop PDF
+                    </button>
                     <button
                       onClick={() => setProductPickerOpen(true)}
                       disabled={addingItem}
@@ -3099,6 +3201,16 @@ const PipelinePageInner = () => {
         <ProductPicker
           onSelect={handleAddProduct}
           onClose={() => setProductPickerOpen(false)}
+        />
+      )}
+      {selectedDeal && (
+        <PdfDropModal
+          open={pdfDropOpen}
+          onClose={() => setPdfDropOpen(false)}
+          onCommit={handlePdfImport}
+          locale="en"
+          theme="dashboard"
+          ctaLabel={`Import to ${selectedDeal.id}`}
         />
       )}
       {shareModalOpen && selectedDeal && (
