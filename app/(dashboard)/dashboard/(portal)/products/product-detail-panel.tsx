@@ -140,6 +140,15 @@ const ProductDetailPanel = ({
   const [historyLoading, setHistoryLoading] = useState(false);
   const [history, setHistory] = useState<SalesHistory | null>(null);
 
+  // Description state — admin sees status (pending/approved) regardless of gate
+  interface DescState {
+    descriptionEn: string;
+    descriptionEs: string;
+    status: "pending" | "approved" | "rejected";
+  }
+  const [desc, setDesc] = useState<DescState | null>(null);
+  const [generatingDesc, setGeneratingDesc] = useState(false);
+
   // Reset transient state whenever the shown product changes
   useEffect(() => {
     setTab("overview");
@@ -152,7 +161,54 @@ const ProductDetailPanel = ({
     setVariants([]);
     setSameBrand([]);
     setHistory(null);
+    setDesc(null);
   }, [product.id]);
+
+  // Hydrate description from sheet — admin view sees pending + approved alike
+  useEffect(() => {
+    let cancelled = false;
+    fetch(
+      `/api/dashboard/products/description?id=${encodeURIComponent(product.id)}`,
+      { cache: "no-store" }
+    )
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (cancelled || !d?.row) return;
+        setDesc({
+          descriptionEn: d.row.descriptionEn,
+          descriptionEs: d.row.descriptionEs,
+          status: d.row.status,
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [product.id]);
+
+  const generateDesc = async () => {
+    if (generatingDesc) return;
+    setGeneratingDesc(true);
+    try {
+      const res = await fetch(`/api/dashboard/products/generate-description`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId: product.id }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Generation failed");
+      }
+      const d = (await res.json()) as DescState;
+      setDesc(d);
+      toast.success("Description generated. Approve in the sheet to publish.");
+    } catch (e) {
+      console.error("[product-detail] generate description failed", e);
+      toast.error(e instanceof Error ? e.message : "Could not generate description");
+    } finally {
+      setGeneratingDesc(false);
+    }
+  };
 
   // Fetch variants + same-brand once per product (cheap)
   useEffect(() => {
@@ -404,6 +460,65 @@ const ProductDetailPanel = ({
                 sku={product.sku}
                 name={product.name || product.sku}
               />
+              {/* AI description + admin gate */}
+              <div className="rounded-lg border border-dash-border bg-dash-bg/50 p-3 space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-dash-text-secondary">
+                    Description
+                  </span>
+                  <div className="flex items-center gap-2">
+                    {desc && (
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                          desc.status === "approved"
+                            ? "bg-green-500/10 text-green-400"
+                            : desc.status === "rejected"
+                              ? "bg-red-500/10 text-red-400"
+                              : "bg-amber-500/10 text-amber-400"
+                        }`}
+                      >
+                        {desc.status}
+                      </span>
+                    )}
+                    <button
+                      onClick={generateDesc}
+                      disabled={generatingDesc}
+                      className="px-2 py-1 text-[11px] bg-brand-copper text-white rounded hover:bg-brand-copper/90 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      {generatingDesc
+                        ? "Generating…"
+                        : desc
+                          ? "Regenerate"
+                          : "Generate"}
+                    </button>
+                  </div>
+                </div>
+                {desc ? (
+                  <div className="space-y-2 text-xs">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-dash-text-secondary mb-0.5">
+                        EN
+                      </p>
+                      <p className="text-dash-text leading-relaxed">{desc.descriptionEn}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-dash-text-secondary mb-0.5">
+                        ES
+                      </p>
+                      <p className="text-dash-text leading-relaxed">{desc.descriptionEs}</p>
+                    </div>
+                    {desc.status === "pending" && (
+                      <p className="text-[10px] text-amber-400/70 italic">
+                        Open Product_Descriptions in the sheet and set status to “approved” to publish.
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-xs text-dash-text-secondary italic">
+                    No description yet. Generate one — it’ll save as pending until approved in the sheet.
+                  </p>
+                )}
+              </div>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <div className="text-xs text-dash-text-secondary mb-0.5">List price</div>

@@ -125,6 +125,7 @@ const ProductDrawer = ({
   const [skuRoot, setSkuRoot] = useState<string | null>(null);
   const [sameBrand, setSameBrand] = useState<ProductFull[]>([]);
   const [alsoSpecified, setAlsoSpecified] = useState<ProductFull[]>([]);
+  const [description, setDescription] = useState<string | null>(null);
   const [loadingRel, setLoadingRel] = useState(false);
   const [loadingAlso, setLoadingAlso] = useState(false);
   const [qtyInput, setQtyInput] = useState("1");
@@ -138,9 +139,31 @@ const ProductDrawer = ({
     setVariants([]);
     setSameBrand([]);
     setAlsoSpecified([]);
+    setDescription(null);
     setSkuRoot(null);
     setQtyInput("1");
   }, [product.id]);
+
+  // Approved descriptions only — pending/rejected stay hidden from public.
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/products/description?id=${encodeURIComponent(product.id)}`, {
+      cache: "no-store",
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (cancelled || !d?.description) return;
+        const text =
+          locale === "es"
+            ? d.description.descriptionEs
+            : d.description.descriptionEn;
+        setDescription(text || null);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [product.id, locale]);
 
   useEffect(() => {
     let cancelled = false;
@@ -284,6 +307,11 @@ const ProductDrawer = ({
                 sku={product.sku}
                 name={product.name || product.sku}
               />
+              {description && (
+                <p className="font-body text-sm text-brand-charcoal leading-relaxed">
+                  {description}
+                </p>
+              )}
               <div className="grid grid-cols-2 gap-4 text-sm font-body">
                 <div>
                   <div className="text-[10px] tracking-[0.18em] uppercase text-brand-stone mb-1">

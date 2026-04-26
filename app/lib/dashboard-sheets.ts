@@ -73,7 +73,8 @@ type SheetTab =
   | "Odoo_Full_Reconciliations"
   | "Odoo_Attachments"
   | "Odoo_Messages"
-  | "Posts";
+  | "Posts"
+  | "Product_Descriptions";
 
 // Read all rows from a sheet tab (returns array of objects using header row as keys)
 const readSheet = async <T extends Record<string, string>>(
