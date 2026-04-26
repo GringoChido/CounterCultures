@@ -55,8 +55,13 @@ const ProductDetail = ({
   const [selectedFinish, setSelectedFinish] = useState(product.finishes[0] || "");
   const [selectedImage, setSelectedImage] = useState(0);
   const [imgErrored, setImgErrored] = useState(false);
+  const [thumbErrors, setThumbErrors] = useState<Set<number>>(new Set());
   const [specsOpen, setSpecsOpen] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  const goodThumbs = product.images
+    .map((img, i) => ({ img, i }))
+    .filter(({ i }) => !thumbErrors.has(i));
 
   const isHighValue = product.price > 50000;
   const depositPercent = isHighValue ? 30 : undefined;
@@ -162,9 +167,9 @@ const ProductDetail = ({
                   />
                 )}
               </motion.div>
-              {product.images.length > 1 && (
+              {goodThumbs.length > 1 && (
                 <div className="flex gap-2 sm:gap-3 mt-3 md:mt-4 overflow-x-auto pb-1">
-                  {product.images.map((img, i) => (
+                  {goodThumbs.map(({ img, i }) => (
                     <button
                       key={i}
                       onClick={() => setSelectedImage(i)}
@@ -180,6 +185,13 @@ const ProductDetail = ({
                         fill
                         sizes="80px"
                         className="object-cover"
+                        onError={() =>
+                          setThumbErrors((prev) => {
+                            const next = new Set(prev);
+                            next.add(i);
+                            return next;
+                          })
+                        }
                       />
                     </button>
                   ))}

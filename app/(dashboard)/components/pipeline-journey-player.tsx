@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Player } from "@remotion/player";
 import {
   PipelineJourney,
@@ -33,6 +33,29 @@ export const PipelineJourneyPlayer = ({
     }),
     [dealLabel, dealId, clientName, dealValue, targetPhase],
   );
+
+  // Remotion's <Player> measures the DOM and generates IDs during initial
+  // render, producing SSR/CSR mismatch warnings ("2 Issues" in Next dev
+  // overlay). Defer mount until after hydration to avoid the diff entirely.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div
+        className="w-full"
+        style={{
+          aspectRatio: "2 / 1",
+          borderRadius: 16,
+          overflow: "hidden",
+          background: "#1A1A1A",
+        }}
+        aria-hidden
+      />
+    );
+  }
 
   return (
     <div className="w-full">

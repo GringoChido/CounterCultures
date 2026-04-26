@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { Button } from "@/app/components/ui/button";
 
@@ -88,6 +89,39 @@ const featured = [
   },
 ];
 
+// On 404, swap to a brand-themed typographic panel matching ProductVisual's
+// fallback. Avoids broken-image icons on the homepage hero grid.
+const FeaturedImage = ({
+  src,
+  alt,
+  brand,
+}: {
+  src: string;
+  alt: string;
+  brand: string;
+}) => {
+  const [errored, setErrored] = useState(false);
+  if (errored) {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center bg-brand-stone/15">
+        <h4 className="font-display font-light tracking-wide text-2xl text-center px-4 text-brand-charcoal/80 truncate">
+          {brand}
+        </h4>
+      </div>
+    );
+  }
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      fill
+      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+      className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+      onError={() => setErrored(true)}
+    />
+  );
+};
+
 const FeaturedProducts = ({ locale = "en" }: { locale?: string }) => (
   <section className="py-14 md:py-32 bg-brand-linen">
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -105,12 +139,10 @@ const FeaturedProducts = ({ locale = "en" }: { locale?: string }) => (
           <AnimatedSection key={product.href} delay={i * 0.06}>
             <Link href={product.href} className="group flex flex-col bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 h-full">
               <div className="relative aspect-[4/5] overflow-hidden shrink-0">
-                <Image
+                <FeaturedImage
                   src={product.image}
                   alt={product.name}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                  className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+                  brand={product.brand}
                 />
                 <span className={`absolute top-3 left-3 ${product.badgeColor} text-white px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-sm`}>
                   {product.badge}

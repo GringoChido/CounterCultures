@@ -165,6 +165,15 @@ export const ProductPreview = () => {
   const { previewProduct, closePreview, requestInsert } = useProductInsert();
   const [descExpanded, setDescExpanded] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
+  const [heroErrored, setHeroErrored] = useState(false);
+  const [thumbErrors, setThumbErrors] = useState<Set<number>>(new Set());
+
+  // Reset error state whenever the previewed product changes
+  useEffect(() => {
+    setHeroErrored(false);
+    setThumbErrors(new Set());
+    setActiveImage(0);
+  }, [previewProduct?.id]);
 
   const handleInsert = useCallback(() => {
     if (!previewProduct) return;
@@ -217,13 +226,14 @@ export const ProductPreview = () => {
                   get the branded typographic fallback consistent with
                   the public catalog. */}
               <div className="relative">
-                {p.images.length > 0 ? (
+                {p.images.length > 0 && !heroErrored ? (
                   <div className="aspect-[4/3] bg-dash-bg overflow-hidden">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={p.images[activeImage] || p.images[0]}
                       alt={p.name}
                       className="w-full h-full object-cover"
+                      onError={() => setHeroErrored(true)}
                     />
                   </div>
                 ) : (
@@ -237,20 +247,33 @@ export const ProductPreview = () => {
                     forceTypography
                   />
                 )}
-                {p.images.length > 1 && (
+                {p.images.length > 1 && !heroErrored && (
                   <div className="flex gap-2 px-6 py-3 overflow-x-auto">
-                    {p.images.map((img, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setActiveImage(i)}
-                        className={`w-14 h-14 rounded-lg overflow-hidden shrink-0 border-2 transition-colors cursor-pointer ${
-                          i === activeImage ? "border-brand-copper" : "border-transparent opacity-60 hover:opacity-100"
-                        }`}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={img} alt={`${p.name} thumbnail ${i + 1}`} className="w-full h-full object-cover" />
-                      </button>
-                    ))}
+                    {p.images.map((img, i) =>
+                      thumbErrors.has(i) ? null : (
+                        <button
+                          key={i}
+                          onClick={() => setActiveImage(i)}
+                          className={`w-14 h-14 rounded-lg overflow-hidden shrink-0 border-2 transition-colors cursor-pointer ${
+                            i === activeImage ? "border-brand-copper" : "border-transparent opacity-60 hover:opacity-100"
+                          }`}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={img}
+                            alt={`${p.name} thumbnail ${i + 1}`}
+                            className="w-full h-full object-cover"
+                            onError={() =>
+                              setThumbErrors((prev) => {
+                                const next = new Set(prev);
+                                next.add(i);
+                                return next;
+                              })
+                            }
+                          />
+                        </button>
+                      )
+                    )}
                   </div>
                 )}
               </div>

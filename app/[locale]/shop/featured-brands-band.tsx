@@ -1,6 +1,6 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { Brand } from "@/app/lib/brand-kit-types";
+import { FeaturedBrandCard } from "./featured-brand-card";
 
 interface FeaturedBrandsBandProps {
   locale: "en" | "es";
@@ -60,45 +60,12 @@ const FeaturedBrandsBand = ({ locale, brands }: FeaturedBrandsBandProps) => {
               href={`/${locale}/brands/${b.slug}`}
               className="group relative aspect-[4/3] bg-white border border-brand-stone/15 hover:border-brand-copper/60 transition-all overflow-hidden"
             >
-              {b.heroImage ? (
-                <>
-                  <Image
-                    src={b.heroImage}
-                    alt={b.name}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    sizes="(min-width: 1024px) 280px, (min-width: 640px) 33vw, 50vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                  <div className="absolute inset-x-0 bottom-0 p-4 text-white">
-                    <h3 className="font-display text-xl font-light tracking-wide leading-tight">
-                      {b.name}
-                    </h3>
-                    {b.catalogCount > 0 && (
-                      <p className="mt-1 font-body text-[11px] tracking-[0.15em] uppercase opacity-90">
-                        <span className="font-mono text-brand-copper">
-                          {b.catalogCount.toLocaleString()}
-                        </span>{" "}
-                        {t.pieces}
-                      </p>
-                    )}
-                  </div>
-                </>
-              ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center">
-                  <h3 className="font-display text-xl font-light tracking-wide text-brand-charcoal">
-                    {b.name}
-                  </h3>
-                  {b.catalogCount > 0 && (
-                    <p className="mt-2 font-body text-[11px] tracking-[0.15em] uppercase text-brand-stone">
-                      <span className="font-mono text-brand-copper">
-                        {b.catalogCount.toLocaleString()}
-                      </span>{" "}
-                      {t.pieces}
-                    </p>
-                  )}
-                </div>
-              )}
+              <FeaturedBrandCard
+                name={b.name}
+                heroImage={b.heroImage}
+                catalogCount={b.catalogCount}
+                piecesLabel={t.pieces}
+              />
             </Link>
           ))}
         </div>
