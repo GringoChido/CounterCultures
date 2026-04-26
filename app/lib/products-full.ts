@@ -488,6 +488,91 @@ export const getBrandSummary = async (
   };
 };
 
+// ── Brand × Category: programmatic SEO pages ───────────────────────────
+
+export interface BrandCategorySummary {
+  brand: string;
+  category: ProductCategory;
+  count: number; // total saleable products in this brand × category
+  totalCount: number; // including non-saleable
+  products: ProductFullWithSignals[];
+}
+
+/**
+ * Per-(brand, category) aggregate used by `/brands/[slug]/[category]` pages.
+ * Sorted by `specScores.weightedScore` when provided so projects-with-history
+ * float to the top of the SEO grid; falls back to stable SKU order otherwise.
+ */
+export const getBrandCategorySummary = async (
+  brandName: string,
+  category: ProductCategory,
+  {
+    limit = 24,
+    specScores,
+    inShowroomIds,
+  }: {
+    limit?: number;
+    specScores?: Map<string, { weightedScore: number; projectCount: number }>;
+    inShowroomIds?: Set<string>;
+  } = {}
+): Promise<BrandCategorySummary> => {
+  const c = await getCache();
+  const pool = (c.byBrand.get(brandName) ?? []).filter(
+    (p) => p.category === category
+  );
+  const saleable = pool.filter((p) => p.saleOk && p.active);
+
+  const sorted = specScores
+    ? [...saleable].sort((a, b) => {
+        const sA = specScores.get(a.id)?.weightedScore ?? 0;
+        const sB = specScores.get(b.id)?.weightedScore ?? 0;
+        return sB - sA || a._sku.localeCompare(b._sku);
+      })
+    : saleable;
+
+  const products: ProductFullWithSignals[] = sorted.slice(0, limit).map((p) => {
+    const base: ProductFullWithSignals = stripIndex(p);
+    if (inShowroomIds?.has(p.id)) base.inShowroom = true;
+    const spec = specScores?.get(p.id);
+    if (spec && spec.projectCount > 0) base.projectCount = spec.projectCount;
+    return base;
+  });
+
+  return {
+    brand: brandName,
+    category,
+    count: saleable.length,
+    totalCount: pool.length,
+    products,
+  };
+};
+
+/**
+ * Returns brand × category combinations that meet a minimum-count threshold,
+ * suitable for static prerendering. Defaults to ≥10 saleable products to
+ * avoid thin-content SEO pages.
+ */
+export const getBrandCategoryCombos = async (
+  minCount = 10
+): Promise<Array<{ brand: string; category: ProductCategory; count: number }>> => {
+  const c = await getCache();
+  const out: Array<{ brand: string; category: ProductCategory; count: number }> = [];
+  for (const [brand, products] of c.byBrand) {
+    const counts: Record<ProductCategory, number> = {
+      bathroom: 0,
+      kitchen: 0,
+      hardware: 0,
+    };
+    for (const p of products) {
+      if (p.saleOk && p.active) counts[p.category]++;
+    }
+    for (const cat of ["bathroom", "kitchen", "hardware"] as const) {
+      if (counts[cat] >= minCount) out.push({ brand, category: cat, count: counts[cat] });
+    }
+  }
+  return out;
+};
+
 export const getCatalogStats = async (): Promise<{
   total: number;
   brandCount: number;

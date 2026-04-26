@@ -418,7 +418,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
                 </Link>
               </div>
 
-              {/* Category breakdown chips */}
+              {/* Category breakdown chips → editorial category landing pages */}
               {Object.values(catalogSummary.categoryCounts).some((c) => c > 0) && (
                 <div className="mb-8 flex flex-wrap gap-2">
                   {(["bathroom", "kitchen", "hardware"] as const)
@@ -426,7 +426,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
                     .map((c) => (
                       <Link
                         key={c}
-                        href={`/${locale}/shop/catalog?brand=${encodeURIComponent(brand.name)}&category=${c}`}
+                        href={`/${locale}/brands/${slug}/${c}`}
                         className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-brand-stone/20 hover:border-brand-copper transition-colors font-body text-xs"
                       >
                         <span className="text-[10px] tracking-[0.18em] uppercase text-brand-stone">

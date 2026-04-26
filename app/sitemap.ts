@@ -3,6 +3,8 @@ import { BRANDS, PRODUCT_CATEGORIES } from "@/app/lib/constants";
 import { articles } from "@/app/lib/articles";
 import { PROJECTS } from "@/app/lib/projects";
 import { getProducts } from "@/app/lib/sheets";
+import { getBrandCategoryCombos } from "@/app/lib/products-full";
+import { getBrands } from "@/app/lib/brand-kit-sheets";
 
 const BASE_URL = "https://countercultures.mx";
 const LAST_MODIFIED = new Date("2026-03-30");
@@ -52,6 +54,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     localizedEntry(`/brands/${slug}`, "monthly", 0.65)
   );
 
+  // Programmatic brand × category landing pages — only combos that meet the
+  // ≥10-product threshold AND whose brand exists in the Brand Kit (slug source
+  // of truth). Mirrors generateStaticParams in the dynamic route.
+  const [brandKitBrands, brandCategoryCombos] = await Promise.all([
+    getBrands(),
+    getBrandCategoryCombos(10),
+  ]);
+  const slugByName = new Map(brandKitBrands.map((b) => [b.name, b.slug]));
+  const brandCategoryRoutes: MetadataRoute.Sitemap = brandCategoryCombos.flatMap(
+    ({ brand, category }) => {
+      const slug = slugByName.get(brand);
+      if (!slug) return [];
+      return localizedEntry(`/brands/${slug}/${category}`, "weekly", 0.7);
+    }
+  );
+
   // Shop subcategory pages
   const subcategoryRoutes: MetadataRoute.Sitemap = Object.entries(
     PRODUCT_CATEGORIES
@@ -84,6 +102,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticRoutes,
     ...brandRoutes,
+    ...brandCategoryRoutes,
     ...subcategoryRoutes,
     ...productRoutes,
     ...articleRoutes,
