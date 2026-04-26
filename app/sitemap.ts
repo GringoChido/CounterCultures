@@ -6,6 +6,11 @@ import { getProducts } from "@/app/lib/sheets";
 import { getBrandCategoryCombos } from "@/app/lib/products-full";
 import { getBrands } from "@/app/lib/brand-kit-sheets";
 
+// Regenerate hourly so the brand × category combos pick up Roger's catalog
+// edits. Build-time generation was returning 0 combos (catalog cache loads
+// at runtime, not at build), which silently dropped the new SEO routes.
+export const revalidate = 3600;
+
 const BASE_URL = "https://countercultures.mx";
 const LAST_MODIFIED = new Date("2026-03-30");
 
