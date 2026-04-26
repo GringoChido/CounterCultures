@@ -421,7 +421,17 @@ export const DocumentGenerator = ({
                 <div className="col-span-5 flex items-end gap-2">
                   {item.image && (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={item.image} alt={item.product || "Product"} className="w-8 h-8 rounded object-cover shrink-0 mb-0.5" />
+                    <img
+                      src={item.image}
+                      alt={item.product || "Product"}
+                      className="w-8 h-8 rounded object-cover shrink-0 mb-0.5"
+                      onError={(e) => { e.currentTarget.style.display = "none"; }}
+                      onLoad={(e) => {
+                        if (e.currentTarget.naturalWidth > 0 && e.currentTarget.naturalWidth < 200) {
+                          e.currentTarget.style.display = "none";
+                        }
+                      }}
+                    />
                   )}
                   <div className="flex-1">
                     <label className={labelCls}>Product</label>

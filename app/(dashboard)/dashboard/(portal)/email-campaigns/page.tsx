@@ -351,7 +351,17 @@ const EmailCampaignsPage = () => {
               <div className="flex items-center gap-3 p-3 bg-dash-bg border border-dash-border rounded-lg">
                 {featuredProduct.image && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={featuredProduct.image} alt={featuredProduct.name} className="w-12 h-12 rounded-lg object-cover shrink-0" />
+                  <img
+                    src={featuredProduct.image}
+                    alt={featuredProduct.name}
+                    className="w-12 h-12 rounded-lg object-cover shrink-0"
+                    onError={(e) => { e.currentTarget.style.display = "none"; }}
+                    onLoad={(e) => {
+                      if (e.currentTarget.naturalWidth > 0 && e.currentTarget.naturalWidth < 200) {
+                        e.currentTarget.style.display = "none";
+                      }
+                    }}
+                  />
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-dash-text truncate">{featuredProduct.name}</p>

@@ -1,10 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
-import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { ProductVisual } from "@/app/components/product-visual";
+import { SafeProductImage } from "@/app/components/safe-product-image";
 
 interface ProductCardProps {
   id: string;
@@ -42,13 +40,6 @@ const ProductCard = ({
 }: ProductCardProps) => {
   const pathname = usePathname();
   const locale = pathname.startsWith("/es") ? "es" : "en";
-  const [imgFailed, setImgFailed] = useState(false);
-
-  // If the curated Product row has an explicit image path, use Next's
-  // optimized Image. If that path 404s (or no image is provided), fall
-  // back to the branded ProductVisual — the same typographic panel the
-  // catalog cards use.
-  const hasImage = !!image && !imgFailed;
 
   return (
     <Link
@@ -56,28 +47,17 @@ const ProductCard = ({
       className="group block"
     >
       <div className="relative overflow-hidden aspect-square bg-brand-sand/20">
-        {hasImage ? (
-          <Image
-            src={image}
-            alt={nameEn}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
-            onError={() => setImgFailed(true)}
-          />
-        ) : (
-          <ProductVisual
-            id={id}
-            brand={brand}
-            sku={sku}
-            name={nameEn || name}
-            aspect="1/1"
-            size="card"
-            forceTypography
-          />
-        )}
+        <SafeProductImage
+          id={id}
+          brand={brand}
+          sku={sku}
+          name={nameEn || name}
+          imageSrc={image}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          imageClassName="transition-transform duration-500 ease-in-out group-hover:scale-105"
+        />
         {artisanal && (
-          <span className="absolute top-3 left-3 font-body font-semibold text-[10px] tracking-[0.15em] uppercase bg-brand-copper text-white px-2.5 py-1">
+          <span className="absolute top-3 left-3 z-20 font-body font-semibold text-[10px] tracking-[0.15em] uppercase bg-brand-copper text-white px-2.5 py-1">
             Artisanal
           </span>
         )}

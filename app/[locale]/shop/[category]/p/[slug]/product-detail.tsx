@@ -6,7 +6,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { ChevronRight, MessageCircle, ChevronDown, Download, Sparkles } from "lucide-react";
 import { ProductCard, formatPrice } from "@/app/components/ui/product-card";
-import { ProductVisual } from "@/app/components/product-visual";
+import { SafeProductImage } from "@/app/components/safe-product-image";
 import type { Product } from "@/app/lib/types";
 import { SITE_CONFIG } from "@/app/lib/constants";
 
@@ -54,7 +54,6 @@ const ProductDetail = ({
 }: ProductDetailProps) => {
   const [selectedFinish, setSelectedFinish] = useState(product.finishes[0] || "");
   const [selectedImage, setSelectedImage] = useState(0);
-  const [imgErrored, setImgErrored] = useState(false);
   const [thumbErrors, setThumbErrors] = useState<Set<number>>(new Set());
   const [specsOpen, setSpecsOpen] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -145,27 +144,16 @@ const ProductDetail = ({
                 animate={{ opacity: 1 }}
                 className="relative aspect-square bg-brand-sand/20 overflow-hidden"
               >
-                {product.images[selectedImage] && !imgErrored ? (
-                  <Image
-                    src={product.images[selectedImage] || product.images[0]}
-                    alt={`${product.nameEn} by ${product.brand}`}
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    priority
-                    className="object-cover"
-                    onError={() => setImgErrored(true)}
-                  />
-                ) : (
-                  <ProductVisual
-                    id={product.id}
-                    brand={product.brand}
-                    sku={product.sku}
-                    name={product.nameEn || product.name}
-                    aspect="1/1"
-                    size="hero"
-                    forceTypography
-                  />
-                )}
+                <SafeProductImage
+                  id={product.id}
+                  brand={product.brand}
+                  sku={product.sku}
+                  name={`${product.nameEn} by ${product.brand}`}
+                  imageSrc={product.images[selectedImage] || product.images[0]}
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  priority
+                  size="hero"
+                />
               </motion.div>
               {goodThumbs.length > 1 && (
                 <div className="flex gap-2 sm:gap-3 mt-3 md:mt-4 overflow-x-auto pb-1">
@@ -192,6 +180,16 @@ const ProductDetail = ({
                             return next;
                           })
                         }
+                        onLoad={(e) => {
+                          const node = e.currentTarget as HTMLImageElement;
+                          if (node.naturalWidth > 0 && node.naturalWidth < 200) {
+                            setThumbErrors((prev) => {
+                              const next = new Set(prev);
+                              next.add(i);
+                              return next;
+                            });
+                          }
+                        }}
                       />
                     </button>
                   ))}

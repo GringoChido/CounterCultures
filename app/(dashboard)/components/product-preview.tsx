@@ -226,27 +226,33 @@ export const ProductPreview = () => {
                   get the branded typographic fallback consistent with
                   the public catalog. */}
               <div className="relative">
-                {p.images.length > 0 && !heroErrored ? (
-                  <div className="aspect-[4/3] bg-dash-bg overflow-hidden">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={p.images[activeImage] || p.images[0]}
-                      alt={p.name}
-                      className="w-full h-full object-cover"
-                      onError={() => setHeroErrored(true)}
-                    />
-                  </div>
-                ) : (
+                <div className="relative aspect-[4/3] bg-dash-bg overflow-hidden">
+                  {/* Always-on typographic base */}
                   <ProductVisual
                     id={p.id}
                     brand={p.brand}
                     sku={p.sku}
                     name={p.nameEn || p.name}
-                    aspect="4/3"
                     size="hero"
                     forceTypography
+                    fill
                   />
-                )}
+                  {p.images.length > 0 && !heroErrored && (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={p.images[activeImage] || p.images[0]}
+                      alt={p.name}
+                      className="absolute inset-0 z-10 w-full h-full object-cover"
+                      onError={() => setHeroErrored(true)}
+                      onLoad={(e) => {
+                        const img = e.currentTarget;
+                        if (img.naturalWidth > 0 && img.naturalWidth < 320) {
+                          setHeroErrored(true);
+                        }
+                      }}
+                    />
+                  )}
+                </div>
                 {p.images.length > 1 && !heroErrored && (
                   <div className="flex gap-2 px-6 py-3 overflow-x-auto">
                     {p.images.map((img, i) =>
@@ -270,6 +276,15 @@ export const ProductPreview = () => {
                                 return next;
                               })
                             }
+                            onLoad={(e) => {
+                              if (e.currentTarget.naturalWidth > 0 && e.currentTarget.naturalWidth < 200) {
+                                setThumbErrors((prev) => {
+                                  const next = new Set(prev);
+                                  next.add(i);
+                                  return next;
+                                });
+                              }
+                            }}
                           />
                         </button>
                       )

@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useState } from "react";
 import { Eye } from "lucide-react";
 import type { Product } from "@/app/lib/types";
-import { ProductVisual } from "@/app/components/product-visual";
+import { SafeProductImage } from "@/app/components/safe-product-image";
 
 interface ProductCardProps {
   product: Product;
@@ -17,8 +16,6 @@ const formatPrice = (price: number) =>
 
 const ProductCard = ({ product, locale = "en" }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [imgErrored, setImgErrored] = useState(false);
-  const hasImage = !!product.images[0] && !imgErrored;
 
   return (
     <Link href={`/${locale}/shop/${product.category}/p/${product.slug}`} className="group block h-full">
@@ -27,42 +24,30 @@ const ProductCard = ({ product, locale = "en" }: ProductCardProps) => {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {hasImage ? (
-          <Image
-            src={product.images[0] || ""}
-            alt={product.nameEn}
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1536px) 33vw, 25vw"
-            className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
-            priority={false}
-            onError={() => setImgErrored(true)}
-          />
-        ) : (
-          <ProductVisual
-            id={product.id}
-            brand={product.brand}
-            sku={product.sku}
-            name={product.nameEn || product.name}
-            aspect="1/1"
-            size="card"
-            forceTypography
-          />
-        )}
+        <SafeProductImage
+          id={product.id}
+          brand={product.brand}
+          sku={product.sku}
+          name={product.nameEn || product.name}
+          imageSrc={product.images[0]}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1536px) 33vw, 25vw"
+          imageClassName="transition-transform duration-500 ease-in-out group-hover:scale-105"
+        />
 
         {product.artisanal && (
-          <span className="absolute top-3 left-3 font-body font-semibold text-[10px] tracking-[0.15em] uppercase bg-brand-copper text-white px-2.5 py-1 z-10">
+          <span className="absolute top-3 left-3 font-body font-semibold text-[10px] tracking-[0.15em] uppercase bg-brand-copper text-white px-2.5 py-1 z-20">
             Artisanal
           </span>
         )}
 
         {product.availability === "in-stock" && (
-          <span className="absolute top-3 right-3 font-body font-semibold text-[10px] tracking-[0.15em] uppercase bg-brand-sage text-white px-2.5 py-1 z-10">
+          <span className="absolute top-3 right-3 font-body font-semibold text-[10px] tracking-[0.15em] uppercase bg-brand-sage text-white px-2.5 py-1 z-20">
             In Stock
           </span>
         )}
 
         {isHovered && (
-          <div className="absolute inset-0 bg-black/20 flex items-center justify-center z-20 transition-all duration-300">
+          <div className="absolute inset-0 bg-black/20 flex items-center justify-center z-30 transition-all duration-300">
             <button className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] bg-white text-brand-charcoal font-body text-sm font-medium hover:bg-brand-linen transition-colors rounded-sm">
               <Eye className="w-4 h-4" />
               Quick View

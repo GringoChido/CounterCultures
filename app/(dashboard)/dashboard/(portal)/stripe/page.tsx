@@ -563,7 +563,18 @@ const StripePage = () => {
                         <td className="px-5 py-3">
                           <div className="flex items-center gap-3">
                             {p.images[0] && (
-                              <img src={p.images[0]} alt={p.name} className="w-8 h-8 rounded object-cover" />
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={p.images[0]}
+                                alt={p.name}
+                                className="w-8 h-8 rounded object-cover"
+                                onError={(e) => { e.currentTarget.style.display = "none"; }}
+                                onLoad={(e) => {
+                                  if (e.currentTarget.naturalWidth > 0 && e.currentTarget.naturalWidth < 200) {
+                                    e.currentTarget.style.display = "none";
+                                  }
+                                }}
+                              />
                             )}
                             <span className="font-medium text-dash-text">{p.name}</span>
                           </div>

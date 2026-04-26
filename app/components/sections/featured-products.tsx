@@ -89,8 +89,8 @@ const featured = [
   },
 ];
 
-// On 404, swap to a brand-themed typographic panel matching ProductVisual's
-// fallback. Avoids broken-image icons on the homepage hero grid.
+// Always-on typographic base + Image overlay. Detects Drive's silent 300×300
+// placeholder via the naturalWidth threshold so cards never render blank.
 const FeaturedImage = ({
   src,
   alt,
@@ -101,24 +101,28 @@ const FeaturedImage = ({
   brand: string;
 }) => {
   const [errored, setErrored] = useState(false);
-  if (errored) {
-    return (
+  return (
+    <>
       <div className="absolute inset-0 flex items-center justify-center bg-brand-stone/15">
         <h4 className="font-display font-light tracking-wide text-2xl text-center px-4 text-brand-charcoal/80 truncate">
           {brand}
         </h4>
       </div>
-    );
-  }
-  return (
-    <Image
-      src={src}
-      alt={alt}
-      fill
-      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-      className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
-      onError={() => setErrored(true)}
-    />
+      {!errored && (
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+          className="absolute inset-0 z-10 object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+          onError={() => setErrored(true)}
+          onLoad={(e) => {
+            const img = e.currentTarget as HTMLImageElement;
+            if (img.naturalWidth > 0 && img.naturalWidth < 320) setErrored(true);
+          }}
+        />
+      )}
+    </>
   );
 };
 

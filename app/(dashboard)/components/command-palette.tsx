@@ -343,6 +343,12 @@ export function CommandPalette({
             src={item.productData.images[0]}
             alt={item.title || "Product"}
             className="w-9 h-9 rounded-md object-cover shrink-0"
+            onError={(e) => { e.currentTarget.style.display = "none"; }}
+            onLoad={(e) => {
+              if (e.currentTarget.naturalWidth > 0 && e.currentTarget.naturalWidth < 200) {
+                e.currentTarget.style.display = "none";
+              }
+            }}
           />
         ) : (
           <Icon className="w-4 h-4 shrink-0 opacity-60" />

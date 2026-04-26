@@ -17,6 +17,10 @@ interface ProductVisualProps {
   /** If true, always use typographic variant even when image exists.
    *  Useful for hero contexts where we want consistent style. */
   forceTypography?: boolean;
+  /** If true, fill the parent (which provides aspect ratio + overflow).
+   *  Drops the internal aspect class so this can stack inside a layered
+   *  parent next to a foreground Image — used by SafeProductImage. */
+  fill?: boolean;
 }
 
 /**
@@ -36,6 +40,7 @@ const ProductVisual = ({
   size = "card",
   className = "",
   forceTypography,
+  fill,
 }: ProductVisualProps) => {
   // Probe state: start optimistic for products likely to have an image,
   // skip straight to typography otherwise (saves a 404 round trip on
@@ -52,8 +57,11 @@ const ProductVisual = ({
   }, [id, forceTypography]);
 
   const theme = resolveVisualTheme(brand, sku);
-  const aspectCls =
-    aspect === "1/1"
+  // When `fill` is on, the parent provides aspect/overflow so we drop the
+  // internal aspect class and absolutely fill instead.
+  const aspectCls = fill
+    ? "absolute inset-0"
+    : aspect === "1/1"
       ? "aspect-square"
       : aspect === "16/9"
         ? "aspect-[16/9]"
