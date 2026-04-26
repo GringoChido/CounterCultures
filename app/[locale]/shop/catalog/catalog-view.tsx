@@ -15,10 +15,12 @@ import {
   Check,
   MapPin,
   TrendingUp,
+  Camera,
 } from "lucide-react";
 import type { ProductFull, ProductFullWithSignals, BrandCount } from "@/app/lib/products-full";
 import { useProjectListStore } from "@/app/lib/stores/project-list-store";
 import { ProductVisual } from "@/app/components/product-visual";
+import { VisualSearchModal } from "@/app/components/visual-search-modal";
 import { ProductDrawer } from "./product-drawer";
 
 interface SearchResponse {
@@ -62,6 +64,7 @@ const T = {
     sortPriceDesc: "Price high → low",
     inShowroom: "In Showroom",
     specifiedCount: (n: number) => `${n} project${n === 1 ? "" : "s"}`,
+    visualSearch: "Find by photo",
     searchPlaceholder: "Search by brand, model, or name…",
     typeHint: (min: number) =>
       `Type at least ${min} characters, or pick a brand from the list.`,
@@ -108,6 +111,7 @@ const T = {
     sortPriceDesc: "Precio mayor → menor",
     inShowroom: "En showroom",
     specifiedCount: (n: number) => `${n} proyecto${n === 1 ? "" : "s"}`,
+    visualSearch: "Buscar por foto",
     searchPlaceholder: "Busca por marca, modelo o nombre…",
     typeHint: (min: number) =>
       `Escribe al menos ${min} caracteres o elige una marca.`,
@@ -180,6 +184,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
   const [isPending, startTransition] = useTransition();
   const [selected, setSelected] = useState<ProductFull | null>(null);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [visualSearchOpen, setVisualSearchOpen] = useState(false);
 
   const projectHas = useProjectListStore((s) => s.has);
   const projectAdd = useProjectListStore((s) => s.add);
@@ -366,20 +371,29 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={t.searchPlaceholder}
-                  className="w-full pl-10 pr-10 py-3 border border-brand-stone/20 bg-white font-body text-sm focus:outline-none focus:border-brand-copper"
+                  className="w-full pl-10 pr-20 py-3 border border-brand-stone/20 bg-white font-body text-sm focus:outline-none focus:border-brand-copper"
                 />
+                <button
+                  type="button"
+                  onClick={() => setVisualSearchOpen(true)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-brand-copper hover:text-brand-copper/70 cursor-pointer"
+                  title={t.visualSearch}
+                  aria-label={t.visualSearch}
+                >
+                  <Camera className="w-4 h-4" />
+                </button>
                 {query && (
                   <button
                     type="button"
                     onClick={() => setQuery("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-stone hover:text-brand-charcoal cursor-pointer"
+                    className="absolute right-10 top-1/2 -translate-y-1/2 text-brand-stone hover:text-brand-charcoal cursor-pointer"
                     aria-label="Clear"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 )}
                 {isPending && (
-                  <Loader2 className="absolute right-10 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-stone animate-spin" />
+                  <Loader2 className="absolute right-[68px] top-1/2 -translate-y-1/2 w-4 h-4 text-brand-stone animate-spin" />
                 )}
               </div>
               {/* Grid/Table view toggle — hidden on tiny screens */}
@@ -594,6 +608,16 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
           onPickProduct={(p) => setSelected(p)}
         />
       )}
+
+      <VisualSearchModal
+        open={visualSearchOpen}
+        onClose={() => setVisualSearchOpen(false)}
+        locale={locale}
+        onSelect={(p) => {
+          setVisualSearchOpen(false);
+          setSelected(p);
+        }}
+      />
     </section>
   );
 };
