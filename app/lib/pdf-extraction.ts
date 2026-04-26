@@ -9,6 +9,7 @@
  */
 import Anthropic from "@anthropic-ai/sdk";
 import { searchProducts, type ProductFull } from "./products-full";
+import { parseModelJson } from "./parse-model-json";
 
 const MODEL = "claude-haiku-4-5-20251001";
 
@@ -89,15 +90,8 @@ export const extractFromPdf = async (
     ],
   });
 
-  const text = resp.content[0].type === "text" ? resp.content[0].text.trim() : "";
-  const json = text.replace(/^```(?:json)?\s*|\s*```$/g, "");
-
-  let parsed: { items?: unknown };
-  try {
-    parsed = JSON.parse(json);
-  } catch {
-    throw new Error(`Model returned non-JSON: ${text.slice(0, 200)}`);
-  }
+  const text = resp.content[0].type === "text" ? resp.content[0].text : "";
+  const parsed = parseModelJson<{ items?: unknown }>(text);
   if (!Array.isArray(parsed.items)) return [];
 
   const out: PdfExtraction[] = [];
@@ -122,6 +116,26 @@ export const extractFromPdf = async (
 // ── Catalog matcher ─────────────────────────────────────────────────────
 
 const normSku = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+/** Many catalog SKUs are stored with a 2-4 letter brand-code prefix
+ *  (e.g. Brizo "BRI- 63054LF-PC", Sun Valley Bronze "SVB-CK401"). Strip a
+ *  leading prefix that matches the brand so an architect typing the bare
+ *  manufacturer SKU still scores as exact. */
+const stripBrandPrefix = (catalogSku: string, brand?: string): string => {
+  const ns = normSku(catalogSku);
+  if (!brand) return ns;
+  const brandKey = normSku(brand);
+  if (!brandKey) return ns;
+  // Try the first 2-4 letters of the brand
+  for (const len of [4, 3, 2]) {
+    const prefix = brandKey.slice(0, len);
+    if (prefix.length >= 2 && ns.startsWith(prefix)) {
+      const tail = ns.slice(prefix.length);
+      if (tail.length >= 4) return tail;
+    }
+  }
+  return ns;
+};
 
 /**
  * Match one extracted entry against the 354k catalog. Strategy:
@@ -148,15 +162,17 @@ const matchOne = async (e: PdfExtraction): Promise<PdfMatch> => {
   if (brandPool) {
     for (const p of brandPool.items) {
       const ns = normSku(p.sku);
+      const stripped = stripBrandPrefix(p.sku, e.brand);
       let score = 0;
       let reason: PdfMatch["candidates"][number]["reason"] = "name-fuzzy";
-      if (ns === target) {
+      if (ns === target || stripped === target) {
+        // Bare match OR brand-prefix-stripped match → exact
         score = 100;
         reason = "sku-exact";
-      } else if (ns.startsWith(target) || target.startsWith(ns)) {
+      } else if (ns.startsWith(target) || target.startsWith(ns) || stripped.startsWith(target) || target.startsWith(stripped)) {
         score = 80;
         reason = "sku-prefix";
-      } else if (ns.includes(target) || target.includes(ns)) {
+      } else if (ns.includes(target) || target.includes(ns) || stripped.includes(target) || target.includes(stripped)) {
         score = 60;
         reason = "sku-contains";
       } else {
@@ -176,12 +192,14 @@ const matchOne = async (e: PdfExtraction): Promise<PdfMatch> => {
     for (const p of global.items) {
       if (seen.has(p.id)) continue;
       const ns = normSku(p.sku);
+      // Try the catalog product's actual brand for prefix-stripping
+      const stripped = stripBrandPrefix(p.sku, p.brand);
       let score = 0;
       let reason: PdfMatch["candidates"][number]["reason"] = "name-fuzzy";
-      if (ns === target) {
+      if (ns === target || stripped === target) {
         score = 90; // de-rated vs brand-scoped exact
         reason = "sku-exact";
-      } else if (ns.includes(target)) {
+      } else if (ns.includes(target) || stripped.includes(target)) {
         score = 50;
         reason = "sku-contains";
       } else {

@@ -15,6 +15,7 @@ import {
   type ProductCategory,
   type ProductFull,
 } from "./products-full";
+import { parseModelJson } from "./parse-model-json";
 
 const MODEL = "claude-haiku-4-5-20251001";
 
@@ -87,15 +88,8 @@ export const analyzeImage = async (
     ],
   });
 
-  const text =
-    resp.content[0].type === "text" ? resp.content[0].text.trim() : "";
-  const json = text.replace(/^```(?:json)?\s*|\s*```$/g, "");
-  let parsed: Record<string, unknown>;
-  try {
-    parsed = JSON.parse(json);
-  } catch {
-    throw new Error(`Model returned non-JSON: ${text.slice(0, 200)}`);
-  }
+  const text = resp.content[0].type === "text" ? resp.content[0].text : "";
+  const parsed = parseModelJson<Record<string, unknown>>(text);
 
   const validCats: ProductCategory[] = ["bathroom", "kitchen", "hardware"];
   const rawCat = typeof parsed.category === "string" ? parsed.category : "";

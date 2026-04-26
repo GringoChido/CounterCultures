@@ -23,6 +23,7 @@ import {
   findRowIndex,
 } from "./dashboard-sheets";
 import type { ProductFull } from "./products-full";
+import { parseModelJson } from "./parse-model-json";
 
 const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_ID ?? "";
 const TAB = "Product_Descriptions" as const;
@@ -237,16 +238,11 @@ Write descriptions for this product following the rules. Output strict JSON only
     messages: [{ role: "user", content: userMsg }],
   });
 
-  const text =
-    resp.content[0].type === "text" ? resp.content[0].text.trim() : "";
-  // Strip code-fence wrappers if Claude adds them
-  const json = text.replace(/^```(?:json)?\s*|\s*```$/g, "");
-  let parsed: { description_en?: string; description_es?: string };
-  try {
-    parsed = JSON.parse(json);
-  } catch {
-    throw new Error(`Model returned non-JSON: ${text.slice(0, 200)}`);
-  }
+  const text = resp.content[0].type === "text" ? resp.content[0].text : "";
+  const parsed = parseModelJson<{
+    description_en?: string;
+    description_es?: string;
+  }>(text);
   const descriptionEn = (parsed.description_en ?? "").trim();
   const descriptionEs = (parsed.description_es ?? "").trim();
   if (!descriptionEn || !descriptionEs) {
