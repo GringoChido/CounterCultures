@@ -832,6 +832,10 @@ const PipelinePageInner = () => {
   const [addingItem, setAddingItem] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
 
+  // Purchase Orders tab state — lazy-loaded from Purchase_Orders sheet
+  const [posLoading, setPosLoading] = useState(false);
+  const [generatingPos, setGeneratingPos] = useState(false);
+
   // Customs tab state — Traficos linked to this deal via Trafico_Items
   const [dealTraficos, setDealTraficos] = useState<TraficoSummary[]>([]);
   const [traficosLoading, setTraficosLoading] = useState(false);
@@ -890,6 +894,121 @@ const PipelinePageInner = () => {
       .catch((e) => console.error("[Pipeline] lineItems fetch failed", e))
       .finally(() => setLineItemsLoading(false));
   }, [selectedDeal?.id, dealTab]);
+
+  // Lazy-load Purchase_Orders when the PO tab opens. Items_JSON is the
+  // canonical line-item snapshot per PO; the in-memory shape mirrors what
+  // sample data renders so the existing PO card UI just works.
+  useEffect(() => {
+    if (!selectedDeal?.id || dealTab !== "purchase-orders") return;
+    const dealId = selectedDeal.id;
+    setPosLoading(true);
+    fetch(
+      `/api/dashboard/purchase-orders?dealId=${encodeURIComponent(dealId)}`,
+      { cache: "no-store" }
+    )
+      .then((r) => (r.ok ? r.json() : { purchaseOrders: [] }))
+      .then((d) => {
+        const rows = (d.purchaseOrders ?? []) as Array<{
+          PO_ID: string;
+          Deal_ID: string;
+          Brand: string;
+          Manufacturer: string;
+          Items_JSON: string;
+          Total_Amount: string;
+          Currency: string;
+          Status: string;
+          Sent_Date: string;
+          Confirmed_Date: string;
+          Payment_Date: string;
+          Payment_Method: string;
+          Payment_Ref: string;
+          Payment_Amount: string;
+          Ship_To: string;
+          Carrier: string;
+          Tracking: string;
+          Received_Date: string;
+        }>;
+        const pos: PurchaseOrder[] = rows.map((r) => {
+          let items: PurchaseOrder["items"] = [];
+          try {
+            items = JSON.parse(r.Items_JSON || "[]");
+          } catch {
+            items = [];
+          }
+          const po: PurchaseOrder = {
+            id: r.PO_ID,
+            dealId: r.Deal_ID,
+            brand: r.Brand,
+            manufacturerName: r.Manufacturer || r.Brand,
+            items,
+            totalAmount: parseFloat(r.Total_Amount) || 0,
+            currency: r.Currency || "MXN",
+            status: (r.Status as PurchaseOrder["status"]) || "draft",
+            shipTo: (r.Ship_To as PurchaseOrder["shipTo"]) || "cc-showroom",
+          };
+          if (r.Sent_Date) po.sentDate = r.Sent_Date;
+          if (r.Confirmed_Date) po.confirmedDate = r.Confirmed_Date;
+          if (r.Carrier) po.trackingCarrier = r.Carrier;
+          if (r.Tracking) po.trackingNumber = r.Tracking;
+          if (r.Received_Date) po.receivedDate = r.Received_Date;
+          if (r.Payment_Date && r.Payment_Amount) {
+            po.paymentToMfr = {
+              date: r.Payment_Date,
+              amount: parseFloat(r.Payment_Amount) || 0,
+              method: r.Payment_Method || "",
+              reference: r.Payment_Ref || "",
+            };
+          }
+          return po;
+        });
+        setSelectedDeal((cur) =>
+          cur && cur.id === dealId ? { ...cur, purchaseOrders: pos } : cur
+        );
+      })
+      .catch((e) => console.error("[Pipeline] purchaseOrders fetch failed", e))
+      .finally(() => setPosLoading(false));
+  }, [selectedDeal?.id, dealTab]);
+
+  const handleGeneratePos = useCallback(async () => {
+    if (!selectedDeal?.id || generatingPos) return;
+    const dealId = selectedDeal.id;
+    setGeneratingPos(true);
+    try {
+      const res = await fetch(
+        `/api/dashboard/deals/${encodeURIComponent(dealId)}/generate-pos`,
+        { method: "POST" }
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Failed to generate POs");
+      }
+      const data = (await res.json()) as {
+        created: PurchaseOrder[];
+        skipped: number;
+      };
+      setSelectedDeal((cur) =>
+        cur && cur.id === dealId
+          ? {
+              ...cur,
+              purchaseOrders: [...(cur.purchaseOrders ?? []), ...data.created],
+            }
+          : cur
+      );
+      const n = data.created.length;
+      if (n === 0) {
+        toast(`Already up to date — ${data.skipped} POs already exist.`);
+      } else {
+        toast.success(
+          `Created ${n} draft purchase order${n === 1 ? "" : "s"}.`
+        );
+      }
+    } catch (e) {
+      console.error("[Pipeline] generate POs failed", e);
+      toast.error(e instanceof Error ? e.message : "Could not generate POs");
+    } finally {
+      setGeneratingPos(false);
+    }
+  }, [selectedDeal?.id, generatingPos]);
 
   const handleAddProduct = useCallback(
     async (product: ProductFull) => {
@@ -2124,13 +2243,21 @@ const PipelinePageInner = () => {
                     Purchase Orders
                   </h4>
                   {(selectedDeal.lineItems ?? []).length > 0 && (selectedDeal.purchaseOrders ?? []).length === 0 && (
-                    <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer">
+                    <button
+                      onClick={handleGeneratePos}
+                      disabled={generatingPos}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                    >
                       <FilePlus className="w-3.5 h-3.5" />
-                      Generate POs
+                      {generatingPos ? "Generating…" : "Generate POs"}
                     </button>
                   )}
                 </div>
-                {(selectedDeal.purchaseOrders ?? []).length === 0 ? (
+                {posLoading ? (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-dash-text-secondary">Loading purchase orders…</p>
+                  </div>
+                ) : (selectedDeal.purchaseOrders ?? []).length === 0 ? (
                   <div className="text-center py-8">
                     <FileText className="w-10 h-10 text-dash-text-secondary/30 mx-auto mb-2" />
                     <p className="text-sm text-dash-text-secondary">No purchase orders yet</p>
