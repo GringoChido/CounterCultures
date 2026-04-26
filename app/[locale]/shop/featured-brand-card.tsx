@@ -11,9 +11,11 @@ interface FeaturedBrandCardProps {
 }
 
 /**
- * Branded card body with onError fallback to a typographic panel —
- * matches ProductVisual's aesthetic so a removed/missing /Assets/BRANDS/
- * file gracefully degrades instead of showing a broken image.
+ * Brand card with full-bleed typographic fallback. Always renders the
+ * branded panel underneath; if a hero image loads cleanly (and isn't the
+ * 300×300 Drive placeholder) it overlays on top with a gradient + label.
+ * Without an image, the wordmark sits centered like the rest of the site
+ * — one consistent style.
  */
 const FeaturedBrandCard = ({
   name,
@@ -26,13 +28,12 @@ const FeaturedBrandCard = ({
 
   return (
     <>
-      {/* Typographic base layer — always present so a missing or placeholder
-          hero degrades to a clean editorial card. */}
+      {/* Typographic base — full bleed, always present. */}
       <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center bg-brand-linen">
         <h3 className="font-display text-xl font-light tracking-wide text-brand-charcoal">
           {name}
         </h3>
-        {catalogCount > 0 && (
+        {!showImage && catalogCount > 0 && (
           <p className="mt-2 font-body text-[11px] tracking-[0.15em] uppercase text-brand-stone">
             <span className="font-mono text-brand-copper">
               {catalogCount.toLocaleString()}
@@ -41,6 +42,8 @@ const FeaturedBrandCard = ({
           </p>
         )}
       </div>
+
+      {/* Image overlay + gradient + bottom-aligned label when present. */}
       {showImage && (
         <>
           <Image

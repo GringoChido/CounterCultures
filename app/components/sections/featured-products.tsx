@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
-import { useState } from "react";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { Button } from "@/app/components/ui/button";
+import { SafeProductImage } from "@/app/components/safe-product-image";
 
 const featured = [
   {
@@ -89,42 +88,6 @@ const featured = [
   },
 ];
 
-// Always-on typographic base + Image overlay. Detects Drive's silent 300×300
-// placeholder via the naturalWidth threshold so cards never render blank.
-const FeaturedImage = ({
-  src,
-  alt,
-  brand,
-}: {
-  src: string;
-  alt: string;
-  brand: string;
-}) => {
-  const [errored, setErrored] = useState(false);
-  return (
-    <>
-      <div className="absolute inset-0 flex items-center justify-center bg-brand-stone/15">
-        <h4 className="font-display font-light tracking-wide text-2xl text-center px-4 text-brand-charcoal/80 truncate">
-          {brand}
-        </h4>
-      </div>
-      {!errored && (
-        <Image
-          src={src}
-          alt={alt}
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-          className="absolute inset-0 z-10 object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
-          onError={() => setErrored(true)}
-          onLoad={(e) => {
-            const img = e.currentTarget as HTMLImageElement;
-            if (img.naturalWidth > 0 && img.naturalWidth < 320) setErrored(true);
-          }}
-        />
-      )}
-    </>
-  );
-};
 
 const FeaturedProducts = ({ locale = "en" }: { locale?: string }) => (
   <section className="py-14 md:py-32 bg-brand-linen">
@@ -143,12 +106,17 @@ const FeaturedProducts = ({ locale = "en" }: { locale?: string }) => (
           <AnimatedSection key={product.href} delay={i * 0.06}>
             <Link href={product.href} className="group flex flex-col bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 h-full">
               <div className="relative aspect-[4/5] overflow-hidden shrink-0">
-                <FeaturedImage
-                  src={product.image}
-                  alt={product.name}
+                <SafeProductImage
+                  id={product.href}
                   brand={product.brand}
+                  sku=""
+                  name={product.name}
+                  imageSrc={product.image}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                  imageClassName="transition-transform duration-500 ease-in-out group-hover:scale-105"
+                  size="hero"
                 />
-                <span className={`absolute top-3 left-3 ${product.badgeColor} text-white px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-sm`}>
+                <span className={`absolute top-3 left-3 z-30 ${product.badgeColor} text-white px-4 py-2 text-xs font-semibold uppercase tracking-wider rounded-sm`}>
                   {product.badge}
                 </span>
               </div>

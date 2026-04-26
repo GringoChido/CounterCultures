@@ -57,15 +57,18 @@ const ProductVisual = ({
   }, [id, forceTypography]);
 
   const theme = resolveVisualTheme(brand, sku);
-  // When `fill` is on, the parent provides aspect/overflow so we drop the
-  // internal aspect class and absolutely fill instead.
-  const aspectCls = fill
+  // When `fill` is on the parent provides aspect/overflow and we absolutely
+  // fill it. `position` must be `absolute` cleanly — combining `relative`
+  // and `absolute` in the same className lets CSS cascade pick `relative`,
+  // collapsing the panel to wordmark height (the "top tab" artifact).
+  const positionCls = fill
     ? "absolute inset-0"
-    : aspect === "1/1"
-      ? "aspect-square"
-      : aspect === "16/9"
-        ? "aspect-[16/9]"
-        : "aspect-[4/3]";
+    : "relative " +
+      (aspect === "1/1"
+        ? "aspect-square"
+        : aspect === "16/9"
+          ? "aspect-[16/9]"
+          : "aspect-[4/3]");
 
   const chipText = size === "tile" ? "text-[9px]" : "text-[10px]";
 
@@ -89,7 +92,7 @@ const ProductVisual = ({
 
   if (mode === "image") {
     return (
-      <div className={`relative ${aspectCls} bg-brand-linen overflow-hidden ${className}`}>
+      <div className={`${positionCls} bg-brand-linen overflow-hidden ${className}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={`/products/odoo/${id}.jpg`}
@@ -104,7 +107,7 @@ const ProductVisual = ({
 
   if (mode === "probing") {
     return (
-      <div className={`relative ${aspectCls} bg-brand-linen overflow-hidden ${className}`}>
+      <div className={`${positionCls} bg-brand-linen overflow-hidden ${className}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={`/products/odoo/${id}.jpg`}
@@ -128,7 +131,7 @@ const ProductVisual = ({
 
   return (
     <div
-      className={`relative ${aspectCls} overflow-hidden flex items-center justify-center px-4 ${className}`}
+      className={`${positionCls} overflow-hidden flex items-center justify-center px-4 ${className}`}
       style={{
         background: theme.bg,
         color: theme.fg,
