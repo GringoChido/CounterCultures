@@ -150,7 +150,7 @@ export const PATCH = async (request: NextRequest) => {
         payload[k] = (body as Record<string, unknown>)[k];
       }
       const actor =
-        getCurrentUserEmailFromRequest(request) ??
+        (await getCurrentUserEmailFromRequest(request)) ??
         request.headers.get("x-actor") ??
         "portal";
       ruleResult = await evaluateAndTransition(trigger, body.id, payload, actor);

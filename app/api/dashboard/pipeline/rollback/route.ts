@@ -22,7 +22,7 @@ export const POST = async (request: NextRequest) => {
     }
 
     const actor =
-      getCurrentUserEmailFromRequest(request) ??
+      (await getCurrentUserEmailFromRequest(request)) ??
       request.headers.get("x-actor") ??
       "portal";
 

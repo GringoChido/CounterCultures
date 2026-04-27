@@ -74,7 +74,8 @@ type SheetTab =
   | "Odoo_Attachments"
   | "Odoo_Messages"
   | "Posts"
-  | "Product_Descriptions";
+  | "Product_Descriptions"
+  | "Users";
 
 // Read all rows from a sheet tab (returns array of objects using header row as keys)
 const readSheet = async <T extends Record<string, string>>(
@@ -187,5 +188,68 @@ const findRowIndex = async (
   return null;
 };
 
-export { readSheet, appendRow, updateRow, deleteRow, findRowIndex };
+/** Read just the header row (first row) of a tab, in column order. */
+const getSheetHeaders = async (tab: SheetTab): Promise<string[]> => {
+  const sheets = getSheets();
+  const response = await sheets.spreadsheets.values.get({
+    spreadsheetId: SPREADSHEET_ID,
+    range: `${tab}!1:1`,
+  });
+  const row = response.data.values?.[0];
+  return Array.isArray(row) ? row.map((v) => String(v ?? "")) : [];
+};
+
+/**
+ * Upserts a row by matching a single key field against an existing row. If
+ * found, merges `fields` onto the existing row (preserving columns the
+ * caller didn't touch) and rewrites in header order. If not found, appends
+ * a new row in header order using empty strings for missing fields.
+ *
+ * `key.field` should be a stable Odoo identifier (e.g. `id`). All values are
+ * coerced to string for the Sheet write (Sheets are stringy).
+ */
+const upsertRowByField = async (
+  tab: SheetTab,
+  key: { field: string; value: string },
+  fields: Record<string, unknown>
+): Promise<{ action: "updated" | "inserted"; rowIndex: number | null }> => {
+  const headers = await getSheetHeaders(tab);
+  if (headers.length === 0) {
+    throw new Error(`Tab "${tab}" has no header row — cannot upsert`);
+  }
+  const stringifiedFields: Record<string, string> = {};
+  for (const [k, v] of Object.entries(fields)) {
+    if (v === undefined || v === null) {
+      stringifiedFields[k] = "";
+    } else if (Array.isArray(v)) {
+      stringifiedFields[k] = v.join("|");
+    } else {
+      stringifiedFields[k] = String(v);
+    }
+  }
+
+  const rows = await readSheet<Record<string, string>>(tab);
+  const idx = rows.findIndex((r) => r[key.field] === key.value);
+
+  if (idx === -1) {
+    const values = headers.map((h) => stringifiedFields[h] ?? "");
+    await appendRow(tab, values);
+    return { action: "inserted", rowIndex: null };
+  }
+
+  const merged = { ...rows[idx], ...stringifiedFields };
+  const values = headers.map((h) => merged[h] ?? "");
+  await updateRow(tab, idx, values);
+  return { action: "updated", rowIndex: idx };
+};
+
+export {
+  readSheet,
+  appendRow,
+  updateRow,
+  deleteRow,
+  findRowIndex,
+  getSheetHeaders,
+  upsertRowByField,
+};
 export type { SheetTab };

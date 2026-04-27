@@ -9,10 +9,13 @@ import {
   AlertCircle,
   ExternalLink,
   FileText,
+  Truck,
 } from "lucide-react";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { AttachmentsPanel } from "@/app/(dashboard)/components/attachments-panel";
 import { MessagesPanel } from "@/app/(dashboard)/components/messages-panel";
+import { ConfirmOrderButton } from "@/app/(dashboard)/components/orders/confirm-order-button";
+import { StaleQuoteActions } from "@/app/(dashboard)/components/orders/stale-quote-actions";
 import { stripHtml } from "@/app/lib/strip-html";
 
 interface OrderRow {
@@ -74,11 +77,26 @@ interface RawOrder {
   write_date: string;
 }
 
+interface LinkedPurchaseOrder {
+  id: string;
+  name: string;
+  state: string;
+  partner_id: string;
+  date_order: string;
+  amount_total: string;
+  currency_id: string;
+  invoice_status: string;
+}
+
 interface OrderDetailData {
   order: OrderRow;
   rawOrder: RawOrder;
   lines: OrderLine[];
   invoices: LinkedInvoice[];
+  purchaseOrders: LinkedPurchaseOrder[];
+  partnerEmail: string;
+  partnerPhone: string;
+  partnerLang: string;
 }
 
 const num = (s: string): number => {
@@ -157,7 +175,7 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
     );
   }
 
-  const { order, rawOrder, lines, invoices } = data;
+  const { order, rawOrder, lines, invoices, purchaseOrders, partnerEmail, partnerLang } = data;
 
   return (
     <div className="p-6 max-w-[1200px] mx-auto">
@@ -195,7 +213,27 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
             <span>Currency {order.currency}</span>
           </div>
         </div>
+        <div className="shrink-0">
+          <ConfirmOrderButton
+            orderId={Number(order.id)}
+            orderName={order.name}
+            orderState={order.rawState}
+          />
+        </div>
       </header>
+
+      <StaleQuoteActions
+        orderId={Number(order.id)}
+        orderName={order.name}
+        partnerName={order.partnerName}
+        partnerEmail={partnerEmail}
+        partnerLang={partnerLang}
+        daysOpen={order.daysOpen}
+        amountTotal={order.amountTotal}
+        currency={order.currency}
+        isStale={order.isStale}
+      />
+
 
       {/* KPI strip */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
@@ -286,27 +324,125 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                   </td>
                 </tr>
               ) : (
-                lines.map((l) => (
-                  <tr key={l.id} className="border-b border-dash-border/50">
-                    <td className="p-3 text-xs max-w-md">
-                      <span className="line-clamp-2">{l.name}</span>
-                    </td>
-                    <td className="p-3 text-xs text-dash-text-secondary line-clamp-1">
-                      {l.product_id || "—"}
-                    </td>
-                    <td className="p-3 text-right text-xs">{num(l.product_uom_qty).toLocaleString()}</td>
-                    <td className="p-3 text-right text-xs text-dash-text-secondary">{num(l.qty_delivered).toLocaleString()}</td>
-                    <td className="p-3 text-right text-xs text-dash-text-secondary">{num(l.qty_invoiced).toLocaleString()}</td>
-                    <td className="p-3 text-right text-xs">{fmt(num(l.price_unit), l.currency_id || order.currency)}</td>
-                    <td className="p-3 text-right text-xs">{num(l.discount) ? `${num(l.discount)}%` : "—"}</td>
-                    <td className="p-3 text-right text-xs">{fmt(num(l.price_subtotal), l.currency_id || order.currency)}</td>
-                    <td className="p-3 text-right text-xs font-medium">{fmt(num(l.price_total), l.currency_id || order.currency)}</td>
-                  </tr>
-                ))
+                lines.map((l) => {
+                  const qty = num(l.product_uom_qty);
+                  const inv = num(l.qty_invoiced);
+                  const del = num(l.qty_delivered);
+                  // Lines that are fully invoiced fade slightly; partial gets
+                  // an amber tint; not-yet-invoiced shows the qty in copper.
+                  const fullyInvoiced = qty > 0 && inv >= qty - 0.001;
+                  const partiallyInvoiced = !fullyInvoiced && inv > 0;
+                  const fullyDelivered = qty > 0 && del >= qty - 0.001;
+                  return (
+                    <tr
+                      key={l.id}
+                      className={`border-b border-dash-border/50 ${
+                        fullyInvoiced ? "opacity-70" : partiallyInvoiced ? "bg-amber-50/30" : ""
+                      }`}
+                    >
+                      <td className="p-3 text-xs max-w-md">
+                        <span className="line-clamp-2">{l.name}</span>
+                      </td>
+                      <td className="p-3 text-xs text-dash-text-secondary line-clamp-1">
+                        {l.product_id || "—"}
+                      </td>
+                      <td className="p-3 text-right text-xs">{qty.toLocaleString()}</td>
+                      <td
+                        className={`p-3 text-right text-xs ${
+                          fullyDelivered
+                            ? "text-brand-sage font-medium"
+                            : del > 0
+                              ? "text-amber-700"
+                              : "text-dash-text-secondary"
+                        }`}
+                      >
+                        {del.toLocaleString()}
+                      </td>
+                      <td
+                        className={`p-3 text-right text-xs ${
+                          fullyInvoiced
+                            ? "text-brand-sage font-medium"
+                            : partiallyInvoiced
+                              ? "text-amber-700 font-medium"
+                              : qty > 0
+                                ? "text-brand-copper"
+                                : "text-dash-text-secondary"
+                        }`}
+                      >
+                        {inv.toLocaleString()}
+                        {partiallyInvoiced && (
+                          <div className="text-[9px] uppercase tracking-wider text-amber-700/80">
+                            of {qty}
+                          </div>
+                        )}
+                      </td>
+                      <td className="p-3 text-right text-xs">{fmt(num(l.price_unit), l.currency_id || order.currency)}</td>
+                      <td className="p-3 text-right text-xs">{num(l.discount) ? `${num(l.discount)}%` : "—"}</td>
+                      <td className="p-3 text-right text-xs">{fmt(num(l.price_subtotal), l.currency_id || order.currency)}</td>
+                      <td className="p-3 text-right text-xs font-medium">{fmt(num(l.price_total), l.currency_id || order.currency)}</td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
+      </section>
+
+      {/* Linked Purchase Orders — POs whose origin is this SO's name */}
+      <section className="mb-6">
+        <h2 className="font-display text-sm uppercase tracking-wider text-dash-text-secondary mb-3 flex items-center gap-2">
+          <Truck className="w-4 h-4" />
+          Linked Purchase Orders ({purchaseOrders.length})
+        </h2>
+        {purchaseOrders.length === 0 ? (
+          <div className="bg-dash-surface border border-dash-border rounded p-6 text-center text-sm text-dash-text-secondary">
+            No POs created from this order yet. POs created with this order's
+            name (<span className="font-mono">{order.name}</span>) in the
+            Source Document field will appear here.
+          </div>
+        ) : (
+          <div className="bg-dash-surface border border-dash-border rounded overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="border-b border-dash-border text-xs uppercase tracking-wider text-dash-text-secondary">
+                <tr>
+                  <th className="text-left p-3">PO #</th>
+                  <th className="text-left p-3">Vendor</th>
+                  <th className="text-left p-3">Date</th>
+                  <th className="text-left p-3">State</th>
+                  <th className="text-left p-3">Bill status</th>
+                  <th className="text-right p-3">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {purchaseOrders.map((po) => (
+                  <tr key={po.id} className="border-b border-dash-border/50">
+                    <td className="p-3 font-mono text-xs">
+                      <Link
+                        href={`/dashboard/purchases/${po.id}`}
+                        className="hover:text-dash-accent inline-flex items-center gap-1"
+                      >
+                        {po.name}
+                        <ExternalLink className="w-3 h-3 opacity-60" />
+                      </Link>
+                    </td>
+                    <td className="p-3 text-xs">{po.partner_id || "—"}</td>
+                    <td className="p-3 text-xs">{(po.date_order || "").slice(0, 10) || "—"}</td>
+                    <td className="p-3">
+                      <StatusBadge label={po.state} variant={stateVariant(po.state)} />
+                    </td>
+                    <td className="p-3 text-xs text-dash-text-secondary">
+                      {po.invoice_status || "—"}
+                    </td>
+                    <td className="p-3 text-right text-xs font-medium">
+                      {fmt(num(po.amount_total), po.currency_id || order.currency)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
 
       {/* Linked Invoices */}

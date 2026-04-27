@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
+import { useFeatures } from "@/app/lib/use-features";
 
 type MoveTypeFilter = "all" | "customer" | "vendor" | "refund";
 type PaymentStateFilter = "all" | "open" | "paid" | "overdue";
@@ -28,6 +29,7 @@ interface InvoiceRow {
   state: string;
   partnerId: string;
   partnerName: string;
+  salesperson: string;
   date: string;
   dueDate: string;
   total: number;
@@ -240,10 +242,18 @@ const InvoicesPage = () => {
   const [paymentState, setPaymentState] = useState<PaymentStateFilter>("all");
   const [agingBucket, setAgingBucket] = useState<AgingBucket | "">("");
   const [sortBy, setSortBy] = useState<SortBy>("date_desc");
+  const [mineOnly, setMineOnly] = useState(false);
   const [rows, setRows] = useState<InvoiceRow[]>([]);
   const [total, setTotal] = useState(0);
   const [aging, setAging] = useState<ARAging | null>(null);
   const [loading, setLoading] = useState(true);
+  const features = useFeatures();
+  const [mineDefaultApplied, setMineDefaultApplied] = useState(false);
+  useEffect(() => {
+    if (mineDefaultApplied || !features.ready) return;
+    if (features.role === "sales") setMineOnly(true);
+    setMineDefaultApplied(true);
+  }, [features.ready, features.role, mineDefaultApplied]);
 
   // Initialize filter state from URL query params on mount
   useEffect(() => {
@@ -286,8 +296,23 @@ const InvoicesPage = () => {
     if (moveType !== "all") out.push(moveType);
     if (paymentState !== "all") out.push(paymentState);
     if (agingBucket) out.push(agingBucket);
+    if (mineOnly && features.name) out.push(`mine (${features.name})`);
     return out;
-  }, [moveType, paymentState, agingBucket]);
+  }, [moveType, paymentState, agingBucket, mineOnly, features.name]);
+
+  // Client-side "mine only" filter — exact-then-token-overlap match against
+  // invoice_user_id (salesperson display name).
+  const visibleRows = useMemo(() => {
+    if (!mineOnly || !features.name) return rows;
+    const me = features.name.toLowerCase();
+    const meParts = me.split(/\s+/).filter(Boolean);
+    return rows.filter((r) => {
+      const sp = (r.salesperson ?? "").toLowerCase();
+      if (!sp) return false;
+      if (sp === me) return true;
+      return meParts.every((part) => sp.includes(part));
+    });
+  }, [rows, mineOnly, features.name]);
 
   return (
     <div className="p-6 max-w-[1500px] mx-auto">
@@ -350,6 +375,20 @@ const InvoicesPage = () => {
           <option value="60-90">60–90 days</option>
           <option value="90+">90+ days</option>
         </select>
+        {features.ready && features.name && (
+          <label
+            className="inline-flex items-center gap-2 text-xs text-dash-text-secondary px-3 py-2 border border-dash-border bg-dash-surface rounded cursor-pointer"
+            title={`Filter to invoices where salesperson matches "${features.name}"`}
+          >
+            <input
+              type="checkbox"
+              checked={mineOnly}
+              onChange={(e) => setMineOnly(e.target.checked)}
+              className="cursor-pointer"
+            />
+            Mine only
+          </label>
+        )}
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortBy)}
@@ -364,12 +403,13 @@ const InvoicesPage = () => {
       </div>
 
       <div className="mb-2 text-xs text-dash-text-secondary">
-        {total.toLocaleString()} invoice{total === 1 ? "" : "s"}
+        {visibleRows.length.toLocaleString()} of {total.toLocaleString()} invoice
+        {total === 1 ? "" : "s"}
         {activeFilters.length > 0 && <> · filtered: {activeFilters.join(", ")}</>}
       </div>
 
       <div className="bg-dash-surface border border-dash-border rounded">
-        <DataTable columns={columns} data={rows} />
+        <DataTable columns={columns} data={visibleRows} />
       </div>
     </div>
   );

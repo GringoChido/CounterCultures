@@ -9,3 +9,10 @@
 # block is the canonical source for Netlify's scheduler.
 [functions."stale-deal-sweep"]
   schedule = "0 14 * * *"
+
+# Cut #3: hourly Odoo→Sheets mirror sync. Pulls deltas (rows whose
+# write_date is newer than what's in the mirror) for invoices, payments,
+# and sale orders. Spot refresh in app/lib/odoo/write.ts handles immediate
+# post-write freshness; this catches changes Roger makes directly in Odoo.
+[functions."odoo-sync"]
+  schedule = "0 * * * *"

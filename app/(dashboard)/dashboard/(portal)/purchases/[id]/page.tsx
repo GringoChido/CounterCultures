@@ -72,11 +72,22 @@ interface RawPO {
   amount_tax: string;
 }
 
+interface LinkedSaleOrder {
+  id: string;
+  name: string;
+  state: string;
+  partner_id: string;
+  amount_total: string;
+  currency_id: string;
+  date_order: string;
+}
+
 interface Data {
   order: PORow;
   rawOrder: RawPO;
   lines: POLine[];
   bills: LinkedBill[];
+  linkedSaleOrder: LinkedSaleOrder | null;
 }
 
 const num = (s: string): number => {
@@ -153,7 +164,27 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
     );
   }
 
-  const { order, rawOrder, lines, bills } = data;
+  const { order, rawOrder, lines, bills, linkedSaleOrder } = data;
+
+  // Three-way match: roll up qty_ordered vs qty_received vs qty_invoiced
+  // across all lines so the header carries an actionable badge.
+  const matchTotals = lines.reduce(
+    (acc, l) => {
+      acc.ordered += num(l.product_qty);
+      acc.received += num(l.qty_received);
+      acc.invoiced += num(l.qty_invoiced);
+      return acc;
+    },
+    { ordered: 0, received: 0, invoiced: 0 }
+  );
+  const receivedNotBilled = matchTotals.received - matchTotals.invoiced > 0.001;
+  const awaitingReceipt =
+    matchTotals.ordered - matchTotals.received > 0.001 &&
+    (order.rawState === "purchase" || order.rawState === "done");
+  const fullyMatched =
+    matchTotals.ordered > 0 &&
+    Math.abs(matchTotals.received - matchTotals.ordered) < 0.001 &&
+    Math.abs(matchTotals.invoiced - matchTotals.ordered) < 0.001;
 
   return (
     <div className="p-6 max-w-[1200px] mx-auto">
@@ -178,6 +209,26 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
                 label={order.invoiceStatus === "invoiced" ? "Billed" : order.invoiceStatus}
                 variant={order.invoiceStatus === "invoiced" ? "success" : "warning"}
               />
+            )}
+            {receivedNotBilled && (
+              <span
+                className="text-xs inline-flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded"
+                title={`Received ${matchTotals.received.toLocaleString()} units, billed only ${matchTotals.invoiced.toLocaleString()}. Capture the vendor bill for the difference.`}
+              >
+                <AlertTriangle className="w-3 h-3" />
+                Received not billed
+              </span>
+            )}
+            {awaitingReceipt && !receivedNotBilled && (
+              <span className="text-xs inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 border border-blue-200 rounded">
+                <Truck className="w-3 h-3" />
+                Awaiting receipt
+              </span>
+            )}
+            {fullyMatched && (
+              <span className="text-xs inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 border border-green-200 rounded">
+                3-way match
+              </span>
             )}
             {order.isOverdue && (
               <span className="text-xs inline-flex items-center gap-1 px-2 py-1 bg-brand-terracotta/10 text-brand-terracotta rounded">
@@ -221,6 +272,54 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
         </div>
       </div>
 
+      {/* Source — what triggered this PO */}
+      {(rawOrder.origin || linkedSaleOrder) && (
+        <section className="mb-6 bg-amber-50/40 border border-amber-200/70 rounded p-4 flex flex-wrap items-center gap-x-6 gap-y-2">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-amber-900/80">
+            <FileText className="w-3.5 h-3.5" />
+            Created for
+          </div>
+          {linkedSaleOrder ? (
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+              <Link
+                href={`/dashboard/orders/${linkedSaleOrder.id}`}
+                className="inline-flex items-center gap-1 font-medium text-dash-text hover:text-dash-accent"
+              >
+                Sale order {linkedSaleOrder.name}
+                <ExternalLink className="w-3 h-3" />
+              </Link>
+              <span className="text-dash-text-secondary text-xs">·</span>
+              <span className="text-xs text-dash-text-secondary">
+                {linkedSaleOrder.partner_id || "—"}
+              </span>
+              {linkedSaleOrder.date_order && (
+                <>
+                  <span className="text-dash-text-secondary text-xs">·</span>
+                  <span className="text-xs text-dash-text-secondary">
+                    {linkedSaleOrder.date_order.slice(0, 10)}
+                  </span>
+                </>
+              )}
+              {linkedSaleOrder.amount_total && (
+                <>
+                  <span className="text-dash-text-secondary text-xs">·</span>
+                  <span className="text-xs text-dash-text-secondary">
+                    {fmt(num(linkedSaleOrder.amount_total), linkedSaleOrder.currency_id || order.currency)}
+                  </span>
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="text-sm">
+              <span className="font-mono text-xs text-dash-text">{rawOrder.origin}</span>
+              <span className="text-xs text-dash-text-secondary ml-2">
+                (not a sale order — could be a manufacturing order, stock picking, or external reference)
+              </span>
+            </div>
+          )}
+        </section>
+      )}
+
       {/* Vendor card */}
       <div className="grid md:grid-cols-2 gap-4 mb-6">
         <section className="bg-dash-surface border border-dash-border p-5 rounded">
@@ -230,7 +329,7 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
           <div className="space-y-2 text-sm">
             {order.vendorId ? (
               <Link
-                href={`/dashboard/customers/${order.vendorId}`}
+                href={`/dashboard/vendors/${order.vendorId}`}
                 className="inline-flex items-center gap-1 text-dash-text hover:text-dash-accent font-medium"
               >
                 {order.vendorName}

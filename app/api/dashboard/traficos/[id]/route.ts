@@ -57,7 +57,7 @@ export const PATCH = async (
     // so the rule engine picks up sent-to-broker / crossing-approved
     // transitions from bulk-update UI.
     if (updates.Status && updates.Status !== existing.Status) {
-      const actor = getCurrentUserEmailFromRequest(request) ?? "portal";
+      const actor = (await getCurrentUserEmailFromRequest(request)) ?? "portal";
       appendTraficoEvent({
         trafico_id: id,
         actor,

@@ -23,6 +23,8 @@ import {
 } from "@/app/lib/dashboard-sheets";
 import { calculateStripeFees } from "@/app/lib/deal-automation";
 import { evaluateAndTransition } from "@/app/lib/rule-engine";
+import { registerPayment } from "@/app/lib/odoo/write";
+import { invalidateOdooCache } from "@/app/lib/odoo-sheets";
 
 // ---------------------------------------------------------------------------
 // Event-id idempotency LRU
@@ -133,22 +135,116 @@ const handlePaymentSucceeded = async (
   }
 };
 
+// ---------------------------------------------------------------------------
+// Odoo bridge — register a Stripe payment as an Odoo payment + reconcile
+// against the Odoo invoice referenced in metadata.
+//
+// Stripe → Odoo mapping:
+//   metadata.odoo_invoice_id  → which account.move to reconcile against
+//   amount                    → from PI.amount_received (cents → units)
+//   journal                   → ODOO_STRIPE_JOURNAL_ID env var (integer)
+//   ref                       → "Stripe <pi_id>"
+//
+// Idempotency: if Odoo already has a payment with `ref = "Stripe <pi_id>"`,
+// don't double-register. Stripe retries succeeded events on transient
+// failures so this guard is load-bearing.
+// ---------------------------------------------------------------------------
+const registerStripePaymentInOdoo = async (params: {
+  odooInvoiceId: number;
+  amount: number;
+  paymentIntentId: string;
+  paymentDate: string;
+  source: "payment_intent" | "checkout_session";
+}): Promise<void> => {
+  const journalIdEnv = process.env.ODOO_STRIPE_JOURNAL_ID;
+  if (!journalIdEnv) {
+    console.warn(
+      `[Stripe→Odoo] ODOO_STRIPE_JOURNAL_ID not set; skipping Odoo register for invoice ${params.odooInvoiceId} / PI ${params.paymentIntentId}`
+    );
+    await logActivity(
+      "stripe_to_odoo_skipped",
+      `PI ${params.paymentIntentId} succeeded for Odoo invoice ${params.odooInvoiceId} but ODOO_STRIPE_JOURNAL_ID is not configured.`
+    );
+    return;
+  }
+  const journalId = Number(journalIdEnv);
+  if (!Number.isFinite(journalId) || journalId <= 0) {
+    console.error(
+      `[Stripe→Odoo] ODOO_STRIPE_JOURNAL_ID="${journalIdEnv}" is not a valid integer.`
+    );
+    return;
+  }
+
+  const ref = `Stripe ${params.paymentIntentId}`;
+
+  try {
+    const result = await registerPayment({
+      invoiceId: params.odooInvoiceId,
+      amount: params.amount,
+      journalId,
+      paymentDate: params.paymentDate,
+      ref,
+      memo: `Stripe ${params.source} ${params.paymentIntentId}`,
+    });
+
+    invalidateOdooCache("payments");
+    invalidateOdooCache("invoices");
+
+    await logActivity(
+      "stripe_to_odoo_registered",
+      `Odoo payment ${result.paymentName} (id ${result.paymentId}) created from PI ${params.paymentIntentId} for invoice ${params.odooInvoiceId}: ${result.amount}`
+    );
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "register_failed";
+    console.error(
+      `[Stripe→Odoo] registerPayment failed for PI ${params.paymentIntentId}:`,
+      msg
+    );
+    await logActivity(
+      "stripe_to_odoo_failed",
+      `PI ${params.paymentIntentId} for invoice ${params.odooInvoiceId}: ${msg}`
+    );
+  }
+};
+
 // V3: payment_intent.succeeded — fires for checkout/payment-link flows that
-// don't produce invoices. If the PaymentIntent carries metadata.deal_id, we
-// advance that deal via the rule engine using metadata.allocated_to (deposit
-// | balance | full). Invoice-driven payments still go through
-// handlePaymentSucceeded above.
+// don't produce invoices. Two flow branches by metadata:
+//   - metadata.deal_id        → portal deal flow (existing)
+//   - metadata.odoo_invoice_id → register payment against Odoo invoice
+// Both can coexist. Invoice-driven payments (Stripe Invoicing API) still go
+// through handlePaymentSucceeded above.
 const handlePaymentIntentSucceeded = async (
   pi: Stripe.PaymentIntent
 ): Promise<void> => {
   const dealId = pi.metadata?.deal_id;
+  const odooInvoiceIdRaw = pi.metadata?.odoo_invoice_id;
+  const amount = (pi.amount_received ?? pi.amount ?? 0) / 100;
+
+  // Odoo bridge — runs independently of the deal flow.
+  if (odooInvoiceIdRaw) {
+    const odooInvoiceId = Number(odooInvoiceIdRaw);
+    if (Number.isFinite(odooInvoiceId) && odooInvoiceId > 0) {
+      await registerStripePaymentInOdoo({
+        odooInvoiceId,
+        amount,
+        paymentIntentId: pi.id,
+        paymentDate: new Date().toISOString().slice(0, 10),
+        source: "payment_intent",
+      });
+    } else {
+      console.warn(
+        `[Stripe Webhook] PI ${pi.id} has invalid metadata.odoo_invoice_id="${odooInvoiceIdRaw}"`
+      );
+    }
+  }
+
   if (!dealId) {
-    // Not a portal-initiated payment intent — ignore silently (common: one-off
-    // Stripe charges from dashboard).
+    // Not a portal-initiated deal payment. If the Odoo branch ran, we're
+    // done. Otherwise this is a one-off Stripe charge with no portal link.
+    if (!odooInvoiceIdRaw) return;
     return;
   }
 
-  const amount = (pi.amount_received ?? pi.amount ?? 0) / 100;
   const allocated = pi.metadata?.allocated_to ?? "full";
 
   await logActivity(

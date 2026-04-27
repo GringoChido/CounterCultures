@@ -100,7 +100,7 @@ export const GET = async (request: NextRequest) => {
 };
 
 export const POST = async (request: NextRequest) => {
-  const actor = getCurrentUserEmailFromRequest(request) ?? "portal";
+  const actor = (await getCurrentUserEmailFromRequest(request)) ?? "portal";
   try {
     const body: TraficoRecord = await request.json();
     const values = TRAFICO_COLUMNS.map((col) => body[col] ?? "");
@@ -125,7 +125,7 @@ export const POST = async (request: NextRequest) => {
 };
 
 export const PUT = async (request: NextRequest) => {
-  const actor = getCurrentUserEmailFromRequest(request) ?? "portal";
+  const actor = (await getCurrentUserEmailFromRequest(request)) ?? "portal";
   try {
     const body: TraficoRecord = await request.json();
     const { TRF_ID } = body;

@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
-import { getActiveToken, markRevoked } from "@/app/lib/gmail-tokens";
+import { getTokenForUser, markRevoked } from "@/app/lib/gmail-tokens";
+import { getCurrentUserEmail } from "@/app/lib/auth";
 
 export const POST = async () => {
   try {
-    const token = await getActiveToken();
+    const portalUser = await getCurrentUserEmail();
+    if (!portalUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const token = await getTokenForUser(portalUser);
     if (!token) {
       return NextResponse.json({ ok: true, alreadyDisconnected: true });
     }
@@ -18,7 +24,7 @@ export const POST = async () => {
       // ignore — revocation is best-effort
     }
 
-    await markRevoked(token.gmailAddress);
+    await markRevoked(portalUser);
     return NextResponse.json({ ok: true });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "disconnect_failed";

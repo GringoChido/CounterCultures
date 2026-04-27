@@ -18,6 +18,8 @@ import { toast } from "sonner";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { AttachmentsPanel } from "@/app/(dashboard)/components/attachments-panel";
 import { MessagesPanel } from "@/app/(dashboard)/components/messages-panel";
+import { MarkPaidButton } from "@/app/(dashboard)/components/payments/mark-paid-button";
+import { PaymentLinkButton } from "@/app/(dashboard)/components/payments/payment-link-button";
 
 interface InvoiceListRow {
   id: string;
@@ -88,11 +90,28 @@ interface RawInvoice {
   l10n_mx_edi_cfdi_state: string;
 }
 
+interface PartnerLite {
+  id: string;
+  name: string;
+  vat: string;
+  l10n_mx_edi_fiscal_regime: string;
+  l10n_mx_edi_usage: string;
+  email: string;
+  phone: string;
+  street: string;
+  city: string;
+  state_id: string;
+  zip: string;
+  country_id: string;
+  lang: string;
+}
+
 interface InvoiceDetailData {
   invoice: InvoiceListRow;
   rawInvoice: RawInvoice;
   lines: InvoiceLine[];
   payments: Payment[];
+  partner: PartnerLite | null;
 }
 
 const num = (s: string): number => {
@@ -320,7 +339,7 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
     );
   }
 
-  const { invoice, rawInvoice, lines, payments } = data;
+  const { invoice, rawInvoice, lines, payments, partner } = data;
   const paidAmount = invoice.total - invoice.residual;
 
   return (
@@ -397,15 +416,33 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
       (invoice.paymentState === "not_paid" ||
         invoice.paymentState === "partial" ||
         invoice.isOverdue) ? (
-        <ReminderBar
-          ctx={{
-            invoiceName: invoice.name,
-            partnerName: invoice.partnerName,
-            amount: fmt(invoice.residual, invoice.currency),
-            dueDate: invoice.dueDate || "—",
-            daysOverdue: Math.max(0, invoice.daysOverdue || 0),
-          }}
-        />
+        <>
+          <ReminderBar
+            ctx={{
+              invoiceName: invoice.name,
+              partnerName: invoice.partnerName,
+              amount: fmt(invoice.residual, invoice.currency),
+              dueDate: invoice.dueDate || "—",
+              daysOverdue: Math.max(0, invoice.daysOverdue || 0),
+            }}
+          />
+          <div className="-mt-3 mb-6 flex flex-wrap justify-end gap-2">
+            <PaymentLinkButton
+              invoiceId={Number(invoice.id)}
+              invoiceName={invoice.name}
+              invoiceCurrency={invoice.currency}
+              residual={invoice.residual}
+              partnerName={invoice.partnerName}
+            />
+            <MarkPaidButton
+              invoiceId={Number(invoice.id)}
+              invoiceName={invoice.name}
+              invoiceCurrency={invoice.currency}
+              residual={invoice.residual}
+              partnerName={invoice.partnerName}
+            />
+          </div>
+        </>
       ) : null}
 
       {/* Partner + CFDI cards */}
@@ -433,6 +470,27 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
           <h2 className="font-display text-sm uppercase tracking-wider text-dash-text-secondary mb-3">
             CFDI — Fiscal
           </h2>
+          {/* Customer fiscal identity — required for CFDI generation. Surfaced
+              here so Roger can verify before stamping without bouncing to
+              the customer record. */}
+          <div className="space-y-2 text-sm mb-3 pb-3 border-b border-dash-border/60">
+            <DetailRow
+              label="RFC"
+              value={partner?.vat || "—"}
+              warn={!partner?.vat}
+              warnMessage="Missing — CFDI will fail to stamp without it"
+            />
+            <DetailRow
+              label="Régimen fiscal"
+              value={partner?.l10n_mx_edi_fiscal_regime || "—"}
+              warn={!partner?.l10n_mx_edi_fiscal_regime}
+              warnMessage="Missing — required by SAT for CFDI 4.0"
+            />
+            <DetailRow
+              label="Uso CFDI (default)"
+              value={partner?.l10n_mx_edi_usage || rawInvoice.l10n_mx_edi_usage || "—"}
+            />
+          </div>
           {invoice.cfdiUuid ? (
             <div className="space-y-2 text-sm">
               <div>
@@ -444,7 +502,7 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 </dd>
               </div>
               <DetailRow label="Payment policy" value={invoice.cfdiPolicy || "—"} />
-              <DetailRow label="Uso CFDI" value={rawInvoice.l10n_mx_edi_usage || "—"} />
+              <DetailRow label="Uso CFDI (this invoice)" value={rawInvoice.l10n_mx_edi_usage || "—"} />
               <DetailRow label="Stamp state" value={invoice.cfdiState || "—"} />
             </div>
           ) : (
@@ -560,10 +618,27 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
   );
 };
 
-const DetailRow = ({ label, value }: { label: string; value: string }) => (
+const DetailRow = ({
+  label,
+  value,
+  warn,
+  warnMessage,
+}: {
+  label: string;
+  value: string;
+  warn?: boolean;
+  warnMessage?: string;
+}) => (
   <div className="grid grid-cols-[120px_1fr] gap-2 items-baseline">
     <dt className="text-[10px] uppercase tracking-wider text-dash-text-secondary">{label}</dt>
-    <dd className="text-xs text-dash-text">{value || "—"}</dd>
+    <dd className={`text-xs ${warn ? "text-amber-700" : "text-dash-text"}`}>
+      {value || "—"}
+      {warn && warnMessage && (
+        <span className="ml-1.5 text-[10px] uppercase tracking-wider text-amber-700/80">
+          · {warnMessage}
+        </span>
+      )}
+    </dd>
   </div>
 );
 

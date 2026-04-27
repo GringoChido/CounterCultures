@@ -38,7 +38,7 @@ export const DELETE = async (
 ) => {
   const { dealId } = await params;
   const actor =
-    getCurrentUserEmailFromRequest(request) ??
+    (await getCurrentUserEmailFromRequest(request)) ??
     request.headers.get("x-actor") ??
     "portal";
 
@@ -80,7 +80,7 @@ export const POST = async (
 ) => {
   const { dealId } = await params;
   const actor =
-    getCurrentUserEmailFromRequest(request) ??
+    (await getCurrentUserEmailFromRequest(request)) ??
     request.headers.get("x-actor") ??
     "portal";
 

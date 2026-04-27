@@ -5,7 +5,8 @@
  */
 
 import { google, gmail_v1 } from "googleapis";
-import { getActiveToken, markError } from "./gmail-tokens";
+import { getTokenForUser, markError } from "./gmail-tokens";
+import { getCurrentUserEmail } from "./auth";
 
 const GMAIL_SCOPES = [
   "https://www.googleapis.com/auth/gmail.readonly",
@@ -64,14 +65,18 @@ export const exchangeCodeForTokens = async (code: string) => {
 };
 
 /**
- * Get an authenticated gmail client for the active user, refreshing the
- * access token as needed. Returns null when no active token exists.
+ * Get an authenticated gmail client for the current portal user. Reads the
+ * NextAuth session to identify which user's Gmail token to use. Returns null
+ * when there is no session, or when the user hasn't connected their Gmail.
  */
 export const getGmailClient = async (): Promise<{
   gmail: gmail_v1.Gmail;
   gmailAddress: string;
 } | null> => {
-  const token = await getActiveToken();
+  const portalUser = await getCurrentUserEmail();
+  if (!portalUser) return null;
+
+  const token = await getTokenForUser(portalUser);
   if (!token) return null;
 
   const oauth = getOAuth2Client();
@@ -82,7 +87,7 @@ export const getGmailClient = async (): Promise<{
     await oauth.getAccessToken();
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    await markError(token.gmailAddress, msg);
+    await markError(portalUser, msg);
     return null;
   }
 

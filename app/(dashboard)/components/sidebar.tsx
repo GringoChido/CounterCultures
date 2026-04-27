@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
+import { useFeatures } from "@/app/lib/use-features";
+import type { Feature } from "@/app/lib/features";
 import {
   LayoutDashboard,
   Users,
@@ -21,6 +24,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   LogOut,
   X,
   Database,
@@ -28,6 +32,7 @@ import {
   Wallet,
   Truck,
   Award,
+  Building2,
 } from "lucide-react";
 
 interface NavItem {
@@ -37,41 +42,60 @@ interface NavItem {
   section?: string;
   badge?: number;
   comingSoon?: boolean;
+  /** Required feature to see this item. Owner role bypasses (sees all). */
+  feature?: Feature;
 }
 
+// Daily-driver nav: the surfaces Roger touches to run the business day-to-day.
+// Sales (lead → order → invoice → payment), Operations (inventory → PO → shipment),
+// and the Inbox so email lives in the same context. Each item is feature-gated;
+// users without the feature don't see the item.
 const navItems: NavItem[] = [
-  { label: "Today", href: "/dashboard/overview", icon: LayoutDashboard, section: "Home" },
-  { label: "Weekly Review", href: "/dashboard/weekly-review", icon: CalendarCheck },
+  { label: "Today", href: "/dashboard/overview", icon: LayoutDashboard, section: "Home", feature: "view_today" },
 
-  { label: "Customers", href: "/dashboard/customers", icon: Users, section: "Leads & Deals" },
-  { label: "Orders", href: "/dashboard/orders", icon: Kanban },
-  { label: "Invoices", href: "/dashboard/invoices", icon: FileText },
-  { label: "Payments", href: "/dashboard/payments", icon: CreditCard },
-  { label: "Leads", href: "/dashboard/leads", icon: Users },
-  { label: "Pipeline", href: "/dashboard/pipeline", icon: Kanban },
-  { label: "Inbox", href: "/dashboard/inbox", icon: Inbox },
-  { label: "WhatsApp", href: "/dashboard/whatsapp", icon: MessageCircle },
+  { label: "Customers", href: "/dashboard/customers", icon: Users, section: "Sales", feature: "view_customers" },
+  { label: "Orders", href: "/dashboard/orders", icon: Kanban, feature: "view_orders" },
+  { label: "Invoices", href: "/dashboard/invoices", icon: FileText, feature: "view_invoices" },
+  { label: "Payments", href: "/dashboard/payments", icon: CreditCard, feature: "view_payments" },
+  { label: "Inbox", href: "/dashboard/inbox", icon: Inbox, feature: "view_inbox" },
 
-  { label: "Brands", href: "/dashboard/brands", icon: Award, section: "Catalog" },
-  { label: "Products", href: "/dashboard/products", icon: Package },
-  { label: "Inventory", href: "/dashboard/inventory", icon: Package },
-  { label: "Purchase Orders", href: "/dashboard/purchases", icon: Truck },
-  { label: "Shipments & Customs", href: "/dashboard/shipments", icon: Truck },
+  { label: "Inventory", href: "/dashboard/inventory", icon: Package, section: "Operations", feature: "view_inventory" },
+  { label: "Purchase Orders", href: "/dashboard/purchases", icon: Truck, feature: "view_purchases" },
+  { label: "Vendors", href: "/dashboard/vendors", icon: Building2, feature: "view_vendors" },
+  { label: "Shipments & Customs", href: "/dashboard/shipments", icon: Truck, feature: "view_shipments" },
 
-  { label: "Email Campaigns", href: "/dashboard/email-campaigns", icon: Mail, section: "Marketing" },
-  { label: "Social Hub", href: "/dashboard/social", icon: Share2 },
-  { label: "Blog Manager", href: "/dashboard/blog-manager", icon: FileText },
-
-  { label: "Pipeline & Sales", href: "/dashboard/sales-analytics", icon: TrendingUp, section: "Insights" },
-  { label: "Marketing & Traffic", href: "/dashboard/marketing-analytics", icon: BarChart3 },
-
-  { label: "Trade Program", href: "/dashboard/trade-program", icon: Handshake, section: "Operations" },
-  { label: "Drive", href: "/dashboard/drive", icon: FolderOpen },
-  { label: "Finance", href: "/dashboard/finance", icon: Wallet },
-  { label: "Stripe", href: "/dashboard/stripe", icon: CreditCard },
-  { label: "Odoo", href: "/dashboard/odoo", icon: Database },
-
+  // Settings is available to every signed-in user (Gmail connect, profile,
+  // notifications). Admin-only sub-sections are gated inside the page.
   { label: "Settings", href: "/dashboard/settings", icon: Settings, section: "System" },
+];
+
+// Hidden behind a "More" disclosure. Routes still work; just not in the
+// daily view. Modules are kept in the codebase but de-emphasized until they
+// earn their tab back.
+const moreNavItems: NavItem[] = [
+  { label: "Weekly Review", href: "/dashboard/weekly-review", icon: CalendarCheck, section: "Reviews", feature: "view_today" },
+
+  { label: "Leads", href: "/dashboard/leads", icon: Users, section: "Pipeline", feature: "view_leads" },
+  { label: "Pipeline", href: "/dashboard/pipeline", icon: Kanban, feature: "view_pipeline" },
+  { label: "WhatsApp", href: "/dashboard/whatsapp", icon: MessageCircle, comingSoon: true, feature: "view_inbox" },
+
+  { label: "Brands", href: "/dashboard/brands", icon: Award, section: "Catalog Admin", feature: "view_brands" },
+  { label: "Products", href: "/dashboard/products", icon: Package, feature: "view_products" },
+
+  { label: "Email Campaigns", href: "/dashboard/email-campaigns", icon: Mail, section: "Marketing", comingSoon: true, feature: "view_marketing" },
+  { label: "Social Hub", href: "/dashboard/social", icon: Share2, comingSoon: true, feature: "view_social" },
+  { label: "Blog Manager", href: "/dashboard/blog-manager", icon: FileText, feature: "view_blog" },
+
+  { label: "Pipeline & Sales", href: "/dashboard/sales-analytics", icon: TrendingUp, section: "Insights", feature: "view_marketing" },
+  { label: "Marketing & Traffic", href: "/dashboard/marketing-analytics", icon: BarChart3, feature: "view_marketing" },
+
+  { label: "Trade Program", href: "/dashboard/trade-program", icon: Handshake, section: "Other", feature: "view_trade" },
+  { label: "Drive", href: "/dashboard/drive", icon: FolderOpen, feature: "view_drive" },
+  { label: "Finance", href: "/dashboard/finance", icon: Wallet, feature: "view_finance" },
+  { label: "Stripe", href: "/dashboard/stripe", icon: CreditCard, feature: "view_stripe" },
+  { label: "Odoo", href: "/dashboard/odoo", icon: Database, feature: "view_odoo" },
+
+  { label: "Users & permissions", href: "/dashboard/settings/users", icon: Users, section: "Admin", feature: "manage_users" },
 ];
 
 interface SidebarProps {
@@ -79,13 +103,93 @@ interface SidebarProps {
   onMobileClose?: () => void;
 }
 
+interface RenderOptions {
+  pathname: string;
+  collapsed: boolean;
+  onMobileClose?: () => void;
+}
+
+const renderNavItems = (
+  items: NavItem[],
+  { pathname, collapsed, onMobileClose }: RenderOptions
+) =>
+  items.map((item) => {
+    const isActive = pathname === item.href;
+    const Icon = item.icon;
+
+    return (
+      <div key={item.href}>
+        {item.section && !collapsed && (
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-dash-text-muted mt-4 mb-2 px-3">
+            {item.section}
+          </p>
+        )}
+        {item.section && collapsed && <div className="mt-4" />}
+        <Link
+          href={item.href}
+          onClick={onMobileClose}
+          className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors mb-0.5 min-h-[44px] ${
+            isActive
+              ? "bg-dash-sidebar-active text-dash-text font-medium before:content-[''] before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[3px] before:bg-brand-copper before:rounded-r"
+              : "text-dash-text-secondary hover:bg-dash-sidebar-hover hover:text-dash-text"
+          }`}
+          title={collapsed ? item.label : undefined}
+        >
+          <span className="relative shrink-0">
+            <Icon className="w-4.5 h-4.5" />
+            {item.badge && item.badge > 0 && collapsed && (
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-brand-terracotta rounded-full" />
+            )}
+          </span>
+          {!collapsed && (
+            <>
+              <span className="flex-1">{item.label}</span>
+              {item.comingSoon && (
+                <span className="text-[9px] uppercase tracking-wider text-brand-copper/80 bg-brand-copper/10 px-1.5 py-0.5 rounded">
+                  Soon
+                </span>
+              )}
+              {item.badge && item.badge > 0 && (
+                <span className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-brand-terracotta text-white text-[10px] font-bold px-1">
+                  {item.badge}
+                </span>
+              )}
+            </>
+          )}
+        </Link>
+      </div>
+    );
+  });
+
 const Sidebar = ({ mobileOpen = false, onMobileClose }: SidebarProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
+  const features = useFeatures();
+
+  // Filter nav items by the user's enabled features. Items without a
+  // `feature` always show. While the session is loading, render nothing
+  // gated — avoids flashing items the user can't actually access.
+  const filterByFeature = (items: NavItem[]): NavItem[] => {
+    if (!features.ready) return items.filter((it) => !it.feature);
+    return items.filter((it) => !it.feature || features.has(it.feature));
+  };
+
+  const visibleNav = useMemo(
+    () => filterByFeature(navItems),
+    [features.ready, features.role, features.email]
+  );
+  const visibleMore = useMemo(
+    () => filterByFeature(moreNavItems),
+    [features.ready, features.role, features.email]
+  );
+
+  // Auto-open the More disclosure when the user is currently inside one of
+  // the hidden routes — otherwise the active item would be invisible.
+  const [moreOpen, setMoreOpen] = useState(() =>
+    moreNavItems.some((it) => pathname === it.href)
+  );
 
   const handleSignOut = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
     // Clear per-session local state so the next user doesn't see prior data
     try {
       localStorage.removeItem("cc_chat_history_v2");
@@ -93,7 +197,7 @@ const Sidebar = ({ mobileOpen = false, onMobileClose }: SidebarProps) => {
     } catch {
       // ignore
     }
-    router.push("/dashboard/login");
+    await signOut({ callbackUrl: "/dashboard/login" });
   };
 
   const navContent = (
@@ -136,53 +240,35 @@ const Sidebar = ({ mobileOpen = false, onMobileClose }: SidebarProps) => {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 px-2">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href;
-          const Icon = item.icon;
+        {renderNavItems(visibleNav, { pathname, collapsed, onMobileClose })}
 
-          return (
-            <div key={item.href}>
-              {item.section && !collapsed && (
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-dash-text-muted mt-4 mb-2 px-3">
-                  {item.section}
-                </p>
-              )}
-              {item.section && collapsed && <div className="mt-4" />}
-              <Link
-                href={item.href}
-                onClick={onMobileClose}
-                className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors mb-0.5 min-h-[44px] ${
-                  isActive
-                    ? "bg-dash-sidebar-active text-dash-text font-medium before:content-[''] before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[3px] before:bg-brand-copper before:rounded-r"
-                    : "text-dash-text-secondary hover:bg-dash-sidebar-hover hover:text-dash-text"
+        {/* More disclosure — surfaces that don't earn a daily tab */}
+        {visibleMore.length > 0 && (
+          <div className="mt-6 px-1">
+            <button
+              type="button"
+              onClick={() => setMoreOpen((v) => !v)}
+              className="w-full flex items-center justify-between px-2 py-1.5 rounded-md text-[10px] font-semibold uppercase tracking-wider text-dash-text-muted hover:text-dash-text transition-colors cursor-pointer"
+              aria-expanded={moreOpen}
+            >
+              {!collapsed && <span>More</span>}
+              <ChevronDown
+                className={`w-3.5 h-3.5 transition-transform ${moreOpen ? "rotate-180" : ""} ${
+                  collapsed ? "mx-auto" : ""
                 }`}
-                title={collapsed ? item.label : undefined}
-              >
-                <span className="relative shrink-0">
-                  <Icon className="w-4.5 h-4.5" />
-                  {item.badge && item.badge > 0 && collapsed && (
-                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-brand-terracotta rounded-full" />
-                  )}
-                </span>
-                {!collapsed && (
-                  <>
-                    <span className="flex-1">{item.label}</span>
-                    {item.comingSoon && (
-                      <span className="text-[9px] uppercase tracking-wider text-brand-copper/80 bg-brand-copper/10 px-1.5 py-0.5 rounded">
-                        Soon
-                      </span>
-                    )}
-                    {item.badge && item.badge > 0 && (
-                      <span className="min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-brand-terracotta text-white text-[10px] font-bold px-1">
-                        {item.badge}
-                      </span>
-                    )}
-                  </>
-                )}
-              </Link>
-            </div>
-          );
-        })}
+              />
+            </button>
+            {moreOpen && (
+              <div className="mt-1">
+                {renderNavItems(visibleMore, {
+                  pathname,
+                  collapsed,
+                  onMobileClose,
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </nav>
 
       {/* Footer */}

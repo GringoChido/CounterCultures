@@ -20,6 +20,9 @@ import {
 } from "lucide-react";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { MessagesPanel } from "@/app/(dashboard)/components/messages-panel";
+import { CreditPanel } from "@/app/(dashboard)/components/partner/credit-panel";
+import { PartnerHierarchy } from "@/app/(dashboard)/components/partner/partner-hierarchy";
+import { AgingBuckets } from "@/app/(dashboard)/components/partner/aging-buckets";
 
 interface OdooPartner {
   id: string;
@@ -45,6 +48,12 @@ interface OdooPartner {
   user_id: string;
   comment: string;
   create_date: string;
+  credit: string;
+  debit: string;
+  credit_limit: string;
+  total_invoiced: string;
+  parent_id_id: string;
+  child_ids: string;
 }
 
 interface OdooInvoice {
@@ -104,6 +113,15 @@ interface CustomerMetrics {
   currencies: string[];
 }
 
+interface AgingShape {
+  current: Record<string, number>;
+  "0-30": Record<string, number>;
+  "30-60": Record<string, number>;
+  "60-90": Record<string, number>;
+  "90+": Record<string, number>;
+  totalOpen: Record<string, number>;
+}
+
 interface CustomerProfile {
   partner: OdooPartner;
   metrics: CustomerMetrics;
@@ -111,6 +129,9 @@ interface CustomerProfile {
   payments: OdooPayment[];
   orders: OdooSaleOrder[];
   openAR: OdooInvoice[];
+  parent: OdooPartner | null;
+  children: OdooPartner[];
+  aging: AgingShape;
 }
 
 type Tab = "overview" | "quotes" | "orders" | "invoices" | "payments" | "messages";
@@ -194,7 +215,7 @@ const CustomerDetailPage = ({
     );
   }
 
-  const { partner, metrics, invoices, payments, orders, openAR } = profile;
+  const { partner, metrics, invoices, payments, orders, openAR, parent, children, aging } = profile;
   const isCompany = partner.is_company === "True" || partner.is_company === "true";
 
   const quotes = orders.filter((o) => o.state === "draft" || o.state === "sent");
@@ -323,7 +344,9 @@ const CustomerDetailPage = ({
       </div>
 
       {/* Tab content */}
-      {tab === "overview" && <OverviewTab partner={partner} />}
+      {tab === "overview" && (
+        <OverviewTab partner={partner} parent={parent} children={children} aging={aging} />
+      )}
       {tab === "quotes" && <OrdersList orders={quotes} empty="No open quotes." />}
       {tab === "orders" && <OrdersList orders={confirmedOrders} empty="No confirmed orders yet." />}
       {tab === "invoices" && <InvoicesList invoices={customerInvoices} openAR={openAR} />}
@@ -335,7 +358,17 @@ const CustomerDetailPage = ({
   );
 };
 
-const OverviewTab = ({ partner }: { partner: OdooPartner }) => (
+const OverviewTab = ({
+  partner,
+  parent,
+  children,
+  aging,
+}: {
+  partner: OdooPartner;
+  parent: OdooPartner | null;
+  children: OdooPartner[];
+  aging: AgingShape;
+}) => (
   <div className="grid md:grid-cols-2 gap-4">
     <section className="bg-dash-surface border border-dash-border p-5 rounded">
       <h2 className="font-display text-sm uppercase tracking-wider text-dash-text-secondary mb-3">
@@ -368,6 +401,17 @@ const OverviewTab = ({ partner }: { partner: OdooPartner }) => (
         <Row label="Assigned rep" value={partner.user_id || "—"} />
       </dl>
     </section>
+    <CreditPanel
+      mode="customer"
+      credit={partner.credit}
+      debit={partner.debit}
+      creditLimit={partner.credit_limit}
+      totalInvoiced={partner.total_invoiced}
+    />
+    <PartnerHierarchy mode="customer" parent={parent} children={children} />
+    <div className="md:col-span-2">
+      <AgingBuckets aging={aging} mode="customer" />
+    </div>
     {partner.comment && (
       <section className="md:col-span-2 bg-dash-surface border border-dash-border p-5 rounded">
         <h2 className="font-display text-sm uppercase tracking-wider text-dash-text-secondary mb-3">

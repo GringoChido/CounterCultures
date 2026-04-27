@@ -99,14 +99,18 @@ const toToken = (r: GmailTokenRecord): GmailToken => ({
 });
 
 export const saveToken = async (input: {
+  /** Portal user (signed-in identity) owning this Gmail connection. */
+  portalUserEmail: string;
+  /** Gmail address of the connected mailbox (may differ from portalUserEmail). */
   gmailAddress: string;
   refreshToken: string;
   scopes: string[];
 }): Promise<void> => {
+  const portalUser = input.portalUserEmail.trim().toLowerCase();
   const encrypted = encrypt(input.refreshToken);
   const now = new Date().toISOString();
   const row: GmailTokenRecord = {
-    user_email: input.gmailAddress,
+    user_email: portalUser,
     refresh_token_encrypted: encrypted,
     gmail_address: input.gmailAddress,
     connected_at: now,
@@ -119,7 +123,7 @@ export const saveToken = async (input: {
   const existingIdx = await findRowIndex(
     "Gmail_Tokens",
     "user_email",
-    input.gmailAddress
+    portalUser
   );
   const values = COLUMNS.map((c) => row[c]);
   if (existingIdx === null) {
@@ -130,10 +134,11 @@ export const saveToken = async (input: {
 };
 
 export const markError = async (
-  gmailAddress: string,
+  portalUserEmail: string,
   message: string
 ): Promise<void> => {
-  const idx = await findRowIndex("Gmail_Tokens", "user_email", gmailAddress);
+  const target = portalUserEmail.trim().toLowerCase();
+  const idx = await findRowIndex("Gmail_Tokens", "user_email", target);
   if (idx === null) return;
   const rows = await readSheet<GmailTokenRecord>("Gmail_Tokens");
   const current = rows[idx];
@@ -150,8 +155,9 @@ export const markError = async (
   );
 };
 
-export const markRevoked = async (gmailAddress: string): Promise<void> => {
-  const idx = await findRowIndex("Gmail_Tokens", "user_email", gmailAddress);
+export const markRevoked = async (portalUserEmail: string): Promise<void> => {
+  const target = portalUserEmail.trim().toLowerCase();
+  const idx = await findRowIndex("Gmail_Tokens", "user_email", target);
   if (idx === null) return;
   const rows = await readSheet<GmailTokenRecord>("Gmail_Tokens");
   const current = rows[idx];
@@ -169,21 +175,26 @@ export const markRevoked = async (gmailAddress: string): Promise<void> => {
 };
 
 /**
- * V1 — returns the first `active` token. Multi-user selection lands in
- * Phase 2 when portal sessions have per-user identity.
+ * Per-user Gmail token lookup. Each portal user (sales rep, finance, owner)
+ * connects their own Gmail; lookups key off the session email. Replaces the
+ * old "first active" hack that broke as soon as more than one person used
+ * the portal.
  */
-export const getActiveToken = async (): Promise<GmailToken | null> => {
+export const getTokenForUser = async (
+  userEmail: string
+): Promise<GmailToken | null> => {
+  const target = userEmail.trim().toLowerCase();
+  if (!target) return null;
   const rows = await readSheet<GmailTokenRecord>("Gmail_Tokens");
-  const active = rows
-    .filter((r) => r.status === "active" && r.refresh_token_encrypted)
-    .sort(
-      (a, b) =>
-        new Date(b.connected_at).getTime() -
-        new Date(a.connected_at).getTime()
-    )[0];
-  if (!active) return null;
+  const match = rows.find(
+    (r) =>
+      r.user_email?.toLowerCase() === target &&
+      r.status === "active" &&
+      r.refresh_token_encrypted
+  );
+  if (!match) return null;
   try {
-    return toToken(active);
+    return toToken(match);
   } catch (err) {
     console.error("[gmail-tokens] decrypt failed:", err);
     return null;
@@ -193,21 +204,27 @@ export const getActiveToken = async (): Promise<GmailToken | null> => {
 /**
  * Status snapshot for the Settings UI — never returns the plaintext token.
  */
-export const getActiveStatus = async (): Promise<{
+export const getStatusForUser = async (
+  userEmail: string
+): Promise<{
   connected: boolean;
   gmailAddress?: string;
   connectedAt?: string;
   lastError?: string;
   scopes?: string[];
 }> => {
+  const target = userEmail.trim().toLowerCase();
+  if (!target) return { connected: false };
   const rows = await readSheet<GmailTokenRecord>("Gmail_Tokens");
-  const active = rows.find((r) => r.status === "active");
-  if (!active || !active.refresh_token_encrypted) return { connected: false };
+  const match = rows.find(
+    (r) => r.user_email?.toLowerCase() === target && r.status === "active"
+  );
+  if (!match || !match.refresh_token_encrypted) return { connected: false };
   return {
     connected: true,
-    gmailAddress: active.gmail_address,
-    connectedAt: active.connected_at,
-    lastError: active.last_error || undefined,
-    scopes: (active.scopes || "").split("|").filter(Boolean),
+    gmailAddress: match.gmail_address,
+    connectedAt: match.connected_at,
+    lastError: match.last_error || undefined,
+    scopes: (match.scopes || "").split("|").filter(Boolean),
   };
 };

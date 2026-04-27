@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import createMiddleware from "next-intl/middleware";
 import { routing } from "@/app/i18n/routing";
-import { validateSessionFromCookieEdge } from "@/app/lib/auth-edge";
+import { validateSessionEdge } from "@/app/lib/auth-edge";
 
 const intlMiddleware = createMiddleware(routing);
 
@@ -18,25 +18,33 @@ const isProtectedApi = (pathname: string) =>
 
 const isDashboardPath = (pathname: string) => pathname.startsWith("/dashboard");
 
+// Public dashboard paths (login, NextAuth's own callbacks/error pages live
+// under /api/auth which is exempt below).
+const PUBLIC_DASHBOARD_PATHS = new Set(["/dashboard/login"]);
+
 export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Dashboard routes bypass next-intl entirely (they live outside [locale])
   if (isDashboardPath(pathname)) {
-    if (pathname === "/dashboard/login") {
+    if (PUBLIC_DASHBOARD_PATHS.has(pathname)) {
       return NextResponse.next();
     }
-    const session = req.cookies.get("cc-portal-session")?.value;
-    if (!(await validateSessionFromCookieEdge(session))) {
-      return NextResponse.redirect(new URL("/dashboard/login", req.url));
+    if (!(await validateSessionEdge(req))) {
+      const loginUrl = new URL("/dashboard/login", req.url);
+      return NextResponse.redirect(loginUrl);
     }
+    return NextResponse.next();
+  }
+
+  // NextAuth's own routes must always be reachable.
+  if (pathname.startsWith("/api/auth/")) {
     return NextResponse.next();
   }
 
   // Auth check for protected API routes
   if (isProtectedApi(pathname)) {
-    const session = req.cookies.get("cc-portal-session")?.value;
-    if (!(await validateSessionFromCookieEdge(session))) {
+    if (!(await validateSessionEdge(req))) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     return NextResponse.next();

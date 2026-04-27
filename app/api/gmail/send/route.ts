@@ -1,7 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { sendMessage } from "@/app/lib/gmail";
 import { logEmailActivity } from "@/app/lib/email-activity";
-import { getActiveStatus } from "@/app/lib/gmail-tokens";
+import { getStatusForUser } from "@/app/lib/gmail-tokens";
+import { getCurrentUserEmail } from "@/app/lib/auth";
 
 export const POST = async (request: NextRequest) => {
   try {
@@ -15,7 +16,10 @@ export const POST = async (request: NextRequest) => {
 
     const result = await sendMessage({ to, cc, bcc, subject, body });
 
-    const status = await getActiveStatus();
+    const portalUser = await getCurrentUserEmail();
+    const status = portalUser
+      ? await getStatusForUser(portalUser)
+      : { connected: false as const, gmailAddress: undefined };
     await logEmailActivity({
       userEmail: status.gmailAddress || "",
       gmailMessageId: result.messageId,

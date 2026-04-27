@@ -10,8 +10,9 @@
  */
 
 import { google, drive_v3 } from "googleapis";
-import { getActiveToken, markError } from "./gmail-tokens";
+import { getTokenForUser, markError } from "./gmail-tokens";
 import { getOAuth2Client } from "./gmail";
+import { getCurrentUserEmail } from "./auth";
 
 export interface DriveHomeFile {
   id: string;
@@ -52,20 +53,21 @@ const mapFile = (f: drive_v3.Schema$File): DriveHomeFile => ({
 });
 
 /**
- * Returns an authenticated Drive v3 client for the currently-connected user.
- * Returns null if no active token or if the token's scopes don't include
- * drive.readonly (user needs to reconnect).
+ * Returns an authenticated Drive v3 client for the current portal user.
+ * Returns null if there is no session, the user hasn't connected Gmail yet,
+ * or the token's scopes don't include drive.readonly (reconnect required).
  */
 export const getDriveClient = async (): Promise<{
   drive: drive_v3.Drive;
   gmailAddress: string;
 } | null> => {
-  const token = await getActiveToken();
+  const portalUser = await getCurrentUserEmail();
+  if (!portalUser) return null;
+
+  const token = await getTokenForUser(portalUser);
   if (!token) return null;
 
-  const hasDriveScope = token.scopes.some((s) =>
-    s.includes("auth/drive")
-  );
+  const hasDriveScope = token.scopes.some((s) => s.includes("auth/drive"));
   if (!hasDriveScope) return null;
 
   const oauth = getOAuth2Client();
@@ -75,7 +77,7 @@ export const getDriveClient = async (): Promise<{
     await oauth.getAccessToken();
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    await markError(token.gmailAddress, msg);
+    await markError(portalUser, msg);
     return null;
   }
 
@@ -84,7 +86,9 @@ export const getDriveClient = async (): Promise<{
 };
 
 export const hasDriveScope = async (): Promise<boolean> => {
-  const token = await getActiveToken();
+  const portalUser = await getCurrentUserEmail();
+  if (!portalUser) return false;
+  const token = await getTokenForUser(portalUser);
   if (!token) return false;
   return token.scopes.some((s) => s.includes("auth/drive"));
 };

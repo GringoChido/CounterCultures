@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { exchangeCodeForTokens } from "@/app/lib/gmail";
 import { saveToken } from "@/app/lib/gmail-tokens";
+import { getCurrentUserEmail } from "@/app/lib/auth";
 
 const STATE_COOKIE = "cc_gmail_oauth_state";
 
@@ -29,6 +30,11 @@ export const GET = async (req: NextRequest) => {
     return redirectSettings(req, { gmail: "error", reason: "state_mismatch" });
   }
 
+  const portalUser = await getCurrentUserEmail();
+  if (!portalUser) {
+    return redirectSettings(req, { gmail: "error", reason: "not_signed_in" });
+  }
+
   try {
     const { refreshToken, gmailAddress, scopes } = await exchangeCodeForTokens(code);
     if (!gmailAddress) {
@@ -37,7 +43,12 @@ export const GET = async (req: NextRequest) => {
         reason: "no_gmail_address",
       });
     }
-    await saveToken({ gmailAddress, refreshToken, scopes });
+    await saveToken({
+      portalUserEmail: portalUser,
+      gmailAddress,
+      refreshToken,
+      scopes,
+    });
     return redirectSettings(req, {
       gmail: "connected",
       as: gmailAddress,

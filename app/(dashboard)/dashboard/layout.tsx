@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
+import { SessionProvider } from "next-auth/react";
 import { Sidebar } from "../components/sidebar";
 import { DashboardHeader } from "../components/dashboard-header";
 import { CommandPalette } from "../components/command-palette";
@@ -61,9 +62,11 @@ const DashboardInner = ({ children }: { children: ReactNode }) => {
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
   return (
-    <ProductInsertProvider>
-      <DashboardInner>{children}</DashboardInner>
-    </ProductInsertProvider>
+    <SessionProvider>
+      <ProductInsertProvider>
+        <DashboardInner>{children}</DashboardInner>
+      </ProductInsertProvider>
+    </SessionProvider>
   );
 };
 

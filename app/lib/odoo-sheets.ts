@@ -155,6 +155,12 @@ export interface OdooPurchaseOrder {
   amount_total: string;
   currency_id: string;
   invoice_status: string;
+  /**
+   * Source document — typically the sale.order name (e.g. "S00078") that
+   * triggered this purchase. Empty for POs created manually without an
+   * upstream document. Used to join PO ↔ SO across the dashboard.
+   */
+  origin: string;
 }
 
 export interface OdooJournal {
@@ -215,11 +221,277 @@ export const getOdooJournals = async (): Promise<OdooJournal[]> => {
   return journalsCache.data;
 };
 
+/**
+ * Invalidates the in-memory mirrors. Called after a write to Odoo so the
+ * next read for that scope hits the sheet (and ideally a fresh extraction).
+ * Until a re-extract job runs, the freshly-written data won't appear in the
+ * mirror — callers should append the new row to the relevant tab too.
+ */
+export const invalidateOdooCache = (
+  scope: "partners" | "invoices" | "payments" | "sales" | "journals" | "all" = "all"
+): void => {
+  if (scope === "all" || scope === "partners") partnersCache.data = null;
+  if (scope === "all" || scope === "invoices") invoicesCache.data = null;
+  if (scope === "all" || scope === "payments") paymentsCache.data = null;
+  if (scope === "all" || scope === "sales") salesCache.data = null;
+  if (scope === "all" || scope === "journals") journalsCache.data = null;
+};
+
 // ── Helpers ──────────────────────────────────────────────────────
 
 const num = (s: string): number => {
   const n = parseFloat(s);
   return Number.isFinite(n) ? n : 0;
+};
+
+// Generic by-currency aggregator. Used by both customer and vendor
+// profile metrics.
+const sumByCurrency = (
+  rows: { currency_id?: string; [k: string]: unknown }[],
+  amountField: string,
+  signFn?: (r: Record<string, unknown>) => number
+): Record<string, number> => {
+  const out: Record<string, number> = {};
+  for (const r of rows) {
+    const cur = (r.currency_id as string) || "MXN";
+    const sign = signFn ? signFn(r as Record<string, unknown>) : 1;
+    out[cur] = (out[cur] ?? 0) + num(r[amountField] as string) * sign;
+  }
+  return out;
+};
+
+// ── Vendor 360 ──────────────────────────────────────────────────
+//
+// Mirrors Customer 360 but for the supplier side: bills (in_invoice),
+// outbound payments, purchase orders. A "vendor" is defined as any partner
+// that appears on at least one purchase.order — supplier_rank in Odoo can
+// be unreliable for legacy data, so we derive vendor-ness from actual PO
+// activity. CC's vendors are mostly its 73 brands (Kohler, TOTO, Brizo, etc.)
+// plus freight/customs counterparties.
+
+export interface VendorMetrics {
+  totalBilled: number;
+  totalBilledByCurrency: Record<string, number>;
+  totalPaid: number;
+  totalPaidByCurrency: Record<string, number>;
+  openAP: number;
+  openAPByCurrency: Record<string, number>;
+  billCount: number;
+  paidBillCount: number;
+  openBillCount: number;
+  poCount: number;
+  openPoCount: number;
+  firstPoDate: string | null;
+  lastPoDate: string | null;
+  lastPaymentDate: string | null;
+  paymentMethodsUsed: string[];
+  currencies: string[];
+}
+
+export interface VendorProfile {
+  partner: OdooPartner;
+  metrics: VendorMetrics;
+  bills: OdooInvoice[];
+  payments: OdooPayment[];
+  purchaseOrders: OdooPurchaseOrder[];
+  openAP: OdooInvoice[];
+  /** Parent company if this vendor record is a contact. */
+  parent: OdooPartner | null;
+  /** Child contacts (employees) under this vendor's company record. */
+  children: OdooPartner[];
+  /** AP aging buckets across this vendor's open bills, by currency. */
+  aging: {
+    current: Record<string, number>;
+    "0-30": Record<string, number>;
+    "30-60": Record<string, number>;
+    "60-90": Record<string, number>;
+    "90+": Record<string, number>;
+    totalOpen: Record<string, number>;
+  };
+}
+
+export const getVendorProfile = async (
+  partnerIdInt: string
+): Promise<VendorProfile | null> => {
+  const partners = await getOdooPartners();
+  const partner = partners.find((p) => p.id === partnerIdInt);
+  if (!partner) return null;
+
+  const [invoices, payments, purchaseOrders] = await Promise.all([
+    getOdooInvoices(),
+    getOdooPayments(),
+    getOdooPurchaseOrders(),
+  ]);
+
+  // Vendor bills: in_invoice / in_refund where partner is this vendor.
+  const vendorBills = invoices.filter(
+    (i) =>
+      (i.partner_id_id === partnerIdInt ||
+        i.commercial_partner_id_id === partnerIdInt) &&
+      (i.move_type === "in_invoice" || i.move_type === "in_refund")
+  );
+
+  // Outbound payments: payment_type=outbound to this vendor.
+  const vendorPayments = payments.filter(
+    (p) => p.partner_id_id === partnerIdInt && p.payment_type === "outbound"
+  );
+
+  const vendorPOs = purchaseOrders.filter(
+    (p) => p.partner_id_id === partnerIdInt
+  );
+
+  const openAP = vendorBills.filter(
+    (i) =>
+      i.state === "posted" &&
+      (i.payment_state === "not_paid" || i.payment_state === "partial")
+  );
+
+  const postedBills = vendorBills.filter((i) => i.state === "posted");
+  const openPOs = vendorPOs.filter(
+    (p) => p.state === "purchase" || p.state === "draft" || p.state === "sent"
+  );
+
+  const poDates = vendorPOs
+    .map((p) => p.date_order)
+    .filter(Boolean)
+    .sort();
+  const paymentDates = vendorPayments
+    .map((p) => p.date)
+    .filter(Boolean)
+    .sort();
+
+  const methodsUsed = [
+    ...new Set(vendorPayments.map((p) => p.journal_id).filter(Boolean)),
+  ].sort();
+  const currencies = [
+    ...new Set(
+      [...vendorBills, ...vendorPayments].map((r) => r.currency_id).filter(Boolean)
+    ),
+  ];
+
+  const metrics: VendorMetrics = {
+    totalBilled: postedBills.reduce(
+      (s, i) =>
+        s + num(i.amount_total) * (i.move_type === "in_refund" ? -1 : 1),
+      0
+    ),
+    totalBilledByCurrency: sumByCurrency(postedBills, "amount_total", (r) =>
+      r.move_type === "in_refund" ? -1 : 1
+    ),
+    totalPaid: vendorPayments.reduce((s, p) => s + num(p.amount), 0),
+    totalPaidByCurrency: sumByCurrency(vendorPayments, "amount"),
+    openAP: openAP.reduce((s, i) => s + num(i.amount_residual), 0),
+    openAPByCurrency: sumByCurrency(openAP, "amount_residual"),
+    billCount: vendorBills.length,
+    paidBillCount: vendorBills.filter((i) => i.payment_state === "paid").length,
+    openBillCount: openAP.length,
+    poCount: vendorPOs.length,
+    openPoCount: openPOs.length,
+    firstPoDate: poDates[0] ?? null,
+    lastPoDate: poDates[poDates.length - 1] ?? null,
+    lastPaymentDate: paymentDates[paymentDates.length - 1] ?? null,
+    paymentMethodsUsed: methodsUsed,
+    currencies,
+  };
+
+  // Hierarchy — same shape as customer side.
+  const splitIds = (raw: string): string[] =>
+    raw.split(/[,|]/).map((s) => s.trim()).filter(Boolean);
+  const parent = partner.parent_id_id
+    ? partners.find((p) => p.id === partner.parent_id_id) ?? null
+    : null;
+  const childIdSet = new Set(splitIds(partner.child_ids));
+  const children = partners.filter((p) => childIdSet.has(p.id));
+
+  return {
+    partner,
+    metrics,
+    bills: vendorBills,
+    payments: vendorPayments,
+    purchaseOrders: vendorPOs,
+    openAP,
+    parent,
+    children,
+    aging: computePartnerAging(openAP),
+  };
+};
+
+export interface VendorListRow {
+  partnerId: string;
+  partnerName: string;
+  email: string;
+  phone: string;
+  poCount: number;
+  openPoCount: number;
+  totalBilledByCurrency: Record<string, number>;
+  openAPByCurrency: Record<string, number>;
+  lastPoDate: string | null;
+}
+
+/**
+ * Returns all partners that appear as vendor on any PO. Uses PO activity
+ * (not supplier_rank) as the source of truth for vendor-ness, since the
+ * mirror's rank field is unreliable for legacy partners.
+ */
+export const getVendorList = async (): Promise<VendorListRow[]> => {
+  const [partners, purchaseOrders, invoices] = await Promise.all([
+    getOdooPartners(),
+    getOdooPurchaseOrders(),
+    getOdooInvoices(),
+  ]);
+
+  // Group POs by partner_id_id once for efficiency.
+  const posByPartner = new Map<string, OdooPurchaseOrder[]>();
+  for (const po of purchaseOrders) {
+    if (!po.partner_id_id) continue;
+    const list = posByPartner.get(po.partner_id_id) ?? [];
+    list.push(po);
+    posByPartner.set(po.partner_id_id, list);
+  }
+
+  // Group vendor bills the same way.
+  const billsByPartner = new Map<string, OdooInvoice[]>();
+  for (const inv of invoices) {
+    if (
+      (inv.move_type === "in_invoice" || inv.move_type === "in_refund") &&
+      inv.partner_id_id
+    ) {
+      const list = billsByPartner.get(inv.partner_id_id) ?? [];
+      list.push(inv);
+      billsByPartner.set(inv.partner_id_id, list);
+    }
+  }
+
+  const rows: VendorListRow[] = [];
+  for (const [partnerId, pos] of posByPartner) {
+    const partner = partners.find((p) => p.id === partnerId);
+    if (!partner) continue;
+    const bills = billsByPartner.get(partnerId) ?? [];
+    const postedBills = bills.filter((b) => b.state === "posted");
+    const openAP = postedBills.filter(
+      (b) => b.payment_state === "not_paid" || b.payment_state === "partial"
+    );
+    const openPOs = pos.filter(
+      (p) => p.state === "purchase" || p.state === "draft" || p.state === "sent"
+    );
+    const dates = pos.map((p) => p.date_order).filter(Boolean).sort();
+
+    rows.push({
+      partnerId,
+      partnerName: partner.name,
+      email: partner.email,
+      phone: partner.phone,
+      poCount: pos.length,
+      openPoCount: openPOs.length,
+      totalBilledByCurrency: sumByCurrency(postedBills, "amount_total", (r) =>
+        r.move_type === "in_refund" ? -1 : 1
+      ),
+      openAPByCurrency: sumByCurrency(openAP, "amount_residual"),
+      lastPoDate: dates[dates.length - 1] ?? null,
+    });
+  }
+
+  return rows.sort((a, b) => b.poCount - a.poCount);
 };
 
 // ── Customer 360 ─────────────────────────────────────────────────
@@ -249,6 +521,19 @@ export interface CustomerProfile {
   payments: OdooPayment[];
   orders: OdooSaleOrder[];
   openAR: OdooInvoice[];
+  /** Parent company if this partner is a contact under one. */
+  parent: OdooPartner | null;
+  /** Child contacts if this partner is a company. */
+  children: OdooPartner[];
+  /** AR aging buckets across this customer's open invoices, by currency. */
+  aging: {
+    current: Record<string, number>;
+    "0-30": Record<string, number>;
+    "30-60": Record<string, number>;
+    "60-90": Record<string, number>;
+    "90+": Record<string, number>;
+    totalOpen: Record<string, number>;
+  };
 }
 
 export const getCustomerProfile = async (
@@ -342,6 +627,20 @@ export const getCustomerProfile = async (
     currencies,
   };
 
+  // Hierarchy lookup — parent company + child contacts.
+  // child_ids is stored pipe- or comma-delimited at extraction; handle both.
+  const splitIds = (raw: string): string[] =>
+    raw
+      .split(/[,|]/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+  const parent = partner.parent_id_id
+    ? partners.find((p) => p.id === partner.parent_id_id) ?? null
+    : null;
+  const childIdSet = new Set(splitIds(partner.child_ids));
+  const children = partners.filter((p) => childIdSet.has(p.id));
+
   return {
     partner,
     metrics,
@@ -353,6 +652,9 @@ export const getCustomerProfile = async (
       b.date_order.localeCompare(a.date_order)
     ),
     openAR,
+    parent,
+    children,
+    aging: computePartnerAging(openAR),
   };
 };
 
@@ -799,6 +1101,12 @@ export const getPurchaseOrderList = async (
 export interface PurchaseOrderDetail {
   order: POListRow & { rawState: string };
   rawOrder: OdooPurchaseOrder;
+  /**
+   * The sale.order this PO was created to fulfill, joined via
+   * purchase.order.origin → sale.order.name. Null when the PO has no origin
+   * (manual entry) or origin references a non-sale-order document.
+   */
+  linkedSaleOrder: OdooSaleOrder | null;
   lines: OdooPurchaseOrderLine[];
   bills: OdooInvoice[];
 }
@@ -806,10 +1114,11 @@ export interface PurchaseOrderDetail {
 export const getPurchaseOrderDetail = async (
   orderId: string
 ): Promise<PurchaseOrderDetail | null> => {
-  const [pos, lines, invoices] = await Promise.all([
+  const [pos, lines, invoices, saleOrders] = await Promise.all([
     getOdooPurchaseOrders(),
     getOdooPurchaseOrderLines(),
     getOdooInvoices(),
+    getOdooSaleOrders(),
   ]);
   const p = pos.find((x) => x.id === orderId);
   if (!p) return null;
@@ -825,12 +1134,21 @@ export const getPurchaseOrderDetail = async (
       i.invoice_origin === p.name
   );
 
+  // PO → SO linkage: purchase.order.origin holds the source document name.
+  // Typically that's a sale.order name (e.g. "S00078"); look it up by name.
+  // Returns null when the PO has no origin OR when the origin references a
+  // non-sale-order document (manufacturing order, stock picking, etc.).
+  const linkedSaleOrder = p.origin
+    ? saleOrders.find((s) => s.name === p.origin) ?? null
+    : null;
+
   const row = toPORow(p);
   return {
     order: { ...row, rawState: p.state },
     rawOrder: p,
     lines: poLines,
     bills,
+    linkedSaleOrder,
   };
 };
 
@@ -1315,13 +1633,31 @@ export interface OrderDetail {
   rawOrder: OdooSaleOrder;
   lines: OdooSaleOrderLine[];
   invoices: OdooInvoice[];
+  /**
+   * POs that were created to fulfill this sale order — joined via
+   * purchase.order.origin === sale.order.name. One SO can drive multiple
+   * POs (one per vendor); empty array when nothing's been ordered yet.
+   */
+  purchaseOrders: OdooPurchaseOrder[];
+  /**
+   * Customer's email + phone + language code, looked up via partner_id_id
+   * on the SO. Surfaced for follow-up actions (compose email, WhatsApp,
+   * auto-pick template language). Empty strings when the customer record
+   * has no contact info. `partnerLang` is an Odoo locale string like
+   * "en_US" or "es_MX"; consumers typically just check for "es" prefix.
+   */
+  partnerEmail: string;
+  partnerPhone: string;
+  partnerLang: string;
 }
 
 export const getOrderDetail = async (orderId: string): Promise<OrderDetail | null> => {
-  const [orders, lines, invoices] = await Promise.all([
+  const [orders, lines, invoices, purchaseOrders, partners] = await Promise.all([
     getOdooSaleOrders(),
     getOdooSaleOrderLines(),
     getOdooInvoices(),
+    getOdooPurchaseOrders(),
+    getOdooPartners(),
   ]);
   const o = orders.find((x) => x.id === orderId);
   if (!o) return null;
@@ -1339,12 +1675,27 @@ export const getOrderDetail = async (orderId: string): Promise<OrderDetail | nul
     (i) => idSet.has(i.id) || (i.invoice_origin && i.invoice_origin === o.name)
   );
 
+  // Linked POs: purchase.order.origin === this SO's name. Sorted newest
+  // first so the most recent procurement shows at the top.
+  const linkedPOs = purchaseOrders
+    .filter((p) => p.origin && p.origin === o.name)
+    .sort((a, b) => (b.date_order || "").localeCompare(a.date_order || ""));
+
+  // Customer contact lookup — used by follow-up actions on stale quotes.
+  // Looks up the partner record by id; falls back to empty strings when the
+  // partner's email/phone isn't populated in Odoo.
+  const partner = partners.find((p) => p.id === o.partner_id_id);
+
   const row = toOrderListRow(o);
   return {
     order: { ...row, rawState: o.state },
     rawOrder: o,
     lines: orderLines,
     invoices: linkedInvoices,
+    purchaseOrders: linkedPOs,
+    partnerEmail: partner?.email ?? "",
+    partnerPhone: partner?.phone ?? "",
+    partnerLang: partner?.lang ?? "",
   };
 };
 
@@ -1397,6 +1748,8 @@ export interface InvoiceListRow {
   state: string;
   partnerId: string;
   partnerName: string;
+  /** invoice_user_id display name — used for "my deals" filtering. */
+  salesperson: string;
   date: string;
   dueDate: string;
   total: number;
@@ -1430,6 +1783,46 @@ const bucketFor = (daysOver: number, isOpen: boolean): AgingBucket | null => {
   return "90+";
 };
 
+/**
+ * Aging breakdown across a set of open invoices/bills, by currency. Used
+ * for per-partner AR aging (customers) and AP aging (vendors). Mirrors the
+ * shape of the global ARAging interface so the same renderer works for both.
+ */
+export const computePartnerAging = (
+  openInvoices: OdooInvoice[],
+  now: Date = today()
+): {
+  current: Record<string, number>;
+  "0-30": Record<string, number>;
+  "30-60": Record<string, number>;
+  "60-90": Record<string, number>;
+  "90+": Record<string, number>;
+  totalOpen: Record<string, number>;
+} => {
+  const buckets = {
+    current: {} as Record<string, number>,
+    "0-30": {} as Record<string, number>,
+    "30-60": {} as Record<string, number>,
+    "60-90": {} as Record<string, number>,
+    "90+": {} as Record<string, number>,
+    totalOpen: {} as Record<string, number>,
+  };
+  for (const i of openInvoices) {
+    const isOpen =
+      i.state === "posted" &&
+      (i.payment_state === "not_paid" || i.payment_state === "partial");
+    if (!isOpen) continue;
+    const days = i.invoice_date_due ? daysBetween(i.invoice_date_due, now) : 0;
+    const bucket = bucketFor(days, true);
+    if (!bucket) continue;
+    const currency = i.currency_id || "MXN";
+    const amount = num(i.amount_residual);
+    buckets[bucket][currency] = (buckets[bucket][currency] ?? 0) + amount;
+    buckets.totalOpen[currency] = (buckets.totalOpen[currency] ?? 0) + amount;
+  }
+  return buckets;
+};
+
 const toInvoiceListRow = (i: OdooInvoice, now: Date = today()): InvoiceListRow => {
   const residual = num(i.amount_residual);
   const isOpen =
@@ -1443,6 +1836,7 @@ const toInvoiceListRow = (i: OdooInvoice, now: Date = today()): InvoiceListRow =
     state: i.state,
     partnerId: i.partner_id_id || i.commercial_partner_id_id,
     partnerName: i.partner_id || i.commercial_partner_id,
+    salesperson: i.invoice_user_id || "",
     date: (i.invoice_date || i.date || "").slice(0, 10),
     dueDate: (i.invoice_date_due || "").slice(0, 10),
     total: num(i.amount_total) * (i.move_type === "out_refund" || i.move_type === "in_refund" ? -1 : 1),
@@ -1595,15 +1989,20 @@ export interface InvoiceDetail {
   rawInvoice: OdooInvoice;
   lines: OdooInvoiceLine[];
   payments: OdooPayment[];
+  /** Customer/vendor partner record — surfaces VAT/RFC + Mexican fiscal
+   *  regime + Uso CFDI directly on the invoice so Roger can verify CFDI
+   *  fields without bouncing to the customer record. */
+  partner: OdooPartner | null;
 }
 
 export const getInvoiceDetail = async (
   invoiceId: string
 ): Promise<InvoiceDetail | null> => {
-  const [invoices, lines, payments] = await Promise.all([
+  const [invoices, lines, payments, partners] = await Promise.all([
     getOdooInvoices(),
     getOdooInvoiceLines(),
     getOdooPayments(),
+    getOdooPartners(),
   ]);
 
   const inv = invoices.find((i) => i.id === invoiceId);
@@ -1619,12 +2018,20 @@ export const getInvoiceDetail = async (
     return ri.includes(invoiceId) || rb.includes(invoiceId);
   });
 
+  // Prefer commercial_partner_id_id (parent company) since CFDI fiscal
+  // identity sits there for B2B contacts; fall back to partner_id_id.
+  const partnerKey = inv.commercial_partner_id_id || inv.partner_id_id;
+  const partner = partnerKey
+    ? partners.find((p) => p.id === partnerKey) ?? null
+    : null;
+
   const row = toInvoiceListRow(inv);
   return {
     invoice: { ...row, rawState: inv.state },
     rawInvoice: inv,
     lines: invoiceLines,
     payments: linkedPayments,
+    partner,
   };
 };
 
