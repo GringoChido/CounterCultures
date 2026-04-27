@@ -1,19 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import NextLink from "next/link";
 import { usePathname as useIntlPathname } from "@/app/i18n/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown, ChevronRight, MessageCircle, Sparkles } from "lucide-react";
+import {
+  Menu,
+  X,
+  ChevronDown,
+  ChevronRight,
+  MessageCircle,
+  Sparkles,
+  Search,
+} from "lucide-react";
 import { NAV_LINKS, SITE_CONFIG, PRODUCT_CATEGORIES } from "@/app/lib/constants";
+import { SearchPalette } from "@/app/components/search/search-palette";
 
 const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
   const locale = localeProp as "en" | "es";
   const [mobileOpen, setMobileOpen] = useState(false);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const [mobileCategoryOpen, setMobileCategoryOpen] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
   const lang = locale as "en" | "es";
   const intlPathname = useIntlPathname();
+
+  // Global cmd-K / ctrl-K binding to open the search palette.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setSearchOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   // Build locale-aware hrefs for nav links
   const localizedHref = (path: string) => `/${locale}${path}`;
@@ -70,8 +92,19 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
             })}
           </div>
 
-          {/* Right side — WhatsApp + CTA + Mobile toggle */}
+          {/* Right side — Search + WhatsApp + CTA + Mobile toggle */}
           <div className="flex items-center gap-1 sm:gap-2">
+            {/* Search trigger — opens the cmd-K palette */}
+            <button
+              type="button"
+              onClick={() => setSearchOpen(true)}
+              className="flex items-center justify-center w-11 h-11 text-brand-charcoal hover:text-brand-terracotta transition-colors cursor-pointer"
+              aria-label={lang === "es" ? "Buscar (⌘K)" : "Search (⌘K)"}
+              title={lang === "es" ? "Buscar (⌘K)" : "Search (⌘K)"}
+            >
+              <Search className="w-5 h-5" />
+            </button>
+
             <a
               href={`https://wa.me/${SITE_CONFIG.showroom.whatsapp.replace(/\s+/g, "")}`}
               target="_blank"
@@ -344,6 +377,14 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Search palette — rendered via portal-like fixed positioning, always
+          available regardless of nav state. Lazy-loads its index on first open. */}
+      <SearchPalette
+        locale={lang}
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+      />
     </header>
   );
 };
