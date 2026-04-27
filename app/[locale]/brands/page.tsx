@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Header } from "@/app/components/layout/header";
@@ -591,13 +592,17 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
               </div>
             )}
 
-            {/* Filterable grid — 67 remaining brands */}
-            <BrandsGrid
-              locale={localeKey}
-              brands={nonFlagship}
-              totalStockedCount={totalStockedCount}
-              totalBrandCount={totalBrandCount}
-            />
+            {/* Filterable grid — 67 remaining brands. Wrapped in Suspense
+                because BrandsGrid uses useSearchParams; Next.js requires
+                this boundary during prerender or the whole page bails. */}
+            <Suspense fallback={null}>
+              <BrandsGrid
+                locale={localeKey}
+                brands={nonFlagship}
+                totalStockedCount={totalStockedCount}
+                totalBrandCount={totalBrandCount}
+              />
+            </Suspense>
           </div>
         </section>
 
