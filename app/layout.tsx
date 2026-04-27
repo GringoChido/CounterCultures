@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Cormorant_Garamond, DM_Sans, JetBrains_Mono } from "next/font/google";
+import { GoogleAnalytics } from "@/app/components/analytics/google-analytics";
 
 const cormorantGaramond = Cormorant_Garamond({
   variable: "--font-display",
@@ -29,7 +30,10 @@ const RootLayout = ({ children }: { children: ReactNode }) => {
       suppressHydrationWarning
       className={`${cormorantGaramond.variable} ${dmSans.variable} ${jetBrainsMono.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        {children}
+        <GoogleAnalytics />
+      </body>
     </html>
   );
 };
