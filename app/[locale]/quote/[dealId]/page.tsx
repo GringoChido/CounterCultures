@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { loadQuoteData } from "@/app/lib/quote-data";
 import { verifyQuoteToken } from "@/app/lib/quote-token";
 import { QuoteDocument } from "@/app/components/quote-document";
 import { getOrCreateDepositLink } from "@/app/lib/stripe-deposit";
+import { buildLocaleMetadata, type Locale } from "@/app/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -12,39 +14,59 @@ interface PublicQuoteProps {
   searchParams: Promise<{ t?: string }>;
 }
 
-export const metadata: Metadata = {
-  title: "Quote — Counter Cultures",
-  robots: { index: false, follow: false },
+export const generateMetadata = async ({
+  params,
+}: PublicQuoteProps): Promise<Metadata> => {
+  const { dealId, locale } = await params;
+  return buildLocaleMetadata({
+    locale: locale as Locale,
+    path: `quote/${dealId}`,
+    title: {
+      en: "Quote — Counter Cultures",
+      es: "Cotización — Counter Cultures",
+    },
+    description: {
+      en: "Your Counter Cultures quote.",
+      es: "Tu cotización de Counter Cultures.",
+    },
+    absoluteTitle: true,
+    index: false,
+  });
 };
 
-const InvalidTokenView = ({ reason }: { reason?: string }) => (
-  <main className="min-h-screen bg-[#F5F0EB] flex items-center justify-center p-6">
-    <div className="max-w-md text-center">
-      <h1 className="font-['Cormorant',serif] text-3xl text-[#1a1a1a] mb-2">
-        Link not valid
-      </h1>
-      <p className="text-sm text-[#6B6B6B]">
-        {reason === "expired"
-          ? "This quote link has expired. Please ask Counter Cultures for an updated link."
-          : "This link is invalid or has been revoked. If you received it recently, contact Counter Cultures to regenerate it."}
-      </p>
-      <p className="mt-6 text-[11px] text-[#999]">
-        Counter Cultures · info@countercultures.com.mx · +52-415-154-8375
-      </p>
-    </div>
-  </main>
-);
+const InvalidTokenView = async ({
+  reason,
+  locale,
+}: {
+  reason?: string;
+  locale: string;
+}) => {
+  const t = await getTranslations({ locale, namespace: "quote" });
+  return (
+    <main className="min-h-screen bg-[#F5F0EB] flex items-center justify-center p-6">
+      <div className="max-w-md text-center">
+        <h1 className="font-['Cormorant',serif] text-3xl text-[#1a1a1a] mb-2">
+          {t("invalidTitle")}
+        </h1>
+        <p className="text-sm text-[#6B6B6B]">
+          {reason === "expired" ? t("invalidExpired") : t("invalidDefault")}
+        </p>
+        <p className="mt-6 text-[11px] text-[#999]">{t("footerContact")}</p>
+      </div>
+    </main>
+  );
+};
 
 const PublicQuotePage = async ({
   params,
   searchParams,
 }: PublicQuoteProps) => {
-  const { dealId } = await params;
+  const { dealId, locale } = await params;
   const { t } = await searchParams;
 
   const verification = verifyQuoteToken(t, dealId);
   if (!verification.valid) {
-    return <InvalidTokenView reason={verification.reason} />;
+    return <InvalidTokenView reason={verification.reason} locale={locale} />;
   }
 
   const data = await loadQuoteData(dealId);

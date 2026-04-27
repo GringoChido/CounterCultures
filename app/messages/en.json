@@ -1,4 +1,21 @@
 {
+  "errors": {
+    "eyebrow": "Counter Cultures",
+    "title": "Something went wrong",
+    "descriptionDefault": "The request couldn't be completed. Please try again.",
+    "reference": "Reference: {digest}",
+    "tryAgain": "Try again",
+    "backHome": "Back to home"
+  },
+  "quote": {
+    "invalidTitle": "Link not valid",
+    "invalidExpired": "This quote link has expired. Please ask Counter Cultures for an updated link.",
+    "invalidDefault": "This link is invalid or has been revoked. If you received it recently, contact Counter Cultures to regenerate it.",
+    "paidTitle": "Thank you.",
+    "paidBody": "Your deposit has been received. Counter Cultures will confirm your order via email within 1 business day and keep you updated on delivery timing.",
+    "footerAddress": "Counter Cultures · Providencia, San Miguel de Allende, Guanajuato, MX",
+    "footerContact": "info@countercultures.com.mx · +52-415-154-8375"
+  },
   "nav": {
     "visitShowroom": "Visit Showroom",
     "whatsapp": "WhatsApp"

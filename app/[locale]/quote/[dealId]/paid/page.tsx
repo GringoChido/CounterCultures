@@ -1,11 +1,35 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+import { buildLocaleMetadata, type Locale } from "@/app/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Deposit received — Counter Cultures",
-  robots: { index: false, follow: false },
+interface QuotePaidProps {
+  params: Promise<{ dealId: string; locale: string }>;
+}
+
+export const generateMetadata = async ({
+  params,
+}: QuotePaidProps): Promise<Metadata> => {
+  const { dealId, locale } = await params;
+  return buildLocaleMetadata({
+    locale: locale as Locale,
+    path: `quote/${dealId}/paid`,
+    title: {
+      en: "Deposit received — Counter Cultures",
+      es: "Depósito recibido — Counter Cultures",
+    },
+    description: {
+      en: "Thank you. Your deposit has been received.",
+      es: "Gracias. Tu depósito ha sido recibido.",
+    },
+    absoluteTitle: true,
+    index: false,
+  });
 };
 
-const QuotePaidPage = () => {
+const QuotePaidPage = async ({ params }: QuotePaidProps) => {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "quote" });
+
   return (
     <main className="min-h-screen bg-[#F5F0EB] flex items-center justify-center p-6">
       <div className="max-w-md text-center">
@@ -24,17 +48,13 @@ const QuotePaidPage = () => {
           </svg>
         </div>
         <h1 className="font-['Cormorant',serif] text-3xl font-light text-[#1a1a1a] mb-2">
-          Thank you.
+          {t("paidTitle")}
         </h1>
-        <p className="text-sm text-[#6B6B6B] max-w-sm mx-auto">
-          Your deposit has been received. Counter Cultures will confirm your
-          order via email within 1 business day and keep you updated on
-          delivery timing.
-        </p>
+        <p className="text-sm text-[#6B6B6B] max-w-sm mx-auto">{t("paidBody")}</p>
         <p className="mt-8 text-[11px] text-[#999]">
-          Counter Cultures · Providencia, San Miguel de Allende, Guanajuato, MX
+          {t("footerAddress")}
           <br />
-          info@countercultures.com.mx · +52-415-154-8375
+          {t("footerContact")}
         </p>
       </div>
     </main>

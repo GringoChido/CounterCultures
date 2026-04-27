@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useLocale } from "next-intl";
 import { ProductCard } from "@/app/components/ui/product-card";
 import { FilterBar } from "@/app/components/ui/filter-bar";
 import type { Product } from "@/app/lib/types";
@@ -12,7 +13,26 @@ interface ShopCatalogProps {
 
 const PAGE_SIZE = 24;
 
+const T = {
+  en: {
+    countOne: (n: number) => `${n} product`,
+    countMany: (n: number) => `${n} products`,
+    loadMore: (remaining: number) => `Load More (${remaining} remaining)`,
+    empty: "No products match your filters",
+    clearAll: "Clear all filters",
+  },
+  es: {
+    countOne: (n: number) => `${n} producto`,
+    countMany: (n: number) => `${n} productos`,
+    loadMore: (remaining: number) => `Cargar más (${remaining} restantes)`,
+    empty: "Ningún producto coincide con tus filtros",
+    clearAll: "Borrar todos los filtros",
+  },
+};
+
 const ShopCatalog = ({ initialProducts, initialCategory }: ShopCatalogProps) => {
+  const locale = (useLocale() as "en" | "es") || "en";
+  const t = T[locale];
   const [activeBrand, setActiveBrand] = useState<string | null>(null);
   const [activeFinish, setActiveFinish] = useState<string | null>(null);
   const [priceRange, setPriceRange] = useState<[number, number] | null>(null);
@@ -73,7 +93,7 @@ const ShopCatalog = ({ initialProducts, initialCategory }: ShopCatalogProps) => 
       <section className="py-10 lg:py-16 bg-brand-linen">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <p className="font-body font-medium text-xs text-brand-stone mb-8">
-            {filtered.length} product{filtered.length !== 1 ? "s" : ""}
+            {filtered.length === 1 ? t.countOne(1) : t.countMany(filtered.length)}
           </p>
 
           {filtered.length > 0 ? (
@@ -104,21 +124,19 @@ const ShopCatalog = ({ initialProducts, initialCategory }: ShopCatalogProps) => 
                     onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
                     className="px-8 py-3 font-body font-medium text-sm tracking-wide border border-brand-stone/30 rounded-full text-brand-charcoal hover:border-brand-terracotta hover:text-brand-terracotta transition-colors"
                   >
-                    Load More ({filtered.length - visibleCount} remaining)
+                    {t.loadMore(filtered.length - visibleCount)}
                   </button>
                 </div>
               )}
             </>
           ) : (
             <div className="text-center py-20">
-              <p className="font-display text-2xl text-brand-stone">
-                No products match your filters
-              </p>
+              <p className="font-display text-2xl text-brand-stone">{t.empty}</p>
               <button
                 onClick={clearFilters}
                 className="mt-4 font-body text-sm text-brand-terracotta hover:text-brand-copper transition-colors"
               >
-                Clear all filters
+                {t.clearAll}
               </button>
             </div>
           )}
