@@ -240,6 +240,12 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
   const flagshipSlugSet = new Set(FLAGSHIP_SLUGS);
   const nonFlagship = brandCards.filter((b) => !flagshipSlugSet.has(b.slug));
 
+  // Catalog-wide stocked count — counter copy on the grid surfaces this so
+  // the "we actually stock things" advantage is discoverable without
+  // putting commercial state on every card.
+  const totalStockedCount = brandCards.filter((b) => b.stockedState === "stocked").length;
+  const totalBrandCount = brandCards.length;
+
   /* ─── JSON-LD ─── */
 
   const brandListJsonLd = {
@@ -586,7 +592,12 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
             )}
 
             {/* Filterable grid — 67 remaining brands */}
-            <BrandsGrid locale={localeKey} brands={nonFlagship} />
+            <BrandsGrid
+              locale={localeKey}
+              brands={nonFlagship}
+              totalStockedCount={totalStockedCount}
+              totalBrandCount={totalBrandCount}
+            />
           </div>
         </section>
 

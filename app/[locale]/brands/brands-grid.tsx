@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Search, ArrowUpRight } from "lucide-react";
@@ -28,6 +29,10 @@ interface BrandCardData {
 interface BrandsGridProps {
   locale: "en" | "es";
   brands: BrandCardData[];
+  /** Total count of brands marked stocked across the entire catalog (not just nonFlagship). Drives the counter copy. */
+  totalStockedCount: number;
+  /** Total brand count across the catalog. */
+  totalBrandCount: number;
 }
 
 const CATEGORY_OPTIONS: Array<CategorySlug | "all"> = [
@@ -43,14 +48,42 @@ const CATEGORY_OPTIONS: Array<CategorySlug | "all"> = [
   "other",
 ];
 
-export const BrandsGrid = ({ locale, brands }: BrandsGridProps) => {
+export const BrandsGrid = ({
+  locale,
+  brands,
+  totalStockedCount,
+  totalBrandCount,
+}: BrandsGridProps) => {
   const isEs = locale === "es";
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const stockedOnlyParam = searchParams.get("stocked") === "1";
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<CategorySlug | "all">("all");
+  const [stockedOnly, setStockedOnly] = useState(stockedOnlyParam);
+
+  // Keep state in sync if the URL param changes externally (back/forward nav).
+  useEffect(() => {
+    setStockedOnly(stockedOnlyParam);
+  }, [stockedOnlyParam]);
+
+  // Toggle handler: push the new URL so the chip is shareable / back-buttonable.
+  const toggleStockedOnly = useCallback(() => {
+    const next = !stockedOnly;
+    setStockedOnly(next);
+    const params = new URLSearchParams(searchParams.toString());
+    if (next) params.set("stocked", "1");
+    else params.delete("stocked");
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  }, [stockedOnly, pathname, router, searchParams]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return brands.filter((b) => {
+      if (stockedOnly && b.stockedState !== "stocked") return false;
       if (category !== "all") {
         const inCats =
           b.primaryCategorySlug === category ||
@@ -67,7 +100,7 @@ export const BrandsGrid = ({ locale, brands }: BrandsGridProps) => {
       }
       return true;
     });
-  }, [brands, query, category]);
+  }, [brands, query, category, stockedOnly]);
 
   // Build A-Z anchor index (only letters that appear in the filtered set)
   const letterToFirstSlug = useMemo(() => {
@@ -102,6 +135,17 @@ export const BrandsGrid = ({ locale, brands }: BrandsGridProps) => {
 
   return (
     <>
+      {/* Catalog-wide stocking counter — sits above the grid as a discoverable
+          headline, not buried inside a card. Acts as the visual home of CC's
+          biggest commercial advantage. */}
+      <p className="mb-5 font-body text-xs tracking-[0.18em] uppercase text-brand-stone/80">
+        <span className="font-mono text-brand-charcoal">{totalBrandCount}</span>{" "}
+        {isEs ? "marcas" : "brands"}
+        <span className="mx-2 text-brand-stone/30">·</span>
+        <span className="font-mono text-brand-copper">{totalStockedCount}</span>{" "}
+        {isEs ? "en stock local" : "stocked locally"}
+      </p>
+
       {/* Sticky filter bar */}
       <div
         ref={barRef}
@@ -142,6 +186,29 @@ export const BrandsGrid = ({ locale, brands }: BrandsGridProps) => {
                 </option>
               ))}
             </select>
+
+            {/* Stocked-only chip — copper accent so it reads as the primary
+                commercial filter even amidst the search/category controls. */}
+            <button
+              type="button"
+              onClick={toggleStockedOnly}
+              aria-pressed={stockedOnly}
+              className={`group inline-flex items-center gap-2 px-3 py-2 rounded-full text-xs font-body font-semibold tracking-wide transition-colors border cursor-pointer ${
+                stockedOnly
+                  ? "bg-brand-copper text-white border-brand-copper hover:bg-brand-copper/90"
+                  : "bg-white text-brand-charcoal border-brand-stone/25 hover:border-brand-copper/60 hover:text-brand-copper"
+              }`}
+            >
+              <span
+                aria-hidden
+                className={`w-2 h-2 rounded-full transition-colors ${
+                  stockedOnly ? "bg-white" : "bg-brand-copper"
+                }`}
+              />
+              {stockedOnly
+                ? isEs ? "Mostrando solo en stock" : "Showing in-stock only"
+                : isEs ? "Solo lo que tenemos en stock" : "Show in-stock only"}
+            </button>
           </div>
 
           {/* Count */}
@@ -186,6 +253,7 @@ export const BrandsGrid = ({ locale, brands }: BrandsGridProps) => {
             onClick={() => {
               setQuery("");
               setCategory("all");
+              if (stockedOnly) toggleStockedOnly();
             }}
             className="mt-3 font-body text-xs text-brand-terracotta hover:underline tracking-wider uppercase cursor-pointer"
           >
@@ -210,13 +278,29 @@ interface BrandCardProps {
 
 const BrandCard = ({ brand, isEs }: BrandCardProps) => {
   const isExternal = brand.stockedState === "external";
+  const isStocked = brand.stockedState === "stocked";
   const href = isExternal && brand.externalHref
     ? brand.externalHref
     : brand.internalHref;
 
+  const stockedTooltip = isEs
+    ? "En stock en nuestro showroom"
+    : "In stock at our showroom";
+
   const cardBody = (
     <>
       <div className="absolute top-0 left-0 w-0 h-0.5 bg-brand-copper transition-all duration-500 group-hover:w-full z-10" />
+
+      {/* Subtle stocked indicator — small filled copper dot, no label.
+          Sits in the top-right of the card, with a faint white halo for
+          contrast against either dark or light backgrounds underneath. */}
+      {isStocked && (
+        <span
+          aria-label={stockedTooltip}
+          title={stockedTooltip}
+          className="absolute top-3 right-3 z-30 w-2.5 h-2.5 rounded-full bg-brand-copper ring-2 ring-white/80 shadow-[0_0_0_1px_rgba(0,0,0,0.05)]"
+        />
+      )}
 
       {brand.heroImage ? (
         <div className="relative h-44 sm:h-48 overflow-hidden">

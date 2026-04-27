@@ -146,11 +146,59 @@ const BrandPage = async ({ params }: BrandPageProps) => {
     a.brandSlugs?.includes(slug)
   );
 
-  // Request-a-quote state: show CTA prominently when brand is request-state or
-  // when there's no product catalog loaded (fallback to quote capture).
-  const isRequestState = brand.stockedState === "request";
+  // Stocking state — empty / unknown defaults to "request" so we never
+  // accidentally claim "in stock" for an untagged brand.
+  const stockState =
+    (brand.stockedState as "stocked" | "request" | "external" | "") || "request";
+  const isStocked = stockState === "stocked";
+  const isExternal = stockState === "external";
+  const isRequestState = stockState === "request";
+  const externalUrl = isExternal ? brand.externalUrl || brand.websiteUrl || "" : "";
   const hasProducts = products.length > 0;
-  const showQuoteCta = isRequestState || !hasProducts;
+  const showQuoteCta = isRequestState || (!isExternal && !hasProducts && !isStocked);
+
+  // Eyebrow line — the one-line commercial-state header above the brand name.
+  // The whole "invisible card state" decision flips here: on the detail page,
+  // the architect has committed to this brand by clicking through, so they
+  // deserve to know what they're getting into.
+  const stateEyebrow = isStocked
+    ? isEs
+      ? "En Stock en Nuestro Showroom"
+      : "In Stock at Our Showroom"
+    : isExternal
+      ? isEs
+        ? "Disponible a Través del Fabricante"
+        : "Available via the Manufacturer"
+      : isEs
+        ? "Pedido Especial · 4–8 Semanas"
+        : "Special Order · 4–8 Weeks";
+
+  // Primary CTA — depends on stocking state and whether we carry inventory.
+  const primaryCta: { label: string; href: string } = (() => {
+    if (isExternal && externalUrl) {
+      return {
+        label: isEs ? `Visitar ${brand.name}` : `Visit ${brand.name}`,
+        href: externalUrl,
+      };
+    }
+    if (isStocked && hasProducts) {
+      return {
+        label: isEs ? `Comprar ${brand.name}` : `Shop ${brand.name}`,
+        href: "#products",
+      };
+    }
+    if (isStocked && !hasProducts) {
+      return {
+        label: isEs ? "Reservar Visita al Showroom" : "Book a Showroom Visit",
+        href: `/${locale}/showroom?brand=${slug}`,
+      };
+    }
+    // request state (and any unknown fallback)
+    return {
+      label: isEs ? "Solicitar Cotización" : "Request a Quote",
+      href: `/${locale}/contact?brand=${slug}`,
+    };
+  })();
 
   // GEO: Brand entity + authorized reseller relationship
   const brandJsonLd = {
@@ -242,24 +290,12 @@ const BrandPage = async ({ params }: BrandPageProps) => {
       <main>
         {heroImage ? (
           <CategoryHero
-            eyebrow={
-              isEs ? "Distribuidor Autorizado" : "Authorized Dealer"
-            }
+            eyebrow={stateEyebrow}
             title={brand.name}
             description={description}
             productCount={hasProducts ? products.length : undefined}
-            ctaLabel={
-              showQuoteCta
-                ? isEs
-                  ? "Solicitar Cotización"
-                  : "Request a Quote"
-                : `Shop ${brand.name}`
-            }
-            ctaHref={
-              showQuoteCta
-                ? `/${locale}/contact?brand=${slug}`
-                : "#products"
-            }
+            ctaLabel={primaryCta.label}
+            ctaHref={primaryCta.href}
             imageSrc={heroImage}
           />
         ) : (
@@ -268,8 +304,14 @@ const BrandPage = async ({ params }: BrandPageProps) => {
           // file into this brand's Drive folder.
           <section className="bg-brand-charcoal text-white py-24 md:py-32">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <p className="font-body font-semibold text-xs tracking-[0.25em] text-brand-copper uppercase">
-                {isEs ? "Distribuidor Autorizado" : "Authorized Dealer"}
+              <p className="font-body font-semibold text-xs tracking-[0.25em] text-brand-copper uppercase flex items-center gap-2">
+                {isStocked && (
+                  <span
+                    aria-hidden
+                    className="inline-block w-2 h-2 rounded-full bg-brand-copper ring-2 ring-white/20"
+                  />
+                )}
+                {stateEyebrow}
               </p>
               <h1 className="mt-6 font-display text-5xl md:text-7xl font-light tracking-tight">
                 {brand.name}
@@ -291,22 +333,34 @@ const BrandPage = async ({ params }: BrandPageProps) => {
                 </p>
               )}
               <div className="mt-10 flex flex-wrap gap-3">
-                {showQuoteCta ? (
-                  <Link
-                    href={`/${locale}/contact?brand=${slug}`}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-brand-copper text-white font-body font-medium text-sm tracking-wider uppercase hover:bg-brand-copper/90 transition-colors"
-                  >
-                    {isEs ? "Solicitar Cotización" : "Request a Quote"}
-                  </Link>
-                ) : (
+                {/^https?:/.test(primaryCta.href) ? (
                   <a
-                    href="#products"
+                    href={primaryCta.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-6 py-3 bg-brand-copper text-white font-body font-medium text-sm tracking-wider uppercase hover:bg-brand-copper/90 transition-colors"
                   >
-                    Shop {brand.name}
+                    {primaryCta.label}
+                    <ArrowUpRight className="w-4 h-4" />
                   </a>
+                ) : primaryCta.href.startsWith("#") ? (
+                  <a
+                    href={primaryCta.href}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-brand-copper text-white font-body font-medium text-sm tracking-wider uppercase hover:bg-brand-copper/90 transition-colors"
+                  >
+                    {primaryCta.label}
+                  </a>
+                ) : (
+                  <Link
+                    href={primaryCta.href}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-brand-copper text-white font-body font-medium text-sm tracking-wider uppercase hover:bg-brand-copper/90 transition-colors"
+                  >
+                    {primaryCta.label}
+                  </Link>
                 )}
-                {brand.websiteUrl && (
+                {/* Secondary "Manufacturer Site" link — only when not already
+                    the primary CTA (i.e., for stocked / request brands). */}
+                {brand.websiteUrl && !isExternal && (
                   <a
                     href={brand.websiteUrl}
                     target="_blank"
