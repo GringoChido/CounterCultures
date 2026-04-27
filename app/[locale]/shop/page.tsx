@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
-import { ShopCatalog } from "./shop-catalog";
+import { ShopByRoom } from "@/app/components/sections/shop-by-room";
+import { HowItWorksBand } from "@/app/components/sections/how-it-works-band";
 import { HeroSearch } from "./hero-search";
-import { RecentlySpecifiedRow } from "./recently-specified-row";
 import { FeaturedBrandsBand } from "./featured-brands-band";
-import { getProducts } from "@/app/lib/sheets";
 import { getCatalogStats, getBrandCounts } from "@/app/lib/products-full";
 import { getBrands } from "@/app/lib/brand-kit-sheets";
-import { getRecentlySpecified } from "@/app/lib/recently-specified";
 
 export const revalidate = 300;
 
@@ -95,14 +94,13 @@ const PRE_STAGED_HEROES: Record<string, string> = {
 const ShopPage = async ({ params }: ShopPageProps) => {
   const { locale } = await params;
   const isEs = locale === "es";
-  const [products, fullStats, brandCounts, allBrands, recentlySpecified] =
-    await Promise.all([
-      getProducts(),
-      getCatalogStats().catch(() => ({ total: 0, brandCount: 0 })),
-      getBrandCounts().catch(() => []),
-      getBrands().catch(() => []),
-      getRecentlySpecified(12).catch(() => []),
-    ]);
+  const lang = locale as "en" | "es";
+
+  const [fullStats, brandCounts, allBrands] = await Promise.all([
+    getCatalogStats().catch(() => ({ total: 0, brandCount: 0 })),
+    getBrandCounts().catch(() => []),
+    getBrands().catch(() => []),
+  ]);
 
   // Build featured brand cards: flagship slug order + catalog counts + hero
   const brandByslug = new Map(allBrands.map((b) => [b.slug, b]));
@@ -120,6 +118,14 @@ const ShopPage = async ({ params }: ShopPageProps) => {
       },
     ];
   });
+
+  // Top brands by catalog depth — used in the brand-activity leaderboard.
+  // Slim, data-driven, no product cards.
+  const topBrands = brandCounts
+    .filter((b) => b.count > 0)
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
+  const numFmt = isEs ? "es-MX" : "en-US";
 
   // BreadcrumbList JSON-LD
   const breadcrumbJsonLd = {
@@ -143,7 +149,7 @@ const ShopPage = async ({ params }: ShopPageProps) => {
 
   return (
     <>
-        <script
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
@@ -179,43 +185,140 @@ const ShopPage = async ({ params }: ShopPageProps) => {
             </p>
             {fullStats.total > 0 && (
               <HeroSearch
-                locale={locale as "en" | "es"}
+                locale={lang}
                 catalogSize={fullStats.total}
               />
             )}
           </div>
         </section>
 
-        {/* Recently Specified */}
-        <RecentlySpecifiedRow
-          items={recentlySpecified}
-          locale={locale as "en" | "es"}
-        />
+        {/* Browse by Category — primary navigation block */}
+        <ShopByRoom locale={lang} />
 
-        {/* Featured Brands band */}
-        <FeaturedBrandsBand
-          locale={locale as "en" | "es"}
-          brands={featuredBrands}
-        />
+        {/* Featured Brands band — flagship logos, brand entry points */}
+        <FeaturedBrandsBand locale={lang} brands={featuredBrands} />
 
-        {/* Curated editorial grid */}
-        <section className="py-14 md:py-20 bg-white">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-10">
-            <p className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-copper uppercase">
-              {isEs ? "Nuestra selección" : "Our Selection"}
-            </p>
-            <h2 className="mt-3 font-display text-3xl md:text-4xl font-light tracking-wide text-brand-charcoal leading-[1.1]">
-              {isEs
-                ? "Vetadas, fotografiadas, listas para especificar."
-                : "Vetted, photographed, ready to spec."}
-            </h2>
-            <p className="mt-3 font-body text-sm text-brand-stone max-w-xl">
-              {isEs
-                ? "Piezas con páginas de detalle completas, opciones de acabado y fotografía propia. Visita el showroom en San Miguel para ver y tocar la selección que tenemos en piso."
-                : "Pieces with full detail pages, finish options, and our own photography. Visit the San Miguel showroom to see and touch the subset we keep on the floor."}
-            </p>
+        {/* Brand activity — data-driven mini-leaderboard, no product cards */}
+        {topBrands.length > 0 && (
+          <section className="py-14 md:py-20 bg-white border-y border-brand-stone/10">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <div className="grid lg:grid-cols-[1fr_2fr] gap-8 lg:gap-12 items-start">
+                <div className="lg:sticky lg:top-24">
+                  <p className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-copper uppercase">
+                    {isEs ? "Profundidad del catálogo" : "Catalog depth"}
+                  </p>
+                  <h2 className="mt-3 font-display text-3xl md:text-4xl font-light tracking-wide text-brand-charcoal leading-[1.1]">
+                    {isEs
+                      ? "Las marcas más profundas en nuestro catálogo."
+                      : "The brands we go deepest on."}
+                  </h2>
+                  <p className="mt-4 font-body text-sm md:text-base text-brand-stone max-w-md leading-relaxed">
+                    {isEs
+                      ? `Por cantidad de SKUs autorizados disponibles para especificar. Empieza con cualquiera de estas marcas o busca el catálogo completo de ${fullStats.total.toLocaleString(numFmt)} piezas.`
+                      : `By number of authorized SKUs available to specify. Start with any of these or search the full ${fullStats.total.toLocaleString(numFmt)}-piece catalog.`}
+                  </p>
+                  <Link
+                    href={`/${locale}/shop/catalog`}
+                    className="mt-6 inline-flex items-center gap-2 font-body text-sm font-semibold tracking-wide text-brand-copper hover:text-brand-charcoal transition-colors"
+                  >
+                    {isEs ? "Abrir catálogo completo" : "Open full catalog"} →
+                  </Link>
+                </div>
+
+                <ol className="divide-y divide-brand-stone/10 border-y border-brand-stone/15">
+                  {topBrands.map((b, i) => {
+                    const slug = brandCounts.find(
+                      (bc) => bc.brand === b.brand
+                    )
+                      ? allBrands.find(
+                          (br) => br.name.toLowerCase() === b.brand.toLowerCase()
+                        )?.slug
+                      : null;
+                    const href = slug
+                      ? `/${locale}/brands/${slug}`
+                      : `/${locale}/shop/catalog?brand=${encodeURIComponent(b.brand)}`;
+                    return (
+                      <li key={b.brand}>
+                        <Link
+                          href={href}
+                          className="group flex items-baseline justify-between gap-4 py-4 hover:bg-brand-linen/40 -mx-4 px-4 transition-colors"
+                        >
+                          <div className="flex items-baseline gap-4 min-w-0">
+                            <span className="font-mono text-xs text-brand-stone w-6 shrink-0 tabular-nums">
+                              {String(i + 1).padStart(2, "0")}
+                            </span>
+                            <span className="font-display text-xl md:text-2xl font-light text-brand-charcoal group-hover:text-brand-copper transition-colors truncate">
+                              {b.brand}
+                            </span>
+                          </div>
+                          <span className="font-mono text-sm text-brand-stone tabular-nums shrink-0">
+                            {b.count.toLocaleString(numFmt)}{" "}
+                            <span className="text-[10px] tracking-[0.2em] uppercase ml-1">
+                              {isEs ? "SKUs" : "SKUs"}
+                            </span>
+                          </span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* How it works — operational promise */}
+        <HowItWorksBand locale={lang} variant="light" />
+
+        {/* Two conversion paths — Showroom visit + Trade program */}
+        <section className="py-14 md:py-20 bg-brand-charcoal text-white">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid md:grid-cols-2 gap-px bg-white/10">
+              <Link
+                href={`/${locale}/showroom`}
+                className="group bg-brand-charcoal p-8 md:p-12 hover:bg-brand-charcoal/80 transition-colors"
+              >
+                <p className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-copper uppercase mb-3">
+                  {isEs ? "Visítanos" : "Visit us"}
+                </p>
+                <h3 className="font-display text-2xl md:text-4xl font-light tracking-wide leading-tight mb-4">
+                  {isEs
+                    ? "Conoce el showroom en San Miguel."
+                    : "Visit the San Miguel showroom."}
+                </h3>
+                <p className="font-body text-sm md:text-base text-white/70 leading-relaxed mb-6 max-w-md">
+                  {isEs
+                    ? "Acabados, dimensiones y combinaciones que es difícil decidir desde una pantalla. Lunes a viernes, en Providencia."
+                    : "Finishes, dimensions, and combinations are hard to commit to from a screen. Monday–Friday, in Providencia."}
+                </p>
+                <span className="inline-flex items-center gap-2 font-body text-sm font-semibold tracking-wide text-brand-copper group-hover:text-white transition-colors">
+                  {isEs ? "Cómo llegar" : "Get directions"} →
+                </span>
+              </Link>
+
+              <Link
+                href={`/${locale}/trade`}
+                className="group bg-brand-charcoal p-8 md:p-12 hover:bg-brand-charcoal/80 transition-colors"
+              >
+                <p className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-copper uppercase mb-3">
+                  {isEs ? "Para arquitectos y diseñadores" : "For architects & designers"}
+                </p>
+                <h3 className="font-display text-2xl md:text-4xl font-light tracking-wide leading-tight mb-4">
+                  {isEs
+                    ? "Programa Trade — precios y soporte de especificación."
+                    : "Trade Program — pricing and specification support."}
+                </h3>
+                <p className="font-body text-sm md:text-base text-white/70 leading-relaxed mb-6 max-w-md">
+                  {isEs
+                    ? "Precios trade en las 19 marcas autorizadas, gerente de cuenta dedicado, presentaciones privadas para clientes. Aprobación en 48 horas."
+                    : "Trade pricing across 19 authorized brands, a dedicated account manager, and private client presentations. Approval within 48 hours."}
+                </p>
+                <span className="inline-flex items-center gap-2 font-body text-sm font-semibold tracking-wide text-brand-copper group-hover:text-white transition-colors">
+                  {isEs ? "Solicitar acceso" : "Apply for access"} →
+                </span>
+              </Link>
+            </div>
           </div>
-          <ShopCatalog initialProducts={products} />
         </section>
       </main>
       <Footer locale={locale} />
