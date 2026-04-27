@@ -97,7 +97,9 @@ const ContactCTA = ({ locale = "en" }: { locale?: string }) => {
                     {SITE_CONFIG.showroom.address}
                   </p>
                   <a
-                    href="#"
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(SITE_CONFIG.showroom.address)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="font-body text-sm text-brand-terracotta hover:text-brand-copper transition-colors mt-1 inline-block"
                   >
                     {t.getDirections}

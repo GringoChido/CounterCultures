@@ -4,9 +4,10 @@ import Link from "next/link";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { CategoryHero } from "@/app/components/sections/category-hero";
+import { HowItWorksBand } from "@/app/components/sections/how-it-works-band";
 import { ShopCatalog } from "../../shop-catalog";
 import { getProductsBySubcategory } from "@/app/lib/sheets";
-import { PRODUCT_CATEGORIES, SUBCATEGORY_META } from "@/app/lib/constants";
+import { PRODUCT_CATEGORIES, SUBCATEGORY_META, SUBCATEGORY_CATALOG_QUERY } from "@/app/lib/constants";
 import type { CategoryKey } from "@/app/lib/constants";
 
 export const revalidate = 300;
@@ -161,15 +162,35 @@ const SubcategoryPage = async ({ params }: SubcategoryPageProps) => {
       />
       <Header locale={lang} />
       <main>
-        <CategoryHero
-          eyebrow={`${catLabel} ${lang === "en" ? "Collection" : "Colección"}`}
-          title={subLabel}
-          description={heroDescription}
-          productCount={products.length}
-          ctaLabel={lang === "en" ? "Browse Collection" : "Explorar Colección"}
-          ctaHref="#products"
-          imageSrc={heroImage}
-        />
+        {(() => {
+          const heroEyebrow =
+            lang === "en"
+              ? `${catLabel} Collection`
+              : `Colección de ${catLabel}`;
+          const catalogKeyword =
+            SUBCATEGORY_CATALOG_QUERY[category]?.[subcategory] ?? "";
+          const catalogHref =
+            `/${locale}/shop/catalog?category=${category}` +
+            (catalogKeyword ? `&q=${encodeURIComponent(catalogKeyword)}` : "");
+          const catalogLabel =
+            lang === "en"
+              ? `Search the full catalog for ${subLabel.toLowerCase()}`
+              : `Buscar ${subLabel.toLowerCase()} en el catálogo completo`;
+          return (
+            <CategoryHero
+              eyebrow={heroEyebrow}
+              title={subLabel}
+              description={heroDescription}
+              productCount={products.length}
+              ctaLabel={lang === "en" ? "Browse Selection" : "Explorar Selección"}
+              ctaHref="#products"
+              imageSrc={heroImage}
+              locale={lang}
+              catalogHref={catalogHref}
+              catalogLabel={catalogLabel}
+            />
+          );
+        })()}
 
         {/* Breadcrumb + Subcategory pills */}
         <section className="py-4 md:py-6 bg-brand-linen border-b border-brand-stone/10">
@@ -219,6 +240,8 @@ const SubcategoryPage = async ({ params }: SubcategoryPageProps) => {
         <div id="products">
           <ShopCatalog initialProducts={products} initialCategory={category} />
         </div>
+
+        <HowItWorksBand locale={lang} variant="light" />
       </main>
       <Footer locale={lang} />
     </>

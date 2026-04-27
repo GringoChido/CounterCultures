@@ -2,29 +2,18 @@
 
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 
-// Option A (active) — direct, specific, geographic authority
 const content = {
   en: {
     eyebrow: "San Miguel de Allende",
-    headline: "Mexico's #1 Luxury Kitchen, Bath & Hardware Showroom.",
-    supporting: "Based in San Miguel de Allende. Delivering nationwide.",
+    headline: "The destination for premium kitchen, bath, and hardware in Mexico.",
+    supporting: "International brands. Mexican artisans. One showroom — delivering nationwide.",
   },
   es: {
     eyebrow: "San Miguel de Allende",
-    headline: "El Showroom #1 de Cocina, Baño y Herrajes de Lujo en México.",
-    supporting: "Basados en San Miguel de Allende. Entregando en todo el país.",
+    headline: "El destino de cocina, baño y herrajes de lujo en México.",
+    supporting: "Marcas internacionales. Artesanos mexicanos. Un solo showroom — entrega en todo el país.",
   },
 };
-
-// Option B (alternate — scarcity + exclusivity angle):
-// eyebrow: "The Only Showroom of Its Kind in Mexico"
-// headline: "Nineteen international brands. Master Mexican artisans. One showroom."
-// supporting: "San Miguel de Allende — serving Mexico's finest projects since 2004."
-
-// Option C (alternate — question hook):
-// eyebrow: "Why Counter Cultures"
-// headline: "The #1 destination for luxury kitchen, bath, and hardware in Mexico."
-// supporting: "In San Miguel de Allende. Sourcing and delivering to projects across the country."
 
 const BrandStatement = ({ locale = "en" }: { locale?: string }) => {
   const t = content[locale as "en" | "es"];

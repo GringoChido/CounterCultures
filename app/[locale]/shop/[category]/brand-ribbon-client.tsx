@@ -6,9 +6,11 @@ import NextLink from "next/link";
 interface BrandRibbonProps {
   brands: { name: string; slug: string }[];
   locale: "en" | "es";
+  category: string;
+  categoryLabel: string;
 }
 
-const BrandRibbon = ({ brands, locale }: BrandRibbonProps) => {
+const BrandRibbon = ({ brands, locale, category, categoryLabel }: BrandRibbonProps) => {
   if (brands.length === 0) return null;
 
   return (
@@ -19,10 +21,22 @@ const BrandRibbon = ({ brands, locale }: BrandRibbonProps) => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="font-body font-semibold text-xs uppercase tracking-[0.25em] text-brand-terracotta mb-8 text-center"
+          className="font-body font-semibold text-xs uppercase tracking-[0.25em] text-brand-terracotta mb-3 text-center"
         >
-          {locale === "en" ? "Trusted Brands" : "Marcas de Confianza"}
+          {locale === "en" ? "Authorized Brands" : "Marcas Autorizadas"}
         </motion.p>
+
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.05 }}
+          className="font-display text-2xl md:text-3xl font-light text-white text-center mb-8"
+        >
+          {locale === "en"
+            ? `Brands we carry for ${categoryLabel.toLowerCase()}`
+            : `Marcas que manejamos para ${categoryLabel.toLowerCase()}`}
+        </motion.h2>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -34,7 +48,7 @@ const BrandRibbon = ({ brands, locale }: BrandRibbonProps) => {
           {brands.map((brand) => (
             <NextLink
               key={brand.slug}
-              href={`/${locale}/brands/${brand.slug}`}
+              href={`/${locale}/brands/${brand.slug}/${category}`}
               className="font-display text-lg md:text-xl text-white/80 hover:text-brand-terracotta transition-colors duration-300"
             >
               {brand.name}

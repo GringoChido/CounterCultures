@@ -370,8 +370,8 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
             </h1>
             <p className="mt-6 font-body text-lg text-white/70 max-w-2xl leading-relaxed">
               {isEs
-                ? "Colaboramos con artesanos mexicanos que transforman cobre, cerámica y piedra en piezas únicas — y representamos las marcas más prestigiosas del mundo en baño, cocina y herrajes."
-                : "We collaborate with Mexican artisans who transform copper, ceramic, and stone into one-of-a-kind pieces — and we represent the world's most prestigious bath, kitchen, and hardware brands."}
+                ? "Colaboramos con artesanos mexicanos que trabajan en cobre, cerámica y piedra — y somos distribuidor autorizado de Kohler, TOTO, Brizo, BLANCO, California Faucets, Sun Valley Bronze y más para baño, cocina y herrajes."
+                : "We collaborate with Mexican artisans working in copper, ceramic, and stone — and we're an authorized dealer for Kohler, TOTO, Brizo, BLANCO, California Faucets, Sun Valley Bronze, and more for bath, kitchen, and hardware."}
             </p>
           </div>
         </section>
@@ -458,8 +458,8 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
                 {isEs ? "alma." : "soul."}
               </span>
               {isEs
-                ? " Las mejores marcas del mundo nos dan la base."
-                : " The world's finest brands give us the foundation."}
+                ? " Nuestras marcas autorizadas nos dan la base."
+                : " Our authorized brands give us the foundation."}
             </p>
             <div className="w-12 h-0.5 bg-brand-copper mx-auto mt-8" />
           </div>

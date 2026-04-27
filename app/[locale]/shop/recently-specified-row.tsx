@@ -12,18 +12,18 @@ interface RecentlySpecifiedRowProps {
 
 const T = {
   en: {
-    eyebrow: "Recently specified",
-    headline: "What's actually going into homes and projects this year.",
-    subhead: "Ranked by real order history — not an editor's pick.",
+    eyebrow: "Most specified",
+    headline: "What's leaving the showroom right now.",
+    subhead: "Ranked by real demand from architects, designers, and homeowners across Mexico.",
     specifiedIn: (n: number) =>
       n === 1 ? "1 project" : `${n} projects`,
     from: "from",
     viewDetails: "View details",
   },
   es: {
-    eyebrow: "Recientemente especificado",
-    headline: "Lo que realmente se está instalando en casas y proyectos este año.",
-    subhead: "Ordenado por historial de pedidos real — no por intuición del editor.",
+    eyebrow: "Más especificado",
+    headline: "Lo que está saliendo del showroom ahora mismo.",
+    subhead: "Ordenado por la demanda real de arquitectos, diseñadores y propietarios en todo México.",
     specifiedIn: (n: number) =>
       n === 1 ? "1 proyecto" : `${n} proyectos`,
     from: "desde",

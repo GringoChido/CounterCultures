@@ -371,9 +371,24 @@ const BrandPage = async ({ params }: BrandPageProps) => {
 
         {/* Products — when we actually carry inventory for this brand */}
         {hasProducts && (
-          <div id="products">
+          <section id="products" className="pt-16 md:pt-20 bg-white">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-8 md:mb-10">
+              <p className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-terracotta uppercase">
+                {isEs ? "Nuestra selección" : "Our Selection"}
+              </p>
+              <h2 className="mt-3 font-display text-3xl md:text-5xl font-light tracking-wide text-brand-charcoal leading-[1.05]">
+                {isEs
+                  ? `${products.length.toLocaleString("es-MX")} piezas de ${brand.name} con ficha completa.`
+                  : `${products.length.toLocaleString("en-US")} ${brand.name} pieces with full detail.`}
+              </h2>
+              <p className="mt-3 font-body text-sm md:text-base text-brand-stone max-w-2xl">
+                {isEs
+                  ? "Con páginas de detalle, opciones de acabado y fotografía propia. La selección que respaldamos."
+                  : "With detail pages, finish options, and our own photography. The selection we stand behind."}
+              </p>
+            </div>
             <ShopCatalog initialProducts={products} />
-          </div>
+          </section>
         )}
 
         {/* Full Catalog — the Vault, filtered to this brand. Only show when
@@ -406,8 +421,8 @@ const BrandPage = async ({ params }: BrandPageProps) => {
                   </h2>
                   <p className="mt-4 font-body text-base text-brand-stone max-w-xl">
                     {isEs
-                      ? `Más allá de la colección curada: cada pieza autorizada de ${brand.name} que podemos importar, buscable por modelo, acabado o colección. Precio de fábrica y cotización en 24 horas hábiles.`
-                      : `Beyond our curated selection: every authorized ${brand.name} piece we can source, searchable by model, finish, or collection. Factory-direct pricing, quotes within 24 hours.`}
+                      ? `Más allá de nuestra selección: cada pieza autorizada de ${brand.name} que podemos pedir directo de fábrica. Buscable por modelo, acabado o colección. Cotización en 24 horas.`
+                      : `Beyond our selection: every authorized ${brand.name} piece we can order direct from the factory. Searchable by model, finish, or collection. 24-hour quotes.`}
                   </p>
                 </div>
                 <Link

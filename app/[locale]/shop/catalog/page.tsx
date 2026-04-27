@@ -83,8 +83,8 @@ const CatalogPage = async ({ params }: CatalogPageProps) => {
                 </h1>
                 <p className="mt-5 font-body text-[15px] md:text-base text-brand-stone max-w-xl leading-relaxed">
                   {isEs
-                    ? `El catálogo autorizado completo de cada marca que manejamos, en un solo lugar: ${stats.brandCount} marcas, precio directo de fábrica y cotización en 24 horas hábiles — todo lo que necesitas para especificar tu proyecto con confianza.`
-                    : `The complete authorized catalog from every brand we carry, in one place: ${stats.brandCount} brands, factory-direct pricing, and quotes returned within 24 hours — everything you need to specify your project with confidence.`}
+                    ? `Cada marca autorizada que manejamos, en un solo lugar. ${stats.brandCount} marcas. Precio de fábrica. Cotización en 24 horas.`
+                    : `Every authorized brand we carry, in one place. ${stats.brandCount} brands. Factory-direct pricing. 24-hour quotes.`}
                 </p>
               </div>
               <div className="hidden lg:block">
@@ -116,6 +116,14 @@ const CatalogPage = async ({ params }: CatalogPageProps) => {
                 </div>
               </div>
             </div>
+            <p className="mt-8 pt-6 border-t border-brand-stone/15 font-body text-xs md:text-sm text-brand-stone leading-relaxed max-w-3xl">
+              <span className="font-semibold text-brand-charcoal uppercase tracking-[0.15em] text-[10px] block mb-1">
+                {isEs ? "Sobre este catálogo" : "About this catalog"}
+              </span>
+              {isEs
+                ? "Las piezas en exhibición en nuestro showroom tienen páginas de detalle completas. Las demás piezas del catálogo se piden bajo encargo — solicita una cotización y la ordenamos directo de fábrica."
+                : "Pieces on display in our showroom have full detail pages. Everything else in the catalog ships by special order — request a quote and we order direct from the manufacturer."}
+            </p>
           </div>
         </section>
 

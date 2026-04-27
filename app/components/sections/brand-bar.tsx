@@ -66,16 +66,16 @@ const brandGroups = {
 const content = {
   en: {
     eyebrow: "Authorized Dealer",
-    headline: "The World's Best, Under One Roof.",
+    headline: "Kohler. TOTO. Brizo. BLANCO. Sun Valley Bronze. And more.",
     supporting:
-      "We partner with 19 of the most respected kitchen, bath, and hardware brands on the planet — plus a hand-picked network of Mexican master artisans. Every product is authenticated, warranty-backed, and sourced direct from the factory.",
+      "Authorized dealer for 19 international kitchen, bath, and hardware brands — plus a hand-picked network of Mexican artisans. Authenticated, warranty-backed, factory-direct.",
     ctaText: "See all 19 authorized brands →",
   },
   es: {
     eyebrow: "Distribuidor Autorizado",
-    headline: "Lo Mejor del Mundo, Bajo un Mismo Techo.",
+    headline: "Kohler. TOTO. Brizo. BLANCO. Sun Valley Bronze. Y más.",
     supporting:
-      "Trabajamos con 19 de las marcas de cocina, baño y herrajes más respetadas del mundo — además de una red selecta de maestros artesanos mexicanos. Cada producto es auténtico, con garantía de fábrica e importado directo.",
+      "Distribuidor autorizado de 19 marcas internacionales de cocina, baño y herrajes — más una red selecta de artesanos mexicanos. Autenticadas, con garantía de fábrica, importación directa.",
     ctaText: "Ver las 19 marcas autorizadas →",
   },
 };

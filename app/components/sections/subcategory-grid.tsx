@@ -16,6 +16,8 @@ interface SubcategoryGridProps {
   category: string;
   subcategories: SubcategoryCard[];
   locale: "en" | "es";
+  catalogHref?: string;
+  catalogCount?: number;
 }
 
 const DESCRIPTIONS: Record<string, Record<string, { en: string; es: string }>> = {
@@ -125,19 +127,45 @@ const cardVariants = {
   }),
 };
 
-const SubcategoryGrid = ({ category, subcategories, locale }: SubcategoryGridProps) => {
+const SubcategoryGrid = ({
+  category,
+  subcategories,
+  locale,
+  catalogHref,
+  catalogCount,
+}: SubcategoryGridProps) => {
   const descriptions = DESCRIPTIONS[category] ?? {};
+  const numFmt = locale === "es" ? "es-MX" : "en-US";
 
   return (
     <section id="subcategories" className="py-16 md:py-24 bg-brand-linen">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-12 md:mb-16">
           <p className="font-body text-xs uppercase tracking-[0.25em] text-brand-terracotta mb-3">
-            {locale === "en" ? "Explore by Category" : "Explora por Categoría"}
+            {locale === "en" ? "Our Selection" : "Nuestra Selección"}
           </p>
           <h2 className="font-display text-3xl md:text-5xl font-light text-brand-charcoal">
-            {locale === "en" ? "The Collection" : "La Colección"}
+            {locale === "en" ? "Vetted, photographed, ready to spec." : "Vetadas, fotografiadas, listas para especificar."}
           </h2>
+          <p className="mt-4 font-body text-sm md:text-base text-brand-stone max-w-2xl leading-relaxed">
+            {locale === "en"
+              ? "Pieces with full detail pages, finish options, and our own photography — the inventory we stand behind."
+              : "Piezas con páginas de detalle completas, opciones de acabado y fotografía propia — el inventario que respaldamos."}
+            {catalogHref && catalogCount && catalogCount > 0 && (
+              <>
+                {" "}
+                {locale === "en" ? "Need more options?" : "¿Necesitas más opciones?"}{" "}
+                <NextLink
+                  href={catalogHref}
+                  className="text-brand-copper underline underline-offset-4 hover:text-brand-charcoal transition-colors"
+                >
+                  {locale === "en"
+                    ? `Search ${catalogCount.toLocaleString(numFmt)} pieces in the full catalog →`
+                    : `Buscar ${catalogCount.toLocaleString(numFmt)} piezas en el catálogo completo →`}
+                </NextLink>
+              </>
+            )}
+          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -168,7 +196,7 @@ const SubcategoryGrid = ({ category, subcategories, locale }: SubcategoryGridPro
 
                     <div className="absolute inset-0 flex flex-col justify-end p-5 md:p-7">
                       <span className="self-start mb-3 px-2.5 py-1 bg-white/10 backdrop-blur-sm text-white/80 font-body text-[11px] uppercase tracking-wider rounded-sm">
-                        {sub.productCount} {locale === "en" ? "pieces" : "piezas"}
+                        {sub.productCount.toLocaleString(numFmt)} {locale === "en" ? "pieces" : "piezas"}
                       </span>
                       <h3 className="font-display text-xl md:text-2xl font-light text-white">
                         <span className="relative">

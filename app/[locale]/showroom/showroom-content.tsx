@@ -60,7 +60,7 @@ const t = {
     es: "Confirmamos en 2 horas durante horario laboral.",
   },
   mapTitle: { en: "San Miguel de Allende, Guanajuato", es: "San Miguel de Allende, Guanajuato" },
-  mapSoon: { en: "Google Map integration coming soon", es: "Google Maps próximamente" },
+  mapDirectionsCta: { en: "Open in Google Maps →", es: "Abrir en Google Maps →" },
   galleryEyebrow: { en: "Inside the Showroom", es: "Dentro del Showroom" },
   galleryTitle: { en: "A Space Built for Discovery", es: "Un Espacio Creado para Descubrir" },
 };
@@ -266,18 +266,24 @@ export const ShowroomContent = () => {
         </div>
       </section>
 
-      {/* Map placeholder */}
+      {/* Live map embed */}
       <section id="location" className="bg-brand-charcoal">
-        <div className="aspect-[4/3] sm:aspect-[16/7] md:aspect-[3/1] flex items-center justify-center">
-          <div className="text-center">
-            <MapPin className="w-10 h-10 text-brand-copper mx-auto mb-4" />
-            <p className="font-display text-2xl text-white font-light">
-              {t.mapTitle[locale]}
-            </p>
-            <p className="font-body text-sm text-white/50 mt-2">
-              {t.mapSoon[locale]}
-            </p>
-          </div>
+        <div className="aspect-[4/3] sm:aspect-[16/7] md:aspect-[3/1] relative">
+          <iframe
+            src={`https://www.google.com/maps?q=${encodeURIComponent(SITE_CONFIG.showroom.address)}&output=embed`}
+            title={t.mapTitle[locale]}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            className="absolute inset-0 w-full h-full border-0"
+          />
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(SITE_CONFIG.showroom.address)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute bottom-4 right-4 px-4 py-2 bg-brand-copper text-white font-body text-sm tracking-wide hover:bg-brand-copper/90 transition-colors"
+          >
+            {t.mapDirectionsCta[locale]}
+          </a>
         </div>
       </section>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import NextLink from "next/link";
 import { Button } from "@/app/components/ui/button";
 
 interface CategoryHeroProps {
@@ -12,6 +13,8 @@ interface CategoryHeroProps {
   ctaHref?: string;
   imageSrc: string;
   locale?: "en" | "es";
+  catalogHref?: string;
+  catalogLabel?: string;
 }
 
 const CategoryHero = ({
@@ -23,6 +26,8 @@ const CategoryHero = ({
   ctaHref = "#products",
   imageSrc,
   locale = "en",
+  catalogHref,
+  catalogLabel,
 }: CategoryHeroProps) => (
   <section className="relative h-[50vh] md:h-[60vh] flex items-end overflow-hidden">
     <div className="absolute inset-0">
@@ -69,15 +74,24 @@ const CategoryHero = ({
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.55 }}
-        className="mt-6 flex items-center gap-6"
+        className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3"
       >
         <Button variant="primary" size="lg" href={ctaHref}>
           {ctaLabel}
         </Button>
         {productCount !== undefined && (
           <span className="font-body font-semibold text-sm text-white/60 tracking-wider">
-            {productCount} {locale === "es" ? (productCount === 1 ? "producto" : "productos") : (productCount === 1 ? "product" : "products")}
+            {productCount.toLocaleString(locale === "es" ? "es-MX" : "en-US")}{" "}
+            {locale === "es" ? "piezas en nuestra selección" : "pieces in our selection"}
           </span>
+        )}
+        {catalogHref && catalogLabel && (
+          <NextLink
+            href={catalogHref}
+            className="font-body text-sm text-white/80 hover:text-white tracking-wider underline underline-offset-4 decoration-brand-terracotta/60 hover:decoration-brand-terracotta transition-colors"
+          >
+            {catalogLabel} →
+          </NextLink>
         )}
       </motion.div>
     </div>

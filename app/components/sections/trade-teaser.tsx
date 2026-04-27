@@ -9,11 +9,11 @@ const content = {
   en: {
     badge: "For Design Professionals",
     title: "Your Specification Partner in Mexico",
-    subtitle: "Architects, designers, and builders: access authorized dealer pricing on 491+ products from 19 brands at Counter Cultures in San Miguel de Allende. Dedicated account management, specification support, and priority access to new collections.",
+    subtitle: "Architects, designers, and builders: access authorized dealer pricing across 19 brands and our 354,000+ SKU catalog. Dedicated account management, specification support, and priority access to new collections.",
     benefits: [
       "Preferred trade pricing on all 19 authorized brands",
       "Dedicated account manager and specification support",
-      "Access to 491+ products — Kohler, TOTO, Brizo, BLANCO, and more",
+      "Search the full 354,000+ SKU catalog — Kohler, TOTO, Brizo, BLANCO, and more",
       "Priority access to new collections and artisan commissions",
     ],
     cta: "Apply for Trade Access",
@@ -22,11 +22,11 @@ const content = {
   es: {
     badge: "Para Profesionales del Dise\u00f1o",
     title: "Tu Socio de Especificaci\u00f3n en M\u00e9xico",
-    subtitle: "Arquitectos, dise\u00f1adores y constructores: accede a precios de distribuidor autorizado en 491+ productos de 19 marcas en Counter Cultures, San Miguel de Allende. Gesti\u00f3n de cuenta dedicada, soporte de especificaci\u00f3n y acceso prioritario a nuevas colecciones.",
+    subtitle: "Arquitectos, dise\u00f1adores y constructores: accede a precios de distribuidor autorizado en las 19 marcas y nuestro cat\u00e1logo de m\u00e1s de 354,000 SKUs. Gesti\u00f3n de cuenta dedicada, soporte de especificaci\u00f3n y acceso prioritario a nuevas colecciones.",
     benefits: [
       "Precios trade preferenciales en las 19 marcas autorizadas",
       "Gerente de cuenta dedicado y soporte de especificaci\u00f3n",
-      "Acceso a 491+ productos — Kohler, TOTO, Brizo, BLANCO y m\u00e1s",
+      "Busca el catálogo completo de más de 354,000 SKUs — Kohler, TOTO, Brizo, BLANCO y m\u00e1s",
       "Acceso prioritario a nuevas colecciones y encargos artesanales",
     ],
     cta: "Solicitar Acceso Trade",

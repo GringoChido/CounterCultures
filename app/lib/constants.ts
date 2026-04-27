@@ -2,7 +2,7 @@ export const SITE_CONFIG = {
   name: "Counter Cultures",
   tagline: "Premium Kitchen, Bath & Hardware",
   description:
-    "San Miguel de Allende's premier kitchen, bath, and architectural hardware showroom. Authorized dealer for Kohler, TOTO, Brizo, BLANCO, and 15 more brands — plus Mexican artisan pieces. 633 curated products, sourced worldwide and delivered to your project.",
+    "San Miguel de Allende's destination for premium kitchen, bath, and architectural hardware. Authorized dealer for Kohler, TOTO, Brizo, BLANCO, and 15 more brands — plus Mexican artisan pieces. Search 354,000+ authorized SKUs or browse our curated selection. Factory-direct pricing, 24-hour quotes, delivered nationwide.",
   url: "https://countercultures.mx",
   showroom: {
     address: "Providencia, San Miguel de Allende, Guanajuato, Mexico",
@@ -37,7 +37,7 @@ export const NAV_LINKS = [
     href: "/our-story",
   },
   {
-    label: { en: "Insights", es: "Insights" },
+    label: { en: "Insights", es: "Perspectivas" },
     href: "/insights",
   },
   {
@@ -111,6 +111,38 @@ export const PRODUCT_CATEGORIES = {
 } as const;
 
 export type CategoryKey = keyof typeof PRODUCT_CATEGORIES;
+
+// Keywords used to deep-link subcategory pages into the full-catalog search.
+// Empty string means "no keyword filter" — just narrow by category.
+export const SUBCATEGORY_CATALOG_QUERY: Record<string, Record<string, string>> = {
+  bathroom: {
+    sinks: "sink",
+    faucets: "faucet",
+    bathtubs: "tub",
+    "tub-fillers": "tub filler",
+    spa: "spa",
+    toilets: "toilet",
+    showers: "shower",
+    accessories: "",
+    drains: "drain",
+    valves: "valve",
+  },
+  kitchen: {
+    sinks: "sink",
+    faucets: "faucet",
+    "range-hoods": "hood",
+    appliances: "",
+    "soap-dispensers": "soap",
+    "water-dispensers": "water dispenser",
+    "double-sinks": "double",
+    "pot-fillers": "pot filler",
+  },
+  hardware: {
+    "door-locks": "lock",
+    deadbolts: "deadbolt",
+    "pulls-hooks": "pull",
+  },
+};
 
 // Subcategory hero metadata for subcategory landing pages
 export const SUBCATEGORY_META: Record<string, Record<string, {

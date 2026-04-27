@@ -17,8 +17,8 @@ export const generateMetadata = async ({
     ? "Nuestra Historia — Counter Cultures desde 2004"
     : "Our Story — Counter Cultures Since 2004";
   const description = isEs
-    ? "Fundada en 2004 por Roger Williams, Counter Cultures lleva 20 años siendo el puente entre los mejores fabricantes mundiales de accesorios y los maestros artesanos de México en San Miguel de Allende."
-    : "Founded in 2004 by Roger Williams, Counter Cultures has spent 20 years bridging the world's finest fixture manufacturers and Mexico's master artisans in San Miguel de Allende.";
+    ? "Fundada en 2004 por Roger Williams en San Miguel de Allende. Distribuidor autorizado de Kohler, TOTO, Brizo, BLANCO y socio de los artesanos mexicanos del cobre, la cerámica y la piedra desde hace 20 años."
+    : "Founded in 2004 by Roger Williams in San Miguel de Allende. Authorized dealer for Kohler, TOTO, Brizo, BLANCO and partner to Mexican artisans of copper, ceramic, and stone for 20 years.";
 
   return {
     title,
@@ -71,8 +71,8 @@ const OurStoryPage = async ({ params }: OurStoryPageProps) => {
       ? "Nuestra Historia — Counter Cultures"
       : "Our Story — Counter Cultures",
     description: isEs
-      ? "Counter Cultures fue fundada en 2004 por Roger Williams en San Miguel de Allende, México. Durante 20 años ha sido el puente entre los mejores fabricantes mundiales de accesorios y los maestros artesanos de México."
-      : "Counter Cultures was founded in 2004 by Roger Williams in San Miguel de Allende, Mexico. For 20 years, it has bridged the world's finest fixture manufacturers and Mexico's master artisans.",
+      ? "Counter Cultures fue fundada en 2004 por Roger Williams en San Miguel de Allende, México. Durante 20 años ha sido distribuidor autorizado de las principales marcas internacionales de cocina, baño y herrajes — y socio de los artesanos mexicanos."
+      : "Counter Cultures was founded in 2004 by Roger Williams in San Miguel de Allende, Mexico. For 20 years, it has been an authorized dealer for the leading international kitchen, bath, and hardware brands — and partner to Mexican artisans.",
     url: `${BASE_URL}/${locale}/our-story`,
     mainEntity: {
       "@type": "Organization",
@@ -85,8 +85,8 @@ const OurStoryPage = async ({ params }: OurStoryPageProps) => {
         name: "Roger Williams",
         jobTitle: "Founder & Principal",
         description: isEs
-          ? "Roger Williams fundó Counter Cultures en 2004 después de trasladarse a San Miguel de Allende. Lleva casi dos décadas colaborando con artesanos mexicanos y representando las mejores marcas de accesorios del mundo."
-          : "Roger Williams founded Counter Cultures in 2004 after relocating to San Miguel de Allende. He has spent nearly two decades collaborating with Mexican artisans and representing the world's finest fixture brands.",
+          ? "Roger Williams fundó Counter Cultures en 2004 después de trasladarse a San Miguel de Allende. Lleva casi dos décadas colaborando con artesanos mexicanos y representando marcas internacionales autorizadas de cocina, baño y herrajes."
+          : "Roger Williams founded Counter Cultures in 2004 after relocating to San Miguel de Allende. He has spent nearly two decades collaborating with Mexican artisans and representing authorized international kitchen, bath, and hardware brands.",
         worksFor: {
           "@id": `${BASE_URL}/#organization`,
         },

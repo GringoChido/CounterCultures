@@ -81,7 +81,7 @@ const TradePage = async ({ params }: TradePageProps) => {
             name: "¿Qué beneficios incluye el Programa Trade?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Los miembros Trade reciben: precios exclusivos en las 12 marcas, soporte de especificaciones técnicas, cumplimiento prioritario de pedidos, un gerente de cuenta dedicado, acceso a presentaciones privadas en el showroom para clientes, y muestras de materiales para proyectos activos.",
+              text: "Los miembros Trade reciben: precios exclusivos en las 19 marcas autorizadas, soporte de especificaciones técnicas, cumplimiento prioritario de pedidos, un gerente de cuenta dedicado, acceso a presentaciones privadas en el showroom para clientes, y muestras de materiales para proyectos activos.",
             },
           },
           {
@@ -107,7 +107,7 @@ const TradePage = async ({ params }: TradePageProps) => {
             name: "What benefits are included in the Trade Program?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Trade members receive: exclusive pricing on all 12 brands, technical specification support, priority order fulfillment, a dedicated account manager, access to private showroom client presentations, and material samples for active projects.",
+              text: "Trade members receive: exclusive pricing across our 19 authorized brands, technical specification support, priority order fulfillment, a dedicated account manager, access to private showroom client presentations, and material samples for active projects.",
             },
           },
           {

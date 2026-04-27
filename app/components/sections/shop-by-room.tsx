@@ -9,21 +9,30 @@ const categories = [
   {
     title: { en: "Bathroom Fixtures", es: "Accesorios de Baño" },
     eyebrow: { en: "Explore", es: "Explorar" },
-    count: { en: "120+ curated pieces", es: "120+ piezas curadas" },
+    count: {
+      en: "Faucets · Sinks · Tubs · Toilets · Showers",
+      es: "Grifos · Lavabos · Bañeras · Sanitarios · Regaderas",
+    },
     href: "/shop/bathroom",
     image: "/images/home/browse-bathroom.webp",
   },
   {
     title: { en: "Kitchen Fixtures", es: "Accesorios de Cocina" },
     eyebrow: { en: "Explore", es: "Explorar" },
-    count: { en: "85+ curated pieces", es: "85+ piezas curadas" },
+    count: {
+      en: "Sinks · Faucets · Range Hoods · Appliances",
+      es: "Tarjas · Mezcladoras · Campanas · Electrodomésticos",
+    },
     href: "/shop/kitchen",
     image: "/images/home/browse-kitchen.webp",
   },
   {
     title: { en: "Door & Cabinet Hardware", es: "Chapas y Herrajes" },
     eyebrow: { en: "Explore", es: "Explorar" },
-    count: { en: "60+ curated pieces", es: "60+ piezas curadas" },
+    count: {
+      en: "Locks · Deadbolts · Pulls · Handles · Hooks",
+      es: "Chapas · Cerrojos · Jaladeras · Manijas · Ganchos",
+    },
     href: "/shop/hardware",
     image: "/images/home/browse-hardware.webp",
   },
@@ -40,8 +49,8 @@ const ShopByRoom = ({ locale: localeProp = "en" }: { locale?: string }) => {
         </h2>
         <p className="text-center font-body text-brand-stone mb-8 md:mb-12 max-w-2xl mx-auto">
           {locale === "en"
-            ? "491 premium pieces across kitchen, bath & architectural hardware — from 19 authorized brands and Mexican artisans. Available for order and delivery in Mexico."
-            : "491 piezas premium en cocina, baño y herrajes arquitectónicos — de 19 marcas autorizadas y artesanos mexicanos. Disponibles para pedido y entrega en México."}
+            ? "Kitchen, bath, and architectural hardware from 19 authorized brands and Mexican artisans. Search 354,000+ SKUs in the full catalog or browse our curated selection — delivered nationwide."
+            : "Cocina, baño y herrajes arquitectónicos de 19 marcas autorizadas y artesanos mexicanos. Busca más de 354,000 SKUs en el catálogo completo o explora nuestra selección curada — entrega en todo el país."}
         </p>
       </AnimatedSection>
 

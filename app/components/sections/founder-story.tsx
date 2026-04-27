@@ -8,8 +8,8 @@ const content = {
   en: {
     eyebrow: "Our Story",
     title: "Twenty Years of Impeccable Taste",
-    p1: "Counter Cultures is a premium kitchen, bath, and architectural hardware showroom in San Miguel de Allende, Mexico. In 2004, Roger Williams opened a small workshop here with a simple conviction: Mexico deserved access to the world\u2019s finest bath and kitchen design \u2014 and the world deserved to discover Mexico\u2019s extraordinary artisan tradition.",
-    p2: "Two decades later, Counter Cultures is the only showroom in the country where you can specify a Kohler smart toilet and a hand-hammered copper basin from a third-generation artisan in Santa Clara del Cobre \u2014 in the same visit.",
+    p1: "Counter Cultures is a premium kitchen, bath, and architectural hardware showroom in San Miguel de Allende, Mexico. In 2004, Roger Williams opened a small workshop here with a simple conviction: Mexico deserved direct access to the leading international bath and kitchen brands \u2014 and the world deserved to know Mexico\u2019s artisan tradition.",
+    p2: "Two decades later, you can specify a Kohler WASHLET and a hand-hammered copper basin from a third-generation artisan in Santa Clara del Cobre in the same visit \u2014 because the showroom was built around exactly that pairing.",
     p3: "We bridge two worlds. International precision and Mexican soul. Factory specifications and artisan intuition. That\u2019s not a marketing line. It\u2019s what we do every day.",
     readMore: "Read the Full Story",
     meetArtisans: "Meet Our Artisans",
@@ -17,8 +17,8 @@ const content = {
   es: {
     eyebrow: "Nuestra Historia",
     title: "Veinte A\u00f1os de Gusto Impecable",
-    p1: "Counter Cultures es un showroom premium de cocina, ba\u00f1o y herrajes arquitect\u00f3nicos en San Miguel de Allende, M\u00e9xico. En 2004, Roger Williams abri\u00f3 un peque\u00f1o taller aqu\u00ed con una convicci\u00f3n simple: M\u00e9xico merec\u00eda acceso al mejor dise\u00f1o de ba\u00f1o y cocina del mundo \u2014 y el mundo merec\u00eda descubrir la extraordinaria tradici\u00f3n artesanal de M\u00e9xico.",
-    p2: "Dos d\u00e9cadas despu\u00e9s, Counter Cultures es el \u00fanico showroom del pa\u00eds donde puedes especificar un sanitario inteligente Kohler y un lavabo de cobre martillado a mano por un artesano de tercera generaci\u00f3n en Santa Clara del Cobre \u2014 en la misma visita.",
+    p1: "Counter Cultures es un showroom premium de cocina, ba\u00f1o y herrajes arquitect\u00f3nicos en San Miguel de Allende, M\u00e9xico. En 2004, Roger Williams abri\u00f3 un peque\u00f1o taller aqu\u00ed con una convicci\u00f3n simple: M\u00e9xico merec\u00eda acceso directo a las principales marcas internacionales de ba\u00f1o y cocina \u2014 y el mundo merec\u00eda conocer la tradici\u00f3n artesanal de M\u00e9xico.",
+    p2: "Dos d\u00e9cadas despu\u00e9s, puedes especificar un WASHLET de Kohler y un lavabo de cobre martillado a mano por un artesano de tercera generaci\u00f3n de Santa Clara del Cobre en la misma visita \u2014 porque el showroom se construy\u00f3 alrededor de ese cruce.",
     p3: "Unimos dos mundos. Precisi\u00f3n internacional y alma mexicana. Especificaciones de f\u00e1brica e intuici\u00f3n artesanal. No es un eslogan. Es lo que hacemos todos los d\u00edas.",
     readMore: "Leer la Historia Completa",
     meetArtisans: "Conocer a Nuestros Artesanos",

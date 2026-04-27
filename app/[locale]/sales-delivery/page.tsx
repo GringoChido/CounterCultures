@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
+import { SITE_CONFIG } from "@/app/lib/constants";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -80,8 +81,8 @@ const SalesDeliveryPage = async ({ params }: PageProps) => {
             <li>{isEs ? "El procesamiento inicia al recibir la orden de compra y el depósito bancario" : "Processing begins upon receipt of purchase orders and bank deposits"}</li>
             <li>
               {isEs ? "Los clientes deben enviar comprobante por correo a " : "Customers must email proof of payment to "}
-              <a href="mailto:roger@countercultures.com.mx" className="text-brand-terracotta hover:underline">
-                roger@countercultures.com.mx
+              <a href={`mailto:${SITE_CONFIG.showroom.email}`} className="text-brand-terracotta hover:underline">
+                {SITE_CONFIG.showroom.email}
               </a>
             </li>
             <li>{isEs ? "El envío de mercancía toma de 4 a 6 semanas para su entrega" : "Merchandise shipment takes 4 to 6 weeks for delivery"}</li>
@@ -109,8 +110,8 @@ const SalesDeliveryPage = async ({ params }: PageProps) => {
           <div className="font-body text-sm text-brand-stone mt-8 pt-8 border-t border-brand-stone/10">
             <p>
               {isEs ? "Contacto" : "Contact"}:{" "}
-              <a href="mailto:roger@countercultures.com.mx" className="text-brand-terracotta hover:underline">
-                roger@countercultures.com.mx
+              <a href={`mailto:${SITE_CONFIG.showroom.email}`} className="text-brand-terracotta hover:underline">
+                {SITE_CONFIG.showroom.email}
               </a>
             </p>
           </div>

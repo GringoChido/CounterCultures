@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import NextLink from "next/link";
 
 interface CategoryCinematicHeroProps {
   eyebrow: string;
@@ -8,6 +9,8 @@ interface CategoryCinematicHeroProps {
   body: string;
   productCount: number;
   brandCount: number;
+  catalogCount: number;
+  catalogHref: string;
   locale: "en" | "es";
 }
 
@@ -17,11 +20,14 @@ const CategoryCinematicHero = ({
   body,
   productCount,
   brandCount,
+  catalogCount,
+  catalogHref,
   locale,
 }: CategoryCinematicHeroProps) => {
   const scrollToGrid = () => {
     document.getElementById("subcategories")?.scrollIntoView({ behavior: "smooth" });
   };
+  const numFmt = locale === "es" ? "es-MX" : "en-US";
 
   return (
     <div className="relative z-10 w-full pb-12 md:pb-20 lg:pb-24 px-5 sm:px-8 md:px-16 max-w-5xl">
@@ -56,25 +62,30 @@ const CategoryCinematicHero = ({
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, delay: 0.6 }}
-        className="mt-6 flex items-center gap-4"
+        className="mt-6 flex flex-wrap items-center gap-2"
       >
         <span className="px-3 py-1.5 bg-white/10 backdrop-blur-sm text-white/80 font-body text-xs tracking-wider">
-          {productCount} {locale === "en" ? "Curated Pieces" : "Piezas Curadas"} · {brandCount} {locale === "en" ? "Premium Brands" : "Marcas Premium"}
+          {productCount.toLocaleString(numFmt)} {locale === "en" ? "in our selection" : "en nuestra selección"} · {brandCount} {locale === "en" ? "brands" : "marcas"}
         </span>
+        {catalogCount > 0 && (
+          <span className="px-3 py-1.5 bg-brand-copper/20 backdrop-blur-sm text-white font-body text-xs tracking-wider">
+            {catalogCount.toLocaleString(numFmt)} {locale === "en" ? "in the full catalog" : "en el catálogo completo"}
+          </span>
+        )}
       </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, delay: 0.75 }}
-        className="mt-8"
+        className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3"
       >
         <button
           onClick={scrollToGrid}
           className="group inline-flex items-center gap-3 font-body text-sm font-medium text-white tracking-wider uppercase cursor-pointer"
         >
           <span className="relative">
-            {locale === "en" ? "Explore the Collection" : "Explora la Colección"}
+            {locale === "en" ? "Explore the Selection" : "Explora la Selección"}
             <span className="absolute -bottom-0.5 left-0 w-full h-px bg-brand-terracotta/60 transition-colors duration-300 group-hover:bg-brand-terracotta" />
           </span>
           <svg
@@ -87,6 +98,19 @@ const CategoryCinematicHero = ({
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
         </button>
+
+        {catalogCount > 0 && (
+          <NextLink
+            href={catalogHref}
+            className="group inline-flex items-center gap-3 font-body text-sm font-medium text-white/80 hover:text-white tracking-wider uppercase transition-colors"
+          >
+            <span className="relative">
+              {locale === "en" ? "Search the full catalog" : "Buscar catálogo completo"}
+              <span className="absolute -bottom-0.5 left-0 w-full h-px bg-brand-terracotta/40 transition-colors duration-300 group-hover:bg-brand-terracotta" />
+            </span>
+            <span aria-hidden>→</span>
+          </NextLink>
+        )}
       </motion.div>
     </div>
   );

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { ShopCatalog } from "./shop-catalog";
@@ -175,8 +174,8 @@ const ShopPage = async ({ params }: ShopPageProps) => {
             </h1>
             <p className="mt-5 font-body text-base md:text-lg text-brand-stone max-w-2xl leading-relaxed">
               {isEs
-                ? "Piezas seleccionadas a mano para nuestro showroom en San Miguel de Allende — y el catálogo autorizado completo de cada marca que manejamos, con precio de fábrica y cotización en 24 horas hábiles."
-                : "Hand-picked fixtures for our San Miguel de Allende showroom — plus the full authorized catalog from every brand we carry, with factory-direct pricing and a 24-hour quote turnaround."}
+                ? "Piezas seleccionadas a mano para nuestro showroom en San Miguel, más el catálogo autorizado completo de cada marca que manejamos. Precio de fábrica. Cotización en 24 horas."
+                : "Hand-picked fixtures for our San Miguel showroom, plus the full authorized catalog from every brand we carry. Factory-direct pricing. 24-hour quotes."}
             </p>
             {fullStats.total > 0 && (
               <HeroSearch
@@ -186,53 +185,6 @@ const ShopPage = async ({ params }: ShopPageProps) => {
             )}
           </div>
         </section>
-
-        {/* Full catalog CTA band — directly under the hero so visitors
-            searching for a specific brand or SKU have a big, obvious
-            entry point into the Vault. */}
-        {fullStats.total > 0 && (
-          <section className="bg-brand-charcoal text-white py-14 md:py-20 border-b border-brand-stone/20">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <div className="grid lg:grid-cols-[1.5fr_auto] gap-8 items-end">
-                <div>
-                  <span className="font-body font-semibold text-[11px] tracking-[0.25em] uppercase text-brand-copper">
-                    {isEs ? "¿No ves lo que buscas?" : "Don't see what you're looking for?"}
-                  </span>
-                  <h2 className="mt-3 font-display text-3xl md:text-5xl font-light tracking-wide leading-[1.05]">
-                    {isEs ? (
-                      <>
-                        Busca entre las{" "}
-                        <span className="italic text-brand-copper">
-                          {fullStats.total.toLocaleString("es-MX")} piezas
-                        </span>{" "}
-                        del catálogo completo.
-                      </>
-                    ) : (
-                      <>
-                        Search all{" "}
-                        <span className="italic text-brand-copper">
-                          {fullStats.total.toLocaleString("en-US")} pieces
-                        </span>{" "}
-                        in the full catalog.
-                      </>
-                    )}
-                  </h2>
-                  <p className="mt-4 font-body text-base text-white/70 max-w-xl">
-                    {isEs
-                      ? `${fullStats.brandCount} marcas autorizadas. Busca por marca, modelo o acabado. Solicita cotización directa con tiempos de entrega confirmados.`
-                      : `${fullStats.brandCount} authorized brands. Search by brand, model number, or finish. Request a direct quote with confirmed lead times.`}
-                  </p>
-                </div>
-                <Link
-                  href={`/${locale}/shop/catalog`}
-                  className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-brand-copper text-white font-body font-semibold text-sm tracking-wide hover:bg-brand-copper/90 transition-colors whitespace-nowrap"
-                >
-                  {isEs ? "Abrir catálogo completo" : "Open full catalog"} →
-                </Link>
-              </div>
-            </div>
-          </section>
-        )}
 
         {/* Recently Specified */}
         <RecentlySpecifiedRow
@@ -250,17 +202,17 @@ const ShopPage = async ({ params }: ShopPageProps) => {
         <section className="py-14 md:py-20 bg-white">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-10">
             <p className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-copper uppercase">
-              {isEs ? "En el showroom" : "On the floor"}
+              {isEs ? "Nuestra selección" : "Our Selection"}
             </p>
             <h2 className="mt-3 font-display text-3xl md:text-4xl font-light tracking-wide text-brand-charcoal leading-[1.1]">
               {isEs
-                ? "En exhibición en nuestro showroom de San Miguel."
-                : "On display in our San Miguel showroom."}
+                ? "Vetadas, fotografiadas, listas para especificar."
+                : "Vetted, photographed, ready to spec."}
             </h2>
             <p className="mt-3 font-body text-sm text-brand-stone max-w-xl">
               {isEs
-                ? "Una selección curada con fotografía propia, opciones de acabados y fichas técnicas — las piezas que tenemos en piso para que las veas y toques en persona."
-                : "A hand-picked selection with our own photography, finish options, and full specs — the pieces we keep on the floor so you can see and touch them in person."}
+                ? "Piezas con páginas de detalle completas, opciones de acabado y fotografía propia. Visita el showroom en San Miguel para ver y tocar la selección que tenemos en piso."
+                : "Pieces with full detail pages, finish options, and our own photography. Visit the San Miguel showroom to see and touch the subset we keep on the floor."}
             </p>
           </div>
           <ShopCatalog initialProducts={products} />

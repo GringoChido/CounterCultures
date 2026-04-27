@@ -32,7 +32,7 @@ const timeline = [
     year: "2016",
     title: "TOTO, Brizo & Beyond",
     description:
-      "The showroom expands to include TOTO, Brizo, BLANCO, California Faucets, and Sun Valley Bronze — becoming the most complete fixture destination in Mexico's colonial heartland.",
+      "The showroom expands to include TOTO, Brizo, BLANCO, California Faucets, and Sun Valley Bronze — adding nine more authorized dealerships in three years.",
   },
   {
     year: "2020",
@@ -60,8 +60,8 @@ export const OurStoryContent = () => {
         title={locale === "es" ? "Donde Dos Mundos Se Encuentran" : "Where Two Worlds Meet"}
         description={
           locale === "es"
-            ? "Durante 20 años, Counter Cultures ha sido el puente entre los mejores fabricantes de accesorios del mundo y los maestros artesanos de México."
-            : "For 20 years, Counter Cultures has been the bridge between the world's finest fixture manufacturers and Mexico's master artisans."
+            ? "Distribuidor autorizado de Kohler, TOTO, Brizo, BLANCO y otras marcas internacionales — y socio de los artesanos mexicanos desde 2004."
+            : "Authorized dealer for Kohler, TOTO, Brizo, BLANCO, and other international brands — and partner to Mexican artisans since 2004."
         }
         imageSrc="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=75&auto=format"
         ctaLabel={locale === "es" ? "Visita el Showroom" : "Visit the Showroom"}
@@ -88,16 +88,16 @@ export const OurStoryContent = () => {
                 </p>
                 <p>
                   He started Counter Cultures to solve that problem: a showroom
-                  where an architect could spec a TOTO Washlet for a guest bath,
-                  a BLANCO Silgranit for the kitchen, and then walk next door to
-                  commission a hand-hammered copper basin from a third-generation
-                  coppersmith. No other showroom in Mexico offered that range.
+                  where an architect could spec a TOTO WASHLET for a guest bath,
+                  a BLANCO Silgranit for the kitchen, and then commission a
+                  hand-hammered copper basin from a third-generation coppersmith
+                  — all in one visit.
                 </p>
                 <p>
-                  Twenty years later, the mission hasn&apos;t changed. Counter
-                  Cultures remains the only place in the region where world-class
-                  engineering and artisanal soul sit side by side — because Roger
-                  still believes the best spaces need both.
+                  Twenty years later, the mission hasn&apos;t changed. Authorized
+                  dealer for the world&apos;s leading bath, kitchen, and hardware
+                  brands; long-standing partner to Mexican artisans across
+                  Guanajuato. Roger still believes the best spaces need both.
                 </p>
               </div>
             </AnimatedSection>

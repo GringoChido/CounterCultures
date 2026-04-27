@@ -4,9 +4,11 @@ import Image from "next/image";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { SubcategoryGrid } from "@/app/components/sections/subcategory-grid";
+import { HowItWorksBand } from "@/app/components/sections/how-it-works-band";
 import { CategoryCinematicHero } from "./category-hero-client";
 import { BrandRibbon } from "./brand-ribbon-client";
 import { getProducts } from "@/app/lib/sheets";
+import { getCategoryCounts } from "@/app/lib/products-full";
 import { PRODUCT_CATEGORIES, SUBCATEGORY_META, BRANDS } from "@/app/lib/constants";
 import type { CategoryKey } from "@/app/lib/constants";
 
@@ -24,16 +26,16 @@ const HERO_IMAGES: Record<string, string> = {
 
 const HERO_COPY: Record<string, { en: string; es: string }> = {
   bathroom: {
-    en: "Where ritual meets craft. From hand-hammered copper vessels shaped by third-generation artesanos to TOTO's whisper-quiet WASHLET technology — every piece in our baño collection is chosen to transform your daily routine into something worth savoring.",
-    es: "Donde el ritual se encuentra con el oficio. Desde lavabos de cobre martillados a mano por artesanos de tercera generación hasta la tecnología silenciosa WASHLET de TOTO — cada pieza de nuestra colección de baño fue elegida para transformar tu rutina diaria en algo que vale la pena disfrutar.",
+    en: "From hand-hammered copper basins by San Miguel artisans to TOTO's WASHLET technology. Every bathroom piece we carry, in one showroom.",
+    es: "Desde lavabos de cobre martillados a mano por artesanos de San Miguel hasta la tecnología WASHLET de TOTO. Cada pieza de baño que manejamos, en un solo showroom.",
   },
   kitchen: {
-    en: "The heart of the home, engineered for the hands that feed it. BLANCO granite composite sinks that shrug off red wine, Brizo faucets with Diamond Seal technology, and Bluestar ranges trusted by chefs on both sides of the border.",
-    es: "El corazón del hogar, diseñado para las manos que lo alimentan. Tarjas BLANCO de granito compuesto que resisten cualquier cosa, grifos Brizo con tecnología Diamond Seal y estufas Bluestar en las que confían chefs a ambos lados de la frontera.",
+    en: "BLANCO sinks, Brizo faucets, Bluestar ranges. Built for the way you actually cook.",
+    es: "Tarjas BLANCO, grifos Brizo, estufas Bluestar. Hechas para la forma en que realmente cocinas.",
   },
   hardware: {
-    en: "The first thing your guests touch — and the last thing they forget. Hand-cast silicon bronze by Sun Valley Bronze, solid brass by Emtek, and wrought-iron jaladeras forged in the workshops of San Miguel de Allende.",
-    es: "Lo primero que tocan tus invitados — y lo último que olvidan. Bronce al silicio fundido a mano por Sun Valley Bronze, latón sólido de Emtek y jaladeras de hierro forjado en los talleres de San Miguel de Allende.",
+    en: "Hand-cast bronze by Sun Valley, Emtek precision, jaladeras forged in San Miguel. The first thing your guests touch — and the last thing they forget.",
+    es: "Bronce fundido a mano por Sun Valley, la precisión de Emtek, jaladeras forjadas en San Miguel. Lo primero que tocan tus invitados — y lo último que olvidan.",
   },
 };
 
@@ -44,8 +46,8 @@ const CATEGORY_TITLES: Record<string, { en: string; es: string }> = {
 };
 
 const CATEGORY_EYEBROW: Record<string, { en: string; es: string }> = {
-  bathroom: { en: "The Baño Collection", es: "Colección de Baño" },
-  kitchen: { en: "The Kitchen Collection", es: "Colección de Cocina" },
+  bathroom: { en: "Bathroom Collection", es: "Colección de Baño" },
+  kitchen: { en: "Kitchen Collection", es: "Colección de Cocina" },
   hardware: { en: "Architectural Hardware", es: "Herrajes Arquitectónicos" },
 };
 
@@ -130,7 +132,11 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
 
   const meta = categoryMeta[category];
   const catConfig = PRODUCT_CATEGORIES[category as CategoryKey];
-  const products = await getProducts({ category });
+  const [products, categoryCounts] = await Promise.all([
+    getProducts({ category }),
+    getCategoryCounts().catch(() => ({ bathroom: 0, kitchen: 0, hardware: 0 })),
+  ]);
+  const fullCatalogCount = categoryCounts[category as CategoryKey] ?? 0;
 
   // Compute subcategory counts from already-fetched products (no extra API calls)
   const countMap: Record<string, number> = {};
@@ -211,6 +217,8 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
             body={heroCopy}
             productCount={products.length}
             brandCount={uniqueBrands}
+            catalogCount={fullCatalogCount}
+            catalogHref={`/${locale}/shop/catalog?category=${category}`}
             locale={lang}
           />
         </section>
@@ -220,12 +228,19 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
           category={category}
           subcategories={subcategoryCards}
           locale={lang}
+          catalogHref={`/${locale}/shop/catalog?category=${category}`}
+          catalogCount={fullCatalogCount}
         />
 
-        {/* SECTION 3: Brand Ribbon */}
+        {/* SECTION 3: How it works trust band */}
+        <HowItWorksBand locale={lang} variant="light" />
+
+        {/* SECTION 4: Brand Ribbon */}
         <BrandRibbon
           brands={categoryBrands.map((b) => ({ name: b.name, slug: b.slug }))}
           locale={lang}
+          category={category}
+          categoryLabel={catConfig.label[lang]}
         />
       </main>
       <Footer locale={lang} />

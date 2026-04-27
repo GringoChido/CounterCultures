@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
+import { SITE_CONFIG } from "@/app/lib/constants";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -62,8 +63,8 @@ const ReturnsWarrantyPage = async ({ params }: PageProps) => {
           </p>
           <p className="font-body text-base text-brand-charcoal/80 leading-relaxed mb-4">
             {isEs ? "Contacto: " : "Contact: "}
-            <a href="mailto:roger@countercultures.com.mx" className="text-brand-terracotta hover:underline">
-              roger@countercultures.com.mx
+            <a href={`mailto:${SITE_CONFIG.showroom.email}`} className="text-brand-terracotta hover:underline">
+              {SITE_CONFIG.showroom.email}
             </a>
             {" o "}
             <a href="tel:4151548375" className="text-brand-terracotta hover:underline">
@@ -144,8 +145,8 @@ const ReturnsWarrantyPage = async ({ params }: PageProps) => {
             </p>
             <p className="mt-2">
               {isEs ? "Contacto" : "Contact"}:{" "}
-              <a href="mailto:equipo@countercultures.com.mx" className="text-brand-terracotta hover:underline">
-                equipo@countercultures.com.mx
+              <a href={`mailto:${SITE_CONFIG.showroom.email}`} className="text-brand-terracotta hover:underline">
+                {SITE_CONFIG.showroom.email}
               </a>
               {" | "}
               <a href="tel:4151548375" className="text-brand-terracotta hover:underline">

@@ -23,8 +23,8 @@ export const ProjectsContent = () => {
         eyebrow={t("Our Work", "Nuestro Trabajo")}
         title={t("Projects", "Proyectos")}
         description={t(
-          "Homes, hotels, and restaurants across Mexico — each one a collaboration between world-class brands, local artisans, and visionary architects.",
-          "Casas, hoteles y restaurantes en todo México — cada uno una colaboración entre marcas de clase mundial, artesanos locales y arquitectos visionarios."
+          "Homes, hotels, and restaurants across Mexico — each one a collaboration between authorized brands, Mexican artisans, and the architects who specified them.",
+          "Casas, hoteles y restaurantes en todo México — cada uno una colaboración entre marcas autorizadas, artesanos mexicanos y los arquitectos que los especificaron."
         )}
         imageSrc="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920&q=75&auto=format"
         ctaLabel={t("Start Your Project", "Comienza Tu Proyecto")}
@@ -104,8 +104,8 @@ export const ProjectsContent = () => {
             </h2>
             <p className="mt-4 font-body text-base text-white/60 max-w-xl mx-auto leading-relaxed">
               {t(
-                "Whether it's a single bathroom or a 50-room hotel, we'll help you specify the perfect fixtures — from the world's finest brands and Mexico's master artisans.",
-                "Ya sea un solo baño o un hotel de 50 habitaciones, te ayudaremos a especificar los accesorios perfectos — de las mejores marcas del mundo y los maestros artesanos de México."
+                "Whether it's a single bathroom or a 50-room hotel, we'll help you specify the right fixtures — from our authorized brands and a network of Mexican artisans.",
+                "Ya sea un solo baño o un hotel de 50 habitaciones, te ayudamos a especificar los accesorios adecuados — de nuestras marcas autorizadas y una red de artesanos mexicanos."
               )}
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
