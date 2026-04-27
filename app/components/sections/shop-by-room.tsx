@@ -45,12 +45,12 @@ const ShopByRoom = ({ locale: localeProp = "en" }: { locale?: string }) => {
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <AnimatedSection>
         <h2 className="text-center font-display text-3xl md:text-5xl font-normal tracking-wide text-brand-charcoal mb-4">
-          {locale === "en" ? "Browse Our Collection" : "Explora Nuestra Colección"}
+          {locale === "en" ? "Explore Our Collection" : "Explora Nuestra Colección"}
         </h2>
         <p className="text-center font-body text-brand-stone mb-8 md:mb-12 max-w-2xl mx-auto">
           {locale === "en"
-            ? "Kitchen, bath, and architectural hardware from 19 authorized brands and Mexican artisans. Search 354,000+ SKUs in the full catalog or browse our curated selection — delivered nationwide."
-            : "Cocina, baño y herrajes arquitectónicos de 19 marcas autorizadas y artesanos mexicanos. Busca más de 354,000 SKUs en el catálogo completo o explora nuestra selección curada — entrega en todo el país."}
+            ? "Kitchen, bathroom, and architectural hardware from 19 authorized brands and Mexican artisans. Browse over 354,000 SKUs in the full catalog or explore our curated selection — delivery nationwide."
+            : "Cocina, baño y herrajes arquitectónicos de 19 marcas autorizadas y artesanos mexicanos. Explora más de 354,000 SKUs en el catálogo completo o nuestra selección curada — entrega en todo el país."}
         </p>
       </AnimatedSection>
 

@@ -14,26 +14,26 @@ interface HeroSlide {
   image: string;
 }
 
-// Hero slides: 4 strategic slides — lifestyle hook, bathroom, kitchen, hardware
+// Hero slides: 4 strategic slides — destination/positioning, bathroom, kitchen, hardware
 const slides: HeroSlide[] = [
   {
     eyebrow: {
-      en: "San Miguel de Allende's Premier Showroom",
-      es: "El Showroom Premier de San Miguel de Allende",
+      en: "San Miguel de Allende",
+      es: "San Miguel de Allende",
     },
     title: {
-      en: "Where Design\nMeets Craft",
-      es: "Donde el Diseño\nEncuentra el Oficio",
+      en: "The destination.",
+      es: "El destino.",
     },
     subtitle: {
-      en: "19 international brands. Mexican artisan makers. One showroom.",
-      es: "19 marcas internacionales. Artesanos mexicanos. Un showroom.",
+      en: "Premium kitchen, bath, and architectural hardware. International brands. Mexican artisans. One showroom — delivering nationwide.",
+      es: "Cocina, baño y herrajes arquitectónicos de lujo. Marcas internacionales. Artesanos mexicanos. Un solo showroom — entrega en todo el país.",
     },
     cta: {
       label: { en: "Explore the Collection", es: "Explorar la Colección" },
       href: "#browse",
     },
-    image: "/images/hero/bathtub.webp",
+    image: "/Assets/home-hero/san-miguel.webp",
   },
   {
     eyebrow: {
