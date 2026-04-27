@@ -33,6 +33,9 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# throwaway one-off scripts (local utilities, not for production)
+scripts/.gitignored/
+
 # vercel
 .vercel
 
