@@ -4,14 +4,20 @@ import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { Hero } from "@/app/components/sections/hero";
 import { BrandStatement } from "@/app/components/sections/brand-statement";
-import { BrandBar } from "@/app/components/sections/brand-bar";
 import { ShopByRoom } from "@/app/components/sections/shop-by-room";
+import { FeaturedBrandsBand } from "@/app/components/sections/featured-brands-band";
+import { HowItWorksBand } from "@/app/components/sections/how-it-works-band";
+import { CatalogDepthBand } from "@/app/components/sections/catalog-depth-band";
+import { TwoPathsBand } from "@/app/components/sections/two-paths-band";
 import { FounderStory } from "@/app/components/sections/founder-story";
 import { ProjectGallery } from "@/app/components/sections/project-gallery";
 import { TradeTeaser } from "@/app/components/sections/trade-teaser";
 import { Testimonial } from "@/app/components/sections/testimonial";
 import { ContactCTA } from "@/app/components/sections/contact-cta";
 import { NewsletterStrip } from "@/app/components/sections/newsletter-strip";
+import { getFeaturedBrands } from "@/app/lib/featured-brands";
+import { getBrandCounts, getCatalogStats } from "@/app/lib/products-full";
+import { getBrands } from "@/app/lib/brand-kit-sheets";
 
 const BASE_URL = "https://countercultures.mx";
 
@@ -75,6 +81,15 @@ const HomePage = async ({ params }: HomePageProps) => {
   setRequestLocale(locale);
   const lang = locale as "en" | "es";
   const isEs = lang === "es";
+
+  // Data fetches for the new featured-brands + catalog-depth bands.
+  // Each is fault-tolerant — bands render nothing if data is unavailable.
+  const [featuredBrands, brandCounts, allBrands, catalogStats] = await Promise.all([
+    getFeaturedBrands().catch(() => []),
+    getBrandCounts().catch(() => []),
+    getBrands().catch(() => []),
+    getCatalogStats().catch(() => ({ total: 0, brandCount: 0 })),
+  ]);
 
   // AEO: FAQ structured data — answers common questions AI assistants surface
   const faqJsonLd = {
@@ -200,10 +215,25 @@ const HomePage = async ({ params }: HomePageProps) => {
         <Hero locale={lang} />
         <BrandStatement locale={lang} />
         <ShopByRoom locale={lang} />
-        <BrandBar locale={lang} />
+        <FeaturedBrandsBand locale={lang} brands={featuredBrands} />
+        <CatalogDepthBand
+          locale={lang}
+          brandCounts={brandCounts}
+          allBrands={allBrands}
+          totalCatalog={catalogStats.total}
+        />
+        <HowItWorksBand
+          locale={lang}
+          eyebrow={{ en: "From inquiry to install", es: "De la consulta a la instalación" }}
+          headline={{
+            en: "Three moves. One team. Zero middlemen.",
+            es: "Tres pasos. Un equipo. Cero intermediarios.",
+          }}
+        />
         <FounderStory locale={lang} />
         <Testimonial locale={lang} />
         <ProjectGallery locale={lang} />
+        <TwoPathsBand locale={lang} />
         <TradeTeaser locale={lang} />
         <ContactCTA locale={lang} />
         <NewsletterStrip locale={lang} />

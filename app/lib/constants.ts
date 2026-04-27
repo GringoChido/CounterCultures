@@ -21,11 +21,12 @@ export const SITE_CONFIG = {
 export const NAV_LINKS = [
   {
     label: { en: "Shop", es: "Tienda" },
-    href: "/shop",
+    href: "/shop/catalog",
     children: [
       { label: { en: "Bathroom", es: "Baño" }, href: "/shop/bathroom" },
       { label: { en: "Kitchen", es: "Cocina" }, href: "/shop/kitchen" },
       { label: { en: "Door Hardware", es: "Chapas y Herrajes" }, href: "/shop/hardware" },
+      { label: { en: "Search the full catalog", es: "Buscar catálogo completo" }, href: "/shop/catalog" },
     ],
   },
   {

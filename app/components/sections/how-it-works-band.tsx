@@ -3,6 +3,10 @@ import { Clock, Wallet, Truck } from "lucide-react";
 interface HowItWorksBandProps {
   locale: "en" | "es";
   variant?: "light" | "dark";
+  /** Optional override for the eyebrow text (one per locale). */
+  eyebrow?: { en: string; es: string };
+  /** Optional override for the headline (one per locale). */
+  headline?: { en: string; es: string };
 }
 
 const COPY = {
@@ -46,9 +50,16 @@ const COPY = {
 
 const ICONS = [Clock, Wallet, Truck] as const;
 
-const HowItWorksBand = ({ locale, variant = "light" }: HowItWorksBandProps) => {
+const HowItWorksBand = ({
+  locale,
+  variant = "light",
+  eyebrow,
+  headline,
+}: HowItWorksBandProps) => {
   const t = COPY[locale];
   const isDark = variant === "dark";
+  const eyebrowText = eyebrow ? eyebrow[locale] : t.eyebrow;
+  const headlineText = headline ? headline[locale] : t.headline;
 
   return (
     <section
@@ -65,10 +76,10 @@ const HowItWorksBand = ({ locale, variant = "light" }: HowItWorksBandProps) => {
               isDark ? "text-brand-copper" : "text-brand-terracotta"
             }`}
           >
-            {t.eyebrow}
+            {eyebrowText}
           </p>
           <h2 className="font-display text-2xl md:text-4xl font-light leading-tight">
-            {t.headline}
+            {headlineText}
           </h2>
         </div>
 
