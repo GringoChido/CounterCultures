@@ -33,7 +33,7 @@ const slides: HeroSlide[] = [
       label: { en: "Explore the Collection", es: "Explorar la Colección" },
       href: "#browse",
     },
-    image: "/Assets/home-hero/san-miguel.webp",
+    image: "/Assets/home-hero/storefront.webp",
   },
   {
     eyebrow: {
