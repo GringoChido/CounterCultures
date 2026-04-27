@@ -7,6 +7,7 @@ import { Search } from "lucide-react";
 interface HeroSearchProps {
   locale: "en" | "es";
   catalogSize: number;
+  onDark?: boolean;
 }
 
 const T = {
@@ -22,7 +23,7 @@ const T = {
   },
 };
 
-const HeroSearch = ({ locale, catalogSize }: HeroSearchProps) => {
+const HeroSearch = ({ locale, catalogSize, onDark = false }: HeroSearchProps) => {
   const t = T[locale];
   const router = useRouter();
   const [q, setQ] = useState("");
@@ -57,7 +58,11 @@ const HeroSearch = ({ locale, catalogSize }: HeroSearchProps) => {
           {t.cta} →
         </button>
       </div>
-      <p className="mt-2 text-[11px] font-body text-brand-stone">
+      <p
+        className={`mt-2 text-[11px] font-body ${
+          onDark ? "text-white/75" : "text-brand-stone"
+        }`}
+      >
         {t.hint(catalogSize.toLocaleString(locale === "es" ? "es-MX" : "en-US"))}
       </p>
     </form>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
@@ -154,41 +155,60 @@ const ShopPage = async ({ params }: ShopPageProps) => {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <Header locale={locale} />
-      <main className="pt-16 md:pt-20">
-        {/* Hero with search */}
-        <section className="py-14 md:py-24 bg-brand-linen border-b border-brand-stone/10">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <span className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-stone uppercase">
-              {isEs ? "La Colección" : "The Collection"}
-            </span>
-            <h1 className="mt-3 font-display text-4xl md:text-6xl font-light tracking-wide text-brand-charcoal leading-[1.05] max-w-4xl">
-              {isEs ? (
-                <>
-                  La cocina, el baño y el herraje{" "}
-                  <span className="italic text-brand-copper">
-                    que los arquitectos realmente especifican.
-                  </span>
-                </>
-              ) : (
-                <>
-                  The kitchen, bath, and hardware{" "}
-                  <span className="italic text-brand-copper">
-                    architects actually specify.
-                  </span>
-                </>
+      <main>
+        {/* Cinematic full-bleed hero */}
+        <section className="relative min-h-[80vh] md:min-h-[88vh] flex items-end overflow-hidden">
+          <Image
+            src="/Assets/shop/shop-hero.jpg"
+            alt={
+              isEs
+                ? "Showroom de Counter Cultures — accesorios de baño, cocina y herrajes en San Miguel de Allende"
+                : "Counter Cultures showroom — bath, kitchen, and hardware fixtures in San Miguel de Allende"
+            }
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+          {/* Two-stop gradient: deep charcoal at the bottom for text legibility,
+              fading toward the top so the photo reads as architecture, not chrome. */}
+          <div className="absolute inset-0 bg-gradient-to-t from-brand-charcoal/95 via-brand-charcoal/55 to-brand-charcoal/15" />
+
+          <div className="relative z-10 w-full pt-24 md:pt-32 pb-12 md:pb-20">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <span className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-copper uppercase">
+                {isEs ? "La Colección" : "The Collection"}
+              </span>
+              <h1 className="mt-3 font-display text-4xl md:text-6xl font-light tracking-wide text-white leading-[1.05] max-w-4xl">
+                {isEs ? (
+                  <>
+                    La cocina, el baño y el herraje{" "}
+                    <span className="italic text-brand-copper">
+                      que los arquitectos realmente especifican.
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    The kitchen, bath, and hardware{" "}
+                    <span className="italic text-brand-copper">
+                      architects actually specify.
+                    </span>
+                  </>
+                )}
+              </h1>
+              <p className="mt-5 font-body text-base md:text-lg text-white/80 max-w-2xl leading-relaxed">
+                {isEs
+                  ? "Piezas seleccionadas a mano para nuestro showroom en San Miguel, más el catálogo autorizado completo de cada marca que manejamos. Precio de fábrica. Cotización en 24 horas."
+                  : "Hand-picked fixtures for our San Miguel showroom, plus the full authorized catalog from every brand we carry. Factory-direct pricing. 24-hour quotes."}
+              </p>
+              {fullStats.total > 0 && (
+                <HeroSearch
+                  locale={lang}
+                  catalogSize={fullStats.total}
+                  onDark
+                />
               )}
-            </h1>
-            <p className="mt-5 font-body text-base md:text-lg text-brand-stone max-w-2xl leading-relaxed">
-              {isEs
-                ? "Piezas seleccionadas a mano para nuestro showroom en San Miguel, más el catálogo autorizado completo de cada marca que manejamos. Precio de fábrica. Cotización en 24 horas."
-                : "Hand-picked fixtures for our San Miguel showroom, plus the full authorized catalog from every brand we carry. Factory-direct pricing. 24-hour quotes."}
-            </p>
-            {fullStats.total > 0 && (
-              <HeroSearch
-                locale={lang}
-                catalogSize={fullStats.total}
-              />
-            )}
+            </div>
           </div>
         </section>
 
