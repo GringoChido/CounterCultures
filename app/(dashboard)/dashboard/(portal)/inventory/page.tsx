@@ -16,12 +16,25 @@ import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/sta
 
 type SortBy = "product" | "location" | "onhand_desc" | "onhand_asc" | "in_date_desc";
 
+type LocationUsage =
+  | "internal"
+  | "view"
+  | "supplier"
+  | "customer"
+  | "transit"
+  | "inventory"
+  | "production"
+  | "unknown";
+
 interface InventoryRow {
   id: string;
   productId: string;
   productName: string;
   locationId: string;
   locationName: string;
+  locationCompleteName: string;
+  locationUsage: LocationUsage;
+  locationCompany: string;
   onHand: number;
   reserved: number;
   available: number;
@@ -31,7 +44,10 @@ interface InventoryRow {
 
 interface LocationSummary {
   name: string;
+  completeName: string;
   locationId: string;
+  usage: LocationUsage;
+  company: string;
   productCount: number;
   totalUnits: number;
 }
@@ -65,13 +81,24 @@ const columns = [
       </span>
     ),
   }),
-  columnHelper.accessor("locationName", {
+  columnHelper.accessor("locationCompleteName", {
     header: "Location",
-    cell: (info) => (
-      <span className="text-xs text-dash-text-secondary line-clamp-1">
-        {info.getValue() || "—"}
-      </span>
-    ),
+    cell: (info) => {
+      const r = info.row.original;
+      const path = info.getValue() || r.locationName;
+      return (
+        <div className="flex flex-col">
+          <span className="text-xs text-dash-text line-clamp-1" title={path}>
+            {path || "—"}
+          </span>
+          {r.locationCompany && (
+            <span className="text-[10px] text-dash-text-muted line-clamp-1">
+              {r.locationCompany}
+            </span>
+          )}
+        </div>
+      );
+    },
   }),
   columnHelper.accessor("onHand", {
     header: "On hand",
@@ -252,41 +279,62 @@ const InventoryPage = () => {
             </button>
           </div>
 
-          {/* Location chips */}
+          {/* Location chips — grouped by owning company so the supply-chain
+              split (Counter Cultures warehouse vs Laredo consolidators) is
+              immediately visible. Only "internal" locations show by default;
+              partner/transit/scrap buckets are filtered out at the data layer. */}
           <div className="mb-4">
             <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-dash-text-secondary mb-2">
               <MapPin className="w-3 h-3" />
-              Locations
+              Stock locations · {summary.byLocation.length} active
             </div>
             <div className="flex gap-2 overflow-x-auto pb-2">
               <button
                 onClick={() => setLocationId("")}
-                className={`shrink-0 px-3 py-2 border text-xs rounded transition-colors ${
+                className={`shrink-0 px-3 py-2 border text-xs rounded transition-colors text-left ${
                   !locationId
                     ? "bg-dash-accent text-white border-dash-accent"
                     : "bg-dash-surface text-dash-text-secondary border-dash-border hover:border-dash-accent"
                 }`}
               >
-                All locations ({summary.totalProducts} SKUs)
+                <div className="font-medium text-[11px]">All locations</div>
+                <div className="text-[10px] opacity-70 mt-0.5">
+                  {summary.totalProducts} SKU · {fmtNum(summary.totalUnits)} units
+                </div>
               </button>
-              {summary.byLocation.map((l) => (
-                <button
-                  key={l.locationId || l.name}
-                  onClick={() => setLocationId(l.locationId)}
-                  className={`shrink-0 px-3 py-2 border text-xs rounded transition-colors text-left ${
-                    locationId === l.locationId
-                      ? "bg-dash-accent text-white border-dash-accent"
-                      : "bg-dash-surface text-dash-text-secondary border-dash-border hover:border-dash-accent"
-                  }`}
-                >
-                  <div className="font-medium text-[11px] line-clamp-1 max-w-[180px]">
-                    {l.name || "Unknown"}
-                  </div>
-                  <div className="text-[10px] opacity-70 mt-0.5">
-                    {l.productCount} SKU · {fmtNum(l.totalUnits)} units
-                  </div>
-                </button>
-              ))}
+              {summary.byLocation.map((l) => {
+                const active = locationId === l.locationId;
+                // Tone the chip by owning company so Counter Cultures own
+                // warehouse looks distinct from Laredo consolidators at a glance.
+                const accent = active
+                  ? "bg-dash-accent text-white border-dash-accent"
+                  : l.company === "Counter Cultures"
+                    ? "bg-brand-sage/5 text-dash-text border-brand-sage/40 hover:border-brand-sage"
+                    : "bg-amber-50/40 text-dash-text border-amber-200 hover:border-amber-400";
+                return (
+                  <button
+                    key={l.locationId || l.name}
+                    onClick={() => setLocationId(l.locationId)}
+                    className={`shrink-0 px-3 py-2 border text-xs rounded transition-colors text-left ${accent}`}
+                    title={l.completeName || l.name}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-medium text-[11px] line-clamp-1 max-w-[180px]">
+                        {l.completeName || l.name || "Unknown"}
+                      </span>
+                    </div>
+                    <div className="text-[10px] opacity-70 mt-0.5">
+                      {l.company || "—"} · {l.productCount} SKU ·{" "}
+                      {fmtNum(l.totalUnits)} units
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="text-[10px] text-dash-text-muted mt-1">
+              Showing real warehouse stock (internal locations). Virtual
+              buckets — vendor/customer/transit/scrap — are excluded from
+              totals so SKU and unit counts reflect "we actually have it."
             </div>
           </div>
         </>

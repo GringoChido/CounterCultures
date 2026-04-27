@@ -768,7 +768,21 @@ export interface OdooStockQuant {
   product_uom_id: string;
 }
 
+export interface OdooStockLocation {
+  [key: string]: string;
+  id: string;
+  name: string;
+  complete_name: string;
+  /** internal | view | supplier | customer | transit | inventory | production */
+  usage: string;
+  company_id: string;
+  warehouse_id: string;
+  location_id: string;
+  active: string;
+}
+
 const stockQuantsCache: Cache<OdooStockQuant> = { data: null, ts: 0 };
+const stockLocationsCache: Cache<OdooStockLocation> = { data: null, ts: 0 };
 
 export const getOdooStockQuants = async (): Promise<OdooStockQuant[]> => {
   if (fresh(stockQuantsCache)) return stockQuantsCache.data!;
@@ -777,31 +791,42 @@ export const getOdooStockQuants = async (): Promise<OdooStockQuant[]> => {
   return stockQuantsCache.data;
 };
 
+export const getOdooStockLocations = async (): Promise<OdooStockLocation[]> => {
+  if (fresh(stockLocationsCache)) return stockLocationsCache.data!;
+  stockLocationsCache.data = await readSheet<OdooStockLocation>("Odoo_Stock_Locations");
+  stockLocationsCache.ts = Date.now();
+  return stockLocationsCache.data;
+};
+
+export type LocationUsage =
+  | "internal"
+  | "view"
+  | "supplier"
+  | "customer"
+  | "transit"
+  | "inventory"
+  | "production"
+  | "unknown";
+
 export interface InventoryRow {
   id: string;
   productId: string;
   productName: string;
   locationId: string;
   locationName: string;
+  /** Full hierarchical name like "WH/Stock" or "TGR/Stock". */
+  locationCompleteName: string;
+  /** Odoo location.usage — distinguishes real stock from virtual containers. */
+  locationUsage: LocationUsage;
+  /** Owning company — surfaces multi-warehouse split (WH = Counter Cultures,
+   *  TGR = Laredo consolidator, RFLAD = R&F LLC). */
+  locationCompany: string;
   onHand: number;
   reserved: number;
   available: number;
   inDate: string; // when it arrived
   lotId: string;
 }
-
-const toInventoryRow = (q: OdooStockQuant): InventoryRow => ({
-  id: q.id,
-  productId: q.product_id_id,
-  productName: q.product_id || "",
-  locationId: q.location_id_id,
-  locationName: q.location_id || "",
-  onHand: num(q.quantity),
-  reserved: num(q.reserved_quantity),
-  available: num(q.available_quantity) || num(q.quantity) - num(q.reserved_quantity),
-  inDate: (q.in_date || "").slice(0, 10),
-  lotId: q.lot_id || "",
-});
 
 export interface InventorySummary {
   totalUnits: number;
@@ -811,7 +836,10 @@ export interface InventorySummary {
   outOfStock: number;
   byLocation: Array<{
     name: string;
+    completeName: string;
     locationId: string;
+    usage: LocationUsage;
+    company: string;
     productCount: number;
     totalUnits: number;
   }>;
@@ -820,6 +848,9 @@ export interface InventorySummary {
 export interface InventoryListFilters {
   q?: string;
   locationId?: string;
+  /** Filter by location usage class — defaults to "internal" so the page
+   *  shows real warehouse stock, not virtual partner/transit/scrap buckets. */
+  usage?: LocationUsage | "all";
   lowStockOnly?: boolean;
   outOfStockOnly?: boolean;
   sort?: "product" | "location" | "onhand_desc" | "onhand_asc" | "in_date_desc";
@@ -841,6 +872,7 @@ export const getInventoryList = async (
   const {
     q = "",
     locationId,
+    usage = "internal",
     lowStockOnly,
     outOfStockOnly,
     sort = "product",
@@ -848,29 +880,89 @@ export const getInventoryList = async (
     offset = 0,
   } = filters;
 
-  const quants = await getOdooStockQuants();
-  const rows = quants.map(toInventoryRow);
+  const [quants, locations] = await Promise.all([
+    getOdooStockQuants(),
+    getOdooStockLocations().catch(() => [] as OdooStockLocation[]),
+  ]);
 
-  // Summary
-  const locAgg = new Map<string, { name: string; locationId: string; productSet: Set<string>; totalUnits: number }>();
+  // Build location lookup keyed by Odoo integer ID.
+  const locMeta = new Map<string, OdooStockLocation>();
+  for (const l of locations) {
+    if (l.id) locMeta.set(l.id, l);
+  }
+
+  const isUsage = (s: string): LocationUsage => {
+    const v = s.trim().toLowerCase();
+    if (
+      v === "internal" || v === "view" || v === "supplier" || v === "customer" ||
+      v === "transit" || v === "inventory" || v === "production"
+    ) {
+      return v as LocationUsage;
+    }
+    return "unknown";
+  };
+
+  const rows: InventoryRow[] = quants.map((q) => {
+    const meta = locMeta.get(q.location_id_id);
+    return {
+      id: q.id,
+      productId: q.product_id_id,
+      productName: q.product_id || "",
+      locationId: q.location_id_id,
+      locationName: q.location_id || "",
+      locationCompleteName: meta?.complete_name || q.location_id || "",
+      locationUsage: meta ? isUsage(meta.usage) : "unknown",
+      locationCompany: meta?.company_id || "",
+      onHand: num(q.quantity),
+      reserved: num(q.reserved_quantity),
+      available: num(q.available_quantity) || num(q.quantity) - num(q.reserved_quantity),
+      inDate: (q.in_date || "").slice(0, 10),
+      lotId: q.lot_id || "",
+    };
+  });
+
+  // Summary aggregates over INTERNAL locations only — partner/transit/scrap
+  // buckets aren't real "we have it" stock and would confuse the totals.
+  // Caller can switch usage="all" to see everything.
+  const summarySource = rows.filter((r) => r.locationUsage === "internal");
+  const locAgg = new Map<
+    string,
+    {
+      name: string;
+      completeName: string;
+      locationId: string;
+      usage: LocationUsage;
+      company: string;
+      productSet: Set<string>;
+      totalUnits: number;
+    }
+  >();
   const uniqueProducts = new Set<string>();
   let lowStock = 0;
   let outOfStock = 0;
-  for (const r of rows) {
+  for (const r of summarySource) {
     uniqueProducts.add(r.productId);
     if (r.onHand <= 0) outOfStock++;
     else if (r.onHand < 5) lowStock++;
     const key = r.locationId || r.locationName;
     let l = locAgg.get(key);
     if (!l) {
-      l = { name: r.locationName, locationId: r.locationId, productSet: new Set(), totalUnits: 0 };
+      l = {
+        name: r.locationName,
+        completeName: r.locationCompleteName,
+        locationId: r.locationId,
+        usage: r.locationUsage,
+        company: r.locationCompany,
+        productSet: new Set(),
+        totalUnits: 0,
+      };
       locAgg.set(key, l);
     }
     l.productSet.add(r.productId);
     l.totalUnits += r.onHand;
   }
   const summary: InventorySummary = {
-    totalUnits: rows.reduce((s, r) => s + r.onHand, 0),
+    totalUnits: summarySource.reduce((s, r) => s + r.onHand, 0),
     totalProducts: uniqueProducts.size,
     totalLocations: locAgg.size,
     lowStock,
@@ -878,7 +970,10 @@ export const getInventoryList = async (
     byLocation: [...locAgg.values()]
       .map((l) => ({
         name: l.name,
+        completeName: l.completeName,
         locationId: l.locationId,
+        usage: l.usage,
+        company: l.company,
         productCount: l.productSet.size,
         totalUnits: l.totalUnits,
       }))
@@ -887,6 +982,7 @@ export const getInventoryList = async (
 
   // Filter
   let filtered = rows;
+  if (usage !== "all") filtered = filtered.filter((r) => r.locationUsage === usage);
   if (locationId) filtered = filtered.filter((r) => r.locationId === locationId);
   if (lowStockOnly) filtered = filtered.filter((r) => r.onHand > 0 && r.onHand < 5);
   if (outOfStockOnly) filtered = filtered.filter((r) => r.onHand <= 0);
