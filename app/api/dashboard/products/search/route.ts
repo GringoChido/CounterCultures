@@ -33,6 +33,7 @@ export const GET = async (req: NextRequest) => {
         : undefined;
   const activeOnly = sp.get("active") === "true";
   const saleOnly = sp.get("sale") === "true";
+  const inStockOnly = sp.get("inStock") === "true";
   const limit = Math.min(Math.max(Number(sp.get("limit") ?? 100), 1), 500);
   const offset = Math.max(Number(sp.get("offset") ?? 0), 0);
   const includeFacets = sp.get("facets") === "true";
@@ -55,6 +56,7 @@ export const GET = async (req: NextRequest) => {
       category,
       activeOnly,
       saleOnly,
+      inStockOnly,
       limit,
       offset,
       sort,

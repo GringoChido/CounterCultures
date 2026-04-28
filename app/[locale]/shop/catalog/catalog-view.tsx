@@ -63,6 +63,8 @@ const T = {
     sortPriceAsc: "Price low → high",
     sortPriceDesc: "Price high → low",
     inShowroom: "In Showroom",
+    inStock: "In stock",
+    inStockOnly: "In stock only",
     specifiedCount: (n: number) => `${n} project${n === 1 ? "" : "s"}`,
     visualSearch: "Find by photo",
     searchPlaceholder: "Search by brand, model, or name…",
@@ -110,6 +112,8 @@ const T = {
     sortPriceAsc: "Precio menor → mayor",
     sortPriceDesc: "Precio mayor → menor",
     inShowroom: "En showroom",
+    inStock: "En stock",
+    inStockOnly: "Solo en stock",
     specifiedCount: (n: number) => `${n} proyecto${n === 1 ? "" : "s"}`,
     visualSearch: "Buscar por foto",
     searchPlaceholder: "Busca por marca, modelo o nombre…",
@@ -180,6 +184,9 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
   const [offset, setOffset] = useState(Number(searchParams.get("offset") ?? 0));
 
   const [brandFilter, setBrandFilter] = useState("");
+  const [inStockOnly, setInStockOnly] = useState(
+    searchParams.get("inStock") === "true"
+  );
   const [result, setResult] = useState<SearchResponse | null>(null);
   const [isPending, startTransition] = useTransition();
   const [selected, setSelected] = useState<ProductFull | null>(null);
@@ -198,6 +205,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
     if (sortKey !== "most_specified") params.set("sort", sortKey);
     if (viewMode !== "grid") params.set("view", viewMode);
     if (offset > 0) params.set("offset", String(offset));
+    if (inStockOnly) params.set("inStock", "true");
     const qs = params.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
   }, [query, brand, category, sortKey, viewMode, offset, router, pathname]);
@@ -210,7 +218,10 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
   // Fetch
   useEffect(() => {
     const needsSearch =
-      query.trim().length >= MIN_QUERY || brand || category !== "all";
+      query.trim().length >= MIN_QUERY ||
+      brand ||
+      category !== "all" ||
+      inStockOnly;
     if (!needsSearch) {
       setResult(null);
       return;
@@ -221,6 +232,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
         if (query.trim().length >= MIN_QUERY) p.set("q", query.trim());
         if (brand) p.set("brand", brand);
         if (category !== "all") p.set("category", category);
+        if (inStockOnly) p.set("inStock", "true");
         p.set("sort", sortKey);
         p.set("limit", String(PAGE_SIZE));
         p.set("offset", String(offset));
@@ -230,7 +242,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
       });
     }, 180);
     return () => clearTimeout(id);
-  }, [query, brand, category, sortKey, offset]);
+  }, [query, brand, category, sortKey, offset, inStockOnly]);
 
   const filteredBrands = useMemo(() => {
     if (!brandFilter) return brandCounts;
@@ -478,6 +490,19 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
                   <X className="w-3 h-3" />
                 </button>
               )}
+              <button
+                type="button"
+                onClick={() => setInStockOnly((v) => !v)}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 border rounded text-[11px] font-medium cursor-pointer transition-colors ${
+                  inStockOnly
+                    ? "bg-brand-sage/15 text-brand-sage border-brand-sage/40 hover:bg-brand-sage/25"
+                    : "bg-white text-brand-stone border-brand-stone/20 hover:border-brand-sage/40"
+                }`}
+                aria-pressed={inStockOnly}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${inStockOnly ? "bg-brand-sage" : "bg-brand-stone/30"}`} />
+                {t.inStockOnly}
+              </button>
             </div>
 
             {/* Grid or table */}
@@ -657,6 +682,13 @@ const ProductCard = ({ product, locale, inProject, onOpen, onAdd, t }: ProductCa
           <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-1 bg-brand-charcoal/90 text-white font-body text-[10px] tracking-[0.1em] uppercase backdrop-blur-sm">
             <MapPin className="w-3 h-3" />
             {t.inShowroom}
+          </span>
+        )}
+        {product.inStock && (
+          <span
+            className={`absolute ${product.inShowroom ? "top-9" : "top-2"} left-2 inline-flex items-center gap-1 px-2 py-1 bg-brand-sage/95 text-white font-body text-[10px] tracking-[0.1em] uppercase backdrop-blur-sm`}
+          >
+            {t.inStock}
           </span>
         )}
         {product.projectCount && product.projectCount > 1 ? (

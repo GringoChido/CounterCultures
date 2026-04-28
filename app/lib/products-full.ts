@@ -14,10 +14,56 @@
  * > brand-contains) is both faster and more correct.
  */
 import { google } from "googleapis";
+import {
+  getOdooStockQuants,
+  getOdooStockLocations,
+} from "./odoo-sheets";
 
 const SHEET_ID = process.env.GOOGLE_SHEETS_ID_PRODUCTS_FULL ?? "";
 const TAB = "Products";
 const TTL_MS = 30 * 60 * 1000;
+
+/**
+ * Builds a Map<product_id, totalQty> by summing stock quants across all
+ * INTERNAL-usage locations (CC's own warehouse + Laredo consolidators).
+ * Excludes virtual buckets (vendors, customers, transit, scrap) so the
+ * count reflects real CC-owned inventory the customer could ship.
+ *
+ * Returns an empty Map if either mirror table is empty/unreachable —
+ * the page renders the catalog without "In stock" badges, never errors.
+ */
+const buildStockMap = async (): Promise<Map<string, number>> => {
+  const out = new Map<string, number>();
+  try {
+    const [quants, locations] = await Promise.all([
+      getOdooStockQuants(),
+      getOdooStockLocations().catch(() => []),
+    ]);
+    // Build a quick set of internal-location IDs.
+    const internalLocIds = new Set<string>();
+    for (const l of locations) {
+      if (l.usage === "internal" && l.id) internalLocIds.add(l.id);
+    }
+    for (const q of quants) {
+      // If we couldn't load locations, fall back to summing all quants —
+      // imperfect but better than zero stock everywhere.
+      if (internalLocIds.size > 0 && !internalLocIds.has(q.location_id_id)) {
+        continue;
+      }
+      const productId = q.product_id_id;
+      if (!productId) continue;
+      const qty = parseFloat(q.quantity) || 0;
+      if (qty <= 0) continue;
+      out.set(productId, (out.get(productId) ?? 0) + qty);
+    }
+  } catch (err) {
+    console.warn(
+      "[products-full] stock map build failed; rendering without stock badges:",
+      err instanceof Error ? err.message : err
+    );
+  }
+  return out;
+};
 
 export type ProductCategory = "bathroom" | "kitchen" | "hardware";
 
@@ -32,6 +78,14 @@ export interface ProductFull {
   uom: string;
   active: boolean;
   saleOk: boolean;
+  /** Total units across CC's internal warehouse locations
+   *  (CC own warehouse + Laredo consolidators). Surfaced as
+   *  the "In stock" badge on the public catalog. Optional so
+   *  manually-constructed ProductFull objects (preview UIs,
+   *  fixtures) don't have to provide it. */
+  stockQty?: number;
+  /** Convenience flag — `stockQty > 0`. Optional same as above. */
+  inStock?: boolean;
 }
 
 interface IndexedProduct extends ProductFull {
@@ -113,13 +167,19 @@ const load = async (): Promise<Cache> => {
     hardware: 0,
   };
 
+  // Stock map fetched in parallel with the product rows so the join is
+  // hot when we walk the rows.
+  const stockMap = await buildStockMap();
+
   for (const row of data) {
     const name = (row[iName] ?? "").toString();
     const sku = (row[iSku] ?? "").toString();
     const brand = (row[iBrand] ?? "").toString();
     const category = normalizeCategory((row[iCat] ?? "").toString());
+    const id = (row[iId] ?? "").toString();
+    const stockQty = stockMap.get(id) ?? 0;
     const p: IndexedProduct = {
-      id: (row[iId] ?? "").toString(),
+      id,
       name,
       sku,
       brand,
@@ -129,6 +189,8 @@ const load = async (): Promise<Cache> => {
       uom: (row[iUom] ?? "Units").toString(),
       active: (row[iActive] ?? "").toString() === "true",
       saleOk: (row[iSaleOk] ?? "").toString() === "true",
+      stockQty,
+      inStock: stockQty > 0,
       _sku: sku.toLowerCase(),
       _name: name.toLowerCase(),
       _brand: brand.toLowerCase(),
@@ -193,6 +255,8 @@ export interface SearchOptions {
   category?: ProductCategory | "all";
   activeOnly?: boolean;
   saleOnly?: boolean;
+  /** Filter to products with current internal-warehouse stock > 0. */
+  inStockOnly?: boolean;
   limit?: number;
   offset?: number;
   sort?: SearchSort;
@@ -227,6 +291,8 @@ const stripIndex = (p: IndexedProduct): ProductFull => ({
   uom: p.uom,
   active: p.active,
   saleOk: p.saleOk,
+  stockQty: p.stockQty,
+  inStock: p.inStock,
 });
 
 // Scored substring match. Higher score = better match.
@@ -257,6 +323,7 @@ export const searchProducts = async (
     category = "all",
     activeOnly,
     saleOnly,
+    inStockOnly,
     limit = 100,
     offset = 0,
     sort = "relevance",
@@ -282,6 +349,7 @@ export const searchProducts = async (
       if (category !== "all" && p.category !== category) continue;
       if (activeOnly && !p.active) continue;
       if (saleOnly && !p.saleOk) continue;
+      if (inStockOnly && !p.inStock) continue;
       scored.push({ p, s });
     }
     if (sort === "most_specified" && specScores) {
@@ -309,6 +377,7 @@ export const searchProducts = async (
       if (category !== "all" && p.category !== category) return false;
       if (activeOnly && !p.active) return false;
       if (saleOnly && !p.saleOk) return false;
+      if (inStockOnly && !p.inStock) return false;
       return true;
     });
     if (sort === "most_specified" && specScores) {
@@ -344,6 +413,18 @@ export const searchProducts = async (
     elapsedMs: Date.now() - t0,
     cacheAgeMs: Date.now() - c.ts,
   };
+};
+
+/**
+ * Returns the number of catalog products currently in stock at any
+ * internal warehouse (CC's own + Laredo consolidators). Used by hero
+ * banners + filter chip counters.
+ */
+export const getInStockCount = async (): Promise<number> => {
+  const c = await getCache();
+  let count = 0;
+  for (const p of c.products) if (p.inStock) count += 1;
+  return count;
 };
 
 export const getBrandCounts = async (): Promise<BrandCount[]> => {
