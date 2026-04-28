@@ -56,7 +56,13 @@ export interface QuoteData {
   subtotal: number;
   shipping: number;
   grandTotal: number;
-  depositAmount: number; // 50% of grandTotal by default
+  /**
+   * Default deposit on the quote. CC's standard policy is 70% of the
+   * grand total; some brands/orders require more (set per-deal in the
+   * Pipeline sheet via a `deposit_pct` column when present, otherwise
+   * falls back to the 70% default).
+   */
+  depositAmount: number;
   docNumber: string;
   issueDate: string; // ISO date (yyyy-mm-dd)
   validUntil: string;
@@ -118,13 +124,28 @@ export const loadQuoteData = async (
   const shipping = items.reduce((s, i) => s + i.shipping, 0);
   const grandTotal = subtotal + shipping;
 
+  // Per-deal override on Pipeline row, e.g. a higher deposit pct for a
+  // brand/customer that demands more upfront. Stored as decimal (e.g.
+  // "0.85" for 85%) or whole number percent ("85") — accept both.
+  const dealRow = deal as unknown as Record<string, string>;
+  const rawPct = (dealRow.deposit_pct ?? "").trim();
+  const parsedPct = Number(rawPct);
+  let depositPct = 0.7; // CC's standard 70% minimum
+  if (Number.isFinite(parsedPct) && parsedPct > 0) {
+    depositPct = parsedPct > 1 ? parsedPct / 100 : parsedPct;
+    // Floor at 70% — Roger's stated minimum. Per-deal override can only
+    // go ABOVE the floor, never below.
+    if (depositPct < 0.7) depositPct = 0.7;
+    if (depositPct > 1) depositPct = 1;
+  }
+
   return {
     deal,
     items,
     subtotal,
     shipping,
     grandTotal,
-    depositAmount: Math.round(grandTotal * 0.5 * 100) / 100,
+    depositAmount: Math.round(grandTotal * depositPct * 100) / 100,
     docNumber: quoteNumber(dealId),
     issueDate: new Date().toISOString().slice(0, 10),
     validUntil: addDays(15),

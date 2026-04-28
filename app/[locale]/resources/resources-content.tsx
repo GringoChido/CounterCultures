@@ -116,8 +116,8 @@ const content = {
           es: "¿Qué métodos de pago aceptan?",
         },
         a: {
-          en: "We accept bank transfers (SPEI), credit cards (Visa, Mastercard, Amex), and cash (MXN or USD). For orders over MXN 50,000, we offer a 50/50 payment split — 50% at order, 50% upon delivery. Trade Program members may qualify for net-30 terms on approved credit.",
-          es: "Aceptamos transferencias bancarias (SPEI), tarjetas de crédito (Visa, Mastercard, Amex) y efectivo (MXN o USD). Para pedidos mayores a MXN 50,000, ofrecemos un esquema 50/50 — 50% al ordenar, 50% a la entrega.",
+          en: "We accept bank transfers (SPEI), credit cards (Visa, Mastercard, Amex), and cash (MXN or USD). Standard terms are 70% deposit on order confirmation (or more for some brands and orders) and the balance when the order is built and ready to ship — paid before delivery. Some pieces are in stock at the showroom. Trade Program members may qualify for net-30 terms on approved credit.",
+          es: "Aceptamos transferencias bancarias (SPEI), tarjetas de crédito (Visa, Mastercard, Amex) y efectivo (MXN o USD). Los términos estándar son 70% de anticipo al confirmar el pedido (o más en ciertas marcas y órdenes) y el saldo cuando el pedido está listo para enviarse — pagado antes de la entrega. Algunas piezas están en showroom. Miembros del programa Trade pueden calificar para términos de crédito a 30 días.",
         },
       },
     ],

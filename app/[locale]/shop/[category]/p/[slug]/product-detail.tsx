@@ -62,9 +62,12 @@ const ProductDetail = ({
     .map((img, i) => ({ img, i }))
     .filter(({ i }) => !thumbErrors.has(i));
 
+  // High-value items use the deposit-only checkout flow (pay deposit now,
+  // balance requested when the order is built and ready to ship). Deposit
+  // is 70% per Roger's stated minimum (was 30% — that figure was wrong).
   const isHighValue = product.price > 50000;
-  const depositPercent = isHighValue ? 30 : undefined;
-  const displayAmount = isHighValue ? Math.round(product.price * 0.3) : product.price;
+  const depositPercent = isHighValue ? 70 : undefined;
+  const displayAmount = isHighValue ? Math.round(product.price * 0.7) : product.price;
 
   const handleCheckout = async () => {
     setCheckoutLoading(true);

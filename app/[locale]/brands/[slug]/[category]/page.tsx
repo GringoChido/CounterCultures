@@ -341,9 +341,9 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
                     </div>
                   </div>
                   <div className="p-4 bg-brand-copper text-white">
-                    <div className="font-display text-2xl font-light">50%</div>
+                    <div className="font-display text-2xl font-light">70%</div>
                     <div className="mt-1 text-[10px] tracking-[0.2em] uppercase">
-                      {isEs ? "Depósito" : "Deposit"}
+                      {isEs ? "Anticipo mín." : "Min. deposit"}
                     </div>
                   </div>
                 </div>

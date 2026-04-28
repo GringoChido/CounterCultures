@@ -62,7 +62,7 @@ const PaymentMethodsPage = async ({ params }: PageProps) => {
           </p>
           <ul className="font-body text-base text-brand-charcoal/80 list-disc pl-6 space-y-2 mb-4">
             <li>{isEs ? "Pagos seguros procesados por Stripe" : "Secure payments processed by Stripe"}</li>
-            <li>{isEs ? "Artículos de alto valor: reserve con 30% de anticipo" : "High-value items: reserve with a 30% deposit"}</li>
+            <li>{isEs ? "Anticipo desde 70% para confirmar el pedido (varía según marca y orden)" : "Deposit from 70% to confirm the order (varies by brand and order)"}</li>
             <li>{isEs ? "Confirmación instantánea por correo electrónico" : "Instant email confirmation"}</li>
           </ul>
 

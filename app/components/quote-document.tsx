@@ -144,7 +144,7 @@ const QuoteDocument = ({
               <span>{fmtMxn(grandTotal)}</span>
             </div>
             <div className="flex justify-between py-1.5 text-xs text-[#6B6B6B] mt-1">
-              <span>50% deposit</span>
+              <span>Deposit (70%)</span>
               <span>{fmtMxn(depositAmount)}</span>
             </div>
             <p className="mt-1 text-[10px] text-[#999] text-right">
@@ -160,11 +160,11 @@ const QuoteDocument = ({
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
               <p className="font-['Cormorant',serif] text-lg text-[#1a1a1a]">
-                Ready to proceed? Pay 50% deposit to confirm.
+                Ready to proceed? Pay the deposit to confirm.
               </p>
               <p className="text-xs text-[#6B6B6B] mt-1">
-                Secure payment via Stripe. Remaining 50% due upon arrival,
-                before delivery.
+                Secure payment via Stripe. Balance is requested when the
+                order is built and ready to ship — paid before delivery.
               </p>
             </div>
             <a
@@ -186,8 +186,10 @@ const QuoteDocument = ({
             Payment terms
           </p>
           <p className="text-[#6B6B6B]">
-            50% deposit on order confirmation; balance due upon arrival and
-            before delivery. Pesos via wire transfer, USD via Stripe link.
+            Deposit of 70% (or more, depending on brand and order) on
+            confirmation. Balance requested when the order is ready to
+            ship; paid before delivery. Pesos via wire transfer, USD via
+            Stripe link.
           </p>
         </div>
         <div>

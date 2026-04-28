@@ -16,15 +16,15 @@ const COPY = {
     items: [
       {
         title: "24-hour quote",
-        body: "Send a piece, a SKU, or a list. We confirm price, lead time, and finishes within one business day.",
+        body: "Send a piece, a SKU, or a list. We confirm price, lead time, and finishes within one business day. Some pieces are in stock at the showroom; most ship factory-direct.",
       },
       {
-        title: "50% deposit",
-        body: "We place the order direct with the manufacturer. Balance due before delivery.",
+        title: "Deposit to start",
+        body: "Once you approve the quote, a deposit of 70% (or more, depending on the brand and order) reserves the order. We place it direct with the manufacturer the same day.",
       },
       {
-        title: "We deliver",
-        body: "Factory-direct shipping to your project across Mexico. White-glove on request.",
+        title: "Balance when ready",
+        body: "When the order is built and ready to ship, we send the balance request. After balance clears we deliver — factory-direct across Mexico, white-glove on request.",
       },
     ],
   },
@@ -34,15 +34,15 @@ const COPY = {
     items: [
       {
         title: "Cotización en 24 horas",
-        body: "Envíanos una pieza, un SKU o una lista. Confirmamos precio, tiempo de entrega y acabados en un día hábil.",
+        body: "Envíanos una pieza, un SKU o una lista. Confirmamos precio, tiempo de entrega y acabados en un día hábil. Algunas piezas están en showroom; la mayoría se envían directo de fábrica.",
       },
       {
-        title: "50% de anticipo",
-        body: "Hacemos el pedido directo con el fabricante. El saldo se cubre antes de la entrega.",
+        title: "Anticipo para iniciar",
+        body: "Al aprobar la cotización, un anticipo desde 70% (o más, según la marca y el pedido) reserva la orden. La colocamos directo con el fabricante el mismo día.",
       },
       {
-        title: "Entregamos",
-        body: "Envío directo de fábrica a tu proyecto en todo México. Servicio premium bajo solicitud.",
+        title: "Saldo al estar listo",
+        body: "Cuando el pedido está listo para enviarse, te solicitamos el saldo. Una vez liquidado, entregamos — directo de fábrica en toda la República. Servicio premium bajo solicitud.",
       },
     ],
   },
