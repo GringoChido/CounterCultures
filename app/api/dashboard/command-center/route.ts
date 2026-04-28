@@ -9,8 +9,9 @@ import {
 
 export const GET = async () => {
   try {
-    const [invoices, orders, purchases, inventory, payments] = await Promise.all([
+    const [invoices, vendorBills, orders, purchases, inventory, payments] = await Promise.all([
       getInvoiceList({ moveType: "customer", limit: 1 }),
+      getInvoiceList({ moveType: "vendor", limit: 1 }),
       getOrderList({ limit: 1 }),
       getPurchaseOrderList({ limit: 1 }),
       getInventoryList({ limit: 1 }),
@@ -18,6 +19,7 @@ export const GET = async () => {
     ]);
 
     const { aging } = invoices;
+    const { aging: apAging } = vendorBills;
     const { pipeline: orderPipeline } = orders;
     const { pipeline: poPipeline } = purchases;
     const { summary: inventorySummary } = inventory;
@@ -29,6 +31,12 @@ export const GET = async () => {
         overdueCount: aging.overdueCount,
         invoiceCount: aging.invoiceCount,
         ninetyPlusByCurrency: aging["90+"],
+      },
+      ap: {
+        openByCurrency: apAging.totalOpen,
+        overdueCount: apAging.overdueCount,
+        billCount: apAging.invoiceCount,
+        ninetyPlusByCurrency: apAging["90+"],
       },
       orders: {
         staleQuoteCount: orderPipeline.staleQuotes.count,

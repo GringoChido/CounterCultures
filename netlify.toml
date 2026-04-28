@@ -16,3 +16,10 @@
 # post-write freshness; this catches changes Roger makes directly in Odoo.
 [functions."odoo-sync"]
   schedule = "0 * * * *"
+
+# Currency awareness: pull today's USD→MXN rate from Frankfurter (ECB-
+# sourced, free, no token). Daily at 17:00 UTC — after ECB publishes
+# around 16:00 CET on weekdays. Falls back gracefully when the source
+# is offline (page just hides the equivalent display).
+[functions."fx-sync"]
+  schedule = "0 17 * * *"

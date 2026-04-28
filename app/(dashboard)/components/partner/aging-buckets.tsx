@@ -1,6 +1,7 @@
 "use client";
 
 import { Calendar } from "lucide-react";
+import { MoneyEquiv } from "@/app/(dashboard)/components/money/money-equiv";
 
 interface AgingShape {
   current: Record<string, number>;
@@ -60,13 +61,17 @@ const AgingBuckets = ({ aging, mode }: AgingBucketsProps) => {
 
   return (
     <section className="bg-dash-surface border border-dash-border p-5 rounded">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
         <h2 className="font-display text-sm uppercase tracking-wider text-dash-text-secondary flex items-center gap-2">
           <Calendar className="w-4 h-4" />
           {mode === "customer" ? "AR aging" : "AP aging"}
         </h2>
-        <div className="text-xs text-dash-text-secondary">
-          Total open: <span className="text-dash-text font-medium">{fmtMoney(aging.totalOpen)}</span>
+        <div className="text-xs text-dash-text-secondary text-right">
+          <div>
+            Total open:{" "}
+            <span className="text-dash-text font-medium">{fmtMoney(aging.totalOpen)}</span>
+          </div>
+          <MoneyEquiv byCurrency={aging.totalOpen} target="MXN" className="block" />
         </div>
       </div>
       <div className="space-y-2">

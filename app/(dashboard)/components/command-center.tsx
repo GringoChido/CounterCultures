@@ -10,12 +10,20 @@ import {
   PackageX,
   ArrowRight,
 } from "lucide-react";
+import { MoneyEquiv } from "@/app/(dashboard)/components/money/money-equiv";
+import { NetCashTile } from "@/app/(dashboard)/components/money/net-cash-tile";
 
 interface CommandCenterData {
   ar: {
     openByCurrency: Record<string, number>;
     overdueCount: number;
     invoiceCount: number;
+    ninetyPlusByCurrency: Record<string, number>;
+  };
+  ap: {
+    openByCurrency: Record<string, number>;
+    overdueCount: number;
+    billCount: number;
     ninetyPlusByCurrency: Record<string, number>;
   };
   orders: {
@@ -73,6 +81,10 @@ interface ActionCardProps {
   href: string;
   severity: Severity;
   icon: React.ElementType;
+  /** Optional currency map → renders the consolidated MXN equivalent as
+   *  a subtle subtitle below the value line. Hidden when no FX rate is
+   *  available (cron hasn't run yet, source down, etc.). */
+  byCurrencyForEquiv?: Record<string, number>;
 }
 
 const ActionCard = ({
@@ -83,6 +95,7 @@ const ActionCard = ({
   href,
   severity,
   icon: Icon,
+  byCurrencyForEquiv,
 }: ActionCardProps) => (
   <Link
     href={href}
@@ -103,6 +116,9 @@ const ActionCard = ({
       {count}
     </p>
     <p className="text-sm text-dash-text mt-2 tabular-nums">{valueLine}</p>
+    {byCurrencyForEquiv && (
+      <MoneyEquiv byCurrency={byCurrencyForEquiv} target="MXN" className="mt-0.5 block" />
+    )}
     {subLine && (
       <p className="text-xs text-dash-text-secondary mt-1">{subLine}</p>
     )}
@@ -159,6 +175,7 @@ const CommandCenter = () => {
       href: "/dashboard/invoices?paymentState=overdue",
       severity: data.ar.overdueCount > 0 ? "danger" : "calm",
       icon: AlertCircle,
+      byCurrencyForEquiv: data.ar.openByCurrency,
     },
     {
       label: "Stale quotes",
@@ -168,6 +185,7 @@ const CommandCenter = () => {
       href: "/dashboard/orders?staleOnly=true",
       severity: data.orders.staleQuoteCount > 0 ? "danger" : "calm",
       icon: FileClock,
+      byCurrencyForEquiv: data.orders.staleQuoteByCurrency,
     },
     {
       label: "Ready to invoice",
@@ -177,6 +195,7 @@ const CommandCenter = () => {
       href: "/dashboard/orders?invoiceStatus=to+invoice",
       severity: data.orders.toInvoiceCount > 0 ? "warning" : "calm",
       icon: Receipt,
+      byCurrencyForEquiv: data.orders.toInvoiceByCurrency,
     },
     {
       label: "Awaiting vendor bill",
@@ -186,6 +205,7 @@ const CommandCenter = () => {
       href: "/dashboard/purchases?invoiceStatus=to+invoice",
       severity: data.purchases.awaitingInvoiceCount > 0 ? "warning" : "calm",
       icon: Truck,
+      byCurrencyForEquiv: data.purchases.awaitingInvoiceByCurrency,
     },
     {
       label: "POs stuck >60d",
@@ -195,6 +215,7 @@ const CommandCenter = () => {
       href: "/dashboard/purchases?stuckOnly=true",
       severity: data.purchases.stuckCount > 0 ? "warning" : "calm",
       icon: Truck,
+      byCurrencyForEquiv: data.purchases.stuckByCurrency,
     },
     {
       label: "Inventory gaps",
@@ -221,6 +242,10 @@ const CommandCenter = () => {
           </p>
         )}
       </div>
+      <NetCashTile
+        arOpenByCurrency={data.ar.openByCurrency}
+        apOpenByCurrency={data.ap.openByCurrency}
+      />
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
         {cards.map((c) => (
           <ActionCard key={c.label} {...c} />
