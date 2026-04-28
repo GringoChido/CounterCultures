@@ -47,7 +47,9 @@ export const FEATURES = {
   send_quote: "Send a quote via email from your Gmail",
   create_invoice: "Confirm sale → generate invoice",
   cancel_order: "Cancel a sale order (mark dead)",
-  stamp_cfdi: "Stamp CFDI on an invoice (Mexican tax)",
+  send_prefactura: "Send prefactura PDF to client for approval (gmail-backed)",
+  approve_prefactura: "Mark a client's prefactura as approved (unlocks CFDI attach)",
+  attach_cfdi: "Attach CFDI XML + PDF to an invoice (uploads to Odoo + Drive)",
   register_payment: "Mark a payment received and reconcile",
   send_payment_link: "Generate a Stripe payment link for an invoice",
 
@@ -71,7 +73,9 @@ const FINANCE_FEATURES: Feature[] = [
   "view_inbox",
   "view_finance",
   "view_stripe",
-  "stamp_cfdi",
+  "send_prefactura",
+  "approve_prefactura",
+  "attach_cfdi",
   "register_payment",
   "send_payment_link",
 ];
@@ -90,6 +94,7 @@ const SALES_FEATURES: Feature[] = [
   "view_products",
   "create_quote",
   "send_quote",
+  "send_prefactura",
   "send_payment_link",
   "cancel_order",
 ];

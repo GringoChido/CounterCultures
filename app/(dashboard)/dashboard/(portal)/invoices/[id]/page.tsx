@@ -20,6 +20,7 @@ import { AttachmentsPanel } from "@/app/(dashboard)/components/attachments-panel
 import { MessagesPanel } from "@/app/(dashboard)/components/messages-panel";
 import { MarkPaidButton } from "@/app/(dashboard)/components/payments/mark-paid-button";
 import { PaymentLinkButton } from "@/app/(dashboard)/components/payments/payment-link-button";
+import { InvoiceWorkflowPanel } from "@/app/(dashboard)/components/cfdi/invoice-workflow-panel";
 
 interface InvoiceListRow {
   id: string;
@@ -444,6 +445,16 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
         </>
       ) : null}
+
+      {/* CFDI workflow — prefactura → approval → stamped CFDI attached */}
+      {invoice.moveType === "out_invoice" && (
+        <InvoiceWorkflowPanel
+          invoiceId={Number(invoice.id)}
+          invoiceName={invoice.name}
+          partnerName={invoice.partnerName}
+          partnerEmail={partner?.email}
+        />
+      )}
 
       {/* Partner + CFDI cards */}
       <div className="grid md:grid-cols-2 gap-4 mb-6">

@@ -467,6 +467,18 @@ const encodeHeader = (v: string): string => {
   return /[^\x00-\x7F]/.test(v) ? `=?UTF-8?B?${Buffer.from(v, "utf8").toString("base64")}?=` : v;
 };
 
+export interface MailAttachment {
+  filename: string;
+  mimeType: string;
+  content: Buffer;
+}
+
+/**
+ * Builds an RFC 822 message. Returns a Buffer because attachments are
+ * binary — string concatenation would corrupt them. Plain-text-only mails
+ * still work via the same path; multipart/mixed kicks in when attachments
+ * are present.
+ */
 const buildRfc822 = (opts: {
   from: string;
   to: string;
@@ -476,27 +488,67 @@ const buildRfc822 = (opts: {
   body: string;
   inReplyTo?: string;
   references?: string;
-}): string => {
-  const headers: string[] = [];
-  headers.push(`From: ${opts.from}`);
-  headers.push(`To: ${opts.to}`);
-  if (opts.cc) headers.push(`Cc: ${opts.cc}`);
-  if (opts.bcc) headers.push(`Bcc: ${opts.bcc}`);
-  headers.push(`Subject: ${encodeHeader(opts.subject)}`);
-  if (opts.inReplyTo) headers.push(`In-Reply-To: ${opts.inReplyTo}`);
-  if (opts.references) headers.push(`References: ${opts.references}`);
-  headers.push("MIME-Version: 1.0");
-  headers.push('Content-Type: text/plain; charset="UTF-8"');
-  headers.push("Content-Transfer-Encoding: 7bit");
-  return `${headers.join("\r\n")}\r\n\r\n${opts.body}`;
+  attachments?: MailAttachment[];
+}): Buffer => {
+  const baseHeaders: string[] = [];
+  baseHeaders.push(`From: ${opts.from}`);
+  baseHeaders.push(`To: ${opts.to}`);
+  if (opts.cc) baseHeaders.push(`Cc: ${opts.cc}`);
+  if (opts.bcc) baseHeaders.push(`Bcc: ${opts.bcc}`);
+  baseHeaders.push(`Subject: ${encodeHeader(opts.subject)}`);
+  if (opts.inReplyTo) baseHeaders.push(`In-Reply-To: ${opts.inReplyTo}`);
+  if (opts.references) baseHeaders.push(`References: ${opts.references}`);
+  baseHeaders.push("MIME-Version: 1.0");
+
+  const hasAttachments = opts.attachments && opts.attachments.length > 0;
+
+  if (!hasAttachments) {
+    baseHeaders.push('Content-Type: text/plain; charset="UTF-8"');
+    baseHeaders.push("Content-Transfer-Encoding: 7bit");
+    return Buffer.from(
+      `${baseHeaders.join("\r\n")}\r\n\r\n${opts.body}`,
+      "utf8"
+    );
+  }
+
+  // Multipart message — ASCII-safe random boundary so neither the body
+  // nor the attachment bytes can collide with it.
+  const boundary = `----cc-mail-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+  baseHeaders.push(`Content-Type: multipart/mixed; boundary="${boundary}"`);
+
+  const parts: Buffer[] = [];
+  parts.push(Buffer.from(`${baseHeaders.join("\r\n")}\r\n\r\n`, "utf8"));
+  parts.push(
+    Buffer.from(
+      `--${boundary}\r\nContent-Type: text/plain; charset="UTF-8"\r\nContent-Transfer-Encoding: 7bit\r\n\r\n${opts.body}\r\n`,
+      "utf8"
+    )
+  );
+  for (const att of opts.attachments ?? []) {
+    const safeName = att.filename.replace(/"/g, "");
+    parts.push(
+      Buffer.from(
+        `--${boundary}\r\nContent-Type: ${att.mimeType}; name="${safeName}"\r\nContent-Disposition: attachment; filename="${safeName}"\r\nContent-Transfer-Encoding: base64\r\n\r\n`,
+        "utf8"
+      )
+    );
+    // Wrap base64 at 76 chars per line per RFC 2045.
+    const b64 = att.content.toString("base64").replace(/(.{76})/g, "$1\r\n");
+    parts.push(Buffer.from(`${b64}\r\n`, "utf8"));
+  }
+  parts.push(Buffer.from(`--${boundary}--\r\n`, "utf8"));
+
+  return Buffer.concat(parts);
 };
 
-const base64UrlEncode = (raw: string): string =>
-  Buffer.from(raw, "utf8")
+const base64UrlEncode = (raw: string | Buffer): string => {
+  const buf = Buffer.isBuffer(raw) ? raw : Buffer.from(raw, "utf8");
+  return buf
     .toString("base64")
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
     .replace(/=+$/, "");
+};
 
 export interface SendResult {
   messageId: string;
@@ -509,6 +561,7 @@ export const sendMessage = async (input: {
   bcc?: string;
   subject: string;
   body: string;
+  attachments?: MailAttachment[];
 }): Promise<SendResult> => {
   const client = await getGmailClient();
   if (!client) throw new Error("Gmail not connected");
