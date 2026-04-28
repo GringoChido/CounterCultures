@@ -43,13 +43,27 @@ export type ApprovalMethod =
   | "override"
   | "other";
 
+/**
+ * Two factura paths CC actually uses:
+ *   - "personalized": customer requested a factura with their RFC. Requires
+ *     internal approval from Javier (the gallery sales rep) before Finance
+ *     stamps. This is the path the prefactura → approval → stamp gate
+ *     was originally built for.
+ *   - "general_public": customer didn't request a personalized factura.
+ *     Issued to "Público en general" — no approval step. Finance stamps
+ *     directly and the dashboard just attaches the resulting XML+PDF.
+ */
+export type FacturaType = "personalized" | "general_public";
+
 interface InvoiceApprovalRow extends Record<string, string> {
   invoice_id: string;
   invoice_name: string;
   state: string;
+  factura_type: string;
   prefactura_sent_at: string;
   prefactura_sent_by: string;
   prefactura_recipient: string;
+  prefactura_thread_id: string;
   approved_at: string;
   approved_by: string;
   approval_method: string;
@@ -62,9 +76,11 @@ const COLUMNS: (keyof InvoiceApprovalRow)[] = [
   "invoice_id",
   "invoice_name",
   "state",
+  "factura_type",
   "prefactura_sent_at",
   "prefactura_sent_by",
   "prefactura_recipient",
+  "prefactura_thread_id",
   "approved_at",
   "approved_by",
   "approval_method",
@@ -77,9 +93,15 @@ export interface InvoiceApproval {
   invoiceId: number;
   invoiceName: string;
   state: ApprovalState;
+  /** "personalized" requires approval; "general_public" skips it entirely. */
+  facturaType: FacturaType;
   prefacturaSentAt: string;
   prefacturaSentBy: string;
   prefacturaRecipient: string;
+  /** Gmail thread ID of the prefactura email — surfaced as a deep-link
+   *  on the invoice page since Finance noted these threads already
+   *  contain the RFC + payment receipt + final factura. */
+  prefacturaThreadId: string;
   approvedAt: string;
   approvedBy: string;
   approvalMethod: string;
@@ -94,13 +116,20 @@ const isApprovalState = (s: string): s is ApprovalState =>
   s === "approved" ||
   s === "stamped";
 
+const isFacturaType = (s: string): s is FacturaType =>
+  s === "personalized" || s === "general_public";
+
 const toApproval = (row: InvoiceApprovalRow): InvoiceApproval => ({
   invoiceId: Number(row.invoice_id) || 0,
   invoiceName: row.invoice_name || "",
   state: isApprovalState(row.state) ? row.state : "draft",
+  facturaType: isFacturaType(row.factura_type ?? "")
+    ? (row.factura_type as FacturaType)
+    : "personalized",
   prefacturaSentAt: row.prefactura_sent_at || "",
   prefacturaSentBy: row.prefactura_sent_by || "",
   prefacturaRecipient: row.prefactura_recipient || "",
+  prefacturaThreadId: row.prefactura_thread_id || "",
   approvedAt: row.approved_at || "",
   approvedBy: row.approved_by || "",
   approvalMethod: row.approval_method || "",
@@ -113,9 +142,11 @@ const toRow = (a: InvoiceApproval): InvoiceApprovalRow => ({
   invoice_id: String(a.invoiceId),
   invoice_name: a.invoiceName,
   state: a.state,
+  factura_type: a.facturaType,
   prefactura_sent_at: a.prefacturaSentAt,
   prefactura_sent_by: a.prefacturaSentBy,
   prefactura_recipient: a.prefacturaRecipient,
+  prefactura_thread_id: a.prefacturaThreadId,
   approved_at: a.approvedAt,
   approved_by: a.approvedBy,
   approval_method: a.approvalMethod,
@@ -145,9 +176,11 @@ export const getInvoiceApproval = async (
     invoiceId,
     invoiceName: invoiceName ?? "",
     state: "draft",
+    facturaType: "personalized",
     prefacturaSentAt: "",
     prefacturaSentBy: "",
     prefacturaRecipient: "",
+    prefacturaThreadId: "",
     approvedAt: "",
     approvedBy: "",
     approvalMethod: "",
@@ -176,6 +209,9 @@ export const recordPrefacturaSent = async (input: {
   invoiceName: string;
   byEmail: string;
   recipient: string;
+  /** Gmail thread ID — captured for direct linking on the invoice page
+   *  since Finance noted these threads contain RFC + payment receipt + final factura. */
+  threadId?: string;
 }): Promise<InvoiceApproval> => {
   const now = new Date().toISOString();
   const current = await getInvoiceApproval(input.invoiceId, input.invoiceName);
@@ -193,6 +229,37 @@ export const recordPrefacturaSent = async (input: {
     prefacturaSentAt: now,
     prefacturaSentBy: input.byEmail,
     prefacturaRecipient: input.recipient,
+    prefacturaThreadId: input.threadId ?? current.prefacturaThreadId,
+    updatedAt: now,
+  };
+  await upsert(next);
+  return next;
+};
+
+/**
+ * Sets the factura type on an invoice — either kicks off the personalized
+ * approval workflow or marks it as general public (no approval needed,
+ * Attach CFDI button unlocks immediately).
+ *
+ * Refuses to change type after stamping — the stamp commits to one path.
+ */
+export const setFacturaType = async (input: {
+  invoiceId: number;
+  invoiceName: string;
+  type: FacturaType;
+  byEmail: string;
+}): Promise<InvoiceApproval> => {
+  const now = new Date().toISOString();
+  const current = await getInvoiceApproval(input.invoiceId, input.invoiceName);
+  if (current.state === "stamped") {
+    throw new Error(
+      `Invoice ${input.invoiceName} is already stamped — factura type is locked`
+    );
+  }
+  const next: InvoiceApproval = {
+    ...current,
+    invoiceName: input.invoiceName || current.invoiceName,
+    facturaType: input.type,
     updatedAt: now,
   };
   await upsert(next);

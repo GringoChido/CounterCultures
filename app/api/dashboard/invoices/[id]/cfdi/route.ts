@@ -112,35 +112,44 @@ export const POST = async (
       );
     }
 
-    // Approval gate — refuse to attach a CFDI unless the prefactura is in
-    // `approved` state. Owner role can override (logged + audited) so an
-    // owner can rescue edge cases where someone forgot to log approval
-    // before the customer's CFDI request came back stamped.
+    // Approval gate — depends on factura type:
+    //  • general_public: no approval needed (skip gate entirely)
+    //  • personalized:   require state="approved", with owner override path
+    //
+    // Override is for the personalized path only — the general_public path
+    // doesn't need it because there's nothing to override.
     const overrideRequested =
       formData.get("override")?.toString() === "true";
     const approval = await getInvoiceApproval(invoiceId);
+    const isGeneralPublic = approval.facturaType === "general_public";
     const isApproved = approval.state === "approved";
     const isOwner = user.role === "owner";
 
-    if (!isApproved && !overrideRequested) {
+    if (!isGeneralPublic && !isApproved && !overrideRequested) {
       return NextResponse.json(
         {
           error: "approval_required",
           message:
             approval.state === "draft"
-              ? "Send the prefactura to the client first, then mark it approved."
+              ? "Choose factura type first. Personalized facturas need internal approval before stamping; general public facturas can be attached directly."
               : approval.state === "prefactura_sent"
-                ? "Mark the prefactura approved before attaching the stamped CFDI."
+                ? "Mark the prefactura approved (Javier or whoever requested the factura confirmed) before attaching the stamped CFDI."
                 : approval.state === "stamped"
                   ? "This invoice already has a stamped CFDI attached."
                   : "Approval required.",
           currentState: approval.state,
+          facturaType: approval.facturaType,
           canOverride: isOwner,
         },
         { status: 409 }
       );
     }
-    if (!isApproved && overrideRequested && !isOwner) {
+    if (
+      !isGeneralPublic &&
+      !isApproved &&
+      overrideRequested &&
+      !isOwner
+    ) {
       return NextResponse.json(
         {
           error: "override_forbidden",
@@ -244,7 +253,8 @@ export const POST = async (
       JSON.stringify({
         invoice_name: invoiceName,
         approval_state_at_attach: approval.state,
-        override: overrideRequested && !isApproved,
+        factura_type: approval.facturaType,
+        override: !isGeneralPublic && !isApproved && overrideRequested,
         files: results.map((r) => ({
           name: r.name,
           odoo_id: r.odooId,

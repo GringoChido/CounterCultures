@@ -84,12 +84,16 @@ export const POST = async (
       ],
     });
 
-    // Advance the workflow state.
+    // Advance the workflow state. Captures the Gmail thread ID so the
+    // invoice page can deep-link to the thread (which contains the RFC,
+    // payment receipt, and final factura per Finance's note that these
+    // threads are the existing system of record).
     const approval = await recordPrefacturaSent({
       invoiceId,
       invoiceName,
       byEmail: user.email,
       recipient: fields.to,
+      threadId: sendResult.threadId,
     });
 
     // Mirror the existing send/reply pattern — log to Email_Activity so

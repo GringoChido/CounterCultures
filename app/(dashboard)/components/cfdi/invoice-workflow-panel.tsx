@@ -13,6 +13,9 @@ import {
   Download,
   AlertTriangle,
   ShieldCheck,
+  Users,
+  Globe,
+  ExternalLink,
 } from "lucide-react";
 import { useFeatures } from "@/app/lib/use-features";
 
@@ -22,13 +25,17 @@ type ApprovalState =
   | "approved"
   | "stamped";
 
+type FacturaType = "personalized" | "general_public";
+
 interface ApprovalRecord {
   invoiceId: number;
   invoiceName: string;
   state: ApprovalState;
+  facturaType: FacturaType;
   prefacturaSentAt: string;
   prefacturaSentBy: string;
   prefacturaRecipient: string;
+  prefacturaThreadId: string;
   approvedAt: string;
   approvedBy: string;
   approvalMethod: string;
@@ -96,7 +103,25 @@ const StageBadge = ({
   </div>
 );
 
-const StageRail = ({ state }: { state: ApprovalState }) => {
+const StageRail = ({
+  state,
+  facturaType,
+}: {
+  state: ApprovalState;
+  facturaType: FacturaType;
+}) => {
+  // General public facturas skip the prefactura → approval middle steps
+  // entirely (Público en general — no review needed). Just draft → stamped.
+  if (facturaType === "general_public") {
+    const isStamped = state === "stamped";
+    return (
+      <div className="flex items-center justify-between gap-2 mb-4">
+        <StageBadge active={!isStamped} done={isStamped} label="Draft" icon={FileText} />
+        <div className={`flex-1 h-px ${isStamped ? "bg-brand-sage" : "bg-dash-border"}`} />
+        <StageBadge active={isStamped} done={isStamped} label="Stamped" icon={Paperclip} />
+      </div>
+    );
+  }
   const order: ApprovalState[] = ["draft", "prefactura_sent", "approved", "stamped"];
   const idx = order.indexOf(state);
   return (
@@ -111,7 +136,7 @@ const StageRail = ({ state }: { state: ApprovalState }) => {
       <StageBadge
         active={idx === 1}
         done={idx > 1}
-        label="Prefactura sent"
+        label="Prefactura → Javier"
         icon={Send}
       />
       <div className={`flex-1 h-px ${idx > 1 ? "bg-brand-sage" : "bg-dash-border"}`} />
@@ -183,15 +208,25 @@ const InvoiceWorkflowPanel = ({
   const isOwner = features.role === "owner";
 
   const state = approval?.state ?? "draft";
-  const sendEnabled = canSend && state !== "stamped";
+  const facturaType = approval?.facturaType ?? "personalized";
+  const isGeneralPublic = facturaType === "general_public";
+
+  // For general_public facturas there's no internal review — Finance
+  // stamps directly. So Send/Approve are hidden; Attach is always enabled.
+  const sendEnabled = canSend && !isGeneralPublic && state !== "stamped";
   const approveEnabled =
-    canApprove && (state === "prefactura_sent" || state === "draft");
-  // Attach is enabled when prefactura is approved, when CFDI is already
-  // stamped (allow additional supplemental docs), OR when the actor is an
-  // owner using the override path on draft/prefactura_sent.
+    canApprove &&
+    !isGeneralPublic &&
+    (state === "prefactura_sent" || state === "draft");
+  // Attach is enabled when:
+  //   - factura type = general_public (skip approval path entirely)
+  //   - state = approved (personalized path completed approval)
+  //   - state = stamped (allow additional supplemental docs)
+  //   - actor is owner doing override on draft/prefactura_sent
   const attachEnabled =
     canAttach &&
-    (state === "approved" ||
+    (isGeneralPublic ||
+      state === "approved" ||
       state === "stamped" ||
       (isOwner && (state === "draft" || state === "prefactura_sent")));
 
@@ -211,7 +246,31 @@ const InvoiceWorkflowPanel = ({
         {loading && <Loader2 className="w-4 h-4 animate-spin text-dash-text-muted" />}
       </div>
 
-      <StageRail state={state} />
+      <StageRail state={state} facturaType={facturaType} />
+
+      {/* Factura type chooser — only shown when state is still "draft" so
+          changing type after the workflow has started is intentional. */}
+      {state === "draft" && canSend && (
+        <FacturaTypeChooser
+          invoiceId={invoiceId}
+          currentType={facturaType}
+          onChange={loadAll}
+        />
+      )}
+
+      {/* General-public marker, shown after the type is set */}
+      {state !== "draft" && isGeneralPublic && (
+        <div className="bg-blue-50 border border-blue-200 rounded p-3 mb-4 text-xs text-blue-900 flex items-start gap-2">
+          <Globe className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+          <div>
+            <div className="font-medium">Público en general</div>
+            <p className="mt-0.5 text-blue-900/80">
+              No internal approval needed. Stamp directly in Solución
+              Factible, then attach the XML + PDF here.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* History panel — what's happened so far */}
       {approval && (state !== "draft" || attachments.length > 0) && (
@@ -228,6 +287,20 @@ const InvoiceWorkflowPanel = ({
                   </span>
                 )}
               </span>
+            </div>
+          )}
+          {approval.prefacturaThreadId && (
+            <div className="flex justify-between gap-2">
+              <span className="text-dash-text-secondary">Email thread</span>
+              <a
+                href={`https://mail.google.com/mail/u/0/#inbox/${approval.prefacturaThreadId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-dash-accent hover:underline"
+              >
+                Open in Gmail
+                <ExternalLink className="w-3 h-3" />
+              </a>
             </div>
           )}
           {approval.approvedAt && (
@@ -386,6 +459,102 @@ const InvoiceWorkflowPanel = ({
   );
 };
 
+// ── Factura type chooser ──────────────────────────────────────────
+
+const FacturaTypeChooser = ({
+  invoiceId,
+  currentType,
+  onChange,
+}: {
+  invoiceId: number;
+  currentType: FacturaType;
+  onChange: () => void;
+}) => {
+  const [submitting, setSubmitting] = useState<FacturaType | null>(null);
+
+  const set = async (type: FacturaType) => {
+    if (type === currentType) return;
+    setSubmitting(type);
+    const r = await fetch(
+      `/api/dashboard/invoices/${invoiceId}/approval/factura-type`,
+      {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type }),
+      }
+    );
+    setSubmitting(null);
+    if (!r.ok) {
+      const data = await r.json().catch(() => ({}));
+      toast.error(data.error || "Couldn't update factura type");
+      return;
+    }
+    onChange();
+  };
+
+  return (
+    <div className="mb-4">
+      <p className="text-[11px] uppercase tracking-wider text-dash-text-secondary mb-2">
+        Choose factura type
+      </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => set("personalized")}
+          disabled={submitting !== null}
+          className={`flex items-start gap-3 p-3 border rounded text-left transition-colors cursor-pointer ${
+            currentType === "personalized"
+              ? "border-brand-copper bg-brand-copper/5"
+              : "border-dash-border hover:border-brand-copper/50"
+          }`}
+        >
+          {submitting === "personalized" ? (
+            <Loader2 className="w-4 h-4 animate-spin shrink-0 mt-0.5" />
+          ) : (
+            <Users className="w-4 h-4 shrink-0 mt-0.5 text-brand-copper" />
+          )}
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-medium text-dash-text">
+              Personalized
+            </div>
+            <p className="text-[11px] text-dash-text-secondary mt-0.5 leading-snug">
+              Customer requested factura with their RFC. Send prefactura to
+              Javier (or whoever requested it) for internal approval before
+              stamping.
+            </p>
+          </div>
+        </button>
+        <button
+          type="button"
+          onClick={() => set("general_public")}
+          disabled={submitting !== null}
+          className={`flex items-start gap-3 p-3 border rounded text-left transition-colors cursor-pointer ${
+            currentType === "general_public"
+              ? "border-blue-500 bg-blue-50/40"
+              : "border-dash-border hover:border-blue-400/50"
+          }`}
+        >
+          {submitting === "general_public" ? (
+            <Loader2 className="w-4 h-4 animate-spin shrink-0 mt-0.5" />
+          ) : (
+            <Globe className="w-4 h-4 shrink-0 mt-0.5 text-blue-600" />
+          )}
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-medium text-dash-text">
+              Público en general
+            </div>
+            <p className="text-[11px] text-dash-text-secondary mt-0.5 leading-snug">
+              No personalized RFC. Skip the approval step — stamp directly
+              in Solución Factible and attach the XML + PDF here.
+            </p>
+          </div>
+        </button>
+      </div>
+    </div>
+  );
+};
+
 // ── Modal: Send Prefactura ────────────────────────────────────────
 
 const SendPrefacturaModal = ({
@@ -403,13 +572,17 @@ const SendPrefacturaModal = ({
   onClose: () => void;
   onDone: () => void;
 }) => {
-  const [to, setTo] = useState(partnerEmail ?? "");
+  // The recipient is the INTERNAL reviewer (Javier or whoever requested
+  // the factura), not the end customer. Default-blank so the user fills
+  // it in consciously; partnerEmail is shown as a hint but not pre-filled
+  // (using it as the default would default-send-to-customer which is wrong).
+  const [to, setTo] = useState("");
   const [cc, setCc] = useState("");
   const [subject, setSubject] = useState(
-    `Prefactura ${invoiceName} para tu revisión`
+    `Prefactura ${invoiceName} — revisar antes de timbrar`
   );
   const [body, setBody] = useState(
-    `Hola ${partnerName},\n\nAdjunto la prefactura ${invoiceName} para tu revisión.\n\nPor favor confirma respondiendo a este correo si todo es correcto. Una vez aprobada, generaremos el CFDI / factura final.\n\nSi necesitas algún ajuste, avísame antes de que la timbremos — cancelar un CFDI ya timbrado es un proceso largo en el SAT.\n\nGracias,\nCounter Cultures`
+    `Hola,\n\nAdjunto la prefactura ${invoiceName} para ${partnerName}.\n\nPor favor revisa que los datos estén correctos (RFC, conceptos, importes, uso CFDI) y responde confirmando si todo está bien — una vez aprobada timbramos en Solución Factible.\n\nSi hay algún ajuste, avísame antes de que la timbremos. Cancelar un CFDI ya timbrado en el SAT es un proceso largo.\n\nGracias`
   );
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -446,12 +619,28 @@ const SendPrefacturaModal = ({
 
   return (
     <ModalShell title={`Send prefactura · ${invoiceName}`} onClose={onClose} disabled={submitting}>
-      <Field label="To">
+      <div className="bg-amber-50 border border-amber-200 rounded p-3 text-xs text-amber-900">
+        <div className="font-medium">Internal review, not customer-facing</div>
+        <p className="mt-0.5 text-amber-900/80">
+          Send the prefactura to <strong>Javier</strong> (or whoever
+          requested this factura on the customer's behalf). They confirm by
+          email; then come back here to "Mark approved" and stamp.
+          {partnerEmail && (
+            <>
+              {" "}
+              Customer's email on file:{" "}
+              <span className="font-mono">{partnerEmail}</span> — not the
+              right recipient here.
+            </>
+          )}
+        </p>
+      </div>
+      <Field label="Send to (internal reviewer)">
         <input
           type="email"
           value={to}
           onChange={(e) => setTo(e.target.value)}
-          placeholder="customer@example.com"
+          placeholder="javier@countercultures.com.mx"
           className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
         />
       </Field>
@@ -547,13 +736,19 @@ const MarkApprovedModal = ({
 
   return (
     <ModalShell title={`Mark approved · ${invoiceName}`} onClose={onClose} disabled={submitting}>
-      <Field label="Approval method">
+      <div className="bg-dash-bg-muted/50 rounded p-3 text-xs text-dash-text-secondary">
+        Approval comes from the <strong>internal reviewer</strong> (Javier
+        or whoever requested the factura). Logging here means they
+        confirmed the prefactura is correct; the next step is stamping in
+        Solución Factible.
+      </div>
+      <Field label="How did they confirm?">
         <select
           value={method}
           onChange={(e) => setMethod(e.target.value as typeof method)}
           className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
         >
-          <option value="email_reply">Email reply (customer wrote back)</option>
+          <option value="email_reply">Email reply (Javier wrote back "approved" / "ok")</option>
           <option value="signature">Signature (signed copy)</option>
           <option value="verbal">Verbal / phone</option>
           <option value="in_person">In person</option>
@@ -565,7 +760,7 @@ const MarkApprovedModal = ({
           value={note}
           onChange={(e) => setNote(e.target.value)}
           rows={4}
-          placeholder="Paste the customer's email reply, or any context for the audit trail."
+          placeholder="Paste Javier's email reply, or any context — kept on the audit trail next to the timestamp."
           className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
         />
       </Field>
