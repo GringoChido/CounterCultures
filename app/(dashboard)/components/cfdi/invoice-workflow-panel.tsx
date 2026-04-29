@@ -16,6 +16,9 @@ import {
   Users,
   Globe,
   ExternalLink,
+  MessageSquare,
+  ChevronDown,
+  RefreshCw,
 } from "lucide-react";
 import { useFeatures } from "@/app/lib/use-features";
 
@@ -290,18 +293,12 @@ const InvoiceWorkflowPanel = ({
             </div>
           )}
           {approval.prefacturaThreadId && (
-            <div className="flex justify-between gap-2">
-              <span className="text-dash-text-secondary">Email thread</span>
-              <a
-                href={`https://mail.google.com/mail/u/0/#inbox/${approval.prefacturaThreadId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-dash-accent hover:underline"
-              >
-                Open in Gmail
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            </div>
+            <PrefacturaThreadView
+              invoiceId={invoiceId}
+              threadId={approval.prefacturaThreadId}
+              canApprove={approveEnabled}
+              onMarkApproved={() => setShowApprove(true)}
+            />
           )}
           {approval.approvedAt && (
             <div className="flex justify-between gap-2">
@@ -553,6 +550,280 @@ const FacturaTypeChooser = ({
       </div>
     </div>
   );
+};
+
+// ── Inline prefactura thread view ─────────────────────────────────
+
+interface ThreadMessage {
+  messageId: string;
+  from: string;
+  fromEmail: string;
+  date: string;
+  snippet: string;
+  body: string;
+  unread: boolean;
+}
+
+interface ThreadResponse {
+  accessible: boolean;
+  reason?: string;
+  threadId: string;
+  subject?: string;
+  messages: ThreadMessage[];
+}
+
+const fmtAgo = (iso: string): string => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const ms = Date.now() - d.getTime();
+  if (Number.isNaN(ms) || ms < 0) return iso.slice(0, 16);
+  const min = Math.floor(ms / 60000);
+  if (min < 1) return "just now";
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}h ago`;
+  const days = Math.floor(hr / 24);
+  if (days < 7) return `${days}d ago`;
+  return iso.slice(0, 10);
+};
+
+const PrefacturaThreadView = ({
+  invoiceId,
+  threadId,
+  canApprove,
+  onMarkApproved,
+}: {
+  invoiceId: number;
+  threadId: string;
+  canApprove: boolean;
+  onMarkApproved: () => void;
+}) => {
+  const [data, setData] = useState<ThreadResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const r = await fetch(
+        `/api/dashboard/invoices/${invoiceId}/approval/thread`,
+        { credentials: "include" }
+      );
+      if (r.ok) {
+        const json = (await r.json()) as ThreadResponse;
+        setData(json);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [invoiceId]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const gmailUrl = `https://mail.google.com/mail/u/0/#inbox/${threadId}`;
+
+  // Not accessible to current user — show fallback link.
+  if (data && !data.accessible) {
+    return (
+      <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-dash-border/50 mt-1.5">
+        <span className="text-dash-text-secondary inline-flex items-center gap-1.5">
+          <MessageSquare className="w-3 h-3" />
+          Prefactura email thread
+        </span>
+        <a
+          href={gmailUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-dash-accent hover:underline"
+          title={
+            data.reason === "gmail_not_connected"
+              ? "Connect your Gmail in Settings to read this thread inline"
+              : "This thread isn't in your inbox — click to open in Gmail"
+          }
+        >
+          Open in Gmail
+          <ExternalLink className="w-3 h-3" />
+        </a>
+      </div>
+    );
+  }
+
+  // Loading initial fetch.
+  if (!data) {
+    return (
+      <div className="flex items-center gap-2 text-dash-text-secondary text-[11px] pt-1.5 border-t border-dash-border/50 mt-1.5">
+        <Loader2 className="w-3 h-3 animate-spin" />
+        Loading email thread…
+      </div>
+    );
+  }
+
+  // Accessible — show inline.
+  const messages = data.messages;
+  const latest = messages[messages.length - 1];
+  const incoming = messages.filter((m) => !isLikelySelf(m.fromEmail)).length;
+
+  return (
+    <div className="pt-2 mt-2 border-t border-dash-border/50">
+      <div className="flex items-start justify-between gap-3">
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="flex-1 text-left flex items-center gap-2 text-dash-text-secondary hover:text-dash-text transition-colors cursor-pointer"
+        >
+          <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+          <span className="text-[11px] uppercase tracking-wider">
+            Prefactura thread
+          </span>
+          <span className="text-[11px] text-dash-text">
+            · {messages.length} message{messages.length === 1 ? "" : "s"}
+            {incoming > 0 && (
+              <span className="text-brand-sage font-medium"> · {incoming} reply</span>
+            )}
+          </span>
+          <ChevronDown
+            className={`w-3 h-3 transition-transform ${expanded ? "rotate-180" : ""}`}
+          />
+        </button>
+        <button
+          type="button"
+          onClick={load}
+          disabled={loading}
+          title="Refresh thread"
+          className="text-dash-text-muted hover:text-dash-text transition-colors cursor-pointer disabled:opacity-50"
+        >
+          {loading ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <RefreshCw className="w-3.5 h-3.5" />
+          )}
+        </button>
+      </div>
+
+      {/* Latest reply preview — always visible if it's from someone else */}
+      {!expanded && latest && !isLikelySelf(latest.fromEmail) && (
+        <div className="mt-2 p-2 bg-brand-sage/5 border border-brand-sage/20 rounded text-xs">
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <span className="font-medium text-dash-text">{latest.from}</span>
+            <span className="text-dash-text-muted text-[10px]">
+              {fmtAgo(latest.date)}
+            </span>
+          </div>
+          <p className="text-dash-text-secondary line-clamp-2">{latest.snippet}</p>
+          {canApprove && looksApproved(latest.body || latest.snippet) && (
+            <button
+              type="button"
+              onClick={onMarkApproved}
+              className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 text-[11px] font-medium border border-brand-sage/40 bg-white text-brand-sage rounded hover:bg-brand-sage/10 transition-colors cursor-pointer"
+            >
+              <ShieldCheck className="w-3 h-3" />
+              Looks approved — log it
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Full message list when expanded */}
+      {expanded && (
+        <div className="mt-2 space-y-2 max-h-96 overflow-y-auto">
+          {messages.map((m) => {
+            const self = isLikelySelf(m.fromEmail);
+            return (
+              <div
+                key={m.messageId}
+                className={`p-2 rounded text-xs ${
+                  self
+                    ? "bg-dash-bg-muted/40 border border-dash-border/50"
+                    : "bg-brand-sage/5 border border-brand-sage/20"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <span className="font-medium text-dash-text">
+                    {self ? "You" : m.from}
+                  </span>
+                  <span className="text-dash-text-muted text-[10px]">
+                    {fmtAgo(m.date)}
+                  </span>
+                </div>
+                <p className="text-dash-text-secondary whitespace-pre-wrap line-clamp-6">
+                  {m.body || m.snippet}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="mt-2 flex items-center justify-end">
+        <a
+          href={gmailUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-[11px] text-dash-text-muted hover:text-dash-text"
+        >
+          Open full thread in Gmail
+          <ExternalLink className="w-3 h-3" />
+        </a>
+      </div>
+    </div>
+  );
+};
+
+// Heuristic: messages from a CC team email are "self." Better-than-nothing
+// signal — same-domain reply detection. The full body comparison would
+// need the actual logged-in user's email which we don't pass here, so
+// domain match is the pragmatic proxy.
+const isLikelySelf = (email: string): boolean => {
+  const e = email.toLowerCase();
+  return (
+    e.endsWith("@countercultures.com.mx") || e.endsWith("@untold.works")
+  );
+};
+
+// Heuristic for the "Looks approved — log it" suggestion. Conservative —
+// only triggers on clear positive signals. False negatives are fine
+// (Roger just clicks Mark Approved manually). False positives are not
+// (would auto-suggest approving a vague "ok let me check" reply).
+const looksApproved = (text: string): boolean => {
+  const t = text.toLowerCase();
+  const positive = [
+    "aprobado",
+    "aprobada",
+    "approved",
+    "looks good",
+    "todo bien",
+    "está bien",
+    "esta bien",
+    "perfecto",
+    "perfect",
+    "adelante",
+    "proceed",
+    "go ahead",
+    "ok proceder",
+    "okay proceder",
+    "confirmo",
+    "confirmed",
+    "👍",
+    "✅",
+  ];
+  const negative = [
+    "no apruebo",
+    "no es correcto",
+    "incorrecto",
+    "error",
+    "no está bien",
+    "ajustar",
+    "cambiar",
+    "espera",
+    "wait",
+    "let me check",
+    "déjame revisar",
+    "dejame revisar",
+  ];
+  if (negative.some((n) => t.includes(n))) return false;
+  return positive.some((p) => t.includes(p));
 };
 
 // ── Modal: Send Prefactura ────────────────────────────────────────
