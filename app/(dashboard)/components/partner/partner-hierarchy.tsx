@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { Building2, User, ExternalLink, Users } from "lucide-react";
 

@@ -27,10 +27,10 @@ const SocialPage = () => {
             Plan, publish, engage, and track — calendar, feed, comments and analytics in one place
           </p>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-lg">
-          <WifiOff className="w-3.5 h-3.5 text-amber-500" />
-          <span className="text-xs text-amber-700 font-medium">Demo Mode</span>
-          <span className="text-[10px] text-amber-500">Connect Meta API for live data</span>
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-dash-warn-soft border border-dash-warn rounded-lg">
+          <WifiOff className="w-3.5 h-3.5 text-dash-warn" />
+          <span className="text-xs text-dash-warn font-medium">Demo Mode</span>
+          <span className="text-[10px] text-dash-warn">Connect Meta API for live data</span>
         </div>
       </div>
 

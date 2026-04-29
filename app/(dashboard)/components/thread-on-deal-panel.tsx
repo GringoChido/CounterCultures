@@ -81,7 +81,7 @@ export const ThreadOnDealPanel = ({ dealId }: Props) => {
           Loading…
         </div>
       ) : error ? (
-        <p className="text-xs text-red-400">{error}</p>
+        <p className="text-xs text-dash-danger">{error}</p>
       ) : threads.length === 0 ? (
         <p className="text-xs text-dash-text-secondary/70 py-2">
           No emails linked to this deal yet. Use <em>Attach to Deal</em> from
@@ -117,7 +117,7 @@ export const ThreadOnDealPanel = ({ dealId }: Props) => {
                     </span>
                   )}
                   {t.degraded && (
-                    <span className="text-[10px] text-amber-400">
+                    <span className="text-[10px] text-dash-warn">
                       Gmail not reachable — showing cached metadata
                     </span>
                   )}

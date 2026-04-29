@@ -213,7 +213,7 @@ const BrandRelated = ({ brandSlug, brandName }: BrandRelatedProps) => {
             Loading…
           </div>
         ) : error ? (
-          <p className="text-sm text-red-600 py-8 text-center">{error}</p>
+          <p className="text-sm text-dash-danger py-8 text-center">{error}</p>
         ) : null}
 
         {!loading && !error && active === "products" ? (

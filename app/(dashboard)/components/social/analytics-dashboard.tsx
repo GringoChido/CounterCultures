@@ -150,8 +150,8 @@ export function AnalyticsDashboard({ instagram, facebook }: AnalyticsDashboardPr
       {/* Platform Breakdown */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {[
-          { data: instagram, label: "Instagram", color: "bg-pink-500", textColor: "text-pink-600" },
-          { data: facebook, label: "Facebook", color: "bg-blue-600", textColor: "text-blue-600" },
+          { data: instagram, label: "Instagram", color: "bg-dash-cat-pink", textColor: "text-dash-cat-pink" },
+          { data: facebook, label: "Facebook", color: "bg-dash-info", textColor: "text-dash-info" },
         ].map((item) => (
           <div
             key={item.label}
@@ -172,7 +172,7 @@ export function AnalyticsDashboard({ instagram, facebook }: AnalyticsDashboardPr
                 </div>
               </div>
               <div className="text-right">
-                <div className="flex items-center gap-1 text-green-600">
+                <div className="flex items-center gap-1 text-dash-success">
                   <ArrowUpRight className="w-3.5 h-3.5" />
                   <span className="text-sm font-semibold">
                     +{item.data.followerGrowth}

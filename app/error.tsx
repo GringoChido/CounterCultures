@@ -25,7 +25,7 @@ const ErrorBoundary = ({ error, reset }: ErrorBoundaryProps) => {
   }, [error]);
 
   return (
-    <main className="min-h-[70vh] flex items-center justify-center px-6 py-20 bg-[var(--surface,#0e0b07)] text-[var(--text,#ece4d3)]">
+    <main id="main" tabIndex={-1} className="min-h-[70vh] flex items-center justify-center px-6 py-20 bg-[var(--surface,#0e0b07)] text-[var(--text,#ece4d3)]">
       <div className="max-w-md w-full text-center">
         <p className="text-xs uppercase tracking-[0.2em] text-[var(--accent,#c9a95c)] mb-4">
           Counter Cultures

@@ -1,5 +1,3 @@
-"use client";
-
 import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 
 export interface PipelineJourneyProps {

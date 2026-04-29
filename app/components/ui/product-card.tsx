@@ -63,7 +63,7 @@ const ProductCard = ({
         )}
       </div>
       <div className="mt-4 space-y-1.5">
-        <p className="font-body font-semibold text-xs text-brand-stone tracking-wide uppercase">
+        <p className="font-body font-semibold text-xs text-dash-text-secondary tracking-wide uppercase">
           {brand}
         </p>
         <h3 className="font-body text-sm font-medium text-brand-charcoal group-hover:text-brand-terracotta transition-colors duration-300 leading-snug line-clamp-2">
@@ -72,7 +72,7 @@ const ProductCard = ({
         <div className="flex items-center gap-3">
           <span className="font-mono text-sm text-brand-charcoal">
             ${formatPrice(price)}{" "}
-            <span className="text-brand-stone text-xs">{currency}</span>
+            <span className="text-dash-text-secondary text-xs">{currency}</span>
           </span>
         </div>
         {finishes.length > 1 && (
@@ -85,7 +85,7 @@ const ProductCard = ({
               />
             ))}
             {finishes.length > 5 && (
-              <span className="font-mono text-[10px] text-brand-stone">
+              <span className="font-mono text-[10px] text-dash-text-secondary">
                 +{finishes.length - 5}
               </span>
             )}

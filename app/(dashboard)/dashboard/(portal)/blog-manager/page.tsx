@@ -232,18 +232,18 @@ const BlogManagerPage = () => {
         <div className="space-y-4">
           <div>
             <label className="block text-xs font-medium text-dash-text-secondary mb-1">Post Title *</label>
-            <input className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper" value={newPost.title} onChange={(e) => setNewPost((p) => ({ ...p, title: e.target.value }))} placeholder="e.g. How to Choose the Perfect Kitchen Faucet" />
+            <input className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper" value={newPost.title} onChange={(e) => setNewPost((p) => ({ ...p, title: e.target.value }))} placeholder="e.g. How to Choose the Perfect Kitchen Faucet" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-dash-text-secondary mb-1">Content Pillar</label>
-              <select className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper" value={newPost.pillar} onChange={(e) => setNewPost((p) => ({ ...p, pillar: e.target.value }))}>
+              <select className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper" value={newPost.pillar} onChange={(e) => setNewPost((p) => ({ ...p, pillar: e.target.value }))}>
                 {BLOG_PILLARS.map((p) => <option key={p} value={p}>{p}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-xs font-medium text-dash-text-secondary mb-1">Author</label>
-              <input className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper" value={newPost.author} onChange={(e) => setNewPost((p) => ({ ...p, author: e.target.value }))} />
+              <input className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper" value={newPost.author} onChange={(e) => setNewPost((p) => ({ ...p, author: e.target.value }))} />
             </div>
           </div>
           {/* Embedded Products */}
@@ -258,7 +258,7 @@ const BlogManagerPage = () => {
                       <img src={lp.image} alt={lp.name} className="w-5 h-5 rounded object-cover" />
                     )}
                     <span>{lp.name}</span>
-                    <button onClick={() => setLinkedProducts((prev) => prev.filter((p) => p.slug !== lp.slug))} className="text-dash-text-secondary hover:text-red-400 cursor-pointer">
+                    <button onClick={() => setLinkedProducts((prev) => prev.filter((p) => p.slug !== lp.slug))} className="text-dash-text-secondary hover:text-dash-danger cursor-pointer">
                       <X className="w-3 h-3" />
                     </button>
                   </div>
@@ -277,7 +277,7 @@ const BlogManagerPage = () => {
             <label className="block text-xs font-medium text-dash-text-secondary mb-1">Brand Tags</label>
             <input
               type="text"
-              className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper"
+              className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper"
               value={newPost.brandSlugs}
               onChange={(e) => setNewPost((p) => ({ ...p, brandSlugs: e.target.value }))}
               placeholder="kohler, dornbracht, waterworks (comma separated)"
@@ -288,7 +288,7 @@ const BlogManagerPage = () => {
           </div>
           <div>
             <label className="block text-xs font-medium text-dash-text-secondary mb-1">Notes / Brief</label>
-            <textarea className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper h-32 resize-none" value={newPost.notes} onChange={(e) => setNewPost((p) => ({ ...p, notes: e.target.value }))} placeholder="Key points, target keywords, audience, call-to-action..." />
+            <textarea className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper h-32 resize-none" value={newPost.notes} onChange={(e) => setNewPost((p) => ({ ...p, notes: e.target.value }))} placeholder="Key points, target keywords, audience, call-to-action..." />
           </div>
           <div className="flex gap-3 pt-2">
             <button

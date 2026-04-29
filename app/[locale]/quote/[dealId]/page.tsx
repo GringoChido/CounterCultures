@@ -43,15 +43,15 @@ const InvalidTokenView = async ({
 }) => {
   const t = await getTranslations({ locale, namespace: "quote" });
   return (
-    <main className="min-h-screen bg-[#F5F0EB] flex items-center justify-center p-6">
+    <main id="main" tabIndex={-1} className="min-h-screen bg-brand-linen flex items-center justify-center p-6">
       <div className="max-w-md text-center">
-        <h1 className="font-['Cormorant',serif] text-3xl text-[#1a1a1a] mb-2">
+        <h1 className="font-['Cormorant',serif] text-3xl text-brand-charcoal mb-2">
           {t("invalidTitle")}
         </h1>
-        <p className="text-sm text-[#6B6B6B]">
+        <p className="text-sm text-dash-text-secondary">
           {reason === "expired" ? t("invalidExpired") : t("invalidDefault")}
         </p>
-        <p className="mt-6 text-[11px] text-[#999]">{t("footerContact")}</p>
+        <p className="mt-6 text-[11px] text-dash-text-muted">{t("footerContact")}</p>
       </div>
     </main>
   );
@@ -83,7 +83,7 @@ const PublicQuotePage = async ({
       : null;
 
   return (
-    <main className="bg-[#F5F0EB] min-h-screen py-10">
+    <main id="main" tabIndex={-1} className="bg-brand-linen min-h-screen py-10">
       {/* Hide any dev-overlay bits + provide print CSS similar to the auth'd route */}
       <style
         // eslint-disable-next-line react/no-unknown-property
@@ -100,7 +100,7 @@ const PublicQuotePage = async ({
       />
       <QuoteDocument data={data} depositPayUrl={depositPayUrl} customerFacing />
 
-      <div className="no-print max-w-[800px] mx-auto mt-6 text-center text-[11px] text-[#999]">
+      <div className="no-print max-w-[800px] mx-auto mt-6 text-center text-[11px] text-dash-text-muted">
         Quote {data.docNumber}. Keep this link — you can return to it any time
         before {new Date(data.validUntil).toLocaleDateString()}.
       </div>

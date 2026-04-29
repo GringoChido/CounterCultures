@@ -106,7 +106,7 @@ const FilterPills = ({
       {activePills.length > 0 && (
         <button
           onClick={onClearAll}
-          className="ml-2 font-body text-sm text-brand-stone hover:text-brand-terracotta transition-colors"
+          className="ml-2 font-body text-sm text-dash-text-secondary hover:text-brand-terracotta transition-colors"
         >
           Clear all
         </button>

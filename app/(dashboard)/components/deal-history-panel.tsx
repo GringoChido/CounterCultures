@@ -47,12 +47,12 @@ interface Props {
 
 const EVENT_ICONS: Record<string, { icon: typeof CheckCircle2; className: string }> = {
   stage_change: { icon: ArrowRight, className: "text-brand-copper" },
-  pending_move: { icon: Clock, className: "text-amber-400" },
-  pending_move_cancelled: { icon: CircleAlert, className: "text-amber-400" },
-  rollback: { icon: Undo2, className: "text-violet-400" },
-  sla_breach: { icon: AlertTriangle, className: "text-red-400" },
+  pending_move: { icon: Clock, className: "text-dash-warn" },
+  pending_move_cancelled: { icon: CircleAlert, className: "text-dash-warn" },
+  rollback: { icon: Undo2, className: "text-dash-cat-violet" },
+  sla_breach: { icon: AlertTriangle, className: "text-dash-danger" },
   field_update: { icon: Layout, className: "text-dash-text-secondary" },
-  alert_fired: { icon: Bell, className: "text-emerald-400" },
+  alert_fired: { icon: Bell, className: "text-dash-success" },
 };
 
 const CHANNEL_ICONS: Record<string, typeof Mail> = {
@@ -207,13 +207,13 @@ const DealHistoryPanel = ({ dealId }: Props) => {
                       <span
                         className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium ${
                           status === "sent"
-                            ? "bg-emerald-500/10 text-emerald-400"
+                            ? "bg-dash-success/10 text-dash-success"
                             : status === "dry_run"
-                              ? "bg-amber-500/10 text-amber-400"
+                              ? "bg-dash-warn/10 text-dash-warn"
                               : status === "queued"
-                                ? "bg-blue-500/10 text-blue-400"
+                                ? "bg-dash-info/10 text-dash-info"
                                 : status === "failed"
-                                  ? "bg-red-500/10 text-red-400"
+                                  ? "bg-dash-danger/10 text-dash-danger"
                                   : "bg-dash-border text-dash-text-secondary"
                         }`}
                       >
@@ -225,7 +225,7 @@ const DealHistoryPanel = ({ dealId }: Props) => {
                     <button
                       onClick={() => handleRollback(event.event_id)}
                       disabled={rollingBack === event.event_id}
-                      className="mt-2 inline-flex items-center gap-1 px-2.5 py-1 text-xs bg-dash-surface border border-dash-border rounded hover:border-violet-400/40 hover:text-violet-400 transition-colors disabled:opacity-50"
+                      className="mt-2 inline-flex items-center gap-1 px-2.5 py-1 text-xs bg-dash-surface border border-dash-border rounded hover:border-dash-cat-violet/40 hover:text-dash-cat-violet transition-colors disabled:opacity-50"
                     >
                       {rollingBack === event.event_id ? (
                         <Loader2 className="w-3 h-3 animate-spin" />

@@ -20,8 +20,8 @@ const platformConfig: Record<
   SocialPlatform,
   { label: string; variant: "info" | "danger"; color: string }
 > = {
-  instagram: { label: "Instagram", variant: "danger", color: "bg-pink-500" },
-  facebook: { label: "Facebook", variant: "info", color: "bg-blue-600" },
+  instagram: { label: "Instagram", variant: "danger", color: "bg-dash-cat-pink" },
+  facebook: { label: "Facebook", variant: "info", color: "bg-dash-info" },
 };
 
 interface SocialFeedProps {

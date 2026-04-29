@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { Star } from "lucide-react";
 import type { DriveHomeFile } from "@/app/lib/google-drive-user";
@@ -72,7 +70,7 @@ export const FileList = ({ files, loading, emptyLabel }: FileListProps) => {
                 {file.starred && (
                   <Star
                     size={12}
-                    className="text-amber-500 fill-amber-500 shrink-0"
+                    className="text-dash-warn fill-amber-500 shrink-0"
                   />
                 )}
               </div>

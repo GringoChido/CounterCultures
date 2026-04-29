@@ -291,7 +291,7 @@ const WhatsAppPage = () => {
                 placeholder="Search conversations..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+                className="w-full pl-9 pr-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
               />
             </div>
           </div>
@@ -409,7 +409,11 @@ const WhatsAppPage = () => {
                   >
                     <Phone className="w-4 h-4 text-dash-text-secondary" />
                   </a>
-                  <button className="p-2 rounded-lg hover:bg-dash-bg transition-colors cursor-pointer">
+                  <button
+                    type="button"
+                    aria-label="More options"
+                    className="p-2 rounded-lg hover:bg-dash-bg transition-colors cursor-pointer"
+                  >
                     <MoreVertical className="w-4 h-4 text-dash-text-secondary" />
                   </button>
                 </div>
@@ -460,9 +464,11 @@ const WhatsAppPage = () => {
               <div className="px-4 pt-2 pb-4">
                 <div className="flex items-center gap-3">
                   <button
+                    type="button"
                     onClick={handleSendProduct}
                     className="p-2.5 rounded-lg border border-dash-border hover:bg-dash-bg hover:text-brand-copper transition-colors cursor-pointer text-dash-text-secondary"
                     title="Send Product"
+                    aria-label="Send Product"
                   >
                     <Package className="w-4 h-4" />
                   </button>
@@ -471,9 +477,13 @@ const WhatsAppPage = () => {
                     placeholder="Type a message..."
                     value={messageInput}
                     onChange={(e) => setMessageInput(e.target.value)}
-                    className="flex-1 px-4 py-2.5 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+                    className="flex-1 px-4 py-2.5 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
                   />
-                  <button className="p-2.5 bg-brand-copper rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer">
+                  <button
+                    type="button"
+                    aria-label="Send message"
+                    className="p-2.5 bg-brand-copper rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer"
+                  >
                     <Send className="w-4 h-4 text-white" />
                   </button>
                 </div>

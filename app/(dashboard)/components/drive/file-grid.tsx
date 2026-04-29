@@ -60,7 +60,7 @@ const Card = ({ file }: { file: DriveHomeFile }) => (
         {file.starred && (
           <Star
             size={12}
-            className="text-amber-500 fill-amber-500 shrink-0"
+            className="text-dash-warn fill-amber-500 shrink-0"
           />
         )}
       </div>

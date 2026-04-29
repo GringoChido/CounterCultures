@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { TrendingUp } from "lucide-react";
 import type { RecentlySpecifiedTile } from "@/app/lib/recently-specified";
@@ -53,7 +51,7 @@ const Tile = ({
   return (
     <Link
       href={href}
-      className="group shrink-0 w-[260px] snap-start bg-white border border-brand-stone/15 hover:border-brand-copper/60 transition-colors"
+      className="group shrink-0 w-[260px] snap-start bg-dash-surface border border-brand-stone/15 hover:border-brand-copper/60 transition-colors"
     >
       <div className="relative">
         <ProductVisual
@@ -80,11 +78,11 @@ const Tile = ({
         <h3 className="font-body font-medium text-sm text-brand-charcoal line-clamp-2 leading-snug group-hover:text-brand-copper transition-colors">
           {item.name || item.sku}
         </h3>
-        <p className="mt-1 font-mono text-[10px] text-brand-stone truncate">
+        <p className="mt-1 font-mono text-[10px] text-dash-text-secondary truncate">
           {item.sku || "—"}
         </p>
         {price && (
-          <p className="mt-2 pt-2 border-t border-brand-stone/10 font-body text-[11px] text-brand-stone">
+          <p className="mt-2 pt-2 border-t border-brand-stone/10 font-body text-[11px] text-dash-text-secondary">
             <span>{t.from}</span>{" "}
             <span className="text-brand-charcoal font-medium">{price}</span>
           </p>
@@ -98,7 +96,7 @@ const RecentlySpecifiedRow = ({ items, locale }: RecentlySpecifiedRowProps) => {
   const t = T[locale];
   if (items.length === 0) return null;
   return (
-    <section className="py-14 md:py-20 bg-white border-b border-brand-stone/10">
+    <section className="py-14 md:py-20 bg-dash-surface border-b border-brand-stone/10">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-end justify-between gap-6 mb-8">
           <div>
@@ -108,7 +106,7 @@ const RecentlySpecifiedRow = ({ items, locale }: RecentlySpecifiedRowProps) => {
             <h2 className="mt-3 font-display text-3xl md:text-4xl font-light tracking-wide text-brand-charcoal leading-[1.1] max-w-2xl">
               {t.headline}
             </h2>
-            <p className="mt-2 font-body text-sm text-brand-stone">
+            <p className="mt-2 font-body text-sm text-dash-text-secondary">
               {t.subhead}
             </p>
           </div>

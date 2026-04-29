@@ -32,7 +32,7 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
   return (
     <>
       <Header locale={lang} />
-      <main>
+      <main id="main" tabIndex={-1}>
         {/* Hero */}
         <section className="relative h-[55vh] min-h-[380px] md:h-[60vh] lg:h-[70vh]">
           <div
@@ -78,7 +78,7 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
         {/* Breadcrumb */}
         <section className="py-4 bg-brand-linen border-b border-brand-stone/10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <nav className="flex items-center gap-2 font-body font-medium text-xs text-brand-stone flex-wrap">
+            <nav className="flex items-center gap-2 font-body font-medium text-xs text-dash-text-secondary flex-wrap">
               <Link href={`/${locale}`} className="hover:text-brand-terracotta transition-colors">
                 {t("Home", "Inicio")}
               </Link>
@@ -94,7 +94,7 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
 
         {/* Stats bar */}
         {project.stats && (
-          <section className="py-6 md:py-8 bg-white border-b border-brand-stone/10">
+          <section className="py-6 md:py-8 bg-dash-surface border-b border-brand-stone/10">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                 {project.stats.map((stat) => (
@@ -103,7 +103,7 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                       <p className="font-display text-2xl md:text-3xl font-light text-brand-charcoal">
                         {stat.value}
                       </p>
-                      <p className="mt-1 font-body font-semibold text-[10px] tracking-widest text-brand-stone uppercase">
+                      <p className="mt-1 font-body font-semibold text-[10px] tracking-widest text-dash-text-secondary uppercase">
                         {stat.label[lang]}
                       </p>
                     </div>
@@ -127,7 +127,7 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                     {project.longDescription[lang].split("\n\n").map((paragraph, i) => (
                       <p
                         key={i}
-                        className="font-body text-base text-brand-stone leading-relaxed"
+                        className="font-body text-base text-dash-text-secondary leading-relaxed"
                       >
                         {paragraph}
                       </p>
@@ -140,8 +140,8 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
               <div className="lg:col-span-5">
                 <AnimatedSection delay={0.2}>
                   <div className="lg:sticky lg:top-24 space-y-8">
-                    <div className="bg-white p-6 border border-brand-stone/10">
-                      <h3 className="font-body font-semibold text-xs tracking-widest text-brand-stone uppercase mb-4">
+                    <div className="bg-dash-surface p-6 border border-brand-stone/10">
+                      <h3 className="font-body font-semibold text-xs tracking-widest text-dash-text-secondary uppercase mb-4">
                         {t("Brands Specified", "Marcas Especificadas")}
                       </h3>
                       <div className="flex flex-wrap gap-2">
@@ -156,13 +156,13 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                       </div>
                     </div>
 
-                    <div className="bg-white p-6 border border-brand-stone/10">
-                      <h3 className="font-body font-semibold text-xs tracking-widest text-brand-stone uppercase mb-4">
+                    <div className="bg-dash-surface p-6 border border-brand-stone/10">
+                      <h3 className="font-body font-semibold text-xs tracking-widest text-dash-text-secondary uppercase mb-4">
                         {t("Project Details", "Detalles del Proyecto")}
                       </h3>
                       <dl className="space-y-3">
                         <div>
-                          <dt className="font-body font-semibold text-[10px] tracking-wider text-brand-stone uppercase">
+                          <dt className="font-body font-semibold text-[10px] tracking-wider text-dash-text-secondary uppercase">
                             {t("Architect", "Arquitecto")}
                           </dt>
                           <dd className="font-body text-sm text-brand-charcoal">
@@ -171,7 +171,7 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                         </div>
                         {project.architectFirm && (
                           <div>
-                            <dt className="font-body font-semibold text-[10px] tracking-wider text-brand-stone uppercase">
+                            <dt className="font-body font-semibold text-[10px] tracking-wider text-dash-text-secondary uppercase">
                               {t("Firm", "Despacho")}
                             </dt>
                             <dd className="font-body text-sm text-brand-charcoal">
@@ -180,7 +180,7 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                           </div>
                         )}
                         <div>
-                          <dt className="font-body font-semibold text-[10px] tracking-wider text-brand-stone uppercase">
+                          <dt className="font-body font-semibold text-[10px] tracking-wider text-dash-text-secondary uppercase">
                             {t("Location", "Ubicación")}
                           </dt>
                           <dd className="font-body text-sm text-brand-charcoal">
@@ -188,7 +188,7 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                           </dd>
                         </div>
                         <div>
-                          <dt className="font-body font-semibold text-[10px] tracking-wider text-brand-stone uppercase">
+                          <dt className="font-body font-semibold text-[10px] tracking-wider text-dash-text-secondary uppercase">
                             {t("Year", "Año")}
                           </dt>
                           <dd className="font-body text-sm text-brand-charcoal">
@@ -205,7 +205,7 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
         </section>
 
         {/* Gallery */}
-        <section className="py-10 md:py-24 bg-white">
+        <section className="py-10 md:py-24 bg-dash-surface">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection>
               <h2 className="font-display text-2xl md:text-3xl font-light text-brand-charcoal tracking-wide mb-10">
@@ -316,18 +316,18 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
               </h2>
             </AnimatedSection>
             <AnimatedSection delay={0.1}>
-              <div className="bg-white border border-brand-stone/10 overflow-hidden">
+              <div className="bg-dash-surface border border-brand-stone/10 overflow-hidden">
                 <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-brand-sand/30 border-b border-brand-stone/10">
-                  <span className="col-span-4 font-body font-semibold text-[10px] tracking-widest text-brand-stone uppercase">
+                  <span className="col-span-4 font-body font-semibold text-[10px] tracking-widest text-dash-text-secondary uppercase">
                     {t("Product", "Producto")}
                   </span>
-                  <span className="col-span-3 font-body font-semibold text-[10px] tracking-widest text-brand-stone uppercase">
+                  <span className="col-span-3 font-body font-semibold text-[10px] tracking-widest text-dash-text-secondary uppercase">
                     {t("Brand", "Marca")}
                   </span>
-                  <span className="col-span-3 font-body font-semibold text-[10px] tracking-widest text-brand-stone uppercase">
+                  <span className="col-span-3 font-body font-semibold text-[10px] tracking-widest text-dash-text-secondary uppercase">
                     {t("Location", "Ubicación")}
                   </span>
-                  <span className="col-span-2 font-body font-semibold text-[10px] tracking-widest text-brand-stone uppercase" />
+                  <span className="col-span-2 font-body font-semibold text-[10px] tracking-widest text-dash-text-secondary uppercase" />
                 </div>
                 {project.fixtures.map((fixture, i) => (
                   <div
@@ -340,13 +340,13 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                         {fixture.product}
                       </p>
                       <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
-                        <span className="font-body text-xs text-brand-stone">
+                        <span className="font-body text-xs text-dash-text-secondary">
                           <span className="font-body font-semibold tracking-wider uppercase text-[9px] mr-1">
                             {t("Brand", "Marca")}:
                           </span>
                           {fixture.brand}
                         </span>
-                        <span className="font-body text-xs text-brand-stone">
+                        <span className="font-body text-xs text-dash-text-secondary">
                           <span className="font-body font-semibold tracking-wider uppercase text-[9px] mr-1">
                             {t("Location", "Ubicación")}:
                           </span>
@@ -371,12 +371,12 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                         </span>
                       </div>
                       <div className="col-span-3">
-                        <span className="font-body text-sm text-brand-stone">
+                        <span className="font-body text-sm text-dash-text-secondary">
                           {fixture.brand}
                         </span>
                       </div>
                       <div className="col-span-3">
-                        <span className="font-body text-sm text-brand-stone">
+                        <span className="font-body text-sm text-dash-text-secondary">
                           {fixture.location[lang]}
                         </span>
                       </div>
@@ -422,13 +422,13 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
         )}
 
         {/* CTA */}
-        <section className="py-10 md:py-24 bg-white">
+        <section className="py-10 md:py-24 bg-dash-surface">
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
             <AnimatedSection>
               <h2 className="font-display text-3xl md:text-4xl font-light text-brand-charcoal tracking-wide">
                 {t("Start Your Project", "Comienza Tu Proyecto")}
               </h2>
-              <p className="mt-4 font-body text-base text-brand-stone max-w-xl mx-auto leading-relaxed">
+              <p className="mt-4 font-body text-base text-dash-text-secondary max-w-xl mx-auto leading-relaxed">
                 {t(
                   "Whether it's a single bathroom or a 50-room hotel, we'll help you specify the perfect fixtures.",
                   "Ya sea un solo baño o un hotel de 50 habitaciones, te ayudaremos a especificar los accesorios perfectos."
@@ -439,7 +439,7 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                   href={whatsappHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-[#25D366] text-white font-body text-sm font-medium rounded-md hover:bg-[#20BD5A] transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-vendor-whatsapp text-white font-body text-sm font-medium rounded-md hover:bg-vendor-whatsapp-dark transition-colors"
                 >
                   <MessageCircle className="w-4 h-4" />
                   WhatsApp
@@ -460,7 +460,7 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <Link
               href={`/${locale}/projects`}
-              className="inline-flex items-center gap-2 font-body text-sm text-brand-stone hover:text-brand-terracotta transition-colors"
+              className="inline-flex items-center gap-2 font-body text-sm text-dash-text-secondary hover:text-brand-terracotta transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               {t("Back to All Projects", "Volver a Todos los Proyectos")}

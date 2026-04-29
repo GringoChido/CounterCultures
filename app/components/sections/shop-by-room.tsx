@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import Image from "next/image";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
@@ -47,7 +45,7 @@ const ShopByRoom = ({ locale: localeProp = "en" }: { locale?: string }) => {
         <h2 className="text-center font-display text-3xl md:text-5xl font-normal tracking-wide text-brand-charcoal mb-4">
           {locale === "en" ? "Explore Our Collection" : "Explora Nuestra Colección"}
         </h2>
-        <p className="text-center font-body text-brand-stone mb-8 md:mb-12 max-w-2xl mx-auto">
+        <p className="text-center font-body text-dash-text-secondary mb-8 md:mb-12 max-w-2xl mx-auto">
           {locale === "en"
             ? "Kitchen, bathroom, and architectural hardware from 19 authorized brands and Mexican artisans. Browse over 354,000 SKUs in the full catalog or explore our curated selection — delivery nationwide."
             : "Cocina, baño y herrajes arquitectónicos de 19 marcas autorizadas y artesanos mexicanos. Explora más de 354,000 SKUs en el catálogo completo o nuestra selección curada — entrega en todo el país."}

@@ -39,17 +39,17 @@ const QuotePrintPage = async ({ params, searchParams }: PrintPageProps) => {
         }}
       />
 
-      <div className="bg-brand-stone/5 min-h-screen py-10 print:py-0 print:bg-white">
+      <div className="bg-brand-stone/5 min-h-screen py-10 print:py-0 print:bg-dash-surface">
         <QuoteDocument data={data} />
 
-        <div className="no-print max-w-[800px] mx-auto mt-6 flex items-center justify-between text-xs text-brand-stone">
+        <div className="no-print max-w-[800px] mx-auto mt-6 flex items-center justify-between text-xs text-dash-text-secondary">
           <span>
             Press{" "}
-            <kbd className="px-1.5 py-0.5 bg-white border border-brand-stone/30 rounded text-[10px]">
+            <kbd className="px-1.5 py-0.5 bg-dash-surface border border-brand-stone/30 rounded text-[10px]">
               Cmd
             </kbd>{" "}
             +{" "}
-            <kbd className="px-1.5 py-0.5 bg-white border border-brand-stone/30 rounded text-[10px]">
+            <kbd className="px-1.5 py-0.5 bg-dash-surface border border-brand-stone/30 rounded text-[10px]">
               P
             </kbd>
             , then "Save as PDF" in the destination dropdown.

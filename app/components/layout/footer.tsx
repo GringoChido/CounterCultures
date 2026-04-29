@@ -61,7 +61,7 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
           <span className="font-display text-2xl font-light tracking-wider">
             Counter Cultures
           </span>
-          <span className="block font-body font-semibold text-[10px] tracking-[0.2em] text-brand-stone uppercase mt-1">
+          <span className="block font-body font-semibold text-[10px] tracking-[0.2em] text-dash-text-secondary uppercase mt-1">
             {lang === "es" ? "Cocina, Baño y Herrajes Premium" : "Premium Kitchen, Bath & Hardware"}
           </span>
         </Link>
@@ -77,7 +77,7 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
                 <li key={link.href}>
                   <Link
                     href={`/${lang}${link.href}`}
-                    className="inline-flex items-center min-h-[36px] font-body text-sm text-brand-stone hover:text-brand-terracotta transition-colors"
+                    className="inline-flex items-center min-h-[36px] font-body text-sm text-dash-text-secondary hover:text-brand-terracotta transition-colors"
                   >
                     {link.label[lang]}
                   </Link>
@@ -96,7 +96,7 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
                 <li key={link.href}>
                   <Link
                     href={link.href === "/dashboard" ? link.href : `/${lang}${link.href}`}
-                    className="inline-flex items-center min-h-[36px] font-body text-sm text-brand-stone hover:text-brand-terracotta transition-colors"
+                    className="inline-flex items-center min-h-[36px] font-body text-sm text-dash-text-secondary hover:text-brand-terracotta transition-colors"
                   >
                     {link.label[lang]}
                   </Link>
@@ -110,7 +110,7 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
             <h4 className="font-body text-sm font-semibold tracking-wider uppercase mb-4 text-brand-sand">
               {t.contact[lang]}
             </h4>
-            <ul className="space-y-2 font-body text-sm text-brand-stone">
+            <ul className="space-y-2 font-body text-sm text-dash-text-secondary">
               <li>{SITE_CONFIG.showroom.address}</li>
               <li>{SITE_CONFIG.showroom.hours}</li>
               <li>
@@ -142,7 +142,7 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
                 href={SITE_CONFIG.social.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-brand-stone hover:text-brand-terracotta transition-colors"
+                className="text-dash-text-secondary hover:text-brand-terracotta transition-colors"
                 aria-label="Instagram"
               >
                 <InstagramIcon className="w-5 h-5" />
@@ -151,7 +151,7 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
                 href={SITE_CONFIG.social.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-brand-stone hover:text-brand-terracotta transition-colors"
+                className="text-dash-text-secondary hover:text-brand-terracotta transition-colors"
                 aria-label="Facebook"
               >
                 <FacebookIcon className="w-5 h-5" />
@@ -160,7 +160,7 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
                 href={SITE_CONFIG.social.pinterest}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-brand-stone hover:text-brand-terracotta transition-colors"
+                className="text-dash-text-secondary hover:text-brand-terracotta transition-colors"
                 aria-label="Pinterest"
               >
                 <PinterestIcon className="w-5 h-5" />
@@ -171,32 +171,32 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
 
         {/* Bottom bar */}
         <div className="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="font-body text-xs text-brand-stone">
+          <p className="font-body text-xs text-dash-text-secondary">
             &copy; {new Date().getFullYear()} Counter Cultures.{" "}
             {t.curated[lang]}
           </p>
           <div className="flex flex-wrap items-center gap-4">
             <Link
               href={`/${lang}/privacy`}
-              className="font-body text-xs text-brand-stone hover:text-brand-terracotta transition-colors"
+              className="font-body text-xs text-dash-text-secondary hover:text-brand-terracotta transition-colors"
             >
               {lang === "es" ? "Privacidad" : "Privacy"}
             </Link>
             <Link
               href={`/${lang}/payment-methods`}
-              className="font-body text-xs text-brand-stone hover:text-brand-terracotta transition-colors"
+              className="font-body text-xs text-dash-text-secondary hover:text-brand-terracotta transition-colors"
             >
               {lang === "es" ? "Métodos de Pago" : "Payment Methods"}
             </Link>
             <Link
               href={`/${lang}/sales-delivery`}
-              className="font-body text-xs text-brand-stone hover:text-brand-terracotta transition-colors"
+              className="font-body text-xs text-dash-text-secondary hover:text-brand-terracotta transition-colors"
             >
               {lang === "es" ? "Venta y Entrega" : "Sales & Delivery"}
             </Link>
             <Link
               href={`/${lang}/returns-warranty`}
-              className="font-body text-xs text-brand-stone hover:text-brand-terracotta transition-colors"
+              className="font-body text-xs text-dash-text-secondary hover:text-brand-terracotta transition-colors"
             >
               {lang === "es" ? "Devoluciones" : "Returns & Warranty"}
             </Link>
@@ -205,13 +205,13 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
 
         {/* Built by Untold.works */}
         <div className="mt-4 text-center">
-          <p className="font-body text-[11px] text-brand-stone/50">
+          <p className="font-body text-[11px] text-dash-text-secondary/50">
             {lang === "es" ? "Creado por" : "Built by"}{" "}
             <a
               href="https://untold.works"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-brand-stone transition-colors duration-300"
+              className="hover:text-dash-text-secondary transition-colors duration-300"
             >
               Untold.works
             </a>

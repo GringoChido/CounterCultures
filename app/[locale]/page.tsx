@@ -210,7 +210,7 @@ const HomePage = async ({ params }: HomePageProps) => {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(speakableJsonLd) }}
       />
       <Header locale={lang} />
-      <main>
+      <main id="main" tabIndex={-1}>
         <Hero locale={lang} />
         <ShopByRoom locale={lang} />
         <FeaturedBrandsBand locale={lang} brands={featuredBrands} />

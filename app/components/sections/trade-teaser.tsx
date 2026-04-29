@@ -1,5 +1,3 @@
-"use client";
-
 import Image from "next/image";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { Button } from "@/app/components/ui/button";
@@ -47,7 +45,7 @@ const TradeTeaser = ({ locale = "en" }: { locale?: string }) => {
             <h2 className="mt-6 font-display text-4xl md:text-5xl font-normal tracking-wide text-brand-charcoal leading-tight">
               {t.title}
             </h2>
-            <p className="mt-4 font-body text-base text-brand-stone leading-relaxed max-w-lg">
+            <p className="mt-4 font-body text-base text-dash-text-secondary leading-relaxed max-w-lg">
               {t.subtitle}
             </p>
             <ul className="mt-6 space-y-3">
@@ -64,7 +62,7 @@ const TradeTeaser = ({ locale = "en" }: { locale?: string }) => {
               <Button variant="primary" href="/trade">
                 {t.cta}
               </Button>
-              <p className="mt-3 font-body text-sm text-brand-stone">
+              <p className="mt-3 font-body text-sm text-dash-text-secondary">
                 {t.note}
               </p>
             </div>

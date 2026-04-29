@@ -108,7 +108,7 @@ const ChatWidget = ({ locale = "en" }: { locale?: string }) => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-2rem)] h-[520px] max-h-[calc(100vh-6rem)] bg-white rounded-xl shadow-2xl border border-brand-stone/10 flex flex-col overflow-hidden"
+            className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-2rem)] h-[520px] max-h-[calc(100vh-6rem)] bg-dash-surface rounded-xl shadow-2xl border border-brand-stone/10 flex flex-col overflow-hidden"
           >
             {/* Header */}
             <div className="bg-brand-charcoal px-5 py-4 flex items-center justify-between shrink-0">
@@ -153,7 +153,7 @@ const ChatWidget = ({ locale = "en" }: { locale?: string }) => {
               {loading && (
                 <div className="flex justify-start">
                   <div className="bg-brand-sand/50 px-4 py-2.5 rounded-2xl rounded-bl-md">
-                    <Loader2 className="w-4 h-4 text-brand-stone animate-spin" />
+                    <Loader2 className="w-4 h-4 text-dash-text-secondary animate-spin" />
                   </div>
                 </div>
               )}
@@ -169,12 +169,12 @@ const ChatWidget = ({ locale = "en" }: { locale?: string }) => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={t.placeholder}
-                className="flex-1 font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 outline-none bg-transparent"
+                className="flex-1 font-body text-sm text-brand-charcoal placeholder:text-dash-text-secondary/50 outline-none bg-transparent"
               />
               <button
                 type="submit"
                 disabled={!input.trim() || loading}
-                className="p-2 text-brand-terracotta hover:text-brand-copper disabled:text-brand-stone/30 transition-colors cursor-pointer disabled:cursor-default"
+                className="p-2 text-brand-terracotta hover:text-brand-copper disabled:text-dash-text-secondary/30 transition-colors cursor-pointer disabled:cursor-default"
                 aria-label="Send message"
               >
                 <Send className="w-4 h-4" />

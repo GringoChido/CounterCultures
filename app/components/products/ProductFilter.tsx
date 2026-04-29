@@ -161,7 +161,7 @@ const ProductFilter = ({
               Brand
             </span>
             <ChevronDown
-              className={`w-4 h-4 text-brand-stone transition-transform ${
+              className={`w-4 h-4 text-dash-text-secondary transition-transform ${
                 expanded.brands ? "rotate-180" : ""
               }`}
             />
@@ -187,7 +187,7 @@ const ProductFilter = ({
                     <span className="flex-1 font-body text-sm text-brand-charcoal group-hover:text-brand-terracotta transition-colors">
                       {brand}
                     </span>
-                    <span className="font-mono text-xs text-brand-stone">
+                    <span className="font-mono text-xs text-dash-text-secondary">
                       ({count})
                     </span>
                   </label>
@@ -207,7 +207,7 @@ const ProductFilter = ({
               Category
             </span>
             <ChevronDown
-              className={`w-4 h-4 text-brand-stone transition-transform ${
+              className={`w-4 h-4 text-dash-text-secondary transition-transform ${
                 expanded.categories ? "rotate-180" : ""
               }`}
             />
@@ -238,7 +238,7 @@ const ProductFilter = ({
                     <span className="flex-1 font-body text-sm text-brand-charcoal group-hover:text-brand-terracotta transition-colors">
                       {categoryLabel}
                     </span>
-                    <span className="font-mono text-xs text-brand-stone">
+                    <span className="font-mono text-xs text-dash-text-secondary">
                       ({count})
                     </span>
                   </label>
@@ -258,7 +258,7 @@ const ProductFilter = ({
               Price Range
             </span>
             <ChevronDown
-              className={`w-4 h-4 text-brand-stone transition-transform ${
+              className={`w-4 h-4 text-dash-text-secondary transition-transform ${
                 expanded.price ? "rotate-180" : ""
               }`}
             />
@@ -290,7 +290,7 @@ const ProductFilter = ({
                 Finish
               </span>
               <ChevronDown
-                className={`w-4 h-4 text-brand-stone transition-transform ${
+                className={`w-4 h-4 text-dash-text-secondary transition-transform ${
                   expanded.colors ? "rotate-180" : ""
                 }`}
               />
@@ -316,7 +316,7 @@ const ProductFilter = ({
                       <span className="flex-1 font-body text-sm text-brand-charcoal group-hover:text-brand-terracotta transition-colors">
                         {color}
                       </span>
-                      <span className="font-mono text-xs text-brand-stone">
+                      <span className="font-mono text-xs text-dash-text-secondary">
                         ({count})
                       </span>
                     </label>
@@ -338,7 +338,7 @@ const ProductFilter = ({
                 Availability
               </span>
               <ChevronDown
-                className={`w-4 h-4 text-brand-stone transition-transform ${
+                className={`w-4 h-4 text-dash-text-secondary transition-transform ${
                   expanded.availability ? "rotate-180" : ""
                 }`}
               />
@@ -375,7 +375,7 @@ const ProductFilter = ({
                       <span className="flex-1 font-body text-sm text-brand-charcoal group-hover:text-brand-terracotta transition-colors">
                         {label}
                       </span>
-                      <span className="font-mono text-xs text-brand-stone">
+                      <span className="font-mono text-xs text-dash-text-secondary">
                         ({count})
                       </span>
                     </label>
@@ -409,7 +409,7 @@ const ProductFilter = ({
             className="absolute inset-0 bg-black/30"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="absolute top-0 right-0 bottom-0 w-72 bg-white shadow-lg overflow-y-auto">
+          <div className="absolute top-0 right-0 bottom-0 w-72 bg-dash-surface shadow-lg overflow-y-auto">
             <div className="p-4 border-b border-brand-stone/10 flex items-center justify-between">
               <span className="font-display text-lg text-brand-charcoal">
                 Filters
@@ -429,7 +429,7 @@ const ProductFilter = ({
       )}
 
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block bg-white p-6 rounded-sm border border-brand-stone/10">
+      <div className="hidden lg:block bg-dash-surface p-6 rounded-sm border border-brand-stone/10">
         <FilterContent />
       </div>
     </>

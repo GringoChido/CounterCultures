@@ -84,7 +84,7 @@ const CatalogSearch = ({ brandCounts, totalProducts }: CatalogSearchProps) => {
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value as typeof category)}
-            className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper"
+            className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper"
           >
             <option value="all">All categories</option>
             <option value="bathroom">Bathroom</option>
@@ -102,7 +102,7 @@ const CatalogSearch = ({ brandCounts, totalProducts }: CatalogSearchProps) => {
             value={brandFilter}
             onChange={(e) => setBrandFilter(e.target.value)}
             placeholder="Filter brands…"
-            className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper"
+            className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper"
           />
           <div className="mt-2 max-h-[520px] overflow-y-auto border border-dash-border rounded-lg">
             <button
@@ -150,7 +150,7 @@ const CatalogSearch = ({ brandCounts, totalProducts }: CatalogSearchProps) => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search 354k products by SKU, name, or brand…"
-            className="w-full pl-10 pr-10 py-2.5 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper"
+            className="w-full pl-10 pr-10 py-2.5 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper"
           />
           {query && (
             <button

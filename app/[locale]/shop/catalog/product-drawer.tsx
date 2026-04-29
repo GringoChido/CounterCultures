@@ -233,7 +233,7 @@ const ProductDrawer = ({
         onClick={onClose}
         aria-hidden
       />
-      <aside className="relative ml-auto w-[560px] max-w-[95vw] h-full bg-white border-l border-brand-stone/15 shadow-xl flex flex-col overflow-hidden">
+      <aside className="relative ml-auto w-[560px] max-w-[95vw] h-full bg-dash-surface border-l border-brand-stone/15 shadow-xl flex flex-col overflow-hidden">
         {/* Header */}
         <header className="px-6 py-5 border-b border-brand-stone/10 flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -243,14 +243,14 @@ const ProductDrawer = ({
             <h3 className="mt-1 font-display text-2xl font-light tracking-wide text-brand-charcoal leading-tight">
               {product.name || product.sku}
             </h3>
-            <p className="mt-1 font-mono text-[11px] text-brand-stone">
+            <p className="mt-1 font-mono text-[11px] text-dash-text-secondary">
               {product.sku || "—"}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 text-brand-stone hover:text-brand-charcoal cursor-pointer shrink-0"
+            className="p-1.5 text-dash-text-secondary hover:text-brand-charcoal cursor-pointer shrink-0"
             aria-label={t.closeLabel}
           >
             <X className="w-5 h-5" />
@@ -288,7 +288,7 @@ const ProductDrawer = ({
               className={`flex items-center gap-1.5 px-3 py-2 text-xs font-body rounded-t border-b-2 transition-colors cursor-pointer ${
                 tab === tt.key
                   ? "border-brand-copper text-brand-charcoal font-medium"
-                  : "border-transparent text-brand-stone hover:text-brand-charcoal"
+                  : "border-transparent text-dash-text-secondary hover:text-brand-charcoal"
               }`}
             >
               <tt.Icon className="w-3.5 h-3.5" />
@@ -314,7 +314,7 @@ const ProductDrawer = ({
               )}
               <div className="grid grid-cols-2 gap-4 text-sm font-body">
                 <div>
-                  <div className="text-[10px] tracking-[0.18em] uppercase text-brand-stone mb-1">
+                  <div className="text-[10px] tracking-[0.18em] uppercase text-dash-text-secondary mb-1">
                     {t.listPrice}
                   </div>
                   <div className="text-brand-charcoal">
@@ -323,30 +323,30 @@ const ProductDrawer = ({
                         {fmtPrice(product.listPrice, product.currency, locale)}
                       </span>
                     ) : (
-                      <span className="italic text-brand-stone">{t.quoteOnly}</span>
+                      <span className="italic text-dash-text-secondary">{t.quoteOnly}</span>
                     )}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[10px] tracking-[0.18em] uppercase text-brand-stone mb-1">
+                  <div className="text-[10px] tracking-[0.18em] uppercase text-dash-text-secondary mb-1">
                     {t.uom}
                   </div>
                   <div className="text-brand-charcoal">{product.uom}</div>
                 </div>
                 <div>
-                  <div className="text-[10px] tracking-[0.18em] uppercase text-brand-stone mb-1">
+                  <div className="text-[10px] tracking-[0.18em] uppercase text-dash-text-secondary mb-1">
                     {t.brand}
                   </div>
                   <div className="text-brand-charcoal">{product.brand || "—"}</div>
                 </div>
                 <div>
-                  <div className="text-[10px] tracking-[0.18em] uppercase text-brand-stone mb-1">
+                  <div className="text-[10px] tracking-[0.18em] uppercase text-dash-text-secondary mb-1">
                     {t.category}
                   </div>
                   <div className="text-brand-charcoal capitalize">{product.category}</div>
                 </div>
               </div>
-              <p className="text-[11px] text-brand-stone italic leading-relaxed">
+              <p className="text-[11px] text-dash-text-secondary italic leading-relaxed">
                 {t.priceNote}
               </p>
             </div>
@@ -356,15 +356,15 @@ const ProductDrawer = ({
             <div className="space-y-3">
               {loadingRel ? (
                 <div className="py-12 text-center">
-                  <Loader2 className="w-6 h-6 text-brand-stone animate-spin mx-auto" />
+                  <Loader2 className="w-6 h-6 text-dash-text-secondary animate-spin mx-auto" />
                 </div>
               ) : variants.length === 0 ? (
-                <p className="py-12 text-center text-sm font-body text-brand-stone">
+                <p className="py-12 text-center text-sm font-body text-dash-text-secondary">
                   {t.noVariants}
                 </p>
               ) : (
                 <>
-                  <p className="text-xs font-body text-brand-stone">
+                  <p className="text-xs font-body text-dash-text-secondary">
                     {t.variantsHint}
                     {skuRoot && (
                       <>
@@ -400,7 +400,7 @@ const ProductDrawer = ({
                           {v.finishCode}
                         </span>
                         <div className="flex-1 min-w-0">
-                          <div className="font-mono text-[10px] text-brand-stone truncate">
+                          <div className="font-mono text-[10px] text-dash-text-secondary truncate">
                             {v.sku}
                           </div>
                           <div className="font-body text-sm text-brand-charcoal truncate">
@@ -422,15 +422,15 @@ const ProductDrawer = ({
             <div className="space-y-3">
               {loadingAlso ? (
                 <div className="py-12 text-center">
-                  <Loader2 className="w-6 h-6 text-brand-stone animate-spin mx-auto" />
+                  <Loader2 className="w-6 h-6 text-dash-text-secondary animate-spin mx-auto" />
                 </div>
               ) : alsoSpecified.length === 0 ? (
-                <p className="py-12 text-center text-sm font-body text-brand-stone">
+                <p className="py-12 text-center text-sm font-body text-dash-text-secondary">
                   {t.noAlsoSpecified}
                 </p>
               ) : (
                 <>
-                  <p className="text-xs font-body text-brand-stone italic leading-relaxed">
+                  <p className="text-xs font-body text-dash-text-secondary italic leading-relaxed">
                     {t.alsoSpecifiedHint}
                   </p>
                   <div className="grid grid-cols-1 gap-2">
@@ -458,7 +458,7 @@ const ProductDrawer = ({
                           <div className="font-body text-sm text-brand-charcoal truncate">
                             {p.name || p.sku}
                           </div>
-                          <div className="font-mono text-[10px] text-brand-stone truncate">
+                          <div className="font-mono text-[10px] text-dash-text-secondary truncate">
                             {p.sku || "—"}
                           </div>
                         </div>
@@ -477,10 +477,10 @@ const ProductDrawer = ({
             <div className="space-y-2">
               {loadingRel ? (
                 <div className="py-12 text-center">
-                  <Loader2 className="w-6 h-6 text-brand-stone animate-spin mx-auto" />
+                  <Loader2 className="w-6 h-6 text-dash-text-secondary animate-spin mx-auto" />
                 </div>
               ) : sameBrand.length === 0 ? (
-                <p className="py-12 text-center text-sm font-body text-brand-stone">
+                <p className="py-12 text-center text-sm font-body text-dash-text-secondary">
                   {t.noRelated(product.brand)}
                 </p>
               ) : (
@@ -491,9 +491,9 @@ const ProductDrawer = ({
                     onClick={() => onPickProduct(p)}
                     className="flex items-center gap-3 text-left p-3 border border-brand-stone/15 hover:border-brand-copper hover:bg-brand-linen transition-colors cursor-pointer w-full"
                   >
-                    <Package className="w-4 h-4 text-brand-stone shrink-0" />
+                    <Package className="w-4 h-4 text-dash-text-secondary shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <div className="font-mono text-[10px] text-brand-stone truncate">
+                      <div className="font-mono text-[10px] text-dash-text-secondary truncate">
                         {p.sku || "—"}
                       </div>
                       <div className="font-body text-sm text-brand-charcoal truncate">
@@ -511,9 +511,9 @@ const ProductDrawer = ({
         </div>
 
         {/* Sticky footer — Add to project */}
-        <footer className="border-t border-brand-stone/10 bg-white px-6 py-4 space-y-2">
+        <footer className="border-t border-brand-stone/10 bg-dash-surface px-6 py-4 space-y-2">
           <div className="flex items-center gap-2">
-            <label className="font-body text-[10px] tracking-[0.18em] uppercase text-brand-stone">
+            <label className="font-body text-[10px] tracking-[0.18em] uppercase text-dash-text-secondary">
               {locale === "es" ? "Cant" : "Qty"}
             </label>
             <input
@@ -521,7 +521,7 @@ const ProductDrawer = ({
               min={1}
               value={qtyInput}
               onChange={(e) => setQtyInput(e.target.value)}
-              className="w-14 px-2 py-2 text-sm border border-brand-stone/20 bg-white focus:outline-none focus:border-brand-copper font-body"
+              className="w-14 px-2 py-2 text-sm border border-brand-stone/20 bg-dash-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper font-body"
             />
             <button
               type="button"
@@ -546,7 +546,7 @@ const ProductDrawer = ({
               )}
             </button>
           </div>
-          <p className="text-[10px] text-brand-stone text-center font-body">
+          <p className="text-[10px] text-dash-text-secondary text-center font-body">
             {locale === "es"
               ? "Arma tu lista y solicita cotización de todo junto."
               : "Stack items and request a quote on the whole list."}

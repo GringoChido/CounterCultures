@@ -198,7 +198,7 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }} />
       <Header locale={lang} />
-      <main>
+      <main id="main" tabIndex={-1}>
         {/* SECTION 1: Cinematic Full-Height Hero */}
         <section className="relative h-[70vh] md:h-screen flex items-end overflow-hidden">
           <Image

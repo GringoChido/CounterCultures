@@ -41,17 +41,17 @@ const pickIconTone = (type: string): IconTone => {
   if (t.includes("stage") || t.includes("pending_move"))
     return { Icon: ArrowRightCircle, color: "text-brand-copper" };
   if (t.includes("email") || t.includes("sent") || t.includes("received"))
-    return { Icon: Mail, color: "text-blue-500" };
+    return { Icon: Mail, color: "text-dash-info" };
   if (t.includes("whatsapp") || t.includes("chat"))
-    return { Icon: MessageCircle, color: "text-emerald-500" };
+    return { Icon: MessageCircle, color: "text-dash-success" };
   if (t.includes("payment") || t.includes("stripe") || t.includes("invoice"))
-    return { Icon: DollarSign, color: "text-emerald-600" };
+    return { Icon: DollarSign, color: "text-dash-success" };
   if (t.includes("lead") || t.includes("contact_created"))
-    return { Icon: UserPlus, color: "text-amber-600" };
+    return { Icon: UserPlus, color: "text-dash-warn" };
   if (t.includes("shipment") || t.includes("trafico") || t.includes("customs"))
-    return { Icon: Package, color: "text-indigo-500" };
+    return { Icon: Package, color: "text-dash-info" };
   if (t.includes("alert") || t.includes("breach") || t.includes("issue"))
-    return { Icon: AlertTriangle, color: "text-red-500" };
+    return { Icon: AlertTriangle, color: "text-dash-danger" };
   if (t.includes("note") || t.includes("document"))
     return { Icon: FileText, color: "text-dash-text-secondary" };
   return { Icon: ActivityIcon, color: "text-dash-text-secondary" };
@@ -108,7 +108,7 @@ const ActivityFeed = ({ limit = 15 }: { limit?: number }) => {
       </div>
 
       {error ? (
-        <p className="text-xs text-red-500">{error}</p>
+        <p className="text-xs text-dash-danger">{error}</p>
       ) : null}
 
       {items === null && !error ? (

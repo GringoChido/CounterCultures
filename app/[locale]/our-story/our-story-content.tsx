@@ -1,5 +1,3 @@
-"use client";
-
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { CategoryHero } from "@/app/components/sections/category-hero";
@@ -194,7 +192,7 @@ export const OurStoryContent = () => {
   return (
   <>
     <Header locale={locale} />
-    <main>
+    <main id="main" tabIndex={-1}>
       <CategoryHero
         eyebrow={T.hero.eyebrow[locale]}
         title={T.hero.title[locale]}
@@ -215,7 +213,7 @@ export const OurStoryContent = () => {
               <h2 className="mt-4 font-display text-4xl md:text-5xl font-light tracking-wide text-brand-charcoal">
                 {T.founder.title}
               </h2>
-              <div className="mt-6 space-y-5 font-body text-base text-brand-stone leading-relaxed">
+              <div className="mt-6 space-y-5 font-body text-base text-dash-text-secondary leading-relaxed">
                 <p>{T.founder.p1[locale]}</p>
                 <p>{T.founder.p2[locale]}</p>
                 <p>{T.founder.p3[locale]}</p>
@@ -282,7 +280,7 @@ export const OurStoryContent = () => {
             <h2 className="mt-4 font-display text-4xl md:text-5xl font-light tracking-wide text-brand-charcoal">
               {T.artisans.title[locale]}
             </h2>
-            <p className="mt-4 font-body text-base text-brand-stone max-w-2xl leading-relaxed">
+            <p className="mt-4 font-body text-base text-dash-text-secondary max-w-2xl leading-relaxed">
               {T.artisans.description[locale]}
             </p>
           </AnimatedSection>
@@ -307,7 +305,7 @@ export const OurStoryContent = () => {
                   <p className="mt-1 font-body font-semibold text-xs tracking-wider text-brand-terracotta uppercase">
                     {artisan.craft[locale]}
                   </p>
-                  <p className="mt-3 font-body text-sm text-brand-stone leading-relaxed">
+                  <p className="mt-3 font-body text-sm text-dash-text-secondary leading-relaxed">
                     {artisan.description[locale]}
                   </p>
                 </div>
@@ -332,7 +330,7 @@ export const OurStoryContent = () => {
                 variant="secondary"
                 size="lg"
                 href="/showroom"
-                className="border-white text-white hover:bg-white hover:text-brand-terracotta"
+                className="border-white text-white hover:bg-dash-surface hover:text-brand-terracotta"
               >
                 {T.cta.visitCta[locale]}
               </Button>

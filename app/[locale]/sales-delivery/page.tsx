@@ -47,7 +47,7 @@ const SalesDeliveryPage = async ({ params }: PageProps) => {
   return (
     <>
       <Header locale={lang} />
-      <main className="pt-20 bg-brand-linen min-h-screen">
+      <main id="main" tabIndex={-1} className="pt-20 bg-brand-linen min-h-screen">
         <div className="mx-auto max-w-3xl px-6 lg:px-8 py-16 md:py-24">
           <h1 className="font-display text-3xl md:text-4xl font-light text-brand-charcoal mb-8">
             {isEs ? "Políticas de Venta y Entrega" : "Sales & Delivery Policy"}
@@ -107,7 +107,7 @@ const SalesDeliveryPage = async ({ params }: PageProps) => {
             <li>{isEs ? "De lo contrario, se factura como público en general" : "Otherwise, the order will be invoiced as \u201cgeneral public\u201d"}</li>
           </ul>
 
-          <div className="font-body text-sm text-brand-stone mt-8 pt-8 border-t border-brand-stone/10">
+          <div className="font-body text-sm text-dash-text-secondary mt-8 pt-8 border-t border-brand-stone/10">
             <p>
               {isEs ? "Contacto" : "Contact"}:{" "}
               <a href={`mailto:${SITE_CONFIG.showroom.email}`} className="text-brand-terracotta hover:underline">

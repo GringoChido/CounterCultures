@@ -9,7 +9,7 @@ interface CardProps {
 
 const Card = ({ children, className = "", hover = false }: CardProps) => (
   <div
-    className={`bg-white rounded-sm overflow-hidden ${
+    className={`bg-dash-surface rounded-sm overflow-hidden ${
       hover
         ? "transition-shadow duration-300 hover:shadow-lg"
         : ""

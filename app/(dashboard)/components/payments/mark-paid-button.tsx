@@ -129,7 +129,7 @@ const MarkPaidButton = ({
             if (e.target === e.currentTarget && !submitting) setOpen(false);
           }}
         >
-          <div className="w-full max-w-md bg-white rounded-xl shadow-2xl">
+          <div className="w-full max-w-md bg-dash-surface rounded-xl shadow-2xl">
             <div className="px-5 py-4 border-b border-dash-border flex items-center justify-between">
               <h2 className="font-display text-lg font-light text-dash-text">
                 Register payment
@@ -167,7 +167,7 @@ const MarkPaidButton = ({
                     min="0"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+                    className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
                   />
                   <p className="text-[10px] text-dash-text-muted mt-1">
                     Currency: {invoiceCurrency}
@@ -181,7 +181,7 @@ const MarkPaidButton = ({
                     type="date"
                     value={paymentDate}
                     onChange={(e) => setPaymentDate(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+                    className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
                   />
                 </div>
               </div>
@@ -199,7 +199,7 @@ const MarkPaidButton = ({
                   <select
                     value={journalId}
                     onChange={(e) => setJournalId(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+                    className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg bg-dash-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
                   >
                     {journals.map((j) => (
                       <option key={j.id} value={j.id}>
@@ -208,7 +208,7 @@ const MarkPaidButton = ({
                     ))}
                   </select>
                 ) : (
-                  <p className="text-sm text-red-600">
+                  <p className="text-sm text-dash-danger">
                     No bank/cash journals found. Re-run the Odoo extract.
                   </p>
                 )}
@@ -223,7 +223,7 @@ const MarkPaidButton = ({
                   value={ref}
                   onChange={(e) => setRef(e.target.value)}
                   placeholder="Wire ref, cheque #, etc."
-                  className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+                  className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
                 />
               </div>
 
@@ -235,7 +235,7 @@ const MarkPaidButton = ({
                   type="text"
                   value={memo}
                   onChange={(e) => setMemo(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+                  className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
                 />
               </div>
             </div>

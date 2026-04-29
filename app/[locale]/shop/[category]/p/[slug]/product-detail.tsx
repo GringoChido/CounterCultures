@@ -107,7 +107,7 @@ const ProductDetail = ({
       {/* Breadcrumbs */}
       <nav className="bg-brand-linen border-b border-brand-stone/10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-2 font-body font-medium text-xs text-brand-stone flex-wrap">
+          <div className="flex items-center gap-2 font-body font-medium text-xs text-dash-text-secondary flex-wrap">
             <Link href={`/${locale}`} className="hover:text-brand-terracotta transition-colors">
               {t(locale, "home")}
             </Link>
@@ -227,16 +227,16 @@ const ProductDetail = ({
                 <span className="font-mono text-2xl text-brand-charcoal">
                   {new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(product.price)}
                 </span>
-                <span className="font-mono text-sm text-brand-stone ml-2">
+                <span className="font-mono text-sm text-dash-text-secondary ml-2">
                   {product.currency}
                 </span>
               </div>
-              <p className="mt-1 font-body text-xs text-brand-stone italic">
+              <p className="mt-1 font-body text-xs text-dash-text-secondary italic">
                 {t(locale, "tradePriceNote")}
               </p>
 
               {/* Description */}
-              <p data-speakable="description" className="mt-6 font-body text-base text-brand-stone leading-relaxed">
+              <p data-speakable="description" className="mt-6 font-body text-base text-dash-text-secondary leading-relaxed">
                 {productDescription}
               </p>
 
@@ -245,7 +245,7 @@ const ProductDetail = ({
                 <div className="mt-8">
                   <p className="font-body text-sm font-medium text-brand-charcoal mb-3">
                     {t(locale, "finishes")}:{" "}
-                    <span className="font-normal text-brand-stone">
+                    <span className="font-normal text-dash-text-secondary">
                       {selectedFinish}
                     </span>
                   </p>
@@ -268,7 +268,7 @@ const ProductDetail = ({
               )}
 
               {/* SKU */}
-              <p className="mt-6 font-mono text-xs text-brand-stone">
+              <p className="mt-6 font-mono text-xs text-dash-text-secondary">
                 SKU: {product.sku}
               </p>
 
@@ -291,7 +291,7 @@ const ProductDetail = ({
                     {t(locale, "tradePricing")}
                   </Link>
                   <button
-                    className="flex-1 py-3.5 min-h-[48px] border border-brand-stone/30 text-brand-stone font-body text-sm font-medium tracking-wider hover:border-brand-stone hover:text-brand-charcoal transition-colors duration-300 flex items-center justify-center gap-2 cursor-pointer"
+                    className="flex-1 py-3.5 min-h-[48px] border border-brand-stone/30 text-dash-text-secondary font-body text-sm font-medium tracking-wider hover:border-brand-stone hover:text-brand-charcoal transition-colors duration-300 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Download className="w-4 h-4" />
                     {t(locale, "specSheet")}
@@ -321,7 +321,7 @@ const ProductDetail = ({
                       {t(locale, "specifications")}
                     </span>
                     <ChevronDown
-                      className={`w-4 h-4 text-brand-stone transition-transform ${
+                      className={`w-4 h-4 text-dash-text-secondary transition-transform ${
                         specsOpen ? "rotate-180" : ""
                       }`}
                     />
@@ -334,7 +334,7 @@ const ProductDetail = ({
                             key={key}
                             className="flex justify-between gap-4 py-2 border-b border-brand-stone/5"
                           >
-                            <span className="font-body text-sm text-brand-stone">
+                            <span className="font-body text-sm text-dash-text-secondary">
                               {key}
                             </span>
                             <span className="font-mono text-sm text-brand-charcoal text-right">
@@ -354,7 +354,7 @@ const ProductDetail = ({
 
       {/* Cross-sells */}
       {crossSells.length > 0 && (
-        <section className="py-16 lg:py-20 bg-white border-t border-brand-stone/10">
+        <section className="py-16 lg:py-20 bg-dash-surface border-t border-brand-stone/10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <h2 className="font-display text-3xl font-light tracking-wide text-brand-charcoal mb-10">
               {t(locale, "relatedProducts")}

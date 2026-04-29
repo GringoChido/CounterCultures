@@ -268,7 +268,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
   const sidebar = (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <span className="font-body text-[11px] font-semibold tracking-[0.2em] uppercase text-brand-stone">
+        <span className="font-body text-[11px] font-semibold tracking-[0.2em] uppercase text-dash-text-secondary">
           {t.filters}
         </span>
         {hasFilters && (
@@ -283,7 +283,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
       </div>
 
       <div>
-        <label className="block font-body text-[10px] font-semibold tracking-[0.18em] uppercase text-brand-stone mb-2">
+        <label className="block font-body text-[10px] font-semibold tracking-[0.18em] uppercase text-dash-text-secondary mb-2">
           {t.category}
         </label>
         <div className="space-y-0.5 text-sm">
@@ -312,7 +312,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
       </div>
 
       <div>
-        <label className="block font-body text-[10px] font-semibold tracking-[0.18em] uppercase text-brand-stone mb-2">
+        <label className="block font-body text-[10px] font-semibold tracking-[0.18em] uppercase text-dash-text-secondary mb-2">
           {t.brand} ({brandCounts.length})
         </label>
         <input
@@ -320,9 +320,9 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
           value={brandFilter}
           onChange={(e) => setBrandFilter(e.target.value)}
           placeholder={t.searchBrands}
-          className="w-full px-3 py-2 text-sm border border-brand-stone/20 bg-white font-body focus:outline-none focus:border-brand-copper"
+          className="w-full px-3 py-2 text-sm border border-brand-stone/20 bg-dash-surface font-body focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper"
         />
-        <div className="mt-2 max-h-[520px] overflow-y-auto border border-brand-stone/15 bg-white">
+        <div className="mt-2 max-h-[520px] overflow-y-auto border border-brand-stone/15 bg-dash-surface">
           <button
             type="button"
             onClick={() => setBrand("")}
@@ -333,7 +333,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
             }`}
           >
             <span>{t.allBrands}</span>
-            <span className="font-mono text-[10px] text-brand-stone">
+            <span className="font-mono text-[10px] text-dash-text-secondary">
               {totalProducts.toLocaleString()}
             </span>
           </button>
@@ -349,7 +349,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
               }`}
             >
               <span className="truncate pr-2">{b.brand || "(blank)"}</span>
-              <span className="font-mono text-[10px] text-brand-stone shrink-0">
+              <span className="font-mono text-[10px] text-dash-text-secondary shrink-0">
                 {b.count.toLocaleString()}
               </span>
             </button>
@@ -371,19 +371,19 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
               <button
                 type="button"
                 onClick={() => setMobileFiltersOpen(true)}
-                className="lg:hidden flex items-center gap-1.5 px-3 py-3 border border-brand-stone/20 bg-white text-sm font-body text-brand-charcoal cursor-pointer"
+                className="lg:hidden flex items-center gap-1.5 px-3 py-3 border border-brand-stone/20 bg-dash-surface text-sm font-body text-brand-charcoal cursor-pointer"
               >
                 <SlidersHorizontal className="w-4 h-4" />
                 {t.mobileFilters}
               </button>
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-stone" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dash-text-secondary" />
                 <input
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={t.searchPlaceholder}
-                  className="w-full pl-10 pr-20 py-3 border border-brand-stone/20 bg-white font-body text-sm focus:outline-none focus:border-brand-copper"
+                  className="w-full pl-10 pr-20 py-3 border border-brand-stone/20 bg-dash-surface font-body text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper"
                 />
                 <button
                   type="button"
@@ -398,18 +398,18 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
                   <button
                     type="button"
                     onClick={() => setQuery("")}
-                    className="absolute right-10 top-1/2 -translate-y-1/2 text-brand-stone hover:text-brand-charcoal cursor-pointer"
+                    className="absolute right-10 top-1/2 -translate-y-1/2 text-dash-text-secondary hover:text-brand-charcoal cursor-pointer"
                     aria-label="Clear"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 )}
                 {isPending && (
-                  <Loader2 className="absolute right-[68px] top-1/2 -translate-y-1/2 w-4 h-4 text-brand-stone animate-spin" />
+                  <Loader2 className="absolute right-[68px] top-1/2 -translate-y-1/2 w-4 h-4 text-dash-text-secondary animate-spin" />
                 )}
               </div>
               {/* Grid/Table view toggle — hidden on tiny screens */}
-              <div className="hidden sm:flex border border-brand-stone/20 bg-white">
+              <div className="hidden sm:flex border border-brand-stone/20 bg-dash-surface">
                 <button
                   type="button"
                   onClick={() => setViewMode("grid")}
@@ -439,7 +439,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
                 <select
                   value={sortKey}
                   onChange={(e) => setSortKey(e.target.value as SortKey)}
-                  className="appearance-none h-full pl-4 pr-9 py-3 border border-brand-stone/20 bg-white text-sm font-body text-brand-charcoal focus:outline-none focus:border-brand-copper cursor-pointer"
+                  className="appearance-none h-full pl-4 pr-9 py-3 border border-brand-stone/20 bg-dash-surface text-sm font-body text-brand-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper cursor-pointer"
                 >
                   <option value="most_specified">{t.sortMostSpecified}</option>
                   <option value="relevance">{t.sortRelevance}</option>
@@ -447,7 +447,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
                   <option value="price_asc">{t.sortPriceAsc}</option>
                   <option value="price_desc">{t.sortPriceDesc}</option>
                 </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-stone" />
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dash-text-secondary" />
               </div>
             </div>
 
@@ -460,15 +460,15 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
                   </span>
                   {totalPages > 1 && (
                     <>
-                      <span className="text-brand-stone">·</span>
-                      <span className="text-brand-stone">
+                      <span className="text-dash-text-secondary">·</span>
+                      <span className="text-dash-text-secondary">
                         {t.page(currentPage, totalPages)}
                       </span>
                     </>
                   )}
                 </>
               ) : (
-                <span className="text-brand-stone">{t.typeHint(MIN_QUERY)}</span>
+                <span className="text-dash-text-secondary">{t.typeHint(MIN_QUERY)}</span>
               )}
               {brand && (
                 <button
@@ -496,7 +496,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
                 className={`inline-flex items-center gap-1.5 px-2.5 py-1 border rounded text-[11px] font-medium cursor-pointer transition-colors ${
                   inStockOnly
                     ? "bg-brand-sage/15 text-brand-sage border-brand-sage/40 hover:bg-brand-sage/25"
-                    : "bg-white text-brand-stone border-brand-stone/20 hover:border-brand-sage/40"
+                    : "bg-dash-surface text-dash-text-secondary border-brand-stone/20 hover:border-brand-sage/40"
                 }`}
                 aria-pressed={inStockOnly}
               >
@@ -551,8 +551,8 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
               />
             ) : result && sortedItems.length === 0 && !isPending ? (
               <div className="py-24 text-center">
-                <Package className="w-10 h-10 text-brand-stone/40 mx-auto mb-3" />
-                <p className="font-body text-brand-stone">{t.noResults}</p>
+                <Package className="w-10 h-10 text-dash-text-secondary/40 mx-auto mb-3" />
+                <p className="font-body text-dash-text-secondary">{t.noResults}</p>
               </div>
             ) : null}
 
@@ -566,11 +566,11 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
                   disabled={offset === 0}
-                  className="px-4 py-2 text-sm border border-brand-stone/20 bg-white hover:bg-brand-linen disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-body"
+                  className="px-4 py-2 text-sm border border-brand-stone/20 bg-dash-surface hover:bg-brand-linen disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-body"
                 >
                   {t.prev}
                 </button>
-                <span className="text-xs font-body text-brand-stone hidden sm:inline">
+                <span className="text-xs font-body text-dash-text-secondary hidden sm:inline">
                   {t.showing(
                     offset + 1,
                     Math.min(offset + PAGE_SIZE, result.total),
@@ -589,7 +589,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
                   disabled={offset + PAGE_SIZE >= result.total}
-                  className="px-4 py-2 text-sm border border-brand-stone/20 bg-white hover:bg-brand-linen disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-body"
+                  className="px-4 py-2 text-sm border border-brand-stone/20 bg-dash-surface hover:bg-brand-linen disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-body"
                 >
                   {t.next}
                 </button>
@@ -606,7 +606,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
             className="absolute inset-0 bg-black/40"
             onClick={() => setMobileFiltersOpen(false)}
           />
-          <div className="absolute right-0 top-0 bottom-0 w-[85%] max-w-[340px] bg-white overflow-y-auto p-5">
+          <div className="absolute right-0 top-0 bottom-0 w-[85%] max-w-[340px] bg-dash-surface overflow-y-auto p-5">
             <div className="flex items-center justify-between mb-5">
               <span className="font-display text-lg text-brand-charcoal">
                 {t.filters}
@@ -614,7 +614,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
               <button
                 type="button"
                 onClick={() => setMobileFiltersOpen(false)}
-                className="p-1.5 text-brand-stone cursor-pointer"
+                className="p-1.5 text-dash-text-secondary cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -663,7 +663,7 @@ interface ProductCardProps {
 const ProductCard = ({ product, locale, inProject, onOpen, onAdd, t }: ProductCardProps) => {
   const price = formatPrice(product.listPrice, product.currency, locale);
   return (
-    <div className="group bg-white border border-brand-stone/15 hover:border-brand-copper/60 transition-colors flex flex-col">
+    <div className="group bg-dash-surface border border-brand-stone/15 hover:border-brand-copper/60 transition-colors flex flex-col">
       <button
         type="button"
         onClick={onOpen}
@@ -703,7 +703,7 @@ const ProductCard = ({ product, locale, inProject, onOpen, onAdd, t }: ProductCa
           <span className="font-body text-[10px] tracking-[0.15em] text-brand-copper uppercase">
             {product.brand || "—"}
           </span>
-          <span className="font-body text-[10px] text-brand-stone uppercase tracking-wider">
+          <span className="font-body text-[10px] text-dash-text-secondary uppercase tracking-wider">
             {product.category}
           </span>
         </div>
@@ -715,7 +715,7 @@ const ProductCard = ({ product, locale, inProject, onOpen, onAdd, t }: ProductCa
           <h3 className="font-body font-medium text-sm text-brand-charcoal line-clamp-2 leading-snug hover:text-brand-copper transition-colors">
             {product.name || product.sku}
           </h3>
-          <p className="mt-1 font-mono text-[10px] text-brand-stone truncate">
+          <p className="mt-1 font-mono text-[10px] text-dash-text-secondary truncate">
             {product.sku || "—"}
           </p>
         </button>
@@ -723,11 +723,11 @@ const ProductCard = ({ product, locale, inProject, onOpen, onAdd, t }: ProductCa
           <span className="font-body text-xs text-brand-charcoal">
             {product.listPrice > 0 ? (
               <>
-                <span className="text-brand-stone">{locale === "es" ? "desde" : "from"}</span>{" "}
+                <span className="text-dash-text-secondary">{locale === "es" ? "desde" : "from"}</span>{" "}
                 <span className="font-medium">{price}</span>
               </>
             ) : (
-              <span className="text-brand-stone">{locale === "es" ? "Cotización" : "Quote"}</span>
+              <span className="text-dash-text-secondary">{locale === "es" ? "Cotización" : "Quote"}</span>
             )}
           </span>
           <button
@@ -763,10 +763,10 @@ interface ProductTableProps {
 }
 
 const ProductTable = ({ items, locale, onOpen, onAdd, isInProject, t }: ProductTableProps) => (
-  <div className="border border-brand-stone/15 bg-white overflow-hidden">
+  <div className="border border-brand-stone/15 bg-dash-surface overflow-hidden">
     <table className="w-full text-sm">
       <thead className="bg-brand-linen/60 border-b border-brand-stone/15">
-        <tr className="font-body text-[10px] text-brand-stone uppercase tracking-[0.15em]">
+        <tr className="font-body text-[10px] text-dash-text-secondary uppercase tracking-[0.15em]">
           <th className="text-left px-4 py-3 font-semibold w-16">{t.colSku}</th>
           <th className="text-left px-4 py-3 font-semibold">{t.colProduct}</th>
           <th className="text-left px-4 py-3 font-semibold hidden md:table-cell">{t.colBrand}</th>
@@ -814,23 +814,23 @@ const ProductTable = ({ items, locale, onOpen, onAdd, isInProject, t }: ProductT
                 <div className="font-body text-sm text-brand-charcoal mt-0.5 line-clamp-1">
                   {p.name || p.sku}
                 </div>
-                <div className="font-mono text-[10px] text-brand-stone mt-0.5 truncate">
+                <div className="font-mono text-[10px] text-dash-text-secondary mt-0.5 truncate">
                   {p.sku || "—"}
                 </div>
               </td>
-              <td className="px-4 py-3 hidden md:table-cell font-body text-sm text-brand-stone">
+              <td className="px-4 py-3 hidden md:table-cell font-body text-sm text-dash-text-secondary">
                 {p.brand || "—"}
               </td>
               <td className="px-4 py-3 hidden sm:table-cell text-right font-body text-sm text-brand-charcoal whitespace-nowrap">
                 {p.listPrice > 0 ? (
                   <span>
-                    <span className="text-brand-stone text-[10px] tracking-wider uppercase mr-1">
+                    <span className="text-dash-text-secondary text-[10px] tracking-wider uppercase mr-1">
                       {locale === "es" ? "desde" : "from"}
                     </span>
                     {formatPrice(p.listPrice, p.currency, locale)}
                   </span>
                 ) : (
-                  <span className="text-brand-stone text-xs italic">
+                  <span className="text-dash-text-secondary text-xs italic">
                     {locale === "es" ? "Cotizar" : "Quote"}
                   </span>
                 )}
