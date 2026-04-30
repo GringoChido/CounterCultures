@@ -11,6 +11,7 @@
  */
 
 import { google, type drive_v3 } from "googleapis";
+import { getGooglePrivateKey } from "./google-private-key";
 import { Readable } from "stream";
 
 // ── Auth ──────────────────────────────────────────────────────────────
@@ -19,7 +20,7 @@ const getAuth = () =>
   new google.auth.GoogleAuth({
     credentials: {
       client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      private_key: getGooglePrivateKey(),
     },
     scopes: [
       "https://www.googleapis.com/auth/drive",
@@ -36,7 +37,7 @@ const ROOT_FOLDER_ID = process.env.GOOGLE_DRIVE_FOLDER_ID ?? "";
 export const isConfigured = () =>
   Boolean(
     process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
-      process.env.GOOGLE_PRIVATE_KEY &&
+      getGooglePrivateKey() &&
       ROOT_FOLDER_ID
   );
 

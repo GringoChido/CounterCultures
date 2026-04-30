@@ -14,6 +14,7 @@
  * > brand-contains) is both faster and more correct.
  */
 import { google } from "googleapis";
+import { getGooglePrivateKey } from "./google-private-key";
 import {
   getOdooStockQuants,
   getOdooStockLocations,
@@ -130,7 +131,7 @@ const load = async (): Promise<Cache> => {
   const auth = new google.auth.GoogleAuth({
     credentials: {
       client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      private_key: getGooglePrivateKey(),
     },
     scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
   });

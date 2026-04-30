@@ -10,6 +10,7 @@
  */
 
 import { google } from "googleapis";
+import { getGooglePrivateKey } from "./google-private-key";
 import type {
   Brand,
   CategorySlug,
@@ -29,14 +30,14 @@ const isConfigured = (): boolean =>
   Boolean(
     SHEET_ID &&
       process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
-      process.env.GOOGLE_PRIVATE_KEY
+      getGooglePrivateKey()
   );
 
 const getSheets = () => {
   const auth = new google.auth.GoogleAuth({
     credentials: {
       client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      private_key: getGooglePrivateKey(),
     },
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });

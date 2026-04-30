@@ -15,6 +15,7 @@
  * Roger actually opens get a description, which keeps the bill bounded.
  */
 import Anthropic from "@anthropic-ai/sdk";
+import { getGooglePrivateKey } from "./google-private-key";
 import { google } from "googleapis";
 import {
   readSheet,
@@ -107,7 +108,7 @@ const getSheetsClient = () =>
     auth: new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+        private_key: getGooglePrivateKey(),
       },
       scopes: ["https://www.googleapis.com/auth/spreadsheets"],
     }),

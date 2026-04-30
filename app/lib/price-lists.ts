@@ -12,6 +12,7 @@
  */
 
 import { google } from "googleapis";
+import { getGooglePrivateKey } from "./google-private-key";
 import * as XLSX from "xlsx";
 
 // ── Types ────────────────────────────────────────────────────────────
@@ -49,7 +50,7 @@ const getAuth = () =>
   new google.auth.GoogleAuth({
     credentials: {
       client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      private_key: getGooglePrivateKey(),
     },
     scopes: [
       "https://www.googleapis.com/auth/drive.readonly",
@@ -66,7 +67,7 @@ const MASTER_SHEET_ID = process.env.GOOGLE_MASTER_PRICE_LIST_ID ?? "";
 export const isConfigured = () =>
   Boolean(
     process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
-      process.env.GOOGLE_PRIVATE_KEY &&
+      getGooglePrivateKey() &&
       PRICE_LIST_DRIVE_ID
   );
 

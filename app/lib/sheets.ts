@@ -16,6 +16,7 @@
  */
 
 import { google } from "googleapis";
+import { getGooglePrivateKey } from "./google-private-key";
 import type { Product, ProductFilter } from "./types";
 import { SAMPLE_PRODUCTS, PRODUCT_CATEGORIES } from "./constants";
 import type { CategoryKey } from "./constants";
@@ -28,7 +29,7 @@ const isConfigured = () =>
   Boolean(
     SHEETS_ID &&
       process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL &&
-      process.env.GOOGLE_PRIVATE_KEY
+      getGooglePrivateKey()
   );
 
 // ── Auth (shared with dashboard-sheets.ts) ────────────────────────────
@@ -37,7 +38,7 @@ const getAuth = () =>
   new google.auth.GoogleAuth({
     credentials: {
       client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      private_key: getGooglePrivateKey(),
     },
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
