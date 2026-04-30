@@ -8,11 +8,11 @@ export const GET = async () => {
   const out: Record<string, unknown> = {
     serviceAccount: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ?? null,
     sheetId: process.env.GOOGLE_SHEETS_ID ?? null,
-    privateKeyLength: getGooglePrivateKey()?.length ?? null,
-    privateKeyStart: getGooglePrivateKey()?.slice(0, 40) ?? null,
-    privateKeyEnd: getGooglePrivateKey()?.slice(-40) ?? null,
-    privateKeyHasLiteralBackslashN: (getGooglePrivateKey() ?? "").includes("\\n"),
-    privateKeyHasRealNewlines: (getGooglePrivateKey() ?? "").includes("\n"),
+    rawPemLen: process.env.GOOGLE_PRIVATE_KEY?.length ?? null,
+    rawB64Len: process.env.GOOGLE_PRIVATE_KEY_B64?.length ?? null,
+    helperLen: getGooglePrivateKey()?.length ?? null,
+    helperStart: getGooglePrivateKey()?.slice(0, 30) ?? null,
+    googleEnvKeys: Object.keys(process.env).filter(k => k.includes("GOOGLE")).sort(),
   };
 
   try {
