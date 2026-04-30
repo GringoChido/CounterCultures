@@ -44,7 +44,7 @@ const SubNav = () => {
                 href={item.href}
                 className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-[13px] transition-colors ${
                   isActive
-                    ? "bg-dash-surface-2 text-dash-text font-medium border-l-2 border-brand-copper -ml-0.5"
+                    ? "bg-brand-copper/10 text-brand-charcoal font-semibold"
                     : "text-dash-text-secondary hover:bg-dash-surface-2 hover:text-dash-text"
                 }`}
               >
