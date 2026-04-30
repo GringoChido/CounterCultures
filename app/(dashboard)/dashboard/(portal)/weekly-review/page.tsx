@@ -328,7 +328,7 @@ const WeeklyReviewPage = () => {
             label: "Weighted Pipeline",
             value: formatCurrency(weightedPipeline),
             icon: Target,
-            color: "text-emerald-400",
+            color: "text-dash-success",
           },
           {
             label: "Revenue Collected",
@@ -340,7 +340,7 @@ const WeeklyReviewPage = () => {
             label: "Close Rate",
             value: `${closeRate}%`,
             icon: BarChart3,
-            color: "text-blue-400",
+            color: "text-dash-info",
           },
           {
             label: "Active Deals",
@@ -369,7 +369,7 @@ const WeeklyReviewPage = () => {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <AlertTriangle
-              className={`w-4 h-4 ${healthScore >= 75 ? "text-emerald-400" : healthScore >= 50 ? "text-amber-400" : "text-red-400"}`}
+              className={`w-4 h-4 ${healthScore >= 75 ? "text-dash-success" : healthScore >= 50 ? "text-dash-warn" : "text-dash-danger"}`}
             />
             <h3 className="text-sm font-semibold text-dash-text">
               Sales Health Checklist
@@ -377,7 +377,7 @@ const WeeklyReviewPage = () => {
           </div>
           <div className="flex items-center gap-2">
             <span
-              className={`text-sm font-bold ${healthScore >= 75 ? "text-emerald-400" : healthScore >= 50 ? "text-amber-400" : "text-red-400"}`}
+              className={`text-sm font-bold ${healthScore >= 75 ? "text-dash-success" : healthScore >= 50 ? "text-dash-warn" : "text-dash-danger"}`}
             >
               {healthScore}%
             </span>
@@ -394,12 +394,12 @@ const WeeklyReviewPage = () => {
             >
               <div className="flex items-center gap-3">
                 {item.pass ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-dash-success shrink-0" />
                 ) : (
-                  <XCircle className="w-4 h-4 text-red-400 shrink-0" />
+                  <XCircle className="w-4 h-4 text-dash-danger shrink-0" />
                 )}
                 <span
-                  className={`text-sm ${item.pass ? "text-dash-text" : "text-red-400"}`}
+                  className={`text-sm ${item.pass ? "text-dash-text" : "text-dash-danger"}`}
                 >
                   {item.label}
                 </span>
@@ -417,14 +417,14 @@ const WeeklyReviewPage = () => {
         <div className="bg-dash-surface rounded-xl border border-dash-border p-5">
           <div className="flex items-center gap-2 mb-4">
             <AlertCircle
-              className={`w-4 h-4 ${overdueFollowUps.length > 0 ? "text-red-400" : "text-emerald-400"}`}
+              className={`w-4 h-4 ${overdueFollowUps.length > 0 ? "text-dash-danger" : "text-dash-success"}`}
             />
             <h3 className="text-sm font-semibold text-dash-text">
               Overdue Follow-Ups ({overdueFollowUps.length})
             </h3>
           </div>
           {overdueFollowUps.length === 0 ? (
-            <div className="flex items-center gap-2 text-emerald-400 text-sm py-4">
+            <div className="flex items-center gap-2 text-dash-success text-sm py-4">
               <CheckCircle2 className="w-4 h-4" />
               {deals.length === 0
                 ? "No deals in pipeline yet"
@@ -460,7 +460,7 @@ const WeeklyReviewPage = () => {
                     </Link>
                     <div className="flex items-center gap-2 shrink-0">
                       <div className="text-right">
-                        <p className="text-xs font-medium text-red-400">
+                        <p className="text-xs font-medium text-dash-danger">
                           {daysOverdue}d overdue
                         </p>
                         <p className="text-xs text-dash-text-secondary">
@@ -486,14 +486,14 @@ const WeeklyReviewPage = () => {
         <div className="bg-dash-surface rounded-xl border border-dash-border p-5">
           <div className="flex items-center gap-2 mb-4">
             <AlertCircle
-              className={`w-4 h-4 ${staleLeads.length > 0 ? "text-amber-400" : "text-emerald-400"}`}
+              className={`w-4 h-4 ${staleLeads.length > 0 ? "text-dash-warn" : "text-dash-success"}`}
             />
             <h3 className="text-sm font-semibold text-dash-text">
               Stale Leads — No Follow-Up Scheduled ({staleLeads.length})
             </h3>
           </div>
           {staleLeads.length === 0 ? (
-            <div className="flex items-center gap-2 text-emerald-400 text-sm py-4">
+            <div className="flex items-center gap-2 text-dash-success text-sm py-4">
               <CheckCircle2 className="w-4 h-4" />
               {leads.length === 0
                 ? "No leads in CRM yet"
@@ -540,7 +540,7 @@ const WeeklyReviewPage = () => {
                     </Link>
                     <div className="flex items-center gap-2 shrink-0">
                       <div className="text-right">
-                        <p className="text-xs font-medium text-amber-400">
+                        <p className="text-xs font-medium text-dash-warn">
                           {info}
                         </p>
                         <p className="text-xs text-dash-text-secondary">
@@ -577,7 +577,7 @@ const WeeklyReviewPage = () => {
         {/* Pipeline Movement */}
         <div className="bg-dash-surface rounded-xl border border-dash-border p-5">
           <div className="flex items-center gap-2 mb-4">
-            <ArrowRight className="w-4 h-4 text-blue-400" />
+            <ArrowRight className="w-4 h-4 text-dash-info" />
             <h3 className="text-sm font-semibold text-dash-text">
               Pipeline Movement
             </h3>
@@ -590,13 +590,13 @@ const WeeklyReviewPage = () => {
               <p className="text-xs text-dash-text-secondary">New This Week</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-emerald-400">
+              <p className="text-2xl font-bold text-dash-success">
                 {wonDeals.length}
               </p>
               <p className="text-xs text-dash-text-secondary">Won</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-red-400">
+              <p className="text-2xl font-bold text-dash-danger">
                 {deals.filter((d) => lostStages.includes(d.stage)).length}
               </p>
               <p className="text-xs text-dash-text-secondary">Lost</p>
@@ -665,7 +665,7 @@ const WeeklyReviewPage = () => {
                   </p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-emerald-400">
+                  <p className="text-2xl font-bold text-dash-success">
                     {totalLeadsGenerated}
                   </p>
                   <p className="text-xs text-dash-text-secondary">
@@ -702,13 +702,13 @@ const WeeklyReviewPage = () => {
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center">
-              <p className="text-2xl font-bold text-emerald-400">
+              <p className="text-2xl font-bold text-dash-success">
                 {formatCurrency(totalCollected)}
               </p>
               <p className="text-xs text-dash-text-secondary">Collected</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-amber-400">
+              <p className="text-2xl font-bold text-dash-warn">
                 {formatCurrency(
                   payments
                     .filter(
@@ -753,10 +753,10 @@ const WeeklyReviewPage = () => {
               );
               const color =
                 pct >= 75
-                  ? "bg-emerald-500"
+                  ? "bg-dash-success"
                   : pct >= 50
-                    ? "bg-amber-500"
-                    : "bg-red-500";
+                    ? "bg-dash-warn"
+                    : "bg-dash-danger";
               return (
                 <div key={t.label}>
                   <div className="flex items-center justify-between mb-1">
@@ -797,7 +797,7 @@ const WeeklyReviewPage = () => {
           placeholder={
             "What are the top 3 priorities for next week? e.g.\n1. Close Residencial Los Arcos deal\n2. Follow up with Hotel Anima on spa specs\n3. Send Q2 architect outreach sequence"
           }
-          className="w-full h-32 bg-dash-bg border border-dash-border rounded-lg p-3 text-sm text-dash-text placeholder-dash-text-secondary/50 resize-none focus:outline-none focus:border-brand-copper/50 transition-colors"
+          className="w-full h-32 bg-dash-bg border border-dash-border rounded-lg p-3 text-sm text-dash-text placeholder-dash-text-secondary/50 resize-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper/50 transition-colors"
         />
       </div>
     </div>

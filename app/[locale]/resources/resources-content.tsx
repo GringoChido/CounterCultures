@@ -164,12 +164,12 @@ const FAQItem = ({
       {isOpen ? (
         <ChevronUp className="w-5 h-5 text-brand-terracotta shrink-0" />
       ) : (
-        <ChevronDown className="w-5 h-5 text-brand-stone shrink-0" />
+        <ChevronDown className="w-5 h-5 text-dash-text-secondary shrink-0" />
       )}
     </button>
     {isOpen && (
       <div className="pb-5">
-        <p className="font-body text-sm text-brand-stone leading-relaxed">
+        <p className="font-body text-sm text-dash-text-secondary leading-relaxed">
           {answer}
         </p>
       </div>
@@ -203,7 +203,7 @@ export const ResourcesContent = () => {
   return (
     <>
       <Header locale={locale} />
-      <main>
+      <main id="main" tabIndex={-1}>
         {/* Hero */}
         <section className="pt-28 pb-12 md:pt-40 md:pb-20 bg-brand-charcoal">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -229,14 +229,14 @@ export const ResourcesContent = () => {
                 const Icon = card.icon;
                 return (
                   <AnimatedSection key={i} delay={i * 0.1}>
-                    <div className="flex flex-col h-full bg-white rounded-lg p-8 border border-brand-stone/10">
+                    <div className="flex flex-col h-full bg-dash-surface rounded-lg p-8 border border-brand-stone/10">
                       <div className="w-12 h-12 rounded-full bg-brand-terracotta/10 flex items-center justify-center mb-6">
                         <Icon className="w-6 h-6 text-brand-terracotta" />
                       </div>
                       <h3 className="font-display text-2xl text-brand-charcoal">
                         {card.title[locale]}
                       </h3>
-                      <p className="mt-3 font-body text-sm text-brand-stone leading-relaxed flex-1">
+                      <p className="mt-3 font-body text-sm text-dash-text-secondary leading-relaxed flex-1">
                         {card.description[locale]}
                       </p>
                       <div className="mt-6">
@@ -253,7 +253,7 @@ export const ResourcesContent = () => {
         </section>
 
         {/* Ordering FAQ */}
-        <section className="py-12 md:py-28 bg-white">
+        <section className="py-12 md:py-28 bg-dash-surface">
           <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection>
               <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
@@ -262,7 +262,7 @@ export const ResourcesContent = () => {
               <h2 className="mt-4 font-display text-4xl md:text-5xl font-light text-brand-charcoal tracking-wide">
                 {content.ordering.title[locale]}
               </h2>
-              <p className="mt-4 font-body text-base text-brand-stone leading-relaxed">
+              <p className="mt-4 font-body text-base text-dash-text-secondary leading-relaxed">
                 {content.ordering.subtitle[locale]}
               </p>
             </AnimatedSection>
@@ -293,7 +293,7 @@ export const ResourcesContent = () => {
                   ? "Centro de Recursos de Marca"
                   : "Brand Resource Hub"}
               </h2>
-              <p className="mt-4 font-body text-base text-brand-stone leading-relaxed max-w-2xl">
+              <p className="mt-4 font-body text-base text-dash-text-secondary leading-relaxed max-w-2xl">
                 {locale === "es"
                   ? "Explora los catálogos, líneas de productos e información de cada marca que llevamos."
                   : "Explore catalogs, product lines, and information for each brand we carry."}
@@ -305,14 +305,14 @@ export const ResourcesContent = () => {
                 <AnimatedSection key={brand.slug}>
                   <Link
                     href={`/${locale}/brands/${brand.slug}`}
-                    className="group flex items-center gap-3 bg-white rounded-lg p-5 border border-brand-stone/10 hover:border-brand-terracotta/30 transition-colors"
+                    className="group flex items-center gap-3 bg-dash-surface rounded-lg p-5 border border-brand-stone/10 hover:border-brand-terracotta/30 transition-colors"
                   >
                     <div className="flex-1">
                       <h3 className="font-body text-sm font-semibold text-brand-charcoal group-hover:text-brand-terracotta transition-colors">
                         {brand.name}
                       </h3>
                     </div>
-                    <ExternalLink className="w-4 h-4 text-brand-stone/40 group-hover:text-brand-terracotta transition-colors" />
+                    <ExternalLink className="w-4 h-4 text-dash-text-secondary/40 group-hover:text-brand-terracotta transition-colors" />
                   </Link>
                 </AnimatedSection>
               ))}
@@ -321,7 +321,7 @@ export const ResourcesContent = () => {
         </section>
 
         {/* Glossary */}
-        <section className="py-12 md:py-28 bg-white" id="glossary">
+        <section className="py-12 md:py-28 bg-dash-surface" id="glossary">
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection>
               <div className="flex items-center gap-3 mb-4">
@@ -335,7 +335,7 @@ export const ResourcesContent = () => {
                   ? "Glosario de la Industria"
                   : "Industry Glossary"}
               </h2>
-              <p className="mt-4 font-body text-base text-brand-stone leading-relaxed max-w-2xl">
+              <p className="mt-4 font-body text-base text-dash-text-secondary leading-relaxed max-w-2xl">
                 {locale === "es"
                   ? "Términos clave del mundo de accesorios de baño, cocina y herraje — explicados claramente."
                   : "Key terms from the world of bath, kitchen, and hardware fixtures — clearly explained."}
@@ -365,11 +365,11 @@ export const ResourcesContent = () => {
                 <div key={term.term.en} className="py-6">
                   <dt className="font-display text-xl text-brand-charcoal">
                     {term.term[locale]}
-                    <span className="ml-3 inline-block px-2 py-0.5 text-[10px] font-body font-medium tracking-wider text-brand-stone uppercase bg-brand-linen rounded">
+                    <span className="ml-3 inline-block px-2 py-0.5 text-[10px] font-body font-medium tracking-wider text-dash-text-secondary uppercase bg-brand-linen rounded">
                       {categoryLabels[term.category][locale]}
                     </span>
                   </dt>
-                  <dd className="mt-2 font-body text-sm text-brand-stone leading-relaxed">
+                  <dd className="mt-2 font-body text-sm text-dash-text-secondary leading-relaxed">
                     {term.definition[locale]}
                   </dd>
                 </div>
@@ -388,7 +388,7 @@ export const ResourcesContent = () => {
               <h2 className="mt-4 font-display text-4xl md:text-5xl font-light text-brand-charcoal tracking-wide">
                 {content.warranty.title[locale]}
               </h2>
-              <p className="mt-4 font-body text-base text-brand-stone leading-relaxed">
+              <p className="mt-4 font-body text-base text-dash-text-secondary leading-relaxed">
                 {content.warranty.subtitle[locale]}
               </p>
             </AnimatedSection>
@@ -417,10 +417,10 @@ export const ResourcesContent = () => {
                       <td className="py-4 font-body text-sm font-medium text-brand-charcoal">
                         {item.brand}
                       </td>
-                      <td className="py-4 font-body text-sm text-brand-stone">
+                      <td className="py-4 font-body text-sm text-dash-text-secondary">
                         {item.residential}
                       </td>
-                      <td className="py-4 font-body text-sm text-brand-stone">
+                      <td className="py-4 font-body text-sm text-dash-text-secondary">
                         {item.commercial}
                       </td>
                     </tr>
@@ -429,7 +429,7 @@ export const ResourcesContent = () => {
               </table>
             </div>
 
-            <p className="mt-6 font-body text-xs text-brand-stone/60">
+            <p className="mt-6 font-body text-xs text-dash-text-secondary/60">
               {locale === "es"
                 ? "Los términos de garantía son aproximados y están sujetos a las políticas actuales del fabricante. Contacta a Counter Cultures para detalles específicos de cobertura."
                 : "Warranty terms are approximate and subject to current manufacturer policies. Contact Counter Cultures for specific coverage details."}
@@ -455,7 +455,7 @@ export const ResourcesContent = () => {
                 <Button variant="primary" href={`/${locale}/contact`}>
                   {locale === "es" ? "Contactar Equipo" : "Contact Team"}
                 </Button>
-                <Button variant="secondary" href={`/${locale}/trade`} className="border-white text-white hover:bg-white hover:text-brand-charcoal">
+                <Button variant="secondary" href={`/${locale}/trade`} className="border-white text-white hover:bg-dash-surface hover:text-brand-charcoal">
                   {locale === "es" ? "Programa Trade" : "Trade Program"}
                 </Button>
               </div>

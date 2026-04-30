@@ -114,7 +114,7 @@ export const FolderView = ({ folderId }: FolderViewProps) => {
         onViewChange={setView}
       />
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-[13px] text-red-700">
+        <div className="bg-dash-danger-soft border border-dash-danger rounded-lg px-4 py-3 text-[13px] text-dash-danger">
           {error}
         </div>
       )}

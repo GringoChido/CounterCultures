@@ -147,7 +147,7 @@ const SubcategoryGrid = ({
           <h2 className="font-display text-3xl md:text-5xl font-light text-brand-charcoal">
             {locale === "en" ? "Vetted, photographed, ready to spec." : "Vetadas, fotografiadas, listas para especificar."}
           </h2>
-          <p className="mt-4 font-body text-sm md:text-base text-brand-stone max-w-2xl leading-relaxed">
+          <p className="mt-4 font-body text-sm md:text-base text-dash-text-secondary max-w-2xl leading-relaxed">
             {locale === "en"
               ? "Pieces with full detail pages, finish options, and our own photography — the inventory we stand behind."
               : "Piezas con páginas de detalle completas, opciones de acabado y fotografía propia — el inventario que respaldamos."}

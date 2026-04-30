@@ -72,20 +72,20 @@ const daysOutstanding = (dueDate: string): number => {
 };
 
 const statusConfig: Record<string, { label: string; bg: string; text: string; icon: typeof CheckCircle2 }> = {
-  paid: { label: "Paid", bg: "bg-green-500/10", text: "text-green-400", icon: CheckCircle2 },
-  sent: { label: "Sent", bg: "bg-blue-500/10", text: "text-blue-400", icon: Clock },
-  overdue: { label: "Overdue", bg: "bg-red-500/10", text: "text-red-400", icon: AlertTriangle },
-  draft: { label: "Draft", bg: "bg-gray-500/10", text: "text-gray-400", icon: Clock },
-  void: { label: "Void", bg: "bg-gray-500/10", text: "text-gray-500", icon: XCircle },
-  refunded: { label: "Refunded", bg: "bg-amber-500/10", text: "text-amber-400", icon: ArrowDownCircle },
+  paid: { label: "Paid", bg: "bg-dash-success/10", text: "text-dash-success", icon: CheckCircle2 },
+  sent: { label: "Sent", bg: "bg-dash-info/10", text: "text-dash-info", icon: Clock },
+  overdue: { label: "Overdue", bg: "bg-dash-danger/10", text: "text-dash-danger", icon: AlertTriangle },
+  draft: { label: "Draft", bg: "bg-dash-text-muted/10", text: "text-dash-text-muted", icon: Clock },
+  void: { label: "Void", bg: "bg-dash-text-muted/10", text: "text-dash-text-secondary", icon: XCircle },
+  refunded: { label: "Refunded", bg: "bg-dash-warn/10", text: "text-dash-warn", icon: ArrowDownCircle },
 };
 
 const typeConfig: Record<string, { label: string; bg: string; text: string }> = {
-  deposit: { label: "Deposit", bg: "bg-cyan-500/10", text: "text-cyan-400" },
-  installment: { label: "Installment", bg: "bg-violet-500/10", text: "text-violet-400" },
-  balance: { label: "Balance", bg: "bg-amber-500/10", text: "text-amber-400" },
+  deposit: { label: "Deposit", bg: "bg-dash-info/10", text: "text-dash-info" },
+  installment: { label: "Installment", bg: "bg-dash-cat-violet/10", text: "text-dash-cat-violet" },
+  balance: { label: "Balance", bg: "bg-dash-warn/10", text: "text-dash-warn" },
   full: { label: "Full Payment", bg: "bg-brand-copper/10", text: "text-brand-copper" },
-  refund: { label: "Refund", bg: "bg-red-500/10", text: "text-red-400" },
+  refund: { label: "Refund", bg: "bg-dash-danger/10", text: "text-dash-danger" },
 };
 
 type FilterKey = "all" | "paid" | "outstanding" | "overdue";
@@ -164,9 +164,9 @@ const FinancePage = () => {
         <div>
           <h2 className="text-2xl font-bold text-dash-text">Finance</h2>
         </div>
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-8 text-center">
-          <AlertTriangle className="w-10 h-10 text-red-500 mx-auto mb-3" />
-          <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
+        <div className="bg-dash-danger-soft dark:bg-dash-danger/20 border border-dash-danger dark:border-dash-danger rounded-xl p-8 text-center">
+          <AlertTriangle className="w-10 h-10 text-dash-danger mx-auto mb-3" />
+          <p className="text-sm text-dash-danger dark:text-dash-danger">{error}</p>
         </div>
       </div>
     );
@@ -203,19 +203,19 @@ const FinancePage = () => {
           label="Outstanding"
           value={formatCurrency(totalOutstanding)}
           icon={AlertTriangle}
-          accentColor="bg-amber-500"
+          accentColor="bg-dash-warn"
         />
         <KPICard
           label="Stripe Fees"
           value={formatCurrency(totalStripeFees)}
           icon={CreditCard}
-          accentColor="bg-violet-500"
+          accentColor="bg-dash-cat-violet"
         />
         <KPICard
           label="Net Received"
           value={formatCurrency(totalNetReceived)}
           icon={TrendingUp}
-          accentColor="bg-emerald-500"
+          accentColor="bg-dash-success"
         />
       </div>
 
@@ -238,11 +238,11 @@ const FinancePage = () => {
             </p>
           </div>
           <div className="text-center">
-            <ArrowUpCircle className="w-6 h-6 text-violet-400 mx-auto mb-2" />
+            <ArrowUpCircle className="w-6 h-6 text-dash-cat-violet mx-auto mb-2" />
             <p className="text-xs text-dash-text-secondary uppercase tracking-wider mb-1">
               Stripe Fees
             </p>
-            <p className="text-2xl font-bold text-violet-400">
+            <p className="text-2xl font-bold text-dash-cat-violet">
               {formatAmount(totalStripeFees, primaryCurrency)}
             </p>
             <p className="text-xs text-dash-text-secondary mt-1">
@@ -328,8 +328,8 @@ const FinancePage = () => {
                   const sCfg = statusConfig[status] ?? statusConfig.draft;
                   const tCfg = typeConfig[p.Type?.toLowerCase()] ?? {
                     label: p.Type || "—",
-                    bg: "bg-gray-500/10",
-                    text: "text-gray-400",
+                    bg: "bg-dash-text-muted/10",
+                    text: "text-dash-text-muted",
                   };
                   const amount = parseNum(p.Amount);
                   const fees = parseNum(p.Stripe_Fees);
@@ -341,7 +341,7 @@ const FinancePage = () => {
                     <tr
                       key={p.Payment_ID}
                       className={`border-b border-dash-border/50 hover:bg-dash-bg/50 transition-colors ${
-                        isOverdue ? "text-red-400" : "text-dash-text"
+                        isOverdue ? "text-dash-danger" : "text-dash-text"
                       }`}
                     >
                       <td className="px-5 py-3 font-medium font-mono text-xs">
@@ -379,7 +379,7 @@ const FinancePage = () => {
                       <td className="py-3 text-xs">
                         {p.Due_Date || "—"}
                         {isOverdue && p.Due_Date && (
-                          <span className="block text-[10px] text-red-400">
+                          <span className="block text-[10px] text-dash-danger">
                             {daysOutstanding(p.Due_Date)}d overdue
                           </span>
                         )}

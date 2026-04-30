@@ -50,15 +50,15 @@ const renderMarkdown = (markdown: string): string => {
     // Italic
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
     // Unordered lists
-    .replace(/^- (.+)$/gm, '<li class="ml-4 font-body text-base text-brand-stone leading-relaxed">$1</li>')
+    .replace(/^- (.+)$/gm, '<li class="ml-4 font-body text-base text-dash-text-secondary leading-relaxed">$1</li>')
     // Table rows (basic)
     .replace(/^\|(.+)\|$/gm, (_match, content) => {
       const cells = content.split("|").map((c: string) => c.trim());
-      const cellHtml = cells.map((c: string) => `<td class="py-2 px-4 font-body text-sm text-brand-stone border-b border-brand-stone/10">${c}</td>`).join("");
+      const cellHtml = cells.map((c: string) => `<td class="py-2 px-4 font-body text-sm text-dash-text-secondary border-b border-brand-stone/10">${c}</td>`).join("");
       return `<tr>${cellHtml}</tr>`;
     })
     // Paragraphs (lines that don't start with < or are empty)
-    .replace(/^(?!<[a-z]|$|\|)(.+)$/gm, '<p class="font-body text-base text-brand-stone leading-relaxed mb-4">$1</p>');
+    .replace(/^(?!<[a-z]|$|\|)(.+)$/gm, '<p class="font-body text-base text-dash-text-secondary leading-relaxed mb-4">$1</p>');
 
   // Wrap consecutive <li> in <ul>
   html = html.replace(
@@ -117,7 +117,7 @@ export const ArticleContent = ({
   return (
     <>
       <Header locale={locale} />
-      <main>
+      <main id="main" tabIndex={-1}>
         {/* Hero */}
         <section className="pt-28 pb-10 md:pt-40 md:pb-16 bg-brand-charcoal">
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
@@ -178,7 +178,7 @@ export const ArticleContent = ({
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {/* Mobile TOC */}
             {headings.filter((h) => h.level === 2).length > 0 && (
-              <div className="lg:hidden mb-8 bg-white border border-brand-stone/10 rounded-lg overflow-hidden">
+              <div className="lg:hidden mb-8 bg-dash-surface border border-brand-stone/10 rounded-lg overflow-hidden">
                 <button
                   onClick={() => setTocOpen(!tocOpen)}
                   className="flex items-center justify-between w-full px-5 py-4 text-left"
@@ -187,7 +187,7 @@ export const ArticleContent = ({
                     {locale === "es" ? "En Este Artículo" : "In This Article"}
                   </span>
                   <ChevronDown
-                    className={`w-4 h-4 text-brand-stone transition-transform ${tocOpen ? "rotate-180" : ""}`}
+                    className={`w-4 h-4 text-dash-text-secondary transition-transform ${tocOpen ? "rotate-180" : ""}`}
                   />
                 </button>
                 {tocOpen && (
@@ -199,7 +199,7 @@ export const ArticleContent = ({
                           key={h.id}
                           href={`#${h.id}`}
                           onClick={() => setTocOpen(false)}
-                          className="block py-2 font-body text-sm text-brand-stone hover:text-brand-charcoal transition-colors"
+                          className="block py-2 font-body text-sm text-dash-text-secondary hover:text-brand-charcoal transition-colors"
                         >
                           {h.text}
                         </a>
@@ -232,7 +232,7 @@ export const ArticleContent = ({
                           className={`block font-body text-sm leading-snug transition-colors ${
                             activeHeading === h.id
                               ? "text-brand-terracotta font-medium"
-                              : "text-brand-stone hover:text-brand-charcoal"
+                              : "text-dash-text-secondary hover:text-brand-charcoal"
                           }`}
                         >
                           {h.text}
@@ -241,13 +241,13 @@ export const ArticleContent = ({
                   </nav>
 
                   {/* CTA */}
-                  <div className="mt-10 p-6 bg-white rounded-lg border border-brand-stone/10">
+                  <div className="mt-10 p-6 bg-dash-surface rounded-lg border border-brand-stone/10">
                     <h4 className="font-display text-lg text-brand-charcoal">
                       {locale === "es"
                         ? "¿Preguntas sobre este tema?"
                         : "Questions about this topic?"}
                     </h4>
-                    <p className="mt-2 font-body text-sm text-brand-stone leading-relaxed">
+                    <p className="mt-2 font-body text-sm text-dash-text-secondary leading-relaxed">
                       {locale === "es"
                         ? "Nuestro equipo puede ayudarte a especificar los productos correctos para tu proyecto."
                         : "Our team can help you specify the right products for your project."}
@@ -283,7 +283,7 @@ export const ArticleContent = ({
                     <Link
                       key={slug}
                       href={`/${locale}/brands/${slug}`}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-brand-stone/30 bg-white hover:border-brand-terracotta hover:bg-brand-terracotta/5 transition-colors text-sm font-body text-brand-charcoal"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-brand-stone/30 bg-dash-surface hover:border-brand-terracotta hover:bg-brand-terracotta/5 transition-colors text-sm font-body text-brand-charcoal"
                     >
                       <span className="font-medium capitalize">
                         {slug.replace(/-/g, " ")}
@@ -299,7 +299,7 @@ export const ArticleContent = ({
 
         {/* Related Articles */}
         {relatedArticles.length > 0 && (
-          <section className="py-16 md:py-20 bg-white">
+          <section className="py-16 md:py-20 bg-dash-surface">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <AnimatedSection>
                 <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
@@ -332,7 +332,7 @@ export const ArticleContent = ({
                         <h3 className="mt-2 font-display text-lg text-brand-charcoal group-hover:text-brand-terracotta transition-colors leading-snug">
                           {related.title[locale]}
                         </h3>
-                        <span className="mt-1 block font-body font-medium text-[10px] text-brand-stone uppercase tracking-wider">
+                        <span className="mt-1 block font-body font-medium text-[10px] text-dash-text-secondary uppercase tracking-wider">
                           {related.readTime}
                         </span>
                       </div>
@@ -365,7 +365,7 @@ export const ArticleContent = ({
                 <Button
                   variant="secondary"
                   href={`/${locale}/insights`}
-                  className="border-white text-white hover:bg-white hover:text-brand-charcoal"
+                  className="border-white text-white hover:bg-dash-surface hover:text-brand-charcoal"
                 >
                   {locale === "es" ? "Ver Todos" : "Browse All"}
                 </Button>

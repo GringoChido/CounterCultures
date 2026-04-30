@@ -44,7 +44,7 @@ const DrillDownCard = ({
       onKeyDown={interactive ? handleKeyDown : undefined}
       className={`${
         interactive
-          ? "cursor-pointer hover:border-dash-accent hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-dash-accent/40"
+          ? "cursor-pointer hover:border-dash-accent hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-dash-accent/40"
           : ""
       } transition ${className}`}
     >

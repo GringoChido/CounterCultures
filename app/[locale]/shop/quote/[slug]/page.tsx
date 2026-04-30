@@ -40,9 +40,9 @@ const QuoteDetailPage = async ({ params }: QuoteDetailProps) => {
   return (
     <>
       <Header locale={locale} />
-      <main className="pt-16 md:pt-20">
+      <main id="main" tabIndex={-1} className="pt-16 md:pt-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-          <nav className="text-xs font-body text-brand-stone mb-6">
+          <nav className="text-xs font-body text-dash-text-secondary mb-6">
             <Link href={`/${locale}`} className="hover:text-brand-copper">
               {isEs ? "Inicio" : "Home"}
             </Link>
@@ -56,12 +56,12 @@ const QuoteDetailPage = async ({ params }: QuoteDetailProps) => {
 
           <div className="grid md:grid-cols-[1fr_400px] gap-8">
             <div>
-              <span className="font-mono text-xs text-brand-stone">{product.sku}</span>
+              <span className="font-mono text-xs text-dash-text-secondary">{product.sku}</span>
               <h1 className="mt-2 font-display text-3xl md:text-4xl font-light text-brand-charcoal">
                 {product.name}
               </h1>
               {product.brand && (
-                <p className="mt-2 font-body text-sm text-brand-stone">{product.brand}</p>
+                <p className="mt-2 font-body text-sm text-dash-text-secondary">{product.brand}</p>
               )}
               <div className="mt-4 inline-block px-3 py-1 border border-brand-terracotta text-brand-terracotta text-xs uppercase tracking-wider font-body">
                 {isEs ? "Solo bajo cotización" : "Quote Only"}
@@ -74,7 +74,7 @@ const QuoteDetailPage = async ({ params }: QuoteDetailProps) => {
               )}
 
               <div className="mt-8 p-4 bg-brand-linen border border-brand-stone/15">
-                <p className="font-body text-xs text-brand-stone leading-relaxed">
+                <p className="font-body text-xs text-dash-text-secondary leading-relaxed">
                   {isEs
                     ? "Este producto forma parte de nuestro catálogo especial. Se ordena directamente al proveedor. Responderemos tu cotización con precio, tiempo de entrega y disponibilidad en menos de 24 horas hábiles."
                     : "This product is part of our special-order catalog, sourced directly from the supplier. We'll reply with pricing, lead time, and availability within 24 business hours."}

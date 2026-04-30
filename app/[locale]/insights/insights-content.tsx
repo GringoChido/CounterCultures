@@ -51,7 +51,7 @@ export const InsightsContent = ({
   return (
     <>
       <Header locale={locale} />
-      <main>
+      <main id="main" tabIndex={-1}>
         {/* Full-Bleed Hero */}
         <section className="relative h-[70vh] min-h-[500px] md:h-[85vh] md:min-h-[640px] w-full overflow-hidden bg-brand-charcoal">
           <Image
@@ -143,7 +143,7 @@ export const InsightsContent = ({
                         </span>
                         {locale === "en" && article.isSpanishOnly && (
                           <span
-                            className="inline-block w-fit px-2 py-1 text-[10px] font-body font-semibold tracking-wider uppercase rounded border border-brand-stone/40 text-brand-stone"
+                            className="inline-block w-fit px-2 py-1 text-[10px] font-body font-semibold tracking-wider uppercase rounded border border-brand-stone/40 text-dash-text-secondary"
                             title="Article body is in Spanish"
                           >
                             Español
@@ -153,10 +153,10 @@ export const InsightsContent = ({
                       <h3 className="mt-3 font-display text-xl text-brand-charcoal group-hover:text-brand-terracotta transition-colors min-h-[3rem]">
                         {article.title[locale]}
                       </h3>
-                      <p className="mt-2 font-body text-sm text-brand-stone leading-relaxed line-clamp-3 flex-1">
+                      <p className="mt-2 font-body text-sm text-dash-text-secondary leading-relaxed line-clamp-3 flex-1">
                         {article.excerpt[locale]}
                       </p>
-                      <div className="mt-3 flex items-center gap-3 font-body font-medium text-[10px] text-brand-stone uppercase tracking-wider">
+                      <div className="mt-3 flex items-center gap-3 font-body font-medium text-[10px] text-dash-text-secondary uppercase tracking-wider">
                         <span>{formatDate(article.date)}</span>
                         <span>·</span>
                         <span>{article.readTime}</span>

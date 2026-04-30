@@ -41,7 +41,7 @@ const FeaturedBrandsBand = ({ locale, brands }: FeaturedBrandsBandProps) => {
               {t.headline}{" "}
               <span className="italic">{t.headlineItalic}</span>
             </h2>
-            <p className="mt-2 font-body text-sm text-brand-stone max-w-xl">
+            <p className="mt-2 font-body text-sm text-dash-text-secondary max-w-xl">
               {t.subhead}
             </p>
           </div>
@@ -58,7 +58,7 @@ const FeaturedBrandsBand = ({ locale, brands }: FeaturedBrandsBandProps) => {
             <Link
               key={b.slug}
               href={`/${locale}/brands/${b.slug}`}
-              className="group relative aspect-[4/3] bg-white border border-brand-stone/15 hover:border-brand-copper/60 transition-all overflow-hidden"
+              className="group relative aspect-[4/3] bg-dash-surface border border-brand-stone/15 hover:border-brand-copper/60 transition-all overflow-hidden"
             >
               {b.heroImage ? (
                 <>
@@ -90,7 +90,7 @@ const FeaturedBrandsBand = ({ locale, brands }: FeaturedBrandsBandProps) => {
                     {b.name}
                   </h3>
                   {b.catalogCount > 0 && (
-                    <p className="mt-2 font-body text-[11px] tracking-[0.15em] uppercase text-brand-stone">
+                    <p className="mt-2 font-body text-[11px] tracking-[0.15em] uppercase text-dash-text-secondary">
                       <span className="font-mono text-brand-copper">
                         {b.catalogCount.toLocaleString()}
                       </span>{" "}

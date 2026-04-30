@@ -90,7 +90,7 @@ const DataTable = <T,>({
             placeholder={searchPlaceholder}
             value={globalFilter}
             onChange={(e) => setGlobalFilter(e.target.value)}
-            className="px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg w-full max-w-sm focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+            className="px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg w-full max-w-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
           />
         </div>
       )}

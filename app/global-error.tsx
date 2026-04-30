@@ -19,7 +19,7 @@ const GlobalError = ({ error, reset }: GlobalErrorProps) => {
   return (
     <html lang="en">
       <body style={{ margin: 0, background: "#0e0b07", color: "#ece4d3", fontFamily: "system-ui, sans-serif" }}>
-        <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
+        <main id="main" tabIndex={-1} style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px" }}>
           <div style={{ maxWidth: 420, textAlign: "center" }}>
             <p style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "#c9a95c", marginBottom: 16 }}>
               Counter Cultures

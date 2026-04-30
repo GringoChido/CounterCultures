@@ -92,7 +92,7 @@ const ShopCatalog = ({ initialProducts, initialCategory }: ShopCatalogProps) => 
 
       <section className="py-10 lg:py-16 bg-brand-linen">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <p className="font-body font-medium text-xs text-brand-stone mb-8">
+          <p className="font-body font-medium text-xs text-dash-text-secondary mb-8">
             {filtered.length === 1 ? t.countOne(1) : t.countMany(filtered.length)}
           </p>
 
@@ -131,7 +131,7 @@ const ShopCatalog = ({ initialProducts, initialCategory }: ShopCatalogProps) => 
             </>
           ) : (
             <div className="text-center py-20">
-              <p className="font-display text-2xl text-brand-stone">{t.empty}</p>
+              <p className="font-display text-2xl text-dash-text-secondary">{t.empty}</p>
               <button
                 onClick={clearFilters}
                 className="mt-4 font-body text-sm text-brand-terracotta hover:text-brand-copper transition-colors"

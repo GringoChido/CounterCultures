@@ -43,7 +43,7 @@ const PaymentSuccessPage = async ({ params, searchParams }: PageProps) => {
   return (
     <>
       <Header locale={lang} />
-      <main className="pt-20 bg-brand-linen min-h-screen">
+      <main id="main" tabIndex={-1} className="pt-20 bg-brand-linen min-h-screen">
         <div className="mx-auto max-w-2xl px-6 lg:px-8 py-24 md:py-32 text-center">
           <div className="w-16 h-16 rounded-full bg-brand-sage/20 flex items-center justify-center mx-auto mb-8">
             <svg className="w-8 h-8 text-brand-sage" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -55,17 +55,17 @@ const PaymentSuccessPage = async ({ params, searchParams }: PageProps) => {
             {isEs ? "Pago Recibido" : "Payment Received"}
           </h1>
 
-          <p className="font-body text-lg text-brand-stone leading-relaxed mb-8">
+          <p className="font-body text-lg text-dash-text-secondary leading-relaxed mb-8">
             {isEs
               ? "Gracias por su compra. Hemos recibido su pago y le enviaremos una confirmación por correo electrónico en breve."
               : "Thank you for your purchase. We've received your payment and will send you an email confirmation shortly."}
           </p>
 
-          <div className="bg-white border border-brand-stone/10 rounded-lg p-6 mb-8 text-left">
+          <div className="bg-dash-surface border border-brand-stone/10 rounded-lg p-6 mb-8 text-left">
             <h2 className="font-display text-lg font-medium text-brand-charcoal mb-4">
               {isEs ? "Próximos Pasos" : "What Happens Next"}
             </h2>
-            <ul className="font-body text-base text-brand-stone space-y-3">
+            <ul className="font-body text-base text-dash-text-secondary space-y-3">
               <li className="flex items-start gap-3">
                 <span className="w-6 h-6 rounded-full bg-brand-copper/10 text-brand-copper font-mono text-xs flex items-center justify-center shrink-0 mt-0.5">1</span>
                 {isEs
@@ -102,7 +102,7 @@ const PaymentSuccessPage = async ({ params, searchParams }: PageProps) => {
             </Link>
           </div>
 
-          <p className="font-body text-sm text-brand-stone mt-12">
+          <p className="font-body text-sm text-dash-text-secondary mt-12">
             {isEs ? "¿Preguntas?" : "Questions?"}{" "}
             <a href="mailto:equipo@countercultures.com.mx" className="text-brand-terracotta hover:underline">
               equipo@countercultures.com.mx

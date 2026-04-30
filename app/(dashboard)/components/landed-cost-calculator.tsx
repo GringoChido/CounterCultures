@@ -16,9 +16,9 @@ interface Props {
 const formatMxn = (n: number) => `$${n.toLocaleString("en-US", { maximumFractionDigits: 2 })} MXN`;
 
 const RISK_PILL: Record<LandedCostOutput["riskFlag"], { label: string; bg: string; text: string }> = {
-  green:  { label: "Low risk",  bg: "bg-green-500/10",  text: "text-green-400" },
-  yellow: { label: "Estimate — unverified", bg: "bg-amber-500/10", text: "text-amber-400" },
-  red:    { label: "High risk", bg: "bg-red-500/10", text: "text-red-400" },
+  green:  { label: "Low risk",  bg: "bg-dash-success/10",  text: "text-dash-success" },
+  yellow: { label: "Estimate — unverified", bg: "bg-dash-warn/10", text: "text-dash-warn" },
+  red:    { label: "High risk", bg: "bg-dash-danger/10", text: "text-dash-danger" },
 };
 
 export const LandedCostCalculator = ({ variant, defaultValues, onQuote }: Props) => {
@@ -87,7 +87,7 @@ export const LandedCostCalculator = ({ variant, defaultValues, onQuote }: Props)
 
   const compact = variant === "preview";
   const inputCls =
-    "w-full px-3 py-1.5 bg-dash-bg border border-dash-border rounded-md text-sm text-dash-text focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper";
+    "w-full px-3 py-1.5 bg-dash-bg border border-dash-border rounded-md text-sm text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper";
   const labelCls = "block text-[11px] font-medium text-dash-text-secondary uppercase tracking-wider mb-1";
 
   return (
@@ -202,7 +202,7 @@ export const LandedCostCalculator = ({ variant, defaultValues, onQuote }: Props)
       </button>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-md p-2.5">
+        <div className="bg-dash-danger/10 border border-dash-danger/30 text-dash-danger text-xs rounded-md p-2.5">
           {error}
         </div>
       )}

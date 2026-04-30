@@ -337,7 +337,7 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                     <tr
                       key={l.id}
                       className={`border-b border-dash-border/50 ${
-                        fullyInvoiced ? "opacity-70" : partiallyInvoiced ? "bg-amber-50/30" : ""
+                        fullyInvoiced ? "opacity-70" : partiallyInvoiced ? "bg-dash-warn-soft/30" : ""
                       }`}
                     >
                       <td className="p-3 text-xs max-w-md">
@@ -352,7 +352,7 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                           fullyDelivered
                             ? "text-brand-sage font-medium"
                             : del > 0
-                              ? "text-amber-700"
+                              ? "text-dash-warn"
                               : "text-dash-text-secondary"
                         }`}
                       >
@@ -363,7 +363,7 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                           fullyInvoiced
                             ? "text-brand-sage font-medium"
                             : partiallyInvoiced
-                              ? "text-amber-700 font-medium"
+                              ? "text-dash-warn font-medium"
                               : qty > 0
                                 ? "text-brand-copper"
                                 : "text-dash-text-secondary"
@@ -371,7 +371,7 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                       >
                         {inv.toLocaleString()}
                         {partiallyInvoiced && (
-                          <div className="text-[9px] uppercase tracking-wider text-amber-700/80">
+                          <div className="text-[9px] uppercase tracking-wider text-dash-warn/80">
                             of {qty}
                           </div>
                         )}

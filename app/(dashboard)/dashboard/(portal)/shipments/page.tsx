@@ -189,14 +189,14 @@ const ShipmentsPage = () => {
               placeholder="Search by TRF, pedimento, broker, vendor..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper w-72"
+              className="pl-9 pr-4 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper w-72"
             />
           </div>
         </div>
       </div>
 
       {error && (
-        <div className="bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg px-4 py-3 text-sm">
+        <div className="bg-dash-danger/10 text-dash-danger border border-dash-danger/20 rounded-lg px-4 py-3 text-sm">
           {error}
         </div>
       )}
@@ -204,9 +204,9 @@ const ShipmentsPage = () => {
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <KPICard label="Total Crossings" value={String(traficos.length)} icon={Package} accentColor="bg-brand-copper" />
-        <KPICard label="In Transit / Customs" value={String(inTransitOrCustoms)} icon={Truck} accentColor="bg-blue-500" />
-        <KPICard label="Cleared / Delivered" value={String(cleared)} icon={CheckCircle2} accentColor="bg-green-500" />
-        <KPICard label="Issues" value={String(withIssue)} icon={Clock} accentColor="bg-red-500" />
+        <KPICard label="In Transit / Customs" value={String(inTransitOrCustoms)} icon={Truck} accentColor="bg-dash-info" />
+        <KPICard label="Cleared / Delivered" value={String(cleared)} icon={CheckCircle2} accentColor="bg-dash-success" />
+        <KPICard label="Issues" value={String(withIssue)} icon={Clock} accentColor="bg-dash-danger" />
       </div>
 
       {/* Content */}
@@ -303,9 +303,9 @@ const ShipmentsPage = () => {
                           <span
                             className={
                               daysInCustoms > 7
-                                ? "text-red-400 font-medium"
+                                ? "text-dash-danger font-medium"
                                 : daysInCustoms > 3
-                                  ? "text-amber-400"
+                                  ? "text-dash-warn"
                                   : "text-dash-text-secondary"
                             }
                           >
@@ -318,8 +318,8 @@ const ShipmentsPage = () => {
                       <td className="py-3">
                         <span
                           className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                            cfg?.bg ?? "bg-gray-500/10"
-                          } ${cfg?.text ?? "text-gray-400"}`}
+                            cfg?.bg ?? "bg-dash-text-muted/10"
+                          } ${cfg?.text ?? "text-dash-text-muted"}`}
                         >
                           {cfg?.label.en ?? t.Status}
                         </span>
@@ -342,7 +342,7 @@ const ShipmentsPage = () => {
                               target="_blank"
                               rel="noopener noreferrer"
                               onClick={(e) => e.stopPropagation()}
-                              className="inline-flex items-center justify-center w-7 h-7 rounded-md hover:bg-emerald-500/10 text-dash-text-secondary hover:text-emerald-500 transition-colors"
+                              className="inline-flex items-center justify-center w-7 h-7 rounded-md hover:bg-dash-success/10 text-dash-text-secondary hover:text-dash-success transition-colors"
                               title={`Message ${t.Broker_Name}`}
                             >
                               <MessageCircle className="w-3.5 h-3.5" />
@@ -354,7 +354,7 @@ const ShipmentsPage = () => {
                               e.stopPropagation();
                               window.location.href = `${detailHref}?flag=1`;
                             }}
-                            className="inline-flex items-center justify-center w-7 h-7 rounded-md hover:bg-red-500/10 text-dash-text-secondary hover:text-red-500 transition-colors cursor-pointer"
+                            className="inline-flex items-center justify-center w-7 h-7 rounded-md hover:bg-dash-danger/10 text-dash-text-secondary hover:text-dash-danger transition-colors cursor-pointer"
                             title="Flag issue"
                           >
                             <Flag className="w-3.5 h-3.5" />

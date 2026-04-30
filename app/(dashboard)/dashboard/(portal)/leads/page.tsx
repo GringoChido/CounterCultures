@@ -206,7 +206,7 @@ const LeadForm = ({ open, onClose, onSaved, editLead, initialSource }: LeadFormP
   };
 
   const inputClass =
-    "w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30 placeholder:text-dash-text-secondary/50";
+    "w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 placeholder:text-dash-text-secondary/50";
   const labelClass = "block text-xs font-medium text-dash-text-secondary mb-1.5";
 
   return (
@@ -218,7 +218,7 @@ const LeadForm = ({ open, onClose, onSaved, editLead, initialSource }: LeadFormP
     >
       <div className="space-y-5">
         {error && (
-          <div className="text-sm text-red-400 bg-red-400/10 rounded-lg px-3 py-2">
+          <div className="text-sm text-dash-danger bg-dash-danger/10 rounded-lg px-3 py-2">
             {error}
           </div>
         )}
@@ -226,7 +226,7 @@ const LeadForm = ({ open, onClose, onSaved, editLead, initialSource }: LeadFormP
         {/* Name */}
         <div>
           <label className={labelClass}>
-            Name <span className="text-red-400">*</span>
+            Name <span className="text-dash-danger">*</span>
           </label>
           <input
             type="text"
@@ -426,9 +426,9 @@ const LastContactIndicator = ({ dateStr }: { dateStr?: string }) => {
   try {
     const date = parseISO(dateStr);
     const days = differenceInDays(new Date(), date);
-    let colorClass = "text-emerald-400"; // contacted recently (< 14 days)
-    if (days > 60) colorClass = "text-red-400 font-medium"; // stale
-    else if (days > 30) colorClass = "text-amber-400"; // getting cold
+    let colorClass = "text-dash-success"; // contacted recently (< 14 days)
+    if (days > 60) colorClass = "text-dash-danger font-medium"; // stale
+    else if (days > 30) colorClass = "text-dash-warn"; // getting cold
     else if (days > 14) colorClass = "text-dash-text-secondary"; // ok
     return (
       <span className={`text-xs ${colorClass}`}>
@@ -445,7 +445,7 @@ const FollowUpIndicator = ({ dateStr }: { dateStr?: string }) => {
   try {
     const overdue = isPast(parseISO(dateStr));
     return (
-      <span className={`text-xs ${overdue ? "text-red-400 font-medium" : "text-dash-text-secondary"}`}>
+      <span className={`text-xs ${overdue ? "text-dash-danger font-medium" : "text-dash-text-secondary"}`}>
         {format(parseISO(dateStr), "MMM d")}
         {overdue && " (overdue)"}
       </span>
@@ -618,7 +618,7 @@ const columns = [
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
-            className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-emerald-500/10 text-emerald-400 transition-colors"
+            className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-dash-success/10 text-dash-success transition-colors"
             title="WhatsApp"
           >
             <MessageCircle className="w-3.5 h-3.5" />
@@ -626,22 +626,26 @@ const columns = [
           <a
             href={`mailto:${lead.email}`}
             onClick={(e) => e.stopPropagation()}
-            className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-blue-500/10 text-blue-400 transition-colors"
+            className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-dash-info/10 text-dash-info transition-colors"
             title="Email"
           >
             <Mail className="w-3.5 h-3.5" />
           </a>
           <button
+            type="button"
             onClick={(e) => e.stopPropagation()}
             className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-brand-copper/10 text-brand-copper transition-colors cursor-pointer"
             title="Log Activity"
+            aria-label="Log Activity"
           >
             <ClipboardList className="w-3.5 h-3.5" />
           </button>
           <button
+            type="button"
             onClick={handleConvertToDeal}
-            className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-indigo-500/10 text-indigo-500 transition-colors cursor-pointer"
+            className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-dash-info/10 text-dash-info transition-colors cursor-pointer"
             title="Convert to Deal"
+            aria-label="Convert to Deal"
           >
             <Briefcase className="w-3.5 h-3.5" />
           </button>
@@ -858,7 +862,7 @@ const LeadsPageInner = () => {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <p className="text-red-400">{error}</p>
+        <p className="text-dash-danger">{error}</p>
         <button
           onClick={fetchLeads}
           className="px-4 py-2 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer"
@@ -895,14 +899,14 @@ const LeadsPageInner = () => {
           onClick={() => setViewFilter("stale")}
           className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors cursor-pointer ${
             viewFilter === "stale"
-              ? "border-red-400 text-red-400"
+              ? "border-dash-danger text-dash-danger"
               : "border-transparent text-dash-text-secondary hover:text-dash-text"
           }`}
         >
           <AlertTriangle className="w-3.5 h-3.5" />
           Stale Leads
           {staleCount > 0 && (
-            <span className="ml-1 text-xs bg-red-400/15 text-red-400 px-1.5 py-0.5 rounded-full">
+            <span className="ml-1 text-xs bg-dash-danger/15 text-dash-danger px-1.5 py-0.5 rounded-full">
               {staleCount}
             </span>
           )}
@@ -917,7 +921,7 @@ const LeadsPageInner = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="text-sm bg-dash-surface border border-dash-border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
+              className="text-sm bg-dash-surface border border-dash-border rounded-lg px-3 py-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
             >
               {statusOptions.map((s) => (
                 <option key={s} value={s}>
@@ -929,7 +933,7 @@ const LeadsPageInner = () => {
           <select
             value={sourceFilter}
             onChange={(e) => setSourceFilter(e.target.value)}
-            className="text-sm bg-dash-surface border border-dash-border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
+            className="text-sm bg-dash-surface border border-dash-border rounded-lg px-3 py-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
           >
             {sourceOptions.map((s) => (
               <option key={s} value={s}>
@@ -940,7 +944,7 @@ const LeadsPageInner = () => {
           <select
             value={contactTypeFilter}
             onChange={(e) => setContactTypeFilter(e.target.value)}
-            className="text-sm bg-dash-surface border border-dash-border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
+            className="text-sm bg-dash-surface border border-dash-border rounded-lg px-3 py-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
           >
             {contactTypes.map((s) => (
               <option key={s} value={s}>
@@ -1084,7 +1088,7 @@ const LeadsPageInner = () => {
                       console.error("Failed to update status:", err);
                     }
                   }}
-                  className="text-xs bg-dash-bg border border-dash-border rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
+                  className="text-xs bg-dash-bg border border-dash-border rounded px-2 py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
                 >
                   {statusOptions.filter((s) => s !== "all").map((s) => (
                     <option key={s} value={s}>
@@ -1208,7 +1212,7 @@ const LeadsPageInner = () => {
               value={activityNote}
               onChange={(e) => setActivityNote(e.target.value)}
               placeholder="What happened? Key takeaways, next steps..."
-              className="w-full h-24 px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder-dash-text-secondary/50 resize-none focus:outline-none focus:border-brand-copper/50"
+              className="w-full h-24 px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder-dash-text-secondary/50 resize-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper/50"
               autoFocus
             />
             <div className="flex gap-2">

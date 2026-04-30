@@ -23,9 +23,9 @@ import { SAMPLE_CAMPAIGNS, type Campaign } from "@/app/lib/sample-dashboard-data
 import { useProductInsert } from "@/app/(dashboard)/components/product-insert-context";
 
 const statusVariants: Record<string, { bg: string; text: string }> = {
-  draft: { bg: "bg-gray-500/10", text: "text-gray-400" },
-  sent: { bg: "bg-emerald-500/10", text: "text-emerald-400" },
-  scheduled: { bg: "bg-blue-500/10", text: "text-blue-400" },
+  draft: { bg: "bg-dash-text-muted/10", text: "text-dash-text-muted" },
+  sent: { bg: "bg-dash-success/10", text: "text-dash-success" },
+  scheduled: { bg: "bg-dash-info/10", text: "text-dash-info" },
   active: { bg: "bg-brand-copper/10", text: "text-brand-copper" },
 };
 
@@ -37,8 +37,8 @@ const statusIcons: Record<string, React.ElementType> = {
 };
 
 const typeLabels: Record<string, { label: string; color: string }> = {
-  "cold-outreach": { label: "Cold Outreach", color: "text-blue-400" },
-  "warm-nurture": { label: "Warm Nurture", color: "text-emerald-400" },
+  "cold-outreach": { label: "Cold Outreach", color: "text-dash-info" },
+  "warm-nurture": { label: "Warm Nurture", color: "text-dash-success" },
   "one-off": { label: "One-Off", color: "text-dash-text-secondary" },
 };
 
@@ -149,7 +149,7 @@ const EmailCampaignsPage = () => {
         <KPICard label="Avg Open Rate" value={`${avgOpenRate.toFixed(1)}%`} change={3.2} icon={Mail} accentColor="bg-status-new" />
         <KPICard label="Avg Click Rate" value={`${avgClickRate.toFixed(1)}%`} change={1.8} icon={Send} accentColor="bg-brand-sage" />
         <KPICard label="Total Recipients" value={totalRecipients.toLocaleString()} icon={Users} accentColor="bg-brand-terracotta" />
-        <KPICard label="Leads Generated" value={String(totalLeadsGenerated)} icon={Target} accentColor="bg-emerald-500" />
+        <KPICard label="Leads Generated" value={String(totalLeadsGenerated)} icon={Target} accentColor="bg-dash-success" />
       </div>
 
       {/* Campaign Table */}
@@ -230,7 +230,7 @@ const EmailCampaignsPage = () => {
                     </td>
                     <td className="px-4 py-3">
                       {campaign.leadsGenerated !== undefined && campaign.leadsGenerated > 0 ? (
-                        <span className="font-medium text-emerald-400">{campaign.leadsGenerated}</span>
+                        <span className="font-medium text-dash-success">{campaign.leadsGenerated}</span>
                       ) : (
                         <span className="text-dash-text-secondary">—</span>
                       )}
@@ -257,7 +257,7 @@ const EmailCampaignsPage = () => {
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder="e.g. Q2 Architect Outreach — Queretaro"
-              className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder-dash-text-secondary/50 focus:outline-none focus:border-brand-copper/50"
+              className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper/50"
             />
           </div>
 
@@ -291,7 +291,7 @@ const EmailCampaignsPage = () => {
               <select
                 value={form.audienceType}
                 onChange={(e) => setForm({ ...form, audienceType: e.target.value })}
-                className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text focus:outline-none focus:border-brand-copper/50"
+                className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper/50"
               >
                 <option>Architects</option>
                 <option>Interior Designers</option>
@@ -308,7 +308,7 @@ const EmailCampaignsPage = () => {
                 value={form.recipients || ""}
                 onChange={(e) => setForm({ ...form, recipients: parseInt(e.target.value) || 0 })}
                 placeholder="0"
-                className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder-dash-text-secondary/50 focus:outline-none focus:border-brand-copper/50"
+                className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper/50"
               />
             </div>
           </div>
@@ -367,7 +367,7 @@ const EmailCampaignsPage = () => {
                   <p className="text-sm font-medium text-dash-text truncate">{featuredProduct.name}</p>
                   <p className="text-xs text-dash-text-secondary">{featuredProduct.brand} · ${featuredProduct.price.toLocaleString()} MXN</p>
                 </div>
-                <button onClick={() => setFeaturedProduct(null)} className="text-dash-text-secondary hover:text-red-400 cursor-pointer">
+                <button onClick={() => setFeaturedProduct(null)} className="text-dash-text-secondary hover:text-dash-danger cursor-pointer">
                   <Plus className="w-4 h-4 rotate-45" />
                 </button>
               </div>

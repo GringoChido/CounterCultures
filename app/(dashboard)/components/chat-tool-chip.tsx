@@ -13,7 +13,7 @@ export interface ChatToolChipProps {
 const tone = {
   running: "bg-brand-copper/5 border-brand-copper/20 text-brand-copper",
   ok: "bg-dash-bg border-dash-border text-dash-text-secondary",
-  error: "bg-red-500/5 border-red-500/20 text-red-400",
+  error: "bg-dash-danger/5 border-dash-danger/20 text-dash-danger",
 } as const;
 
 export const ChatToolChip = ({

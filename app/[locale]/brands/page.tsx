@@ -447,7 +447,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <Header locale={locale} />
-      <main className="pt-16 md:pt-20">
+      <main id="main" tabIndex={-1} className="pt-16 md:pt-20">
 
         {/* ═══════════════════════════════════════════════════════════ */}
         {/*  HERO                                                      */}
@@ -491,13 +491,13 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
         <section className="py-20 lg:py-28 bg-brand-sand/30">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl mb-14">
-              <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-stone uppercase">
+              <span className="font-body font-semibold text-xs tracking-[0.2em] text-dash-text-secondary uppercase">
                 {isEs ? "Los Creadores" : "The Makers"}
               </span>
               <h2 className="mt-3 font-display text-4xl md:text-5xl font-light tracking-wide text-brand-charcoal">
                 {isEs ? "Nuestros Artesanos" : "Our Artisans"}
               </h2>
-              <p className="mt-4 font-body text-base text-brand-stone leading-relaxed">
+              <p className="mt-4 font-body text-base text-dash-text-secondary leading-relaxed">
                 {isEs
                   ? "Cobre martillado en Michoacán. Cerámica moldeada en Guanajuato. Piedra tallada en Querétaro. Cada pieza lleva la huella de su creador — diseñada por Roger Williams y elaborada por artesanos con los que ha colaborado durante casi dos décadas."
                   : "Copper hammered in Michoacán. Ceramic shaped in Guanajuato. Stone carved in Querétaro. Every piece carries the fingerprint of its maker — designed by Roger Williams and crafted by artisans he\u2019s collaborated with for nearly two decades."}
@@ -508,7 +508,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
               {artisans.map((artisan) => (
                 <div
                   key={artisan.name}
-                  className="group relative bg-white overflow-hidden"
+                  className="group relative bg-dash-surface overflow-hidden"
                 >
                   <div className="relative aspect-[3/4] overflow-hidden">
                     <Image
@@ -534,7 +534,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
 
                   <div className="p-6 lg:p-8">
                     <div className="w-8 h-0.5 bg-brand-copper mb-4" />
-                    <p className="font-body text-sm text-brand-stone leading-relaxed">
+                    <p className="font-body text-sm text-dash-text-secondary leading-relaxed">
                       {artisan.story[localeKey]}
                     </p>
                   </div>
@@ -581,14 +581,14 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-14">
               <div>
-                <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-stone uppercase">
+                <span className="font-body font-semibold text-xs tracking-[0.2em] text-dash-text-secondary uppercase">
                   {isEs ? "Distribuidor Autorizado" : "Authorized Dealer"}
                 </span>
                 <h2 className="mt-3 font-display text-4xl md:text-5xl font-light tracking-wide text-brand-charcoal">
                   {isEs ? "Nuestros Socios" : "Our Import Partners"}
                 </h2>
               </div>
-              <p className="font-body text-sm text-brand-stone max-w-md leading-relaxed">
+              <p className="font-body text-sm text-dash-text-secondary max-w-md leading-relaxed">
                 {isEs
                   ? `${allBrands.length} marcas — cada una elegida por su calidad, integridad de diseño y valor duradero.`
                   : `${allBrands.length} brands — each chosen for quality, design integrity, and lasting value.`}
@@ -602,7 +602,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
                   <Link
                     key={brand.slug}
                     href={brand.internalHref}
-                    className="group relative bg-white border border-brand-stone/8 overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-brand-copper/20 hover:-translate-y-0.5"
+                    className="group relative bg-dash-surface border border-brand-stone/8 overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-brand-copper/20 hover:-translate-y-0.5"
                   >
                     <div className="absolute top-0 left-0 w-0 h-0.5 bg-brand-copper transition-all duration-500 group-hover:w-full z-10" />
                     {brand.heroImage && (
@@ -634,11 +634,11 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
                         </p>
                       )}
                       {brand.description && (
-                        <p className="mt-3 font-body text-sm text-brand-stone leading-relaxed line-clamp-3">
+                        <p className="mt-3 font-body text-sm text-dash-text-secondary leading-relaxed line-clamp-3">
                           {brand.description}
                         </p>
                       )}
-                      <span className="inline-flex items-center gap-2 mt-4 font-body font-medium text-xs text-brand-stone/50 group-hover:text-brand-terracotta transition-colors duration-300 tracking-wide uppercase">
+                      <span className="inline-flex items-center gap-2 mt-4 font-body font-medium text-xs text-dash-text-secondary/50 group-hover:text-brand-terracotta transition-colors duration-300 tracking-wide uppercase">
                         {isEs ? "Explorar" : "Explore"}
                         <svg
                           width="14"

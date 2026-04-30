@@ -24,11 +24,11 @@ interface LogEntry {
 }
 
 const activityOptions: { type: ActivityType; label: string; icon: React.ElementType; color: string }[] = [
-  { type: "call", label: "Call", icon: Phone, color: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
-  { type: "email", label: "Email", icon: Mail, color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" },
-  { type: "whatsapp", label: "WhatsApp", icon: MessageCircle, color: "bg-green-500/10 text-green-400 border-green-500/20" },
+  { type: "call", label: "Call", icon: Phone, color: "bg-dash-info/10 text-dash-info border-dash-info/20" },
+  { type: "email", label: "Email", icon: Mail, color: "bg-dash-success/10 text-dash-success border-dash-success/20" },
+  { type: "whatsapp", label: "WhatsApp", icon: MessageCircle, color: "bg-dash-success/10 text-dash-success border-dash-success/20" },
   { type: "meeting", label: "Meeting", icon: Users, color: "bg-brand-copper/10 text-brand-copper border-brand-copper/20" },
-  { type: "note", label: "Note", icon: FileText, color: "bg-gray-500/10 text-gray-400 border-gray-500/20" },
+  { type: "note", label: "Note", icon: FileText, color: "bg-dash-text-muted/10 text-dash-text-muted border-dash-border-strong/20" },
 ];
 
 interface ActivityLoggerProps {
@@ -98,14 +98,14 @@ const ActivityLogger = ({ onLog, defaultContact = "", defaultDealId, compact = f
                   value={entry.description}
                   onChange={(e) => setEntry({ ...entry, description: e.target.value })}
                   placeholder="What happened?"
-                  className="w-full h-16 px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-xs text-dash-text placeholder-dash-text-secondary/50 resize-none focus:outline-none focus:border-brand-copper/50"
+                  className="w-full h-16 px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-xs text-dash-text placeholder-dash-text-secondary/50 resize-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper/50"
                 />
                 <div className="flex gap-2">
                   <input
                     type="date"
                     value={entry.followUpDate || ""}
                     onChange={(e) => setEntry({ ...entry, followUpDate: e.target.value })}
-                    className="flex-1 px-2 py-1.5 bg-dash-bg border border-dash-border rounded-lg text-xs text-dash-text focus:outline-none focus:border-brand-copper/50"
+                    className="flex-1 px-2 py-1.5 bg-dash-bg border border-dash-border rounded-lg text-xs text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper/50"
                     placeholder="Follow-up"
                   />
                   <button
@@ -170,7 +170,7 @@ const ActivityLogger = ({ onLog, defaultContact = "", defaultDealId, compact = f
                 value={entry.contactName}
                 onChange={(e) => setEntry({ ...entry, contactName: e.target.value })}
                 placeholder="Contact name"
-                className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder-dash-text-secondary/50 focus:outline-none focus:border-brand-copper/50"
+                className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper/50"
               />
 
               {/* Description */}
@@ -178,7 +178,7 @@ const ActivityLogger = ({ onLog, defaultContact = "", defaultDealId, compact = f
                 value={entry.description}
                 onChange={(e) => setEntry({ ...entry, description: e.target.value })}
                 placeholder="What happened? Key takeaways, next steps..."
-                className="w-full h-20 px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder-dash-text-secondary/50 resize-none focus:outline-none focus:border-brand-copper/50"
+                className="w-full h-20 px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder-dash-text-secondary/50 resize-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper/50"
               />
 
               {/* Follow-up date */}
@@ -188,7 +188,7 @@ const ActivityLogger = ({ onLog, defaultContact = "", defaultDealId, compact = f
                   type="date"
                   value={entry.followUpDate || ""}
                   onChange={(e) => setEntry({ ...entry, followUpDate: e.target.value })}
-                  className="px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text focus:outline-none focus:border-brand-copper/50"
+                  className="px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper/50"
                 />
               </div>
 

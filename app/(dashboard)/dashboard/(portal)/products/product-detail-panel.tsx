@@ -401,7 +401,7 @@ const ProductDetailPanel = ({
                 {product.sku || "no SKU"}
               </span>
               {product.active ? (
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-400 text-[10px] font-medium">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-dash-success/10 text-dash-success text-[10px] font-medium">
                   active
                 </span>
               ) : (
@@ -410,7 +410,7 @@ const ProductDetailPanel = ({
                 </span>
               )}
               {!product.saleOk && (
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-[10px]">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-dash-warn/10 text-dash-warn text-[10px]">
                   not sellable
                 </span>
               )}
@@ -471,10 +471,10 @@ const ProductDetailPanel = ({
                       <span
                         className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
                           desc.status === "approved"
-                            ? "bg-green-500/10 text-green-400"
+                            ? "bg-dash-success/10 text-dash-success"
                             : desc.status === "rejected"
-                              ? "bg-red-500/10 text-red-400"
-                              : "bg-amber-500/10 text-amber-400"
+                              ? "bg-dash-danger/10 text-dash-danger"
+                              : "bg-dash-warn/10 text-dash-warn"
                         }`}
                       >
                         {desc.status}
@@ -508,7 +508,7 @@ const ProductDetailPanel = ({
                       <p className="text-dash-text leading-relaxed">{desc.descriptionEs}</p>
                     </div>
                     {desc.status === "pending" && (
-                      <p className="text-[10px] text-amber-400/70 italic">
+                      <p className="text-[10px] text-dash-warn/70 italic">
                         Open Product_Descriptions in the sheet and set status to “approved” to publish.
                       </p>
                     )}
@@ -733,7 +733,7 @@ const ProductDetailPanel = ({
                   value={walkInName}
                   onChange={(e) => setWalkInName(e.target.value)}
                   placeholder="Deal name (optional)"
-                  className="px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper"
+                  className="px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper"
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -744,7 +744,7 @@ const ProductDetailPanel = ({
                     min={1}
                     value={qty}
                     onChange={(e) => setQty(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-14 px-2 py-1.5 text-sm bg-dash-bg border border-dash-border rounded text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper"
+                    className="w-14 px-2 py-1.5 text-sm bg-dash-bg border border-dash-border rounded text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper"
                   />
                 </div>
                 <button
@@ -770,7 +770,7 @@ const ProductDetailPanel = ({
               <select
                 value={pickerDealId}
                 onChange={(e) => setPickerDealId(e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper"
+                className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper"
               >
                 <option value="">Select an open deal…</option>
                 {deals.map((d) => (
@@ -788,7 +788,7 @@ const ProductDetailPanel = ({
                     min={1}
                     value={qty}
                     onChange={(e) => setQty(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-14 px-2 py-1.5 text-sm bg-dash-bg border border-dash-border rounded text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper"
+                    className="w-14 px-2 py-1.5 text-sm bg-dash-bg border border-dash-border rounded text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper"
                   />
                 </div>
                 <button
@@ -823,7 +823,7 @@ const ProductDetailPanel = ({
                     min={1}
                     value={qty}
                     onChange={(e) => setQty(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-14 px-2 py-1.5 text-sm bg-dash-bg border border-dash-border rounded text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper"
+                    className="w-14 px-2 py-1.5 text-sm bg-dash-bg border border-dash-border rounded text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper"
                   />
                 </div>
                 <button

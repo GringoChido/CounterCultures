@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useId, useRef, useState } from "react";
 import {
   X,
   Camera,
@@ -13,6 +13,9 @@ import type { ProductFull } from "@/app/lib/products-full";
 import type { VisualAttributes } from "@/app/lib/visual-search";
 import { ProductVisual } from "@/app/components/product-visual";
 import { useProjectListStore } from "@/app/lib/stores/project-list-store";
+import { DialogRoot } from "@/app/components/ui/modal";
+import { IconButton } from "@/app/components/ui/icon-button";
+import { focusRing } from "@/app/components/ui/focus-ring";
 
 interface VisualSearchModalProps {
   open: boolean;
@@ -82,6 +85,8 @@ const VisualSearchModal = ({
   onSelect,
 }: VisualSearchModalProps) => {
   const t = T[locale];
+  const titleId = useId();
+  const subtitleId = useId();
   const fileInput = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
@@ -162,8 +167,6 @@ const VisualSearchModal = ({
     });
   };
 
-  if (!open) return null;
-
   const catalogHref = attributes
     ? `/${locale}/shop/catalog?q=${encodeURIComponent(attributes.searchQuery)}${
         attributes.brand
@@ -175,30 +178,31 @@ const VisualSearchModal = ({
     : `/${locale}/shop/catalog`;
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-black/50"
-        onClick={handleClose}
-        aria-hidden
-      />
-      <div className="relative w-full max-w-4xl max-h-[92vh] bg-white text-brand-charcoal border border-brand-stone/15 rounded-lg shadow-xl flex flex-col overflow-hidden">
+    <DialogRoot
+      open={open}
+      onClose={handleClose}
+      labelledBy={titleId}
+      describedBy={subtitleId}
+      zIndex={80}
+      containerClassName="w-full max-w-4xl max-h-[92vh] bg-dash-surface text-brand-charcoal border border-brand-stone/15 rounded-lg shadow-xl flex flex-col overflow-hidden"
+    >
         <header className="flex items-start justify-between gap-4 px-6 py-4 border-b border-brand-stone/10">
           <div className="min-w-0">
-            <h3 className="font-display text-xl font-light tracking-wide">
+            <h3 id={titleId} className="font-display text-xl font-light tracking-wide">
               {t.title}
             </h3>
-            <p className="mt-1 font-body text-xs text-brand-stone max-w-xl">
+            <p id={subtitleId} className="mt-1 font-body text-xs text-dash-text-secondary max-w-xl">
               {t.subtitle}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={handleClose}
-            className="p-1.5 text-brand-stone hover:text-brand-charcoal cursor-pointer shrink-0"
+          <IconButton
             aria-label={t.close}
-          >
-            <X className="w-5 h-5" />
-          </button>
+            onClick={handleClose}
+            variant="ghost"
+            size="sm"
+            icon={<X className="w-5 h-5" />}
+            className="shrink-0"
+          />
         </header>
 
         <div className="flex-1 overflow-y-auto px-6 py-5">
@@ -218,11 +222,11 @@ const VisualSearchModal = ({
                   : "border-brand-stone/15 bg-brand-linen hover:border-brand-copper/60"
               }`}
             >
-              <Camera className="w-10 h-10 text-brand-stone" />
+              <Camera className="w-10 h-10 text-dash-text-secondary" />
               <p className="font-body text-sm text-brand-charcoal">
                 {t.chooseImage}
               </p>
-              <p className="font-body text-[11px] text-brand-stone">
+              <p className="font-body text-[11px] text-dash-text-secondary">
                 {t.formats}
               </p>
               <input
@@ -249,7 +253,7 @@ const VisualSearchModal = ({
                   />
                 </div>
                 {analyzing ? (
-                  <div className="flex items-center gap-2 text-xs text-brand-stone">
+                  <div className="flex items-center gap-2 text-xs text-dash-text-secondary">
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     {t.analyzing}
                   </div>
@@ -307,7 +311,7 @@ const VisualSearchModal = ({
               {/* Matches grid */}
               <div className="min-w-0">
                 {error && (
-                  <div className="flex items-start gap-3 p-4 rounded-md border border-red-500/40 bg-red-500/5 text-red-600 mb-4">
+                  <div className="flex items-start gap-3 p-4 rounded-md border border-dash-danger/40 bg-dash-danger/5 text-dash-danger mb-4">
                     <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
                     <div className="text-sm">
                       <p className="font-medium">{t.error}</p>
@@ -318,7 +322,7 @@ const VisualSearchModal = ({
                 {matches.length > 0 && (
                   <>
                     <div className="flex items-center justify-between mb-3">
-                      <p className="text-xs font-body text-brand-stone">
+                      <p className="text-xs font-body text-dash-text-secondary">
                         {t.matches(totalMatched)}
                       </p>
                       <a
@@ -334,7 +338,7 @@ const VisualSearchModal = ({
                         return (
                           <div
                             key={p.id}
-                            className="border border-brand-stone/15 rounded overflow-hidden flex flex-col bg-white hover:border-brand-copper/60 transition-colors"
+                            className="border border-brand-stone/15 rounded overflow-hidden flex flex-col bg-dash-surface hover:border-brand-copper/60 transition-colors"
                           >
                             <button
                               type="button"
@@ -357,7 +361,7 @@ const VisualSearchModal = ({
                               <p className="font-body text-xs text-brand-charcoal line-clamp-2 leading-snug">
                                 {p.name || p.sku}
                               </p>
-                              <p className="font-mono text-[9px] text-brand-stone truncate">
+                              <p className="font-mono text-[9px] text-dash-text-secondary truncate">
                                 {p.sku}
                               </p>
                               <button
@@ -390,7 +394,7 @@ const VisualSearchModal = ({
                   </>
                 )}
                 {!analyzing && !error && matches.length === 0 && attributes && (
-                  <p className="text-center py-12 text-sm text-brand-stone">
+                  <p className="text-center py-12 text-sm text-dash-text-secondary">
                     No catalog matches — try the catalog search with{" "}
                     <a href={catalogHref} className="text-brand-copper underline">
                       {attributes.searchQuery}
@@ -402,14 +406,13 @@ const VisualSearchModal = ({
             </div>
           )}
         </div>
-      </div>
-    </div>
+    </DialogRoot>
   );
 };
 
 const Attr = ({ label, value }: { label: string; value: string }) => (
   <div className="flex items-baseline gap-2">
-    <span className="font-body text-[10px] tracking-[0.15em] uppercase text-brand-stone shrink-0 w-16">
+    <span className="font-body text-[10px] tracking-[0.15em] uppercase text-dash-text-secondary shrink-0 w-16">
       {label}
     </span>
     <span className="font-body text-xs text-brand-charcoal capitalize">

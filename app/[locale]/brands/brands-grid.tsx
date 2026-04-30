@@ -138,16 +138,17 @@ export const BrandsGrid = ({
       {/* Catalog-wide stocking counter — sits above the grid as a discoverable
           headline, not buried inside a card. Acts as the visual home of CC's
           biggest commercial advantage. */}
-      <p className="mb-5 font-body text-xs tracking-[0.18em] uppercase text-brand-stone/80">
+      <p className="mb-5 font-body text-xs tracking-[0.18em] uppercase text-dash-text-secondary/80">
         <span className="font-mono text-brand-charcoal">{totalBrandCount}</span>{" "}
         {isEs ? "marcas" : "brands"}
-        <span className="mx-2 text-brand-stone/30">·</span>
+        <span className="mx-2 text-dash-text-secondary/30">·</span>
         <span className="font-mono text-brand-copper">{totalStockedCount}</span>{" "}
         {isEs ? "en stock local" : "stocked locally"}
       </p>
 
       {/* Sticky filter bar */}
-      <div
+      <nav
+        aria-label={isEs ? "Filtros de marcas" : "Brand filters"}
         ref={barRef}
         className={`sticky top-16 md:top-20 z-30 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 mb-10 bg-brand-linen/95 backdrop-blur-sm transition-shadow ${
           barStuck ? "shadow-[0_6px_12px_-10px_rgba(0,0,0,0.25)]" : ""
@@ -157,7 +158,7 @@ export const BrandsGrid = ({
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 flex-1">
             {/* Search */}
             <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-stone/50" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dash-text-secondary/50" />
               <input
                 type="text"
                 value={query}
@@ -165,7 +166,7 @@ export const BrandsGrid = ({
                 placeholder={
                   isEs ? "Buscar marca…" : "Search brands…"
                 }
-                className="w-full pl-9 pr-3 py-2 bg-white border border-brand-stone/20 rounded-lg text-sm font-body text-brand-charcoal placeholder:text-brand-stone/40 focus:outline-none focus:border-brand-copper/40 focus:ring-2 focus:ring-brand-copper/20"
+                className="w-full pl-9 pr-3 py-2 bg-dash-surface border border-brand-stone/20 rounded-lg text-sm font-body text-brand-charcoal placeholder:text-dash-text-secondary/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper/40 focus:ring-2 focus:ring-brand-copper/20"
               />
             </div>
             {/* Category */}
@@ -174,7 +175,7 @@ export const BrandsGrid = ({
               onChange={(e) =>
                 setCategory(e.target.value as CategorySlug | "all")
               }
-              className="px-3 py-2 bg-white border border-brand-stone/20 rounded-lg text-sm font-body text-brand-charcoal focus:outline-none focus:border-brand-copper/40 focus:ring-2 focus:ring-brand-copper/20"
+              className="px-3 py-2 bg-dash-surface border border-brand-stone/20 rounded-lg text-sm font-body text-brand-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper/40 focus:ring-2 focus:ring-brand-copper/20"
             >
               {CATEGORY_OPTIONS.map((c) => (
                 <option key={c} value={c}>
@@ -196,13 +197,13 @@ export const BrandsGrid = ({
               className={`group inline-flex items-center gap-2 px-3 py-2 rounded-full text-xs font-body font-semibold tracking-wide transition-colors border cursor-pointer ${
                 stockedOnly
                   ? "bg-brand-copper text-white border-brand-copper hover:bg-brand-copper/90"
-                  : "bg-white text-brand-charcoal border-brand-stone/25 hover:border-brand-copper/60 hover:text-brand-copper"
+                  : "bg-dash-surface text-brand-charcoal border-brand-stone/25 hover:border-brand-copper/60 hover:text-brand-copper"
               }`}
             >
               <span
                 aria-hidden
                 className={`w-2 h-2 rounded-full transition-colors ${
-                  stockedOnly ? "bg-white" : "bg-brand-copper"
+                  stockedOnly ? "bg-dash-surface" : "bg-brand-copper"
                 }`}
               />
               {stockedOnly
@@ -212,7 +213,7 @@ export const BrandsGrid = ({
           </div>
 
           {/* Count */}
-          <span className="font-body text-xs text-brand-stone/70 tracking-wider uppercase">
+          <span className="font-body text-xs text-dash-text-secondary/70 tracking-wider uppercase">
             {isEs
               ? `Mostrando ${filtered.length} de ${brands.length}`
               : `Showing ${filtered.length} of ${brands.length}`}
@@ -231,7 +232,7 @@ export const BrandsGrid = ({
                 className={`w-7 h-7 flex items-center justify-center text-xs font-body font-medium rounded transition-colors ${
                   has
                     ? "text-brand-charcoal hover:bg-brand-copper/15 hover:text-brand-copper cursor-pointer"
-                    : "text-brand-stone/30 cursor-not-allowed"
+                    : "text-dash-text-secondary/30 cursor-not-allowed"
                 }`}
               >
                 {letter}
@@ -239,12 +240,12 @@ export const BrandsGrid = ({
             );
           })}
         </div>
-      </div>
+      </nav>
 
       {/* Grid */}
       {filtered.length === 0 ? (
         <div className="py-20 text-center">
-          <p className="font-body text-sm text-brand-stone">
+          <p className="font-body text-sm text-dash-text-secondary">
             {isEs
               ? "No encontramos marcas con estos filtros."
               : "No brands match those filters."}
@@ -338,18 +339,18 @@ const BrandCard = ({ brand, isEs }: BrandCardProps) => {
           </p>
         )}
         {brand.tagline && (
-          <p className="mt-1.5 font-body text-xs text-brand-stone/80 tracking-wide italic">
+          <p className="mt-1.5 font-body text-xs text-dash-text-secondary/80 tracking-wide italic">
             {brand.tagline}
           </p>
         )}
         {brand.description && (
-          <p className="mt-2.5 font-body text-sm text-brand-stone leading-relaxed line-clamp-2">
+          <p className="mt-2.5 font-body text-sm text-dash-text-secondary leading-relaxed line-clamp-2">
             {brand.description}
           </p>
         )}
         <div className="mt-auto pt-3 flex items-center justify-between gap-2">
           {brand.catalogCount && brand.catalogCount > 0 ? (
-            <span className="font-body text-[10px] tracking-[0.15em] uppercase text-brand-stone/70">
+            <span className="font-body text-[10px] tracking-[0.15em] uppercase text-dash-text-secondary/70">
               <span className="font-mono text-brand-copper">
                 {brand.catalogCount.toLocaleString()}
               </span>{" "}
@@ -359,7 +360,7 @@ const BrandCard = ({ brand, isEs }: BrandCardProps) => {
             <span />
           )}
           {isExternal && (
-            <span className="flex items-center gap-1.5 text-[10px] text-brand-stone/50 tracking-wider uppercase">
+            <span className="flex items-center gap-1.5 text-[10px] text-dash-text-secondary/50 tracking-wider uppercase">
               <ArrowUpRight className="w-3 h-3" />
               {isEs ? "Sitio externo" : "External site"}
             </span>
@@ -376,7 +377,7 @@ const BrandCard = ({ brand, isEs }: BrandCardProps) => {
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="group relative bg-white border border-brand-stone/8 overflow-hidden flex flex-col transition-all duration-300 hover:shadow-lg hover:border-brand-copper/20 hover:-translate-y-0.5"
+        className="group relative bg-dash-surface border border-brand-stone/8 overflow-hidden flex flex-col transition-all duration-300 hover:shadow-lg hover:border-brand-copper/20 hover:-translate-y-0.5"
       >
         {cardBody}
       </a>
@@ -387,7 +388,7 @@ const BrandCard = ({ brand, isEs }: BrandCardProps) => {
     <Link
       id={`brand-${brand.slug}`}
       href={href}
-      className="group relative bg-white border border-brand-stone/8 overflow-hidden flex flex-col transition-all duration-300 hover:shadow-lg hover:border-brand-copper/20 hover:-translate-y-0.5"
+      className="group relative bg-dash-surface border border-brand-stone/8 overflow-hidden flex flex-col transition-all duration-300 hover:shadow-lg hover:border-brand-copper/20 hover:-translate-y-0.5"
     >
       {cardBody}
     </Link>

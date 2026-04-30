@@ -161,7 +161,7 @@ const SubcategoryPage = async ({ params }: SubcategoryPageProps) => {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
       />
       <Header locale={lang} />
-      <main>
+      <main id="main" tabIndex={-1}>
         {(() => {
           const heroEyebrow =
             lang === "en"
@@ -196,7 +196,7 @@ const SubcategoryPage = async ({ params }: SubcategoryPageProps) => {
         <section className="py-4 md:py-6 bg-brand-linen border-b border-brand-stone/10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             {/* Breadcrumb */}
-            <nav className="flex items-center gap-1.5 font-body font-medium text-xs text-brand-stone mb-4 flex-wrap">
+            <nav className="flex items-center gap-1.5 font-body font-medium text-xs text-dash-text-secondary mb-4 flex-wrap">
               <Link href={`/${locale}`} className="hover:text-brand-terracotta transition-colors">
                 {lang === "en" ? "Home" : "Inicio"}
               </Link>

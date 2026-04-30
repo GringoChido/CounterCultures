@@ -32,8 +32,8 @@ import type { SocialPlatform } from "@/app/lib/social/types";
 import { useProductInsert } from "@/app/(dashboard)/components/product-insert-context";
 
 const platformColors: Record<SocialPlatform, string> = {
-  instagram: "bg-pink-500",
-  facebook: "bg-blue-600",
+  instagram: "bg-dash-cat-pink",
+  facebook: "bg-dash-info",
 };
 
 const platformLabels: Record<SocialPlatform, string> = {
@@ -42,9 +42,9 @@ const platformLabels: Record<SocialPlatform, string> = {
 };
 
 const statusConfig = {
-  scheduled: { icon: Clock, color: "text-amber-500", bg: "bg-amber-50", border: "border-amber-200", label: "Scheduled" },
-  published: { icon: CheckCircle2, color: "text-green-500", bg: "bg-green-50", border: "border-green-200", label: "Published" },
-  failed: { icon: AlertTriangle, color: "text-red-500", bg: "bg-red-50", border: "border-red-200", label: "Failed" },
+  scheduled: { icon: Clock, color: "text-dash-warn", bg: "bg-dash-warn-soft", border: "border-dash-warn", label: "Scheduled" },
+  published: { icon: CheckCircle2, color: "text-dash-success", bg: "bg-dash-success-soft", border: "border-dash-success", label: "Published" },
+  failed: { icon: AlertTriangle, color: "text-dash-danger", bg: "bg-dash-danger-soft", border: "border-dash-danger", label: "Failed" },
 };
 
 interface CalendarEvent {
@@ -123,11 +123,11 @@ export const ContentCalendarView = () => {
         <div className="flex items-center gap-3">
           <div className="hidden sm:flex items-center gap-4 text-xs text-dash-text-secondary mr-4">
             <span className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-amber-500" />
+              <Clock className="w-3.5 h-3.5 text-dash-warn" />
               {scheduledCount} scheduled
             </span>
             <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+              <CheckCircle2 className="w-3.5 h-3.5 text-dash-success" />
               {publishedCount} published
             </span>
           </div>
@@ -276,7 +276,7 @@ export const ContentCalendarView = () => {
                           <span
                             key={p}
                             className={`text-[10px] px-1.5 py-0.5 rounded ${
-                              p === "instagram" ? "bg-pink-100 text-pink-600" : "bg-blue-100 text-blue-600"
+                              p === "instagram" ? "bg-dash-cat-pink-soft text-dash-cat-pink" : "bg-dash-info-soft text-dash-info"
                             }`}
                           >
                             {platformLabels[p]}
@@ -318,7 +318,7 @@ export const ContentCalendarView = () => {
                 .slice(0, 5)
                 .map((post) => (
                   <div key={post.id} className="flex items-start gap-3 py-2 border-b border-dash-border last:border-0">
-                    <Clock className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
+                    <Clock className="w-3.5 h-3.5 text-dash-warn mt-0.5 shrink-0" />
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-medium text-dash-text truncate">
                         {post.message.slice(0, 60)}...
@@ -367,7 +367,7 @@ export const ContentCalendarView = () => {
           <div>
             <label className="block text-xs font-medium text-dash-text-secondary mb-1">Title *</label>
             <input
-              className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper"
+              className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper"
               value={newPost.title}
               onChange={(e) => setNewPost((p) => ({ ...p, title: e.target.value }))}
               placeholder="e.g. Spring Collection Spotlight"
@@ -377,7 +377,7 @@ export const ContentCalendarView = () => {
             <div>
               <label className="block text-xs font-medium text-dash-text-secondary mb-1">Content Type</label>
               <select
-                className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper"
+                className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper"
                 value={newPost.type}
                 onChange={(e) => setNewPost((p) => ({ ...p, type: e.target.value }))}
               >
@@ -391,7 +391,7 @@ export const ContentCalendarView = () => {
             <div>
               <label className="block text-xs font-medium text-dash-text-secondary mb-1">Platform</label>
               <select
-                className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper"
+                className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper"
                 value={newPost.platform}
                 onChange={(e) => setNewPost((p) => ({ ...p, platform: e.target.value }))}
               >
@@ -408,7 +408,7 @@ export const ContentCalendarView = () => {
               <label className="block text-xs font-medium text-dash-text-secondary mb-1">Scheduled Date</label>
               <input
                 type="date"
-                className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper"
+                className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper"
                 value={newPost.scheduled_date}
                 onChange={(e) => setNewPost((p) => ({ ...p, scheduled_date: e.target.value }))}
               />
@@ -416,7 +416,7 @@ export const ContentCalendarView = () => {
             <div>
               <label className="block text-xs font-medium text-dash-text-secondary mb-1">Status</label>
               <select
-                className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper"
+                className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper"
                 value={newPost.status}
                 onChange={(e) => setNewPost((p) => ({ ...p, status: e.target.value }))}
               >
@@ -437,7 +437,7 @@ export const ContentCalendarView = () => {
                   <img src={linkedProduct.image} alt={linkedProduct.name} className="w-8 h-8 rounded object-cover" />
                 )}
                 <span className="text-sm text-dash-text flex-1 truncate">{linkedProduct.name}</span>
-                <button onClick={() => setLinkedProduct(null)} className="text-dash-text-secondary hover:text-red-400 cursor-pointer">
+                <button onClick={() => setLinkedProduct(null)} className="text-dash-text-secondary hover:text-dash-danger cursor-pointer">
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -454,7 +454,7 @@ export const ContentCalendarView = () => {
           <div>
             <label className="block text-xs font-medium text-dash-text-secondary mb-1">Notes</label>
             <textarea
-              className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper h-24 resize-none"
+              className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper h-24 resize-none"
               value={newPost.notes}
               onChange={(e) => setNewPost((p) => ({ ...p, notes: e.target.value }))}
               placeholder="Content brief, talking points, hashtags..."

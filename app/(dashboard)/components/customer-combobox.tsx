@@ -94,12 +94,12 @@ const CustomerCombobox = ({
         }}
         onFocus={() => setOpen(true)}
         placeholder={placeholder}
-        className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper"
+        className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper"
         autoComplete="off"
       />
       {matchedId && (
         <span
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-green-400 pointer-events-none"
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-dash-success pointer-events-none"
           title="Matches existing customer"
         >
           <Check className="w-4 h-4" />

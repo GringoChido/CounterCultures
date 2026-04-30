@@ -99,7 +99,7 @@ const InlineEditField = ({
         disabled={saving}
         aria-label={ariaLabel}
         aria-invalid={Boolean(error)}
-        className={`px-2 py-1 text-sm border border-dash-border rounded focus:outline-none focus:ring-2 focus:ring-dash-accent/40 ${inputClassName}`}
+        className={`px-2 py-1 text-sm border border-dash-border rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-dash-accent/40 ${inputClassName}`}
       />
       <button
         type="button"

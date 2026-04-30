@@ -66,7 +66,7 @@ const HowItWorksBand = ({
       className={
         isDark
           ? "bg-brand-charcoal text-white border-y border-white/10"
-          : "bg-white text-brand-charcoal border-y border-brand-stone/15"
+          : "bg-dash-surface text-brand-charcoal border-y border-brand-stone/15"
       }
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14 md:py-20">
@@ -90,7 +90,7 @@ const HowItWorksBand = ({
               <div
                 key={item.title}
                 className={`p-6 md:p-8 ${
-                  isDark ? "bg-brand-charcoal" : "bg-white"
+                  isDark ? "bg-brand-charcoal" : "bg-dash-surface"
                 }`}
               >
                 <Icon
@@ -103,7 +103,7 @@ const HowItWorksBand = ({
                 </h3>
                 <p
                   className={`font-body text-sm leading-relaxed ${
-                    isDark ? "text-white/70" : "text-brand-stone"
+                    isDark ? "text-white/70" : "text-dash-text-secondary"
                   }`}
                 >
                   {item.body}

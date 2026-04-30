@@ -190,7 +190,7 @@ export const ShareButton = ({
                         disabled={!hasWA || !!sending}
                         onClick={() => share(r, "whatsapp")}
                         title={hasWA ? "Share via WhatsApp" : "No WhatsApp phone on file"}
-                        className="w-7 h-7 flex items-center justify-center rounded-md text-emerald-400 hover:bg-emerald-500/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                        className="w-7 h-7 flex items-center justify-center rounded-md text-dash-success hover:bg-dash-success/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
                       >
                         {sending === waKey ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -202,7 +202,7 @@ export const ShareButton = ({
                         disabled={!hasEmail || !!sending}
                         onClick={() => share(r, "email")}
                         title={hasEmail ? "Share via Email" : "No email on file"}
-                        className="w-7 h-7 flex items-center justify-center rounded-md text-blue-400 hover:bg-blue-500/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                        className="w-7 h-7 flex items-center justify-center rounded-md text-dash-info hover:bg-dash-info/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
                       >
                         {sending === emailKey ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />

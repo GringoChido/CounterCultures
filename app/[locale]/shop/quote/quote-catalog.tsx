@@ -135,7 +135,7 @@ const QuoteCatalog = ({
           {/* Sidebar: category + brand facets */}
           <aside className="space-y-5">
             <div>
-              <label className="block font-body text-[11px] font-semibold tracking-[0.15em] uppercase text-brand-stone mb-2">
+              <label className="block font-body text-[11px] font-semibold tracking-[0.15em] uppercase text-dash-text-secondary mb-2">
                 {t.sectionCategory}
               </label>
               <div className="space-y-1 text-sm">
@@ -164,7 +164,7 @@ const QuoteCatalog = ({
             </div>
 
             <div>
-              <label className="block font-body text-[11px] font-semibold tracking-[0.15em] uppercase text-brand-stone mb-2">
+              <label className="block font-body text-[11px] font-semibold tracking-[0.15em] uppercase text-dash-text-secondary mb-2">
                 {t.sectionBrand} ({brandCounts.length})
               </label>
               <input
@@ -172,9 +172,9 @@ const QuoteCatalog = ({
                 value={brandFilter}
                 onChange={(e) => setBrandFilter(e.target.value)}
                 placeholder={t.brandFilter}
-                className="w-full px-3 py-2 text-sm border border-brand-stone/20 bg-white font-body focus:outline-none focus:border-brand-copper"
+                className="w-full px-3 py-2 text-sm border border-brand-stone/20 bg-dash-surface font-body focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper"
               />
-              <div className="mt-2 max-h-[520px] overflow-y-auto border border-brand-stone/15 bg-white">
+              <div className="mt-2 max-h-[520px] overflow-y-auto border border-brand-stone/15 bg-dash-surface">
                 <button
                   type="button"
                   onClick={() => setBrand("")}
@@ -185,7 +185,7 @@ const QuoteCatalog = ({
                   }`}
                 >
                   <span>{t.allBrands}</span>
-                  <span className="font-mono text-[10px] text-brand-stone">
+                  <span className="font-mono text-[10px] text-dash-text-secondary">
                     {totalProducts.toLocaleString()}
                   </span>
                 </button>
@@ -203,13 +203,13 @@ const QuoteCatalog = ({
                     <span className="truncate pr-2">
                       {b.brand || "(blank)"}
                     </span>
-                    <span className="font-mono text-[10px] text-brand-stone shrink-0">
+                    <span className="font-mono text-[10px] text-dash-text-secondary shrink-0">
                       {b.count.toLocaleString()}
                     </span>
                   </button>
                 ))}
                 {filteredBrands.length === 0 && (
-                  <p className="px-3 py-4 text-xs text-brand-stone text-center">
+                  <p className="px-3 py-4 text-xs text-dash-text-secondary text-center">
                     —
                   </p>
                 )}
@@ -220,30 +220,30 @@ const QuoteCatalog = ({
           {/* Main */}
           <div className="space-y-5">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-stone" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dash-text-secondary" />
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={t.searchPlaceholder}
-                className="w-full pl-10 pr-10 py-3 border border-brand-stone/20 bg-white font-body text-sm focus:outline-none focus:border-brand-copper"
+                className="w-full pl-10 pr-10 py-3 border border-brand-stone/20 bg-dash-surface font-body text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper"
               />
               {query && (
                 <button
                   type="button"
                   onClick={() => setQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-stone hover:text-brand-charcoal cursor-pointer"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-dash-text-secondary hover:text-brand-charcoal cursor-pointer"
                   aria-label="Clear"
                 >
                   <X className="w-4 h-4" />
                 </button>
               )}
               {isPending && (
-                <Loader2 className="absolute right-10 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-stone animate-spin" />
+                <Loader2 className="absolute right-10 top-1/2 -translate-y-1/2 w-4 h-4 text-dash-text-secondary animate-spin" />
               )}
             </div>
 
-            <div className="text-xs font-body text-brand-stone flex items-center gap-2 flex-wrap">
+            <div className="text-xs font-body text-dash-text-secondary flex items-center gap-2 flex-wrap">
               {!result && (
                 <span>{t.typeToSearch(MIN_QUERY)}</span>
               )}
@@ -263,7 +263,7 @@ const QuoteCatalog = ({
             </div>
 
             {result && result.items.length === 0 && !isPending ? (
-              <p className="font-body text-brand-stone py-12 text-center">
+              <p className="font-body text-dash-text-secondary py-12 text-center">
                 {t.noResults}
               </p>
             ) : (
@@ -273,10 +273,10 @@ const QuoteCatalog = ({
                     <Link
                       key={p.id}
                       href={`/${locale}/shop/quote/${p.slug}`}
-                      className="border border-brand-stone/15 bg-white p-4 hover:border-brand-copper transition-colors flex flex-col"
+                      className="border border-brand-stone/15 bg-dash-surface p-4 hover:border-brand-copper transition-colors flex flex-col"
                     >
                       <div className="flex items-start justify-between mb-2 gap-2">
-                        <span className="font-mono text-xs text-brand-stone truncate">
+                        <span className="font-mono text-xs text-dash-text-secondary truncate">
                           {p.sku}
                         </span>
                         <span className="text-[10px] uppercase tracking-wider text-brand-copper shrink-0">
@@ -287,12 +287,12 @@ const QuoteCatalog = ({
                         {p.name}
                       </h3>
                       {p.brand && (
-                        <p className="font-body text-xs text-brand-stone mb-3">
+                        <p className="font-body text-xs text-dash-text-secondary mb-3">
                           {p.brand}
                         </p>
                       )}
                       <div className="mt-auto pt-3 border-t border-brand-stone/10 flex items-center justify-between">
-                        <span className="font-body text-xs text-brand-stone">
+                        <span className="font-body text-xs text-dash-text-secondary">
                           {t.viewDetails}
                         </span>
                         <span className="font-body text-xs font-semibold text-brand-copper">
@@ -311,11 +311,11 @@ const QuoteCatalog = ({
                   type="button"
                   onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
                   disabled={offset === 0}
-                  className="px-3 py-1.5 text-sm border border-brand-stone/20 bg-white hover:bg-brand-linen disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-body"
+                  className="px-3 py-1.5 text-sm border border-brand-stone/20 bg-dash-surface hover:bg-brand-linen disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-body"
                 >
                   {t.previous}
                 </button>
-                <span className="text-xs font-body text-brand-stone">
+                <span className="text-xs font-body text-dash-text-secondary">
                   {t.showingRange(
                     offset + 1,
                     Math.min(offset + PAGE_SIZE, result.total),
@@ -333,7 +333,7 @@ const QuoteCatalog = ({
                     )
                   }
                   disabled={offset + PAGE_SIZE >= result.total}
-                  className="px-3 py-1.5 text-sm border border-brand-stone/20 bg-white hover:bg-brand-linen disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-body"
+                  className="px-3 py-1.5 text-sm border border-brand-stone/20 bg-dash-surface hover:bg-brand-linen disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer font-body"
                 >
                   {t.next}
                 </button>

@@ -87,13 +87,13 @@ const ProductPicker = ({ onSelect, onClose, compact }: ProductPickerProps) => {
     p > 0 ? `${cur} ${p.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : "—";
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center">
+    <div className="fixed inset-0 z-[70] md:flex md:items-center md:justify-center">
       <div
         className="absolute inset-0 bg-black/50"
         onClick={onClose}
         aria-hidden
       />
-      <div className="relative z-10 w-[960px] max-w-[95vw] h-[640px] max-h-[90vh] bg-dash-surface border border-dash-border rounded-xl shadow-xl flex flex-col overflow-hidden">
+      <div className="relative z-10 inset-0 md:inset-auto md:w-[960px] md:max-w-[95vw] md:h-[640px] md:max-h-[90vh] h-full w-full bg-dash-surface border border-dash-border md:rounded-xl shadow-xl flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-dash-border">
           <div>
@@ -146,7 +146,7 @@ const ProductPicker = ({ onSelect, onClose, compact }: ProductPickerProps) => {
                   value={brandFilter}
                   onChange={(e) => setBrandFilter(e.target.value)}
                   placeholder="Filter brands…"
-                  className="w-full px-2 py-1.5 text-xs bg-dash-bg border border-dash-border rounded focus:outline-none focus:ring-1 focus:ring-brand-copper"
+                  className="w-full px-2 py-1.5 text-xs bg-dash-bg border border-dash-border rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper"
                 />
                 <div className="mt-1.5 max-h-[380px] overflow-y-auto border border-dash-border rounded">
                   <button
@@ -188,7 +188,7 @@ const ProductPicker = ({ onSelect, onClose, compact }: ProductPickerProps) => {
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Search by SKU, name, or brand…"
-                  className="w-full pl-9 pr-10 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus:ring-1 focus:ring-brand-copper"
+                  className="w-full pl-9 pr-10 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper"
                 />
                 {isPending && (
                   <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dash-text-secondary animate-spin" />

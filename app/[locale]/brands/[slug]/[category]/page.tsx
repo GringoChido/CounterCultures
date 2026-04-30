@@ -270,12 +270,12 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
       />
       <Header locale={locale} />
-      <main className="pt-16 md:pt-20 bg-white">
+      <main id="main" tabIndex={-1} className="pt-16 md:pt-20 bg-dash-surface">
         {/* Editorial hero */}
         <section className="bg-brand-linen border-b border-brand-stone/10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 md:py-20">
             <nav
-              className="flex items-center gap-2 text-[11px] tracking-[0.18em] uppercase text-brand-stone font-body mb-6"
+              className="flex items-center gap-2 text-[11px] tracking-[0.18em] uppercase text-dash-text-secondary font-body mb-6"
               aria-label="Breadcrumb"
             >
               <Link href={`/${locale}/brands`} className="hover:text-brand-copper">
@@ -300,7 +300,7 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
                   {copy.headline(brand.name)}
                 </h1>
                 <p
-                  className="mt-5 font-body text-[15px] md:text-base text-brand-stone max-w-xl leading-relaxed"
+                  className="mt-5 font-body text-[15px] md:text-base text-dash-text-secondary max-w-xl leading-relaxed"
                   data-speakable="description"
                 >
                   {copy.description(brand.name, summary.count)}
@@ -324,19 +324,19 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
               </div>
               <div className="hidden lg:block">
                 <div className="grid grid-cols-3 gap-2 text-xs font-body">
-                  <div className="p-4 bg-white border border-brand-stone/15">
+                  <div className="p-4 bg-dash-surface border border-brand-stone/15">
                     <div className="font-display text-2xl font-light text-brand-charcoal">
                       {summary.count.toLocaleString(isEs ? "es-MX" : "en-US")}
                     </div>
-                    <div className="mt-1 text-[10px] tracking-[0.2em] text-brand-stone uppercase">
+                    <div className="mt-1 text-[10px] tracking-[0.2em] text-dash-text-secondary uppercase">
                       {isEs ? "Piezas" : "Pieces"}
                     </div>
                   </div>
-                  <div className="p-4 bg-white border border-brand-stone/15">
+                  <div className="p-4 bg-dash-surface border border-brand-stone/15">
                     <div className="font-display text-2xl font-light text-brand-charcoal">
                       24h
                     </div>
-                    <div className="mt-1 text-[10px] tracking-[0.2em] text-brand-stone uppercase">
+                    <div className="mt-1 text-[10px] tracking-[0.2em] text-dash-text-secondary uppercase">
                       {isEs ? "Respuesta" : "Response"}
                     </div>
                   </div>
@@ -357,7 +357,7 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex items-end justify-between gap-4 mb-8">
               <div>
-                <p className="font-body text-[11px] tracking-[0.25em] text-brand-stone uppercase">
+                <p className="font-body text-[11px] tracking-[0.25em] text-dash-text-secondary uppercase">
                   {isEs ? "Selección destacada" : "Featured selection"}
                 </p>
                 <h2 className="mt-2 font-display text-2xl md:text-3xl font-light text-brand-charcoal">
@@ -385,7 +385,7 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
                 <Link
                   key={p.id}
                   href={`/${locale}/shop/catalog?q=${encodeURIComponent(p.sku)}`}
-                  className="group bg-white border border-brand-stone/15 hover:border-brand-copper/60 transition-colors flex flex-col"
+                  className="group bg-dash-surface border border-brand-stone/15 hover:border-brand-copper/60 transition-colors flex flex-col"
                 >
                   <div className="relative">
                     <ProductVisual
@@ -418,13 +418,13 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
                     <h3 className="mt-1 font-body font-medium text-sm text-brand-charcoal line-clamp-2 leading-snug group-hover:text-brand-copper transition-colors">
                       {p.name || p.sku}
                     </h3>
-                    <p className="mt-1 font-mono text-[10px] text-brand-stone truncate">
+                    <p className="mt-1 font-mono text-[10px] text-dash-text-secondary truncate">
                       {p.sku || "—"}
                     </p>
                     <div className="mt-3 pt-3 border-t border-brand-stone/10 font-body text-xs text-brand-charcoal">
                       {p.listPrice > 0 ? (
                         <>
-                          <span className="text-brand-stone">
+                          <span className="text-dash-text-secondary">
                             {isEs ? "desde" : "from"}
                           </span>{" "}
                           <span className="font-medium">
@@ -432,7 +432,7 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
                           </span>
                         </>
                       ) : (
-                        <span className="text-brand-stone">
+                        <span className="text-dash-text-secondary">
                           {isEs ? "Cotización" : "Quote"}
                         </span>
                       )}
@@ -448,7 +448,7 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
         {otherCounts.some((c) => c.count > 0) && (
           <section className="py-12 md:py-16 bg-brand-linen border-y border-brand-stone/10">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <p className="font-body text-[11px] tracking-[0.25em] text-brand-stone uppercase">
+              <p className="font-body text-[11px] tracking-[0.25em] text-dash-text-secondary uppercase">
                 {isEs ? "Más de" : "More from"} {brand.name}
               </p>
               <h2 className="mt-2 font-display text-2xl md:text-3xl font-light text-brand-charcoal mb-8">
@@ -465,7 +465,7 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
                       <Link
                         key={c}
                         href={`/${locale}/brands/${slug}/${c}`}
-                        className="group flex items-center justify-between gap-4 p-6 bg-white border border-brand-stone/15 hover:border-brand-copper transition-colors"
+                        className="group flex items-center justify-between gap-4 p-6 bg-dash-surface border border-brand-stone/15 hover:border-brand-copper transition-colors"
                       >
                         <div>
                           <p className="font-body text-[10px] tracking-[0.2em] text-brand-copper uppercase">
@@ -474,12 +474,12 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
                           <h3 className="mt-1 font-display text-xl text-brand-charcoal group-hover:text-brand-copper transition-colors">
                             {otherCopy.label}
                           </h3>
-                          <p className="mt-1 font-body text-xs text-brand-stone">
+                          <p className="mt-1 font-body text-xs text-dash-text-secondary">
                             {count.toLocaleString(isEs ? "es-MX" : "en-US")}{" "}
                             {isEs ? "piezas disponibles" : "pieces available"}
                           </p>
                         </div>
-                        <ArrowUpRight className="w-5 h-5 text-brand-stone group-hover:text-brand-copper transition-colors shrink-0" />
+                        <ArrowUpRight className="w-5 h-5 text-dash-text-secondary group-hover:text-brand-copper transition-colors shrink-0" />
                       </Link>
                     );
                   })}

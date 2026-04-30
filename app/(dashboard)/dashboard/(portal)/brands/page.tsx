@@ -298,7 +298,7 @@ const BrandsPage = () => {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-4 p-6">
-        <p className="text-red-400 text-center">{error}</p>
+        <p className="text-dash-danger text-center">{error}</p>
         <button
           onClick={fetchBrands}
           className="px-4 py-2 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer"
@@ -335,8 +335,8 @@ const BrandsPage = () => {
 
       {/* Untagged notice */}
       {counts.untagged === counts.total && counts.total > 0 && (
-        <div className="flex items-start gap-3 bg-amber-400/5 border border-amber-400/20 rounded-xl px-4 py-3 text-sm">
-          <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 bg-dash-warn/5 border border-dash-warn/20 rounded-xl px-4 py-3 text-sm">
+          <AlertTriangle className="w-4 h-4 text-dash-warn flex-shrink-0 mt-0.5" />
           <div className="text-dash-text-secondary">
             <strong className="text-dash-text">
               No stock state tagged yet.
@@ -368,7 +368,7 @@ const BrandsPage = () => {
               onChange={(e) =>
                 setCategoryFilter(e.target.value as CategorySlug | "all")
               }
-              className="text-sm bg-dash-surface border border-dash-border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
+              className="text-sm bg-dash-surface border border-dash-border rounded-lg px-3 py-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
             >
               {CATEGORY_OPTIONS.map((c) => (
                 <option key={c} value={c}>
@@ -380,7 +380,7 @@ const BrandsPage = () => {
           <select
             value={stockFilter}
             onChange={(e) => setStockFilter(e.target.value as StockFilter)}
-            className="text-sm bg-dash-surface border border-dash-border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
+            className="text-sm bg-dash-surface border border-dash-border rounded-lg px-3 py-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
           >
             {STOCK_FILTER_OPTIONS.map((s) => (
               <option key={s} value={s}>

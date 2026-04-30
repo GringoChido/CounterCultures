@@ -394,7 +394,7 @@ export function CommandPalette({
               }}
               onKeyDown={handleKeyDown}
               placeholder="Search leads, deals, traficos, shipments, brands, products, blog…"
-              className="flex-1 h-14 bg-transparent text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none"
+              className="flex-1 h-14 bg-transparent text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2"
             />
             <kbd className="hidden sm:inline-flex items-center gap-0.5 px-2 py-1 text-[10px] font-mono text-dash-text-secondary bg-dash-bg border border-dash-border rounded-md">
               ESC

@@ -67,7 +67,7 @@ const CatalogDepthBand = ({
                 </>
               )}
             </h2>
-            <p className="mt-5 font-body text-base md:text-lg text-brand-stone max-w-xl leading-relaxed">
+            <p className="mt-5 font-body text-base md:text-lg text-dash-text-secondary max-w-xl leading-relaxed">
               {isEs
                 ? "Ranking por SKUs autorizados disponibles para especificar. Entre más profunda la barra, más opciones tienes."
                 : "Ranked by authorized SKUs we can pull from. The deeper the bar, the more there is to spec."}
@@ -76,13 +76,13 @@ const CatalogDepthBand = ({
 
           {/* Right-side total stat — anchors the scale */}
           <div className="lg:text-right">
-            <p className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-stone uppercase">
+            <p className="font-body font-semibold text-[11px] tracking-[0.25em] text-dash-text-secondary uppercase">
               {isEs ? "Catálogo completo" : "Full catalog"}
             </p>
             <p className="mt-2 font-display text-5xl md:text-6xl font-light text-brand-charcoal tabular-nums leading-none">
               {totalCatalog.toLocaleString(numFmt)}
             </p>
-            <p className="mt-2 font-body text-sm text-brand-stone">
+            <p className="mt-2 font-body text-sm text-dash-text-secondary">
               {isEs ? "piezas autorizadas" : "authorized pieces"}
             </p>
             <Link
@@ -115,7 +115,7 @@ const CatalogDepthBand = ({
                 >
                   <div className="flex items-baseline justify-between gap-4 mb-2.5">
                     <div className="flex items-baseline gap-4 min-w-0">
-                      <span className="font-mono text-xs text-brand-stone w-7 shrink-0 tabular-nums">
+                      <span className="font-mono text-xs text-dash-text-secondary w-7 shrink-0 tabular-nums">
                         {String(i + 1).padStart(2, "0")}
                       </span>
                       <span className="font-display text-2xl md:text-3xl font-light text-brand-charcoal group-hover:text-brand-copper transition-colors truncate">
@@ -124,7 +124,7 @@ const CatalogDepthBand = ({
                     </div>
                     <span className="font-mono text-sm md:text-base text-brand-charcoal tabular-nums shrink-0 group-hover:text-brand-copper transition-colors">
                       {b.count.toLocaleString(numFmt)}
-                      <span className="ml-1 text-[10px] tracking-[0.2em] uppercase text-brand-stone group-hover:text-brand-copper/70">
+                      <span className="ml-1 text-[10px] tracking-[0.2em] uppercase text-dash-text-secondary group-hover:text-brand-copper/70">
                         SKUs
                       </span>
                     </span>
