@@ -1,3 +1,5 @@
+"use client";
+
 import { CreditCard, AlertTriangle } from "lucide-react";
 
 interface CreditPanelProps {

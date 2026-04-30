@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { NeedsYou } from "@/app/(dashboard)/components/needs-you";
 import { NewSinceLastCheck } from "@/app/(dashboard)/components/new-since-last-check";
@@ -15,9 +18,15 @@ const greetingFor = (date: Date): string => {
 };
 
 const OverviewPage = () => {
-  const now = new Date();
-  const day = format(now, "EEEE, MMMM d");
-  const greeting = greetingFor(now);
+  // Render after mount so SSR HTML matches client (no hydration mismatch
+  // when server timezone differs from the user's local timezone).
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => {
+    setNow(new Date());
+  }, []);
+
+  const day = now ? format(now, "EEEE, MMMM d") : "";
+  const greeting = now ? greetingFor(now) : "";
 
   return (
     <div className="space-y-6">

@@ -1,3 +1,5 @@
+"use client";
+
 import { Calendar } from "lucide-react";
 import { MoneyEquiv } from "@/app/(dashboard)/components/money/money-equiv";
 
