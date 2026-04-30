@@ -302,7 +302,7 @@ const WhatsAppPage = () => {
                 key={conv.id}
                 onClick={() => setSelectedConversation(conv.id)}
                 className={`w-full flex items-start gap-3 p-3 border-b border-dash-border hover:bg-dash-bg/50 transition-colors text-left cursor-pointer ${
-                  selectedConversation === conv.id ? "bg-brand-copper/10" : ""
+                  selectedConversation === conv.id ? "bg-brand-copper/5 border-l-2 border-l-brand-copper" : ""
                 }`}
               >
                 <div className="w-10 h-10 rounded-full bg-brand-copper/10 flex items-center justify-center shrink-0">

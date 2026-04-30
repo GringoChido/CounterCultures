@@ -600,12 +600,12 @@ const InboxPage = () => {
                 return (
                   <li key={t.threadId}>
                     <div
-                      className={`flex items-stretch border-b transition-colors group ${
+                      className={`flex items-stretch border-b border-dash-border/50 transition-colors group ${
                         active
-                          ? "bg-brand-copper/10 border-dash-border"
+                          ? "bg-brand-copper/5 border-l-2 border-l-brand-copper"
                           : checked
-                          ? "bg-brand-copper/5 border-dash-border/50"
-                          : "hover:bg-dash-bg/40 border-dash-border/50"
+                          ? "bg-brand-copper/5 border-l-2 border-l-transparent"
+                          : "hover:bg-dash-bg/40 border-l-2 border-l-transparent"
                       }`}
                     >
                       <button

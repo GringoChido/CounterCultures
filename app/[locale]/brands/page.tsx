@@ -614,18 +614,14 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
                           sizes="(max-width: 768px) 100vw, 50vw"
                           className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                         />
-                        {/* Editorial overlay — copper-tinted side gradient
-                            instead of the dark bottom scrim used elsewhere,
-                            so flagship reads as a magazine spread, not just
-                            a bigger card. */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-brand-charcoal/75 via-brand-charcoal/20 to-transparent" />
-                        <div className="absolute inset-y-0 left-0 flex flex-col justify-end p-6 max-w-md">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent" />
+                        <div className="absolute bottom-4 left-6">
                           {brand.originCountryName && (
-                            <p className="font-body font-semibold text-[10px] text-brand-copper tracking-[0.18em] uppercase">
+                            <p className="font-body font-semibold text-[10px] text-white/80 tracking-[0.15em] uppercase">
                               {brand.originCountryName}
                             </p>
                           )}
-                          <h3 className="mt-1.5 font-display text-2xl lg:text-3xl font-light text-white tracking-wide leading-tight">
+                          <h3 className="mt-1 font-display text-2xl lg:text-3xl font-light text-white tracking-wide">
                             {brand.name}
                           </h3>
                         </div>
