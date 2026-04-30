@@ -1,3 +1,5 @@
+"use client";
+
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 
 const content = {

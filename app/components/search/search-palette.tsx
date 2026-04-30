@@ -207,22 +207,22 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
       aria-label={t.placeholder}
       className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm flex items-start justify-center pt-[10vh] px-4"
     >
-      <div className="w-full max-w-2xl bg-dash-surface rounded-xl shadow-2xl overflow-hidden border border-brand-stone/15">
+      <div className="w-full max-w-2xl bg-white rounded-xl shadow-2xl overflow-hidden border border-brand-stone/15">
         {/* Input */}
         <div className="flex items-center gap-3 px-5 py-4 border-b border-brand-stone/10">
-          <Search className="w-5 h-5 text-dash-text-secondary/60 shrink-0" />
+          <Search className="w-5 h-5 text-brand-stone/60 shrink-0" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t.placeholder}
-            className="flex-1 bg-transparent border-0 outline-none font-body text-base text-brand-charcoal placeholder:text-dash-text-secondary/45"
+            className="flex-1 bg-transparent border-0 outline-none font-body text-base text-brand-charcoal placeholder:text-brand-stone/45"
           />
           <button
             onClick={onClose}
             aria-label="Close search"
-            className="p-1 text-dash-text-secondary/50 hover:text-brand-charcoal transition-colors cursor-pointer"
+            className="p-1 text-brand-stone/50 hover:text-brand-charcoal transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -231,12 +231,12 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
         {/* Results */}
         <div ref={resultsRef} className="max-h-[60vh] overflow-y-auto">
           {loading && !hasFetched ? (
-            <p className="px-5 py-8 text-center text-sm text-dash-text-secondary/70 font-body">
+            <p className="px-5 py-8 text-center text-sm text-brand-stone/70 font-body">
               {t.loading}
             </p>
           ) : query.trim() === "" ? (
             <div className="px-5 py-8 text-center">
-              <p className="font-body text-sm text-dash-text-secondary/70">
+              <p className="font-body text-sm text-brand-stone/70">
                 {t.placeholder}
               </p>
               <NextLink
@@ -249,7 +249,7 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
             </div>
           ) : results.length === 0 ? (
             <div className="px-5 py-8 text-center">
-              <p className="font-body text-sm text-dash-text-secondary/70">{t.noResults}</p>
+              <p className="font-body text-sm text-brand-stone/70">{t.noResults}</p>
               <NextLink
                 href={`/${locale}/shop/catalog?q=${encodeURIComponent(query.trim())}`}
                 onClick={onClose}
@@ -267,7 +267,7 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
                   type === "brand" ? t.sectionBrand : t.sectionArticle;
                 return (
                   <div key={type}>
-                    <p className="px-5 pt-4 pb-2 font-body text-[10px] tracking-[0.2em] uppercase text-dash-text-secondary/60">
+                    <p className="px-5 pt-4 pb-2 font-body text-[10px] tracking-[0.2em] uppercase text-brand-stone/60">
                       {sectionLabel}
                     </p>
                     <ul>
@@ -290,19 +290,19 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
                             }`}
                             onMouseEnter={() => setActiveIndex(globalIndex)}
                           >
-                            <Icon className="w-4 h-4 text-dash-text-secondary/55 shrink-0" />
+                            <Icon className="w-4 h-4 text-brand-stone/55 shrink-0" />
                             <div className="flex-1 min-w-0">
                               <p className="font-body text-sm text-brand-charcoal truncate">
                                 {r.name}
                               </p>
                               {r.subtitle && (
-                                <p className="font-body text-xs text-dash-text-secondary/70 truncate">
+                                <p className="font-body text-xs text-brand-stone/70 truncate">
                                   {r.subtitle}
                                 </p>
                               )}
                             </div>
                             {r.external && (
-                              <ArrowUpRight className="w-3.5 h-3.5 text-dash-text-secondary/45 shrink-0" />
+                              <ArrowUpRight className="w-3.5 h-3.5 text-brand-stone/45 shrink-0" />
                             )}
                           </div>
                         );
@@ -335,10 +335,10 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
 
         {/* Footer */}
         <div className="flex items-center justify-between px-5 py-3 border-t border-brand-stone/10 bg-brand-linen/40">
-          <span className="font-body text-[10px] tracking-wider uppercase text-dash-text-secondary/50">
+          <span className="font-body text-[10px] tracking-wider uppercase text-brand-stone/50">
             {t.keyboardHint}
           </span>
-          <span className="font-mono text-[10px] text-dash-text-secondary/40">⌘K</span>
+          <span className="font-mono text-[10px] text-brand-stone/40">⌘K</span>
         </div>
       </div>
     </div>

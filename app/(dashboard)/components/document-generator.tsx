@@ -263,14 +263,14 @@ export const DocumentGenerator = ({
   // ---------------------------------------------------------------------------
 
   const inputCls =
-    "w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper transition-colors";
+    "w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus:border-brand-copper transition-colors";
   const labelCls =
     "text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-dash-text-secondary mb-1 block";
 
   return (
-    <div className="fixed inset-0 z-[60] flex flex-col md:flex-row bg-black/40 overflow-hidden">
-      {/* Left: Smart Form (full-width on mobile, 40% on md+) */}
-      <div className="w-full md:w-[40%] md:min-w-[360px] flex-1 md:flex-initial bg-dash-surface md:border-r border-b md:border-b-0 border-dash-border flex flex-col min-h-0">
+    <div className="fixed inset-0 z-[60] flex bg-black/40">
+      {/* Left: Smart Form */}
+      <div className="w-[40%] min-w-[360px] bg-dash-surface border-r border-dash-border flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-dash-border bg-dash-bg/50">
           <div>
@@ -486,7 +486,7 @@ export const DocumentGenerator = ({
                   {items.length > 1 && (
                     <button
                       onClick={() => removeItem(i)}
-                      className="p-1.5 rounded hover:bg-dash-danger/10 text-dash-text-secondary hover:text-dash-danger transition-colors cursor-pointer"
+                      className="p-1.5 rounded hover:bg-red-500/10 text-dash-text-secondary hover:text-red-400 transition-colors cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -651,8 +651,8 @@ export const DocumentGenerator = ({
         </div>
       </div>
 
-      {/* Right: Live Preview — hidden under md, side-by-side from md+ */}
-      <div className="hidden md:flex flex-1 bg-dash-preview-bg overflow-y-auto">
+      {/* Right: Live Preview */}
+      <div className="flex-1 bg-[#f0f0f0] overflow-y-auto">
         <div className="p-8" ref={previewRef}>
           {docType === "quote" && <QuoteTemplate data={quoteData} />}
           {docType === "invoice" && <InvoiceTemplate data={invoiceData} />}

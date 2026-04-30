@@ -1,3 +1,5 @@
+"use client";
+
 import type { LineItem } from "./quote-template";
 
 export interface DeliveryReceiptData {
@@ -40,22 +42,22 @@ export const DeliveryReceiptTemplate = ({
   const l = data.locale;
 
   return (
-    <div className="bg-dash-surface text-brand-charcoal p-8 max-w-[800px] mx-auto font-['DM_Sans',sans-serif] text-sm leading-relaxed">
+    <div className="bg-white text-[#2C2C2C] p-8 max-w-[800px] mx-auto font-['DM_Sans',sans-serif] text-sm leading-relaxed">
       {/* Header */}
-      <div className="flex items-start justify-between mb-8 pb-6 border-b-2 border-brand-copper">
+      <div className="flex items-start justify-between mb-8 pb-6 border-b-2 border-[#B87333]">
         <div>
-          <h1 className="font-['Cormorant',serif] text-3xl font-light tracking-wide text-brand-charcoal">
+          <h1 className="font-['Cormorant',serif] text-3xl font-light tracking-wide text-[#1a1a1a]">
             Counter Cultures
           </h1>
-          <p className="text-[10px] font-['JetBrains_Mono',monospace] tracking-[0.2em] text-brand-copper uppercase mt-1">
+          <p className="text-[10px] font-['JetBrains_Mono',monospace] tracking-[0.2em] text-[#B87333] uppercase mt-1">
             Premium Kitchen, Bath & Hardware
           </p>
         </div>
         <div className="text-right">
-          <h2 className="font-['Cormorant',serif] text-2xl font-light text-brand-charcoal uppercase tracking-wider">
+          <h2 className="font-['Cormorant',serif] text-2xl font-light text-[#1a1a1a] uppercase tracking-wider">
             {t.title[l]}
           </h2>
-          <p className="text-xs text-dash-text-secondary mt-1">
+          <p className="text-xs text-[#6B6B6B] mt-1">
             {t.number[l]}
             {data.docNumber}
           </p>
@@ -65,28 +67,28 @@ export const DeliveryReceiptTemplate = ({
       {/* Meta */}
       <div className="grid grid-cols-2 gap-8 mb-8">
         <div>
-          <p className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-brand-copper mb-1">
+          <p className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-[#B87333] mb-1">
             {t.deliveredTo[l]}
           </p>
           <p className="font-medium">{data.customerName}</p>
           {data.customerCompany && (
-            <p className="text-dash-text-secondary">{data.customerCompany}</p>
+            <p className="text-[#6B6B6B]">{data.customerCompany}</p>
           )}
         </div>
         <div>
-          <p className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-brand-copper mb-1">
+          <p className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-[#B87333] mb-1">
             {t.deliveryAddr[l]}
           </p>
-          <p className="text-dash-text-secondary">{data.deliveryAddress}</p>
+          <p className="text-[#6B6B6B]">{data.deliveryAddress}</p>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-8 mb-8">
         <div>
-          <span className="text-dash-text-secondary">{t.date[l]}: </span>
+          <span className="text-[#6B6B6B]">{t.date[l]}: </span>
           <span>{data.date}</span>
         </div>
         <div>
-          <span className="text-dash-text-secondary">{t.orderRef[l]}: </span>
+          <span className="text-[#6B6B6B]">{t.orderRef[l]}: </span>
           <span>{data.orderReference}</span>
         </div>
       </div>
@@ -94,23 +96,23 @@ export const DeliveryReceiptTemplate = ({
       {/* Items */}
       <table className="w-full mb-8">
         <thead>
-          <tr className="border-b border-dash-border">
-            <th className="text-left py-2 text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-brand-copper">
+          <tr className="border-b border-[#E5E0DB]">
+            <th className="text-left py-2 text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-[#B87333]">
               {t.product[l]}
             </th>
-            <th className="text-left py-2 text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-brand-copper">
+            <th className="text-left py-2 text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-[#B87333]">
               {t.sku[l]}
             </th>
-            <th className="text-center py-2 text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-brand-copper">
+            <th className="text-center py-2 text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-[#B87333]">
               {t.qty[l]}
             </th>
           </tr>
         </thead>
         <tbody>
           {data.items.map((item, i) => (
-            <tr key={i} className="border-b border-brand-linen">
+            <tr key={i} className="border-b border-[#F5F0EB]">
               <td className="py-3">{item.product}</td>
-              <td className="py-3 text-dash-text-secondary font-['JetBrains_Mono',monospace] text-xs">
+              <td className="py-3 text-[#6B6B6B] font-['JetBrains_Mono',monospace] text-xs">
                 {item.sku}
               </td>
               <td className="py-3 text-center">{item.quantity}</td>
@@ -121,33 +123,33 @@ export const DeliveryReceiptTemplate = ({
 
       {data.notes && (
         <div className="mb-8 text-xs">
-          <p className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-brand-copper mb-1">
+          <p className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-[#B87333] mb-1">
             {t.notes[l]}
           </p>
-          <p className="text-dash-text-secondary">{data.notes}</p>
+          <p className="text-[#6B6B6B]">{data.notes}</p>
         </div>
       )}
 
       {/* Signature block */}
       <div className="grid grid-cols-2 gap-8 mt-12 mb-8">
         <div>
-          <div className="border-b border-brand-charcoal h-12" />
-          <p className="text-xs text-dash-text-secondary mt-1">{t.signature[l]}</p>
+          <div className="border-b border-[#2C2C2C] h-12" />
+          <p className="text-xs text-[#6B6B6B] mt-1">{t.signature[l]}</p>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <div className="border-b border-brand-charcoal h-12" />
-            <p className="text-xs text-dash-text-secondary mt-1">{t.printName[l]}</p>
+            <div className="border-b border-[#2C2C2C] h-12" />
+            <p className="text-xs text-[#6B6B6B] mt-1">{t.printName[l]}</p>
           </div>
           <div>
-            <div className="border-b border-brand-charcoal h-12" />
-            <p className="text-xs text-dash-text-secondary mt-1">{t.dateSign[l]}</p>
+            <div className="border-b border-[#2C2C2C] h-12" />
+            <p className="text-xs text-[#6B6B6B] mt-1">{t.dateSign[l]}</p>
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="border-t border-dash-border pt-4 text-center text-[10px] text-dash-text-muted">
+      <div className="border-t border-[#E5E0DB] pt-4 text-center text-[10px] text-[#999]">
         <p>{t.footer[l]}</p>
       </div>
     </div>

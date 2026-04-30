@@ -5,11 +5,6 @@ import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { Button } from "@/app/components/ui/button";
-import {
-  TextField,
-  TextAreaField,
-  SelectField,
-} from "@/app/components/ui/field";
 import { MapPin, Clock, Phone, Mail, MessageCircle } from "lucide-react";
 import { useLocale } from "next-intl";
 import { SITE_CONFIG } from "@/app/lib/constants";
@@ -87,7 +82,7 @@ export const ContactContent = () => {
   return (
   <>
     <Header locale={locale} />
-    <main id="main" tabIndex={-1}>
+    <main>
       {/* Hero */}
       <section className="pt-28 pb-12 md:pt-40 md:pb-20 bg-brand-charcoal">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -115,47 +110,38 @@ export const ContactContent = () => {
                 <h2 className="font-display text-3xl font-light tracking-wide text-brand-charcoal mb-8">
                   {t.formTitle[locale]}
                 </h2>
-                <form className="space-y-5" onSubmit={handleSubmit} noValidate={false}>
+                <form className="space-y-5" onSubmit={handleSubmit}>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <TextField
-                      label={t.firstName[locale]}
-                      hideLabel
-                      name="firstName"
+                    <input
                       type="text"
+                      name="firstName"
                       required
                       placeholder={t.firstName[locale]}
-                      autoComplete="given-name"
+                      className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
                     />
-                    <TextField
-                      label={t.lastName[locale]}
-                      hideLabel
-                      name="lastName"
+                    <input
                       type="text"
+                      name="lastName"
                       placeholder={t.lastName[locale]}
-                      autoComplete="family-name"
+                      className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
                     />
                   </div>
-                  <TextField
-                    label={t.email[locale]}
-                    hideLabel
-                    name="email"
+                  <input
                     type="email"
+                    name="email"
                     required
                     placeholder={t.email[locale]}
-                    autoComplete="email"
+                    className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
                   />
-                  <TextField
-                    label={t.phone[locale]}
-                    hideLabel
-                    name="phone"
+                  <input
                     type="tel"
+                    name="phone"
                     placeholder={t.phone[locale]}
-                    autoComplete="tel"
+                    className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
                   />
-                  <SelectField
-                    label={t.selectType[locale]}
-                    hideLabel
+                  <select
                     name="type"
+                    className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal focus:outline-none focus:border-brand-terracotta transition-colors"
                     defaultValue=""
                   >
                     <option value="" disabled>
@@ -167,29 +153,28 @@ export const ContactContent = () => {
                     <option value="artisanal">{t.artisanal[locale]}</option>
                     <option value="quote">{t.quote[locale]}</option>
                     <option value="other">{t.other[locale]}</option>
-                  </SelectField>
-                  <TextAreaField
-                    label={t.message[locale]}
-                    hideLabel
+                  </select>
+                  <textarea
                     name="message"
                     placeholder={t.message[locale]}
                     rows={5}
+                    className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors resize-none"
                   />
                   <Button variant="primary" className="w-full sm:w-auto" disabled={status === "sending"}>
                     {status === "sending" ? t.sending[locale] : status === "sent" ? t.sent[locale] : t.send[locale]}
                   </Button>
                   {status === "sent" && (
-                    <p role="status" aria-live="polite" className="font-body text-sm text-brand-sage">
+                    <p className="font-body text-sm text-brand-sage">
                       {t.thankYou[locale]}
                     </p>
                   )}
                   {status === "error" && (
-                    <p role="alert" aria-live="assertive" className="font-body text-sm text-dash-danger">
+                    <p className="font-body text-sm text-red-600">
                       {t.error[locale]}
                     </p>
                   )}
                   {status === "idle" && (
-                    <p className="font-body text-sm text-dash-text-secondary">
+                    <p className="font-body text-sm text-brand-stone">
                       {t.responseTime[locale]}
                     </p>
                   )}
@@ -264,7 +249,7 @@ export const ContactContent = () => {
                   <h4 className="font-body text-sm font-semibold text-brand-charcoal mb-3">
                     {t.forProfessionals[locale]}
                   </h4>
-                  <p className="font-body text-sm text-dash-text-secondary leading-relaxed">
+                  <p className="font-body text-sm text-brand-stone leading-relaxed">
                     {t.tradeCopy[locale]}
                   </p>
                   <Button variant="ghost" size="sm" href="/trade" className="mt-3">

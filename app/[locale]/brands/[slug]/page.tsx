@@ -287,7 +287,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <Header locale={locale} />
-      <main id="main" tabIndex={-1}>
+      <main>
         {heroImage ? (
           <CategoryHero
             eyebrow={stateEyebrow}
@@ -386,7 +386,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
                   <h3 className="font-body text-sm font-semibold text-brand-charcoal">
                     {isEs ? "Distribuidor Autorizado" : "Authorized Dealer"}
                   </h3>
-                  <p className="mt-2 font-body text-sm text-dash-text-secondary">
+                  <p className="mt-2 font-body text-sm text-brand-stone">
                     {isEs
                       ? "Garantía completa del fabricante, productos genuinos y soporte directo de fábrica."
                       : "Full manufacturer warranty, genuine products, and factory-direct support."}
@@ -399,7 +399,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
                   <h3 className="font-body text-sm font-semibold text-brand-charcoal">
                     {isEs ? "Experiencia Local" : "Local Expertise"}
                   </h3>
-                  <p className="mt-2 font-body text-sm text-dash-text-secondary">
+                  <p className="mt-2 font-body text-sm text-brand-stone">
                     {isEs
                       ? `Años especificando ${brand.name} para hogares, hoteles y proyectos comerciales en México.`
                       : `Years specifying ${brand.name} for Mexican homes, hotels, and commercial projects.`}
@@ -412,7 +412,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
                   <h3 className="font-body text-sm font-semibold text-brand-charcoal">
                     {isEs ? "Soporte de Instalación" : "Installation Support"}
                   </h3>
-                  <p className="mt-2 font-body text-sm text-dash-text-secondary">
+                  <p className="mt-2 font-body text-sm text-brand-stone">
                     {isEs
                       ? "Guía de especificación, coordinación con plomeros y soporte post-instalación — todo en San Miguel de Allende."
                       : "Specification guidance, plumber coordination, and post-install support — all in San Miguel de Allende."}
@@ -425,7 +425,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
 
         {/* Products — when we actually carry inventory for this brand */}
         {hasProducts && (
-          <section id="products" className="pt-16 md:pt-20 bg-dash-surface">
+          <section id="products" className="pt-16 md:pt-20 bg-white">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-8 md:mb-10">
               <p className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-terracotta uppercase">
                 {isEs ? "Nuestra selección" : "Our Selection"}
@@ -435,7 +435,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
                   ? `${products.length.toLocaleString("es-MX")} piezas de ${brand.name} con ficha completa.`
                   : `${products.length.toLocaleString("en-US")} ${brand.name} pieces with full detail.`}
               </h2>
-              <p className="mt-3 font-body text-sm md:text-base text-dash-text-secondary max-w-2xl">
+              <p className="mt-3 font-body text-sm md:text-base text-brand-stone max-w-2xl">
                 {isEs
                   ? "Con páginas de detalle, opciones de acabado y fotografía propia. La selección que respaldamos."
                   : "With detail pages, finish options, and our own photography. The selection we stand behind."}
@@ -473,7 +473,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
                       </>
                     )}
                   </h2>
-                  <p className="mt-4 font-body text-base text-dash-text-secondary max-w-xl">
+                  <p className="mt-4 font-body text-base text-brand-stone max-w-xl">
                     {isEs
                       ? `Más allá de nuestra selección: cada pieza autorizada de ${brand.name} que podemos pedir directo de fábrica. Buscable por modelo, acabado o colección. Cotización en 24 horas.`
                       : `Beyond our selection: every authorized ${brand.name} piece we can order direct from the factory. Searchable by model, finish, or collection. 24-hour quotes.`}
@@ -496,9 +496,9 @@ const BrandPage = async ({ params }: BrandPageProps) => {
                       <Link
                         key={c}
                         href={`/${locale}/brands/${slug}/${c}`}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-dash-surface border border-brand-stone/20 hover:border-brand-copper transition-colors font-body text-xs"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-brand-stone/20 hover:border-brand-copper transition-colors font-body text-xs"
                       >
-                        <span className="text-[10px] tracking-[0.18em] uppercase text-dash-text-secondary">
+                        <span className="text-[10px] tracking-[0.18em] uppercase text-brand-stone">
                           {isEs
                             ? c === "bathroom" ? "Baño" : c === "kitchen" ? "Cocina" : "Herrajes"
                             : c === "bathroom" ? "Bathroom" : c === "kitchen" ? "Kitchen" : "Hardware"}
@@ -514,7 +514,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
               {/* Signature collection grid — featured or top N */}
               {catalogSummary.signature.length > 0 && (
                 <>
-                  <p className="font-body text-[11px] tracking-[0.25em] text-dash-text-secondary uppercase mb-5">
+                  <p className="font-body text-[11px] tracking-[0.25em] text-brand-stone uppercase mb-5">
                     {isEs
                       ? brand.featuredProductIds?.length
                         ? "Selección del showroom"
@@ -553,7 +553,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
                   ? `Solicita una cotización para ${brand.name}`
                   : `Request a ${brand.name} Quote`}
               </h2>
-              <p className="mt-4 font-body text-base text-dash-text-secondary leading-relaxed">
+              <p className="mt-4 font-body text-base text-brand-stone leading-relaxed">
                 {isEs
                   ? `Contáctanos para especificaciones, tiempos de entrega y disponibilidad de productos ${brand.name} para tu proyecto.`
                   : `Contact us for specs, lead times, and product availability for ${brand.name} on your project.`}
@@ -570,7 +570,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
 
         {/* From our journal — related editorial posts tagged with this brand */}
         {relatedPosts.length > 0 && (
-          <section className="py-16 md:py-20 bg-dash-surface">
+          <section className="py-16 md:py-20 bg-white">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <p className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
                 {isEs ? "De Nuestro Diario" : "From our Journal"}
@@ -603,10 +603,10 @@ const BrandPage = async ({ params }: BrandPageProps) => {
                     <h3 className="mt-3 font-display text-xl text-brand-charcoal group-hover:text-brand-terracotta transition-colors leading-snug">
                       {post.title[locale as "en" | "es"]}
                     </h3>
-                    <p className="mt-2 font-body text-sm text-dash-text-secondary line-clamp-2">
+                    <p className="mt-2 font-body text-sm text-brand-stone line-clamp-2">
                       {post.excerpt[locale as "en" | "es"]}
                     </p>
-                    <p className="mt-3 font-body text-[11px] tracking-wider uppercase text-dash-text-secondary/70">
+                    <p className="mt-3 font-body text-[11px] tracking-wider uppercase text-brand-stone/70">
                       {format(parseISO(post.date), "MMM d, yyyy")} · {post.readTime}
                     </p>
                   </Link>

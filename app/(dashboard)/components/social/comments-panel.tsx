@@ -163,9 +163,9 @@ export function CommentsPanel({ comments }: CommentsPanelProps) {
           <span className="text-sm font-medium text-dash-text">{filtered.length} comments</span>
         </div>
         {unrepliedCount > 0 && (
-          <div className="flex items-center gap-2 px-3 py-2 bg-dash-warn-soft rounded-lg border border-dash-warn">
-            <div className="w-2 h-2 rounded-full bg-dash-warn" />
-            <span className="text-sm font-medium text-dash-warn">
+          <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 rounded-lg border border-amber-200">
+            <div className="w-2 h-2 rounded-full bg-amber-400" />
+            <span className="text-sm font-medium text-amber-700">
               {unrepliedCount} awaiting reply
             </span>
           </div>
@@ -201,7 +201,7 @@ export function CommentsPanel({ comments }: CommentsPanelProps) {
             <div
               key={comment.id}
               className={`bg-dash-surface rounded-xl border transition-colors ${
-                needsReply ? "border-dash-warn" : "border-dash-border"
+                needsReply ? "border-amber-200" : "border-dash-border"
               }`}
             >
               {/* Comment */}
@@ -220,7 +220,7 @@ export function CommentsPanel({ comments }: CommentsPanelProps) {
                         variant={platformBadge[comment.platform].variant}
                       />
                       {needsReply && (
-                        <span className="text-[10px] bg-dash-warn-soft text-dash-warn px-1.5 py-0.5 rounded font-medium">
+                        <span className="text-[10px] bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded font-medium">
                           Needs reply
                         </span>
                       )}
@@ -238,8 +238,8 @@ export function CommentsPanel({ comments }: CommentsPanelProps) {
                         disabled={busyId === comment.id}
                         className={`inline-flex items-center gap-1 text-[10px] transition cursor-pointer disabled:opacity-50 ${
                           likedIds.has(comment.id)
-                            ? "text-dash-cat-rose"
-                            : "text-dash-text-secondary hover:text-dash-cat-rose"
+                            ? "text-rose-500"
+                            : "text-dash-text-secondary hover:text-rose-400"
                         }`}
                         title={likedIds.has(comment.id) ? "Unlike" : "Like"}
                       >
@@ -336,7 +336,7 @@ export function CommentsPanel({ comments }: CommentsPanelProps) {
                         }
                       }}
                       placeholder="Write a reply..."
-                      className="flex-1 bg-dash-bg border border-dash-border rounded-lg px-3 py-2 text-xs text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
+                      className="flex-1 bg-dash-bg border border-dash-border rounded-lg px-3 py-2 text-xs text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
                       autoFocus
                     />
                     <button

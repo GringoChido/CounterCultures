@@ -1,3 +1,5 @@
+"use client";
+
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 
 const content = {
@@ -26,7 +28,7 @@ const BrandStatement = ({ locale = "en" }: { locale?: string }) => {
           <h2 className="font-display text-4xl md:text-6xl font-normal tracking-wide text-brand-charcoal leading-tight">
             {t.headline}
           </h2>
-          <p className="mt-6 font-body text-lg text-dash-text-secondary leading-relaxed">
+          <p className="mt-6 font-body text-lg text-brand-stone leading-relaxed">
             {t.supporting}
           </p>
         </AnimatedSection>

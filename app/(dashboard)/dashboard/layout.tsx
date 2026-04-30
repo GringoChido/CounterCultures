@@ -7,11 +7,10 @@ import { SessionProvider } from "next-auth/react";
 import { Sidebar } from "../components/sidebar";
 import { DashboardHeader } from "../components/dashboard-header";
 import { CommandPalette } from "../components/command-palette";
-import { AIChatWidgetLazy } from "../components/ai-chat-widget-lazy";
+import { AIChatWidget } from "../components/ai-chat-widget";
 import { ActionFab } from "../components/action-fab";
 import { ProductInsertProvider, useProductInsert } from "../components/product-insert-context";
 import { ProductPreview } from "../components/product-preview";
-import { SkipToMain } from "@/app/components/ui/skip-to-main";
 import type { Product } from "@/app/lib/types";
 
 const DashboardInner = ({ children }: { children: ReactNode }) => {
@@ -41,14 +40,13 @@ const DashboardInner = ({ children }: { children: ReactNode }) => {
 
   return (
     <div className="flex min-h-screen">
-      <SkipToMain />
       <Sidebar
         mobileOpen={mobileSidebarOpen}
         onMobileClose={() => setMobileSidebarOpen(false)}
       />
       <div className="flex-1 lg:ml-[220px] transition-all duration-300 min-w-0">
         <DashboardHeader onMenuClick={() => setMobileSidebarOpen(true)} />
-        <main id="main" tabIndex={-1} className="p-4 pb-28 md:p-6 md:pb-28">{children}</main>
+        <main className="p-4 pb-28 md:p-6 md:pb-28">{children}</main>
       </div>
       <CommandPalette
         onProductSelect={handleProductSelect}
@@ -56,7 +54,7 @@ const DashboardInner = ({ children }: { children: ReactNode }) => {
         registerOpen={setCommandPaletteOpener}
       />
       <ProductPreview />
-      <AIChatWidgetLazy hideOwnFab />
+      <AIChatWidget hideOwnFab />
       <ActionFab />
     </div>
   );

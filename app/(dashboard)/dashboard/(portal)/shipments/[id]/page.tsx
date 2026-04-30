@@ -38,9 +38,9 @@ const formatDate = (iso: string | undefined) => {
 };
 
 const DOC_STATUS_ICON: Record<string, { icon: typeof CheckCircle2; color: string }> = {
-  uploaded: { icon: CheckCircle2, color: "text-dash-success" },
-  "in-progress": { icon: Clock, color: "text-dash-warn" },
-  missing: { icon: Circle, color: "text-dash-danger" },
+  uploaded: { icon: CheckCircle2, color: "text-green-400" },
+  "in-progress": { icon: Clock, color: "text-amber-400" },
+  missing: { icon: Circle, color: "text-red-400" },
   "not-applicable": { icon: Circle, color: "text-dash-text-secondary/40" },
 };
 
@@ -125,9 +125,9 @@ const ShipmentDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
     return (
       <div className="space-y-4">
         <BackLink />
-        <div className="bg-dash-danger/10 border border-dash-danger/30 rounded-xl p-6 text-center">
-          <AlertCircle className="w-10 h-10 text-dash-danger mx-auto mb-2" />
-          <p className="text-dash-danger">{error || "Could not load shipment."}</p>
+        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 text-center">
+          <AlertCircle className="w-10 h-10 text-red-400 mx-auto mb-2" />
+          <p className="text-red-400">{error || "Could not load shipment."}</p>
         </div>
       </div>
     );
@@ -397,8 +397,8 @@ const Metric = ({
 
 const Badge = ({ label, tone }: { label: string; tone: "good" | "warn" | "neutral" }) => {
   const cls = {
-    good: "bg-dash-success/10 text-dash-success",
-    warn: "bg-dash-warn/10 text-dash-warn",
+    good: "bg-green-500/10 text-green-400",
+    warn: "bg-amber-500/10 text-amber-400",
     neutral: "bg-dash-bg text-dash-text-secondary",
   }[tone];
   return (

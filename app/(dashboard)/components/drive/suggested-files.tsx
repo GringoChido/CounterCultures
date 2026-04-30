@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import type { DriveHomeFile } from "@/app/lib/google-drive-user";
 import { FileIcon } from "./file-icon";

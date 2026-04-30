@@ -39,8 +39,8 @@ const HeroSearch = ({ locale, catalogSize }: HeroSearchProps) => {
 
   return (
     <form onSubmit={submit} className="mt-8 max-w-2xl">
-      <div className="flex items-stretch border border-brand-stone/25 bg-dash-surface shadow-sm">
-        <div className="flex items-center pl-4 pr-1 text-dash-text-secondary">
+      <div className="flex items-stretch border border-brand-stone/25 bg-white shadow-sm">
+        <div className="flex items-center pl-4 pr-1 text-brand-stone">
           <Search className="w-5 h-5" />
         </div>
         <input
@@ -48,7 +48,7 @@ const HeroSearch = ({ locale, catalogSize }: HeroSearchProps) => {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder={t.placeholder}
-          className="flex-1 min-w-0 py-4 px-3 text-base font-body text-brand-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 placeholder:text-dash-text-secondary/60"
+          className="flex-1 min-w-0 py-4 px-3 text-base font-body text-brand-charcoal focus:outline-none placeholder:text-brand-stone/60"
         />
         <button
           type="submit"
@@ -57,7 +57,7 @@ const HeroSearch = ({ locale, catalogSize }: HeroSearchProps) => {
           {t.cta} →
         </button>
       </div>
-      <p className="mt-2 text-[11px] font-body text-dash-text-secondary">
+      <p className="mt-2 text-[11px] font-body text-brand-stone">
         {t.hint(catalogSize.toLocaleString(locale === "es" ? "es-MX" : "en-US"))}
       </p>
     </form>

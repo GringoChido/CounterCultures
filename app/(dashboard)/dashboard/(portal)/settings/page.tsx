@@ -125,7 +125,7 @@ const SettingsPageInner = () => {
     <div className="space-y-6 max-w-3xl">
       {/* Save toast */}
       {saveToast && (
-        <div className="fixed top-20 right-6 z-50 flex items-center gap-2 px-4 py-3 bg-dash-success-soft border border-dash-success text-dash-success rounded-xl shadow-lg animate-in slide-in-from-right">
+        <div className="fixed top-20 right-6 z-50 flex items-center gap-2 px-4 py-3 bg-green-50 border border-green-200 text-green-800 rounded-xl shadow-lg animate-in slide-in-from-right">
           <CheckCircle2 className="w-4 h-4" />
           <span className="text-sm font-medium">Settings saved</span>
         </div>
@@ -151,7 +151,7 @@ const SettingsPageInner = () => {
               type="text"
               value={settings.fullName}
               onChange={(e) => setSettings((s) => ({ ...s, fullName: e.target.value }))}
-              className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+              className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
             />
           </div>
           <div>
@@ -160,7 +160,7 @@ const SettingsPageInner = () => {
               type="email"
               value={settings.email}
               onChange={(e) => setSettings((s) => ({ ...s, email: e.target.value }))}
-              className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+              className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
             />
           </div>
           <button
@@ -194,7 +194,7 @@ const SettingsPageInner = () => {
                 }`}
               >
                 <div
-                  className={`absolute top-0.5 w-5 h-5 rounded-full bg-dash-surface shadow-sm transition-transform ${
+                  className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
                     setting.enabled ? "translate-x-5.5" : "translate-x-0.5"
                   }`}
                 />
@@ -238,7 +238,7 @@ const SettingsPageInner = () => {
               {integration.connected ? (
                 <button
                   onClick={() => toggleIntegration(integration.id)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 border border-dash-danger text-dash-danger rounded-lg text-xs font-medium hover:bg-dash-danger-soft transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 border border-red-200 text-red-600 rounded-lg text-xs font-medium hover:bg-red-50 transition-colors cursor-pointer"
                 >
                   <X className="w-3 h-3" />
                   Disconnect
@@ -362,8 +362,8 @@ const GmailIntegrationCard = () => {
   return (
     <div className="bg-dash-surface rounded-xl border border-dash-border p-5">
       <div className="flex items-center gap-3 mb-5">
-        <div className="w-9 h-9 rounded-lg bg-dash-danger/10 flex items-center justify-center">
-          <Mail className="w-4.5 h-4.5 text-dash-danger" />
+        <div className="w-9 h-9 rounded-lg bg-red-500/10 flex items-center justify-center">
+          <Mail className="w-4.5 h-4.5 text-red-500" />
         </div>
         <div>
           <h3 className="text-sm font-semibold text-dash-text">Gmail Integration</h3>
@@ -378,11 +378,11 @@ const GmailIntegrationCard = () => {
           <Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking connection…
         </div>
       ) : !status.oauthConfigured ? (
-        <div className="flex items-start gap-2 p-3 bg-dash-warn/10 border border-dash-warn/30 rounded-lg text-xs text-dash-warn">
+        <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg text-xs text-amber-400">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
           <div>
-            <p className="font-medium text-dash-warn mb-1">OAuth client not configured.</p>
-            <p className="text-dash-warn/80">
+            <p className="font-medium text-amber-400 mb-1">OAuth client not configured.</p>
+            <p className="text-amber-300/80">
               Add <code className="bg-dash-bg px-1 py-0.5 rounded">GOOGLE_OAUTH_CLIENT_ID</code>{" "}
               and <code className="bg-dash-bg px-1 py-0.5 rounded">GOOGLE_OAUTH_CLIENT_SECRET</code>{" "}
               to <code>.env.local</code> and restart the dev server. Both values
@@ -393,10 +393,10 @@ const GmailIntegrationCard = () => {
         </div>
       ) : status.connected ? (
         <div className="space-y-3">
-          <div className="flex items-start justify-between gap-3 p-3 bg-dash-success/5 border border-dash-success/20 rounded-lg">
+          <div className="flex items-start justify-between gap-3 p-3 bg-emerald-500/5 border border-emerald-500/20 rounded-lg">
             <div className="min-w-0">
               <p className="text-sm font-medium text-dash-text flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-dash-success" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 Connected as {status.gmailAddress}
               </p>
               {status.connectedAt && (
@@ -405,13 +405,13 @@ const GmailIntegrationCard = () => {
                 </p>
               )}
               {status.lastError && (
-                <p className="text-[11px] text-dash-warn mt-1">Last error: {status.lastError}</p>
+                <p className="text-[11px] text-amber-400 mt-1">Last error: {status.lastError}</p>
               )}
             </div>
             <button
               onClick={disconnect}
               disabled={disconnecting}
-              className="flex items-center gap-1.5 px-3 py-1.5 border border-dash-danger/30 text-dash-danger rounded-lg text-xs font-medium hover:bg-dash-danger/10 disabled:opacity-50 transition-colors cursor-pointer shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 border border-red-500/30 text-red-400 rounded-lg text-xs font-medium hover:bg-red-500/10 disabled:opacity-50 transition-colors cursor-pointer shrink-0"
             >
               {disconnecting ? (
                 <Loader2 className="w-3 h-3 animate-spin" />

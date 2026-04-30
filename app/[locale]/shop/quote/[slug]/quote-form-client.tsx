@@ -2,8 +2,6 @@
 
 import { useState, type FormEvent } from "react";
 import { Loader2, Check } from "lucide-react";
-import { TextField, TextAreaField } from "@/app/components/ui/field";
-import { focusRing } from "@/app/components/ui/focus-ring";
 
 interface QuoteFormProps {
   locale: "en" | "es";
@@ -82,7 +80,7 @@ const QuoteForm = ({ locale, productId, productSku, productName, productBrand }:
 
   if (status === "sent") {
     return (
-      <div role="status" aria-live="polite" className="bg-brand-linen border border-brand-sage p-6 text-center">
+      <div className="bg-brand-linen border border-brand-sage p-6 text-center">
         <Check className="w-8 h-8 text-brand-sage mx-auto mb-3" />
         <p className="font-body text-sm text-brand-charcoal">{t.success}</p>
       </div>
@@ -93,60 +91,47 @@ const QuoteForm = ({ locale, productId, productSku, productName, productBrand }:
     <form onSubmit={handleSubmit} className="bg-brand-linen border border-brand-stone/15 p-5 space-y-3">
       <h2 className="font-display text-xl text-brand-charcoal mb-3">{t.title}</h2>
 
-      <TextField
-        label={t.name}
-        name="name"
-        type="text"
-        required
-        maxLength={100}
-        autoComplete="name"
-      />
+      <label className="block">
+        <span className="font-body text-xs text-brand-stone">{t.name} *</span>
+        <input name="name" type="text" required maxLength={100}
+          className="mt-1 w-full px-3 py-2 border border-brand-stone/25 bg-white font-body text-sm focus:outline-none focus:border-brand-copper" />
+      </label>
 
-      <TextField
-        label={t.email}
-        name="email"
-        type="email"
-        required
-        maxLength={150}
-        autoComplete="email"
-      />
+      <label className="block">
+        <span className="font-body text-xs text-brand-stone">{t.email} *</span>
+        <input name="email" type="email" required maxLength={150}
+          className="mt-1 w-full px-3 py-2 border border-brand-stone/25 bg-white font-body text-sm focus:outline-none focus:border-brand-copper" />
+      </label>
 
-      <TextField
-        label={t.phone}
-        name="phone"
-        type="tel"
-        maxLength={30}
-        autoComplete="tel"
-      />
+      <label className="block">
+        <span className="font-body text-xs text-brand-stone">{t.phone}</span>
+        <input name="phone" type="tel" maxLength={30}
+          className="mt-1 w-full px-3 py-2 border border-brand-stone/25 bg-white font-body text-sm focus:outline-none focus:border-brand-copper" />
+      </label>
 
       <div className="grid grid-cols-2 gap-2">
-        <TextField
-          label={t.quantity}
-          name="quantity"
-          type="text"
-          defaultValue="1"
-          maxLength={20}
-          inputMode="numeric"
-        />
-        <TextField
-          label={t.finish}
-          name="finish"
-          type="text"
-          maxLength={60}
-        />
+        <label className="block">
+          <span className="font-body text-xs text-brand-stone">{t.quantity}</span>
+          <input name="quantity" type="text" defaultValue="1" maxLength={20}
+            className="mt-1 w-full px-3 py-2 border border-brand-stone/25 bg-white font-body text-sm focus:outline-none focus:border-brand-copper" />
+        </label>
+        <label className="block">
+          <span className="font-body text-xs text-brand-stone">{t.finish}</span>
+          <input name="finish" type="text" maxLength={60}
+            className="mt-1 w-full px-3 py-2 border border-brand-stone/25 bg-white font-body text-sm focus:outline-none focus:border-brand-copper" />
+        </label>
       </div>
 
-      <TextAreaField
-        label={t.notes}
-        name="notes"
-        rows={3}
-        maxLength={1000}
-      />
+      <label className="block">
+        <span className="font-body text-xs text-brand-stone">{t.notes}</span>
+        <textarea name="notes" rows={3} maxLength={1000}
+          className="mt-1 w-full px-3 py-2 border border-brand-stone/25 bg-white font-body text-sm focus:outline-none focus:border-brand-copper resize-none" />
+      </label>
 
       <button
         type="submit"
         disabled={status === "sending"}
-        className={`w-full py-3 bg-brand-charcoal text-white font-body text-sm uppercase tracking-wider hover:bg-brand-copper transition-colors disabled:opacity-50 flex items-center justify-center gap-2 ${focusRing}`}
+        className="w-full py-3 bg-brand-charcoal text-white font-body text-sm uppercase tracking-wider hover:bg-brand-copper transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
       >
         {status === "sending" ? (
           <>
@@ -159,7 +144,7 @@ const QuoteForm = ({ locale, productId, productSku, productName, productBrand }:
       </button>
 
       {status === "error" && (
-        <p role="alert" aria-live="assertive" className="font-body text-xs text-brand-terracotta text-center">{t.error}</p>
+        <p className="font-body text-xs text-brand-terracotta text-center">{t.error}</p>
       )}
     </form>
   );

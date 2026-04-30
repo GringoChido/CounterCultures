@@ -179,7 +179,7 @@ const CustomsPage = () => {
               placeholder="Search tráficos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper w-56"
+              className="pl-9 pr-4 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper w-56"
             />
           </div>
           <Link
@@ -204,19 +204,19 @@ const CustomsPage = () => {
           label="Active Crossings"
           value={String(active)}
           icon={Ship}
-          accentColor="bg-dash-info"
+          accentColor="bg-blue-500"
         />
         <KPICard
           label="Invoice Value"
           value={totalInvoiceUSD > 0 ? `$${Math.round(totalInvoiceUSD / 1000)}K` : "$0"}
           icon={DollarSign}
-          accentColor="bg-dash-warn"
+          accentColor="bg-amber-500"
         />
         <KPICard
           label="Total Import Costs"
           value={totalImportCosts > 0 ? `$${Math.round(totalImportCosts / 1000)}K` : "$0"}
           icon={Package}
-          accentColor="bg-dash-cat-violet"
+          accentColor="bg-violet-500"
         />
       </div>
 
@@ -328,8 +328,8 @@ const CustomsPage = () => {
                   const status = t.Status as TraficoStatus;
                   const cfg = TRAFICO_STATUS_CONFIG[status] ?? {
                     label: { en: t.Status || "Unknown", es: "" },
-                    bg: "bg-dash-text-muted/10",
-                    text: "text-dash-text-muted",
+                    bg: "bg-gray-500/10",
+                    text: "text-gray-400",
                   };
                   const checked = selectedIds.has(t.TRF_ID);
                   return (

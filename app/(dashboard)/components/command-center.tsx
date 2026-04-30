@@ -99,7 +99,7 @@ const ActionCard = ({
 }: ActionCardProps) => (
   <Link
     href={href}
-    className="group relative bg-dash-surface border border-dash-border rounded-md p-5 transition-colors hover:border-dash-border-strong focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-dash-accent/40 flex flex-col"
+    className="group relative bg-dash-surface border border-dash-border rounded-md p-5 transition-colors hover:border-dash-border-strong focus:outline-none focus:ring-2 focus:ring-dash-accent/40 flex flex-col"
   >
     <span
       aria-hidden

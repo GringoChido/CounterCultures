@@ -28,20 +28,20 @@ const statusMeta: Record<
 > = {
   ok: {
     label: "Connected",
-    color: "text-dash-success",
-    bg: "bg-dash-success-soft",
+    color: "text-emerald-600",
+    bg: "bg-emerald-50",
     Icon: CheckCircle2,
   },
   warn: {
     label: "Needs attention",
-    color: "text-dash-warn",
-    bg: "bg-dash-warn-soft",
+    color: "text-amber-600",
+    bg: "bg-amber-50",
     Icon: AlertTriangle,
   },
   error: {
     label: "Not configured",
-    color: "text-dash-danger",
-    bg: "bg-dash-danger-soft",
+    color: "text-red-600",
+    bg: "bg-red-50",
     Icon: XCircle,
   },
   disabled: {
@@ -110,7 +110,7 @@ const IntegrationHealthPanel = () => {
       </div>
 
       {error ? (
-        <p className="text-sm text-dash-danger">{error}</p>
+        <p className="text-sm text-red-600">{error}</p>
       ) : null}
 
       {integrations === null && !error ? (

@@ -156,9 +156,9 @@ const SpecSheetsSection = ({ sku, brand }: { sku: string; brand: string }) => {
 };
 
 const availabilityConfig: Record<string, { label: string; bg: string; text: string }> = {
-  "in-stock": { label: "In Stock", bg: "bg-dash-success/10", text: "text-dash-success" },
-  "made-to-order": { label: "Made to Order", bg: "bg-dash-warn/10", text: "text-dash-warn" },
-  "special-order": { label: "Special Order", bg: "bg-dash-info/10", text: "text-dash-info" },
+  "in-stock": { label: "In Stock", bg: "bg-emerald-500/10", text: "text-emerald-400" },
+  "made-to-order": { label: "Made to Order", bg: "bg-amber-500/10", text: "text-amber-400" },
+  "special-order": { label: "Special Order", bg: "bg-blue-500/10", text: "text-blue-400" },
 };
 
 export const ProductPreview = () => {
@@ -308,7 +308,7 @@ export const ProductPreview = () => {
                       {p.sku}
                     </span>
                     {p.artisanal && (
-                      <span className="flex items-center gap-1 px-2 py-0.5 bg-dash-warn/10 rounded text-[11px] text-dash-warn font-medium">
+                      <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-500/10 rounded text-[11px] text-amber-400 font-medium">
                         <Gem className="w-3 h-3" /> Artisanal
                       </span>
                     )}

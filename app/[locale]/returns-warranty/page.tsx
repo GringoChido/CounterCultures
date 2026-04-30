@@ -47,7 +47,7 @@ const ReturnsWarrantyPage = async ({ params }: PageProps) => {
   return (
     <>
       <Header locale={lang} />
-      <main id="main" tabIndex={-1} className="pt-20 bg-brand-linen min-h-screen">
+      <main className="pt-20 bg-brand-linen min-h-screen">
         <div className="mx-auto max-w-3xl px-6 lg:px-8 py-16 md:py-24">
           <h1 className="font-display text-3xl md:text-4xl font-light text-brand-charcoal mb-8">
             {isEs ? "Políticas de Devolución y Garantías" : "Returns & Warranty Policy"}
@@ -134,7 +134,7 @@ const ReturnsWarrantyPage = async ({ params }: PageProps) => {
             </li>
           </ul>
 
-          <div className="font-body text-sm text-dash-text-secondary mt-8 pt-8 border-t border-brand-stone/10">
+          <div className="font-body text-sm text-brand-stone mt-8 pt-8 border-t border-brand-stone/10">
             <p>
               {isEs ? "Ubicación" : "Location"}: Providencia, San Miguel de Allende, Guanajuato, 37737
             </p>

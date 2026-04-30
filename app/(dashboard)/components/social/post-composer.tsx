@@ -129,8 +129,8 @@ export function PostComposer({ onPublish }: PostComposerProps) {
         <div
           className={`flex items-center gap-3 p-4 rounded-xl border ${
             result.type === "success"
-              ? "bg-dash-success-soft border-dash-success text-dash-success"
-              : "bg-dash-danger-soft border-dash-danger text-dash-danger"
+              ? "bg-green-50 border-green-200 text-green-800"
+              : "bg-red-50 border-red-200 text-red-800"
           }`}
         >
           {result.type === "success" ? (
@@ -164,14 +164,14 @@ export function PostComposer({ onPublish }: PostComposerProps) {
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer border ${
                     platforms.includes(p)
                       ? p === "instagram"
-                        ? "bg-dash-cat-pink-soft border-dash-cat-pink text-dash-cat-pink"
-                        : "bg-dash-info-soft border-dash-info text-dash-info"
+                        ? "bg-pink-50 border-pink-200 text-pink-700"
+                        : "bg-blue-50 border-blue-200 text-blue-700"
                       : "bg-dash-bg border-dash-border text-dash-text-secondary hover:border-dash-text-secondary"
                   }`}
                 >
                   <div
                     className={`w-2 h-2 rounded-full ${
-                      p === "instagram" ? "bg-dash-cat-pink" : "bg-dash-info"
+                      p === "instagram" ? "bg-pink-500" : "bg-blue-600"
                     }`}
                   />
                   {p.charAt(0).toUpperCase() + p.slice(1)}
@@ -190,15 +190,15 @@ export function PostComposer({ onPublish }: PostComposerProps) {
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Write your post content here..."
               rows={6}
-              className="w-full bg-dash-bg border border-dash-border rounded-xl px-4 py-3 text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper/50 resize-none"
+              className="w-full bg-dash-bg border border-dash-border rounded-xl px-4 py-3 text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper/50 resize-none"
             />
             <div className="flex justify-end mt-1">
               <span
                 className={`text-xs ${
                   charOver
-                    ? "text-dash-danger font-semibold"
+                    ? "text-red-500 font-semibold"
                     : charWarning
-                    ? "text-dash-warn"
+                    ? "text-amber-500"
                     : "text-dash-text-secondary"
                 }`}
               >
@@ -211,7 +211,7 @@ export function PostComposer({ onPublish }: PostComposerProps) {
           <div>
             <label className="text-xs font-semibold text-dash-text-secondary uppercase tracking-wider mb-2 block">
               Media URL {platforms.includes("instagram") && (
-                <span className="text-dash-danger normal-case">(required for Instagram)</span>
+                <span className="text-red-400 normal-case">(required for Instagram)</span>
               )}
             </label>
             <div className="flex gap-2">
@@ -222,13 +222,13 @@ export function PostComposer({ onPublish }: PostComposerProps) {
                   value={mediaUrl}
                   onChange={(e) => setMediaUrl(e.target.value)}
                   placeholder="https://example.com/image.jpg"
-                  className="w-full bg-dash-bg border border-dash-border rounded-xl pl-10 pr-4 py-2.5 text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper/50"
+                  className="w-full bg-dash-bg border border-dash-border rounded-xl pl-10 pr-4 py-2.5 text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper/50"
                 />
               </div>
               {mediaUrl && (
                 <button
                   onClick={() => setMediaUrl("")}
-                  className="p-2.5 rounded-xl bg-dash-bg border border-dash-border text-dash-text-secondary hover:text-dash-danger transition-colors cursor-pointer"
+                  className="p-2.5 rounded-xl bg-dash-bg border border-dash-border text-dash-text-secondary hover:text-red-500 transition-colors cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -269,13 +269,13 @@ export function PostComposer({ onPublish }: PostComposerProps) {
                 value={scheduleDate}
                 onChange={(e) => setScheduleDate(e.target.value)}
                 min={format(new Date(), "yyyy-MM-dd")}
-                className="bg-dash-bg border border-dash-border rounded-xl px-4 py-2.5 text-sm text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
+                className="bg-dash-bg border border-dash-border rounded-xl px-4 py-2.5 text-sm text-dash-text focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
               />
               <input
                 type="time"
                 value={scheduleTime}
                 onChange={(e) => setScheduleTime(e.target.value)}
-                className="bg-dash-bg border border-dash-border rounded-xl px-4 py-2.5 text-sm text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
+                className="bg-dash-bg border border-dash-border rounded-xl px-4 py-2.5 text-sm text-dash-text focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
               />
             </div>
           )}
@@ -312,21 +312,21 @@ export function PostComposer({ onPublish }: PostComposerProps) {
           </label>
 
           {platforms.includes("instagram") && (
-            <div className="bg-dash-surface rounded-xl border border-dash-border overflow-hidden">
-              <div className="flex items-center gap-3 px-4 py-3 border-b border-dash-border">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-dash-cat-pink via-dash-danger to-dash-warn" />
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+              <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 via-red-500 to-amber-500" />
                 <div>
-                  <p className="text-xs font-semibold text-dash-text-secondary">countercultures</p>
-                  <p className="text-[10px] text-dash-text-muted">San Miguel de Allende</p>
+                  <p className="text-xs font-semibold text-gray-900">countercultures</p>
+                  <p className="text-[10px] text-gray-400">San Miguel de Allende</p>
                 </div>
               </div>
               {mediaUrl && (
-                <div className="aspect-square bg-dash-surface-2 flex items-center justify-center">
-                  <ImageIcon className="w-12 h-12 text-dash-text-muted" />
+                <div className="aspect-square bg-gray-100 flex items-center justify-center">
+                  <ImageIcon className="w-12 h-12 text-gray-300" />
                 </div>
               )}
               <div className="p-4">
-                <p className="text-xs text-dash-text-secondary leading-relaxed">
+                <p className="text-xs text-gray-900 leading-relaxed">
                   <span className="font-semibold">countercultures</span>{" "}
                   {message || "Your post content will appear here..."}
                 </p>
@@ -335,27 +335,27 @@ export function PostComposer({ onPublish }: PostComposerProps) {
           )}
 
           {platforms.includes("facebook") && (
-            <div className="bg-dash-surface rounded-xl border border-dash-border overflow-hidden">
+            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
               <div className="flex items-center gap-3 px-4 py-3">
-                <div className="w-10 h-10 rounded-full bg-dash-info flex items-center justify-center text-white text-xs font-bold">
+                <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">
                   CC
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-dash-text-secondary">Counter Cultures</p>
-                  <p className="text-[10px] text-dash-text-muted">Just now · 🌐</p>
+                  <p className="text-xs font-semibold text-gray-900">Counter Cultures</p>
+                  <p className="text-[10px] text-gray-400">Just now · 🌐</p>
                 </div>
               </div>
               <div className="px-4 pb-3">
-                <p className="text-sm text-dash-text-secondary leading-relaxed">
+                <p className="text-sm text-gray-900 leading-relaxed">
                   {message || "Your post content will appear here..."}
                 </p>
               </div>
               {mediaUrl && (
-                <div className="aspect-video bg-dash-surface-2 flex items-center justify-center border-t border-dash-border">
-                  <ImageIcon className="w-12 h-12 text-dash-text-muted" />
+                <div className="aspect-video bg-gray-100 flex items-center justify-center border-t border-gray-100">
+                  <ImageIcon className="w-12 h-12 text-gray-300" />
                 </div>
               )}
-              <div className="flex items-center justify-around py-2 border-t border-dash-border text-xs text-dash-text-secondary">
+              <div className="flex items-center justify-around py-2 border-t border-gray-100 text-xs text-gray-500">
                 <span>👍 Like</span>
                 <span>💬 Comment</span>
                 <span>↗️ Share</span>

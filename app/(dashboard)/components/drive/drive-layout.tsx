@@ -94,8 +94,8 @@ export const DriveLayout = ({
 );
 
 export const ReconnectPrompt = ({ reason }: { reason?: string }) => (
-  <div className="bg-dash-warn-soft border border-dash-warn rounded-xl p-6 flex items-start gap-4">
-    <AlertCircle className="w-5 h-5 text-dash-warn shrink-0 mt-0.5" />
+  <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 flex items-start gap-4">
+    <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
     <div className="flex-1">
       <h3 className="text-[14px] font-semibold text-dash-text">
         Drive access not granted

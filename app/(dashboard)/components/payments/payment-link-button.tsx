@@ -121,7 +121,7 @@ const PaymentLinkButton = ({
         type="button"
         onClick={generate}
         disabled={loading}
-        className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium border border-dash-info bg-dash-info-soft text-dash-info rounded hover:bg-dash-info-soft disabled:opacity-50 transition-colors cursor-pointer"
+        className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium border border-blue-300 bg-blue-50 text-blue-700 rounded hover:bg-blue-100 disabled:opacity-50 transition-colors cursor-pointer"
       >
         {loading ? (
           <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -138,7 +138,7 @@ const PaymentLinkButton = ({
             if (e.target === e.currentTarget) setOpen(false);
           }}
         >
-          <div className="w-full max-w-lg bg-dash-surface rounded-xl shadow-2xl">
+          <div className="w-full max-w-lg bg-white rounded-xl shadow-2xl">
             <div className="px-5 py-4 border-b border-dash-border flex items-center justify-between">
               <h2 className="font-display text-lg font-light text-dash-text">
                 Payment link ready
@@ -182,7 +182,7 @@ const PaymentLinkButton = ({
                     readOnly
                     value={link.url}
                     onClick={(e) => (e.target as HTMLInputElement).select()}
-                    className="flex-1 px-3 py-2 text-xs font-mono border border-dash-border rounded-lg bg-dash-bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+                    className="flex-1 px-3 py-2 text-xs font-mono border border-dash-border rounded-lg bg-dash-bg-muted focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
                   />
                   <button
                     type="button"
@@ -206,14 +206,14 @@ const PaymentLinkButton = ({
                   <button
                     type="button"
                     onClick={copyMessage}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs border border-dash-border bg-dash-surface rounded hover:border-brand-copper transition-colors cursor-pointer text-dash-text"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs border border-dash-border bg-white rounded hover:border-brand-copper transition-colors cursor-pointer text-dash-text"
                   >
                     <Copy className="w-3 h-3" />
                     Copy message
                   </button>
                   <a
                     href={mailto}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs border border-dash-border bg-dash-surface rounded hover:border-brand-copper transition-colors text-dash-text"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs border border-dash-border bg-white rounded hover:border-brand-copper transition-colors text-dash-text"
                   >
                     <Mail className="w-3 h-3" />
                     Email
@@ -222,7 +222,7 @@ const PaymentLinkButton = ({
                     href={wa}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs border border-dash-success bg-dash-surface rounded hover:border-dash-success transition-colors text-dash-success"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs border border-emerald-300 bg-white rounded hover:border-emerald-500 transition-colors text-emerald-700"
                   >
                     <MessageCircle className="w-3 h-3" />
                     WhatsApp
@@ -230,7 +230,7 @@ const PaymentLinkButton = ({
                 </div>
               </div>
 
-              <div className="bg-dash-info-soft border border-dash-info rounded-lg px-3 py-2 text-[11px] text-dash-info">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-[11px] text-blue-800">
                 When the customer pays, the Stripe webhook auto-registers the
                 payment in Odoo against this invoice. No further steps needed.
               </div>

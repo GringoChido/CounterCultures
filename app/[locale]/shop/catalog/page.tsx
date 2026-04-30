@@ -51,13 +51,13 @@ const CatalogPage = async ({ params }: CatalogPageProps) => {
   return (
     <>
       <Header locale={locale} />
-      <main id="main" tabIndex={-1} className="pt-16 md:pt-20 bg-dash-surface">
+      <main className="pt-16 md:pt-20 bg-white">
         {/* Editorial hero */}
         <section className="bg-brand-linen border-b border-brand-stone/10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 md:py-16">
             <div className="grid lg:grid-cols-[1.6fr_1fr] gap-8 items-end">
               <div>
-                <span className="font-body font-semibold text-[11px] tracking-[0.25em] text-dash-text-secondary uppercase">
+                <span className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-stone uppercase">
                   {isEs ? "Catálogo completo" : "The Full Catalog"}
                 </span>
                 <h1 className="mt-3 font-display text-4xl md:text-6xl font-light tracking-wide text-brand-charcoal leading-[1.05]">
@@ -81,7 +81,7 @@ const CatalogPage = async ({ params }: CatalogPageProps) => {
                     </>
                   )}
                 </h1>
-                <p className="mt-5 font-body text-[15px] md:text-base text-dash-text-secondary max-w-xl leading-relaxed">
+                <p className="mt-5 font-body text-[15px] md:text-base text-brand-stone max-w-xl leading-relaxed">
                   {isEs
                     ? `Cada marca autorizada que manejamos, en un solo lugar. ${stats.brandCount} marcas. Precio de fábrica. Cotización en 24 horas.`
                     : `Every authorized brand we carry, in one place. ${stats.brandCount} brands. Factory-direct pricing. 24-hour quotes.`}
@@ -89,19 +89,19 @@ const CatalogPage = async ({ params }: CatalogPageProps) => {
               </div>
               <div className="hidden lg:block">
                 <div className="grid grid-cols-3 gap-2 text-xs font-body">
-                  <div className="p-4 bg-dash-surface border border-brand-stone/15">
+                  <div className="p-4 bg-white border border-brand-stone/15">
                     <div className="font-display text-2xl font-light text-brand-charcoal">
                       {stats.brandCount}
                     </div>
-                    <div className="mt-1 text-[10px] tracking-[0.2em] text-dash-text-secondary uppercase">
+                    <div className="mt-1 text-[10px] tracking-[0.2em] text-brand-stone uppercase">
                       {isEs ? "Marcas" : "Brands"}
                     </div>
                   </div>
-                  <div className="p-4 bg-dash-surface border border-brand-stone/15">
+                  <div className="p-4 bg-white border border-brand-stone/15">
                     <div className="font-display text-2xl font-light text-brand-charcoal">
                       24h
                     </div>
-                    <div className="mt-1 text-[10px] tracking-[0.2em] text-dash-text-secondary uppercase">
+                    <div className="mt-1 text-[10px] tracking-[0.2em] text-brand-stone uppercase">
                       {isEs ? "Respuesta" : "Response"}
                     </div>
                   </div>
@@ -116,7 +116,7 @@ const CatalogPage = async ({ params }: CatalogPageProps) => {
                 </div>
               </div>
             </div>
-            <p className="mt-8 pt-6 border-t border-brand-stone/15 font-body text-xs md:text-sm text-dash-text-secondary leading-relaxed max-w-3xl">
+            <p className="mt-8 pt-6 border-t border-brand-stone/15 font-body text-xs md:text-sm text-brand-stone leading-relaxed max-w-3xl">
               <span className="font-semibold text-brand-charcoal uppercase tracking-[0.15em] text-[10px] block mb-1">
                 {isEs ? "Sobre este catálogo" : "About this catalog"}
               </span>

@@ -48,7 +48,7 @@ const ProductCard = ({ product, locale = "en" }: ProductCardProps) => {
 
         {isHovered && (
           <div className="absolute inset-0 bg-black/20 flex items-center justify-center z-30 transition-all duration-300">
-            <button className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] bg-dash-surface text-brand-charcoal font-body text-sm font-medium hover:bg-brand-linen transition-colors rounded-sm">
+            <button className="flex items-center gap-2 px-4 py-2.5 min-h-[44px] bg-white text-brand-charcoal font-body text-sm font-medium hover:bg-brand-linen transition-colors rounded-sm">
               <Eye className="w-4 h-4" />
               Quick View
             </button>
@@ -57,7 +57,7 @@ const ProductCard = ({ product, locale = "en" }: ProductCardProps) => {
       </div>
 
       <div className="mt-4 space-y-2">
-        <p className="font-body font-semibold text-xs text-dash-text-secondary tracking-wide uppercase">
+        <p className="font-body font-semibold text-xs text-brand-stone tracking-wide uppercase">
           {product.brand}
         </p>
 
@@ -69,7 +69,7 @@ const ProductCard = ({ product, locale = "en" }: ProductCardProps) => {
           <span className="font-mono text-sm font-medium text-brand-charcoal">
             ${formatPrice(product.price)}
           </span>
-          <span className="font-mono text-xs text-dash-text-secondary">
+          <span className="font-mono text-xs text-brand-stone">
             {product.currency}
           </span>
         </div>
@@ -87,7 +87,7 @@ const ProductCard = ({ product, locale = "en" }: ProductCardProps) => {
               />
             ))}
             {product.finishes.length > 6 && (
-              <span className="font-mono text-[10px] text-dash-text-secondary ml-0.5">
+              <span className="font-mono text-[10px] text-brand-stone ml-0.5">
                 +{product.finishes.length - 6}
               </span>
             )}

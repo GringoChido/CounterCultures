@@ -160,14 +160,14 @@ function getFileTypeLabel(mimeType: string): string {
 
 function getFileColor(mimeType: string): string {
   if (mimeType === GOOGLE_MIME.doc || mimeType.includes("word"))
-    return "text-dash-info";
+    return "text-blue-500";
   if (mimeType === GOOGLE_MIME.sheet || mimeType.includes("spreadsheet"))
-    return "text-dash-success";
+    return "text-green-500";
   if (mimeType === GOOGLE_MIME.slides || mimeType.includes("presentation"))
-    return "text-dash-warn";
-  if (mimeType.startsWith("image/")) return "text-dash-cat-pink";
-  if (mimeType.startsWith("video/")) return "text-dash-cat-violet";
-  if (mimeType === "application/pdf") return "text-dash-danger";
+    return "text-amber-500";
+  if (mimeType.startsWith("image/")) return "text-pink-500";
+  if (mimeType.startsWith("video/")) return "text-purple-500";
+  if (mimeType === "application/pdf") return "text-red-500";
   return "text-dash-text-secondary";
 }
 
@@ -181,9 +181,9 @@ function formatFileSize(bytes: string | undefined): string {
 
 const STATUS_STYLES: Record<string, string> = {
   Draft: "bg-dash-text-secondary/10 text-dash-text-secondary",
-  Sent: "bg-dash-info/10 text-dash-info",
+  Sent: "bg-blue-500/10 text-blue-400",
   Paid: "bg-status-won/10 text-status-won",
-  Signed: "bg-dash-success/10 text-dash-success",
+  Signed: "bg-emerald-500/10 text-emerald-400",
 };
 
 // ---------------------------------------------------------------------------
@@ -217,10 +217,10 @@ export function PreviewPanel({
   const docId = documentContext?.docId ?? file.name.replace(/\.\w+$/, "");
   const docStatus = documentContext?.status ?? "Draft";
 
-  // Positioning classes — full-screen slide-over on mobile, side panel on md+
+  // Positioning classes
   const panelClasses = fullscreen
     ? "fixed inset-0 z-[60]"
-    : "fixed inset-0 md:inset-y-0 md:left-auto md:right-0 md:w-[55%] md:max-w-[900px] z-[60]";
+    : "fixed inset-y-0 right-0 w-[55%] min-w-[480px] max-w-[900px] z-[60]";
 
   const handleDownload = async () => {
     setDownloading(true);
@@ -341,7 +341,7 @@ export function PreviewPanel({
         )}
 
         {/* Content */}
-        <div className="flex-1 relative overflow-hidden bg-dash-preview-bg">
+        <div className="flex-1 relative overflow-hidden bg-[#f0f0f0]">
           {isFolder ? (
             <div className="flex flex-col items-center justify-center h-full text-dash-text-secondary gap-3">
               <File className="w-12 h-12 text-dash-text-secondary/30" />

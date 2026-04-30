@@ -67,8 +67,8 @@ const topPages = [
 const trafficSources = [
   { source: "Organic Search", sessions: 1850, percentage: 42, color: "bg-brand-copper" },
   { source: "Direct", sessions: 980, percentage: 22, color: "bg-brand-sage" },
-  { source: "Social Media", sessions: 760, percentage: 17, color: "bg-dash-cat-pink" },
-  { source: "Referral", sessions: 520, percentage: 12, color: "bg-dash-info" },
+  { source: "Social Media", sessions: 760, percentage: 17, color: "bg-pink-500" },
+  { source: "Referral", sessions: 520, percentage: 12, color: "bg-blue-500" },
   { source: "Email", sessions: 310, percentage: 7, color: "bg-brand-terracotta" },
 ];
 

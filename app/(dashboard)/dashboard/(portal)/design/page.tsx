@@ -1,3 +1,5 @@
+"use client";
+
 import { EntityCard } from "@/app/(dashboard)/components/entity-card";
 import { Mail, Eye } from "lucide-react";
 

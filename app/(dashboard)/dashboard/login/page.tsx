@@ -39,7 +39,7 @@ const LoginInner = () => {
           </p>
         </div>
 
-        <div className="bg-dash-surface rounded-xl p-8 shadow-2xl">
+        <div className="bg-white rounded-xl p-8 shadow-2xl">
           <h2 className="text-lg font-semibold text-dash-text mb-1">
             Welcome back
           </h2>
@@ -48,7 +48,7 @@ const LoginInner = () => {
           </p>
 
           {errorMessage && (
-            <p className="text-sm text-dash-danger bg-dash-danger-soft px-3 py-2 rounded-lg mb-4">
+            <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg mb-4">
               {errorMessage}
             </p>
           )}
@@ -57,7 +57,7 @@ const LoginInner = () => {
             type="button"
             onClick={handleGoogle}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 border border-dash-border bg-dash-surface text-sm font-medium text-dash-text rounded-lg hover:bg-dash-bg-muted disabled:opacity-50 transition-colors cursor-pointer"
+            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 border border-dash-border bg-white text-sm font-medium text-dash-text rounded-lg hover:bg-dash-bg-muted disabled:opacity-50 transition-colors cursor-pointer"
           >
             <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
               <path

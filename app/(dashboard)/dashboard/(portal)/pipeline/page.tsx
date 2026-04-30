@@ -122,30 +122,30 @@ const stageConfig: Record<
   "closed-lost": { label: "Closed Lost", color: "text-status-lost", bgColor: "bg-status-lost" },
   // New expanded stages
   "target-identified": { label: "Target Identified", color: "text-dash-text-secondary", bgColor: "bg-dash-text-secondary" },
-  contacted: { label: "Contacted", color: "text-dash-info", bgColor: "bg-dash-info" },
-  "conversation-started": { label: "Conversation", color: "text-dash-info", bgColor: "bg-dash-info" },
+  contacted: { label: "Contacted", color: "text-blue-400", bgColor: "bg-blue-400" },
+  "conversation-started": { label: "Conversation", color: "text-cyan-400", bgColor: "bg-cyan-400" },
   "qualified-project": { label: "Qualified", color: "text-status-qualified", bgColor: "bg-status-qualified" },
-  "design-scope": { label: "Design Scope", color: "text-dash-cat-violet", bgColor: "bg-dash-cat-violet" },
-  "proposal-sent": { label: "Proposal Sent", color: "text-dash-info", bgColor: "bg-dash-info" },
-  "follow-up-negotiation": { label: "Follow-Up", color: "text-dash-warn", bgColor: "bg-dash-warn" },
-  "verbal-yes": { label: "Verbal Yes", color: "text-dash-success", bgColor: "bg-dash-success" },
+  "design-scope": { label: "Design Scope", color: "text-violet-400", bgColor: "bg-violet-400" },
+  "proposal-sent": { label: "Proposal Sent", color: "text-indigo-400", bgColor: "bg-indigo-400" },
+  "follow-up-negotiation": { label: "Follow-Up", color: "text-amber-400", bgColor: "bg-amber-400" },
+  "verbal-yes": { label: "Verbal Yes", color: "text-emerald-400", bgColor: "bg-emerald-400" },
   won: { label: "Won", color: "text-status-won", bgColor: "bg-status-won" },
   lost: { label: "Lost", color: "text-status-lost", bgColor: "bg-status-lost" },
   // Post-sale fulfillment stages
-  "quote-approved":      { label: "Quote Approved",    color: "text-dash-success", bgColor: "bg-dash-success" },
-  "deposit-pending":     { label: "Deposit Pending",   color: "text-dash-warn",   bgColor: "bg-dash-warn" },
-  "deposit-received":    { label: "Deposit Received",  color: "text-dash-success",   bgColor: "bg-dash-success" },
-  "ordering":            { label: "Ordering",          color: "text-dash-info",    bgColor: "bg-dash-info" },
-  "in-production":       { label: "In Production",     color: "text-dash-cat-violet",  bgColor: "bg-dash-cat-violet" },
-  "shipping":            { label: "Shipping",          color: "text-dash-info",    bgColor: "bg-dash-info" },
-  "in-customs":          { label: "In Customs",        color: "text-dash-warn",  bgColor: "bg-dash-warn" },
-  "customs-cleared":     { label: "Customs Cleared",   color: "text-dash-cat-lime",    bgColor: "bg-dash-cat-lime" },
-  "received":            { label: "Received at CC",    color: "text-dash-cat-teal",    bgColor: "bg-dash-cat-teal" },
-  "delivery-scheduled":  { label: "Delivery Scheduled", color: "text-dash-info", bgColor: "bg-dash-info" },
-  "delivered":           { label: "Delivered",         color: "text-dash-success",   bgColor: "bg-dash-success" },
-  "balance-pending":     { label: "Balance Pending",   color: "text-dash-warn",   bgColor: "bg-dash-warn" },
-  "complete":            { label: "Complete",          color: "text-dash-success", bgColor: "bg-dash-success" },
-  "post-delivery-issue": { label: "Issue",             color: "text-dash-danger",     bgColor: "bg-dash-danger" },
+  "quote-approved":      { label: "Quote Approved",    color: "text-emerald-400", bgColor: "bg-emerald-400" },
+  "deposit-pending":     { label: "Deposit Pending",   color: "text-amber-400",   bgColor: "bg-amber-400" },
+  "deposit-received":    { label: "Deposit Received",  color: "text-green-400",   bgColor: "bg-green-400" },
+  "ordering":            { label: "Ordering",          color: "text-blue-400",    bgColor: "bg-blue-400" },
+  "in-production":       { label: "In Production",     color: "text-violet-400",  bgColor: "bg-violet-400" },
+  "shipping":            { label: "Shipping",          color: "text-cyan-400",    bgColor: "bg-cyan-400" },
+  "in-customs":          { label: "In Customs",        color: "text-orange-400",  bgColor: "bg-orange-400" },
+  "customs-cleared":     { label: "Customs Cleared",   color: "text-lime-400",    bgColor: "bg-lime-400" },
+  "received":            { label: "Received at CC",    color: "text-teal-400",    bgColor: "bg-teal-400" },
+  "delivery-scheduled":  { label: "Delivery Scheduled", color: "text-indigo-400", bgColor: "bg-indigo-400" },
+  "delivered":           { label: "Delivered",         color: "text-green-400",   bgColor: "bg-green-400" },
+  "balance-pending":     { label: "Balance Pending",   color: "text-amber-400",   bgColor: "bg-amber-400" },
+  "complete":            { label: "Complete",          color: "text-emerald-500", bgColor: "bg-emerald-500" },
+  "post-delivery-issue": { label: "Issue",             color: "text-red-400",     bgColor: "bg-red-400" },
 };
 
 type PipelineView = "sales" | "operations";
@@ -179,14 +179,14 @@ const lostReasonOptions: { value: LostReason; label: string }[] = [
 ];
 
 const roleColors: Record<string, string> = {
-  Architect: "bg-dash-cat-violet/10 text-dash-cat-violet",
-  "Interior Designer": "bg-dash-cat-pink/10 text-dash-cat-pink",
-  Developer: "bg-dash-info/10 text-dash-info",
-  Builder: "bg-dash-warn/10 text-dash-warn",
+  Architect: "bg-violet-500/10 text-violet-400",
+  "Interior Designer": "bg-pink-500/10 text-pink-400",
+  Developer: "bg-blue-500/10 text-blue-400",
+  Builder: "bg-amber-500/10 text-amber-400",
   "Private Client": "bg-brand-copper/10 text-brand-copper",
-  Supplier: "bg-dash-info/10 text-dash-info",
-  Partner: "bg-dash-success/10 text-dash-success",
-  "Hospitality Designer": "bg-dash-cat-rose/10 text-dash-cat-rose",
+  Supplier: "bg-cyan-500/10 text-cyan-400",
+  Partner: "bg-emerald-500/10 text-emerald-400",
+  "Hospitality Designer": "bg-rose-500/10 text-rose-400",
 };
 
 const formatCurrency = (value: number) => {
@@ -196,17 +196,17 @@ const formatCurrency = (value: number) => {
 };
 
 const DOC_TYPE_ICONS: Record<string, string> = {
-  quote: "text-dash-info",
-  invoice: "text-dash-success",
-  po: "text-dash-warn",
-  receipt: "text-dash-cat-violet",
+  quote: "text-blue-400",
+  invoice: "text-emerald-400",
+  po: "text-amber-400",
+  receipt: "text-violet-400",
 };
 
 const DOC_STATUS_STYLES: Record<string, string> = {
   Draft: "bg-dash-text-secondary/10 text-dash-text-secondary",
-  Sent: "bg-dash-info/10 text-dash-info",
+  Sent: "bg-blue-500/10 text-blue-400",
   Paid: "bg-status-won/10 text-status-won",
-  Signed: "bg-dash-success/10 text-dash-success",
+  Signed: "bg-emerald-500/10 text-emerald-400",
 };
 
 // ---------------------------------------------------------------------------
@@ -231,9 +231,9 @@ interface DealCardProps {
 }
 
 const SLA_BORDER: Record<"green" | "yellow" | "red" | "unknown", string> = {
-  green: "border-dash-success/40",
-  yellow: "border-dash-warn/60",
-  red: "border-dash-danger/70",
+  green: "border-emerald-500/40",
+  yellow: "border-amber-400/60",
+  red: "border-red-500/70",
   unknown: "border-dash-border",
 };
 
@@ -303,26 +303,22 @@ const DealCard = ({ deal, onClick, shipmentRisk, sla }: DealCardProps) => {
             <span title={riskTitle[shipmentRisk]}>
               <AlertTriangle
                 className={`w-3.5 h-3.5 ${
-                  shipmentRisk === "red" ? "text-dash-danger" : "text-dash-warn"
+                  shipmentRisk === "red" ? "text-red-400" : "text-amber-400"
                 }`}
               />
             </span>
           )}
           <button
-            type="button"
             onClick={handleWhatsApp}
-            className="p-1 rounded hover:bg-dash-success/10 text-dash-text-secondary hover:text-dash-success transition-colors cursor-pointer"
+            className="p-1 rounded hover:bg-green-500/10 text-dash-text-secondary hover:text-green-400 transition-colors cursor-pointer"
             title={`WhatsApp ${deal.contactName}`}
-            aria-label={`WhatsApp ${deal.contactName}`}
           >
             <MessageCircle className="w-3.5 h-3.5" />
           </button>
           <button
-            type="button"
             onClick={handleQuickNote}
             className="p-1 rounded hover:bg-brand-copper/10 text-dash-text-secondary hover:text-brand-copper transition-colors cursor-pointer"
             title="Log activity"
-            aria-label="Log activity"
           >
             <ClipboardList className="w-3.5 h-3.5" />
           </button>
@@ -384,10 +380,10 @@ const DealCard = ({ deal, onClick, shipmentRisk, sla }: DealCardProps) => {
         <div
           className={`mt-1.5 text-[10px] ${
             sla.color === "red"
-              ? "text-dash-danger font-medium"
+              ? "text-red-400 font-medium"
               : sla.color === "yellow"
-                ? "text-dash-warn"
-                : "text-dash-success/80"
+                ? "text-amber-400"
+                : "text-emerald-400/80"
           }`}
           title={`SLA — green ≤ ${sla.green}d · yellow ≤ ${sla.yellow}d · red > ${sla.yellow}d`}
         >
@@ -399,7 +395,7 @@ const DealCard = ({ deal, onClick, shipmentRisk, sla }: DealCardProps) => {
 
       {deal.followUpDate && (
         <div
-          className={`flex items-center gap-1 text-[10px] mt-1.5 ${isOverdue ? "text-dash-danger font-medium" : "text-dash-text-secondary"}`}
+          className={`flex items-center gap-1 text-[10px] mt-1.5 ${isOverdue ? "text-red-400 font-medium" : "text-dash-text-secondary"}`}
         >
           {isOverdue && <AlertCircle className="w-3 h-3" />}
           <span>Follow-up: {format(parseISO(deal.followUpDate), "MMM d")}</span>
@@ -1819,7 +1815,7 @@ const PipelinePageInner = () => {
                             oldStage
                           );
                         }}
-                        className="text-xs bg-dash-bg border border-dash-border rounded px-2 py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
+                        className="text-xs bg-dash-bg border border-dash-border rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
                       >
                         {stages.map((s) => (
                           <option key={s} value={s}>
@@ -2153,16 +2149,16 @@ const PipelinePageInner = () => {
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
                               <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                                item.status === "current" ? "bg-dash-success/10 text-dash-success" :
-                                item.status === "custom" ? "bg-dash-cat-violet/10 text-dash-cat-violet" :
-                                item.status === "special-order" ? "bg-dash-warn/10 text-dash-warn" :
-                                "bg-dash-danger/10 text-dash-danger"
+                                item.status === "current" ? "bg-green-500/10 text-green-400" :
+                                item.status === "custom" ? "bg-violet-500/10 text-violet-400" :
+                                item.status === "special-order" ? "bg-amber-500/10 text-amber-400" :
+                                "bg-red-500/10 text-red-400"
                               }`}>
                                 {item.status}
                               </span>
                               <button
                                 onClick={() => handleRemoveLineItem(item.id)}
-                                className="p-1 rounded hover:bg-dash-danger/10 text-dash-text-secondary hover:text-dash-danger transition-colors cursor-pointer"
+                                className="p-1 rounded hover:bg-red-500/10 text-dash-text-secondary hover:text-red-400 transition-colors cursor-pointer"
                                 title="Remove"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -2201,7 +2197,7 @@ const PipelinePageInner = () => {
                             </div>
                             <div>
                               <p className="text-dash-text-secondary">Margin</p>
-                              <p className={`font-medium ${item.marginPercent >= 35 ? "text-dash-success" : item.marginPercent >= 20 ? "text-dash-warn" : "text-dash-danger"}`}>
+                              <p className={`font-medium ${item.marginPercent >= 35 ? "text-green-400" : item.marginPercent >= 20 ? "text-amber-400" : "text-red-400"}`}>
                                 {item.marginPercent}%
                               </p>
                             </div>
@@ -2228,7 +2224,7 @@ const PipelinePageInner = () => {
                       const totalShipping = items.reduce((s, i) => s + i.shippingCost, 0);
                       const netMargin = totalQuoted - totalDealerCost - totalShipping;
                       const marginPercent = totalQuoted > 0 ? Math.round((netMargin / totalQuoted) * 1000) / 10 : 0;
-                      const marginColor = marginPercent >= 35 ? "text-dash-success" : marginPercent >= 20 ? "text-dash-warn" : "text-dash-danger";
+                      const marginColor = marginPercent >= 35 ? "text-green-400" : marginPercent >= 20 ? "text-amber-400" : "text-red-400";
                       return (
                         <div className="bg-dash-bg rounded-lg p-3 border border-dash-border">
                           <div className="grid grid-cols-2 gap-2 text-xs">
@@ -2281,11 +2277,11 @@ const PipelinePageInner = () => {
                     </div>
                     <div>
                       <p className="text-dash-text-secondary">Collected</p>
-                      <p className="text-dash-success font-semibold">${(selectedDeal.payments ?? []).filter(p => p.status === "paid").reduce((s, p) => s + p.amount, 0).toLocaleString()}</p>
+                      <p className="text-green-400 font-semibold">${(selectedDeal.payments ?? []).filter(p => p.status === "paid").reduce((s, p) => s + p.amount, 0).toLocaleString()}</p>
                     </div>
                     <div>
                       <p className="text-dash-text-secondary">Outstanding</p>
-                      <p className="text-dash-warn font-semibold">${(selectedDeal.payments ?? []).filter(p => p.status !== "paid" && p.status !== "cancelled").reduce((s, p) => s + p.amount, 0).toLocaleString()}</p>
+                      <p className="text-amber-400 font-semibold">${(selectedDeal.payments ?? []).filter(p => p.status !== "paid" && p.status !== "cancelled").reduce((s, p) => s + p.amount, 0).toLocaleString()}</p>
                     </div>
                   </div>
                 )}
@@ -2299,9 +2295,9 @@ const PipelinePageInner = () => {
                     {(selectedDeal.payments ?? []).map((payment) => (
                       <div key={payment.id} className="bg-dash-bg rounded-lg p-3 flex items-center gap-3">
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                          payment.status === "paid" ? "bg-dash-success/10 text-dash-success" :
-                          payment.status === "overdue" ? "bg-dash-danger/10 text-dash-danger" :
-                          payment.status === "sent" ? "bg-dash-info/10 text-dash-info" :
+                          payment.status === "paid" ? "bg-green-500/10 text-green-400" :
+                          payment.status === "overdue" ? "bg-red-500/10 text-red-400" :
+                          payment.status === "sent" ? "bg-blue-500/10 text-blue-400" :
                           "bg-dash-surface text-dash-text-secondary"
                         }`}>
                           <DollarSign className="w-4 h-4" />
@@ -2326,11 +2322,11 @@ const PipelinePageInner = () => {
                           )}
                         </div>
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium shrink-0 ${
-                          payment.status === "paid" ? "bg-dash-success/10 text-dash-success" :
-                          payment.status === "overdue" ? "bg-dash-danger/10 text-dash-danger" :
-                          payment.status === "sent" ? "bg-dash-info/10 text-dash-info" :
+                          payment.status === "paid" ? "bg-green-500/10 text-green-400" :
+                          payment.status === "overdue" ? "bg-red-500/10 text-red-400" :
+                          payment.status === "sent" ? "bg-blue-500/10 text-blue-400" :
                           payment.status === "draft" ? "bg-dash-text-secondary/10 text-dash-text-secondary" :
-                          "bg-dash-warn/10 text-dash-warn"
+                          "bg-amber-500/10 text-amber-400"
                         }`}>
                           {payment.status}
                         </span>
@@ -2379,12 +2375,12 @@ const PipelinePageInner = () => {
                             <p className="text-[11px] text-dash-text-secondary">{po.brand} &bull; {po.manufacturerName}</p>
                           </div>
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                            po.status === "received" ? "bg-dash-success/10 text-dash-success" :
-                            po.status === "shipped" ? "bg-dash-info/10 text-dash-info" :
-                            po.status === "in-production" ? "bg-dash-cat-violet/10 text-dash-cat-violet" :
-                            po.status === "confirmed" || po.status === "paid-to-manufacturer" ? "bg-dash-info/10 text-dash-info" :
-                            po.status === "sent" ? "bg-dash-warn/10 text-dash-warn" :
-                            po.status === "issue" ? "bg-dash-danger/10 text-dash-danger" :
+                            po.status === "received" ? "bg-green-500/10 text-green-400" :
+                            po.status === "shipped" ? "bg-cyan-500/10 text-cyan-400" :
+                            po.status === "in-production" ? "bg-violet-500/10 text-violet-400" :
+                            po.status === "confirmed" || po.status === "paid-to-manufacturer" ? "bg-blue-500/10 text-blue-400" :
+                            po.status === "sent" ? "bg-amber-500/10 text-amber-400" :
+                            po.status === "issue" ? "bg-red-500/10 text-red-400" :
                             "bg-dash-text-secondary/10 text-dash-text-secondary"
                           }`}>
                             {po.status}
@@ -2401,7 +2397,7 @@ const PipelinePageInner = () => {
                           </div>
                           <div>
                             <p className="text-dash-text-secondary">Mfr Paid</p>
-                            <p className={`font-medium ${po.paymentToMfr ? "text-dash-success" : "text-dash-warn"}`}>
+                            <p className={`font-medium ${po.paymentToMfr ? "text-green-400" : "text-amber-400"}`}>
                               {po.paymentToMfr ? `\u2713 ${po.paymentToMfr.date}` : "Pending"}
                             </p>
                           </div>
@@ -2412,7 +2408,7 @@ const PipelinePageInner = () => {
                           </p>
                         )}
                         {po.receivedCondition && po.receivedCondition !== "good" && (
-                          <p className="text-[10px] text-dash-danger">
+                          <p className="text-[10px] text-red-400">
                             Condition: {po.receivedCondition}{po.receivedNotes ? ` \u2014 ${po.receivedNotes}` : ""}
                           </p>
                         )}
@@ -2458,10 +2454,10 @@ const PipelinePageInner = () => {
                             <p className="text-[11px] text-dash-text-secondary">PO: {shipment.poId}</p>
                           </div>
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
-                            shipment.status === "delivered-to-customer" ? "bg-dash-success/10 text-dash-success" :
-                            shipment.status === "delivered-to-cc" ? "bg-dash-cat-teal/10 text-dash-cat-teal" :
-                            shipment.status === "in-transit" ? "bg-dash-info/10 text-dash-info" :
-                            shipment.status === "customs" ? "bg-dash-warn/10 text-dash-warn" :
+                            shipment.status === "delivered-to-customer" ? "bg-green-500/10 text-green-400" :
+                            shipment.status === "delivered-to-cc" ? "bg-teal-500/10 text-teal-400" :
+                            shipment.status === "in-transit" ? "bg-blue-500/10 text-blue-400" :
+                            shipment.status === "customs" ? "bg-amber-500/10 text-amber-400" :
                             "bg-dash-text-secondary/10 text-dash-text-secondary"
                           }`}>
                             {shipment.status.replace(/-/g, " ")}
@@ -2496,9 +2492,9 @@ const PipelinePageInner = () => {
                         {/* Inspection */}
                         {shipment.inspectionStatus && (
                           <div className={`flex items-center gap-1.5 text-[10px] ${
-                            shipment.inspectionStatus === "passed" ? "text-dash-success" :
-                            shipment.inspectionStatus === "damaged" ? "text-dash-danger" :
-                            "text-dash-warn"
+                            shipment.inspectionStatus === "passed" ? "text-green-400" :
+                            shipment.inspectionStatus === "damaged" ? "text-red-400" :
+                            "text-amber-400"
                           }`}>
                             {shipment.inspectionStatus === "passed" ? <CheckCircle2 className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
                             Inspection: {shipment.inspectionStatus}
@@ -2620,11 +2616,11 @@ const PipelinePageInner = () => {
                                   <span className="text-dash-text">
                                     {it.vendorName}
                                     {it.usmcaStatus === "on-file" && (
-                                      <span className="ml-1.5 text-[9px] text-dash-success">USMCA</span>
+                                      <span className="ml-1.5 text-[9px] text-green-400">USMCA</span>
                                     )}
                                     {it.spanishManualsRequired &&
                                       it.spanishManualsStatus !== "on-file" && (
-                                        <span className="ml-1.5 text-[9px] text-dash-warn">
+                                        <span className="ml-1.5 text-[9px] text-amber-400">
                                           MANUAL
                                         </span>
                                       )}
@@ -2732,7 +2728,7 @@ const PipelinePageInner = () => {
 
                 {/* Money In */}
                 <div className="bg-dash-bg rounded-lg p-3 space-y-2">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-dash-success">Money In</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-green-400">Money In</p>
                   {(selectedDeal.payments ?? []).map((p) => (
                     <div key={p.id} className="flex items-center justify-between text-xs">
                       <span className="text-dash-text-secondary">
@@ -2741,9 +2737,9 @@ const PipelinePageInner = () => {
                       <span className="flex items-center gap-2">
                         <span className="text-dash-text">${p.amount.toLocaleString()} MXN</span>
                         {p.status === "paid" ? (
-                          <span className="text-dash-success">\u2705</span>
+                          <span className="text-green-400">\u2705</span>
                         ) : p.status === "overdue" ? (
-                          <span className="text-dash-danger">\u26a0\ufe0f</span>
+                          <span className="text-red-400">\u26a0\ufe0f</span>
                         ) : (
                           <span className="text-dash-text-secondary">\u23f3</span>
                         )}
@@ -2753,7 +2749,7 @@ const PipelinePageInner = () => {
                   {(selectedDeal.totalStripeFees ?? 0) > 0 && (
                     <div className="flex items-center justify-between text-xs border-t border-dash-border pt-1">
                       <span className="text-dash-text-secondary">Stripe fees:</span>
-                      <span className="text-dash-danger">-${(selectedDeal.totalStripeFees ?? 0).toLocaleString()} MXN</span>
+                      <span className="text-red-400">-${(selectedDeal.totalStripeFees ?? 0).toLocaleString()} MXN</span>
                     </div>
                   )}
                   <div className="flex items-center justify-between text-xs font-semibold border-t border-dash-border pt-1">
@@ -2764,7 +2760,7 @@ const PipelinePageInner = () => {
 
                 {/* Money Out */}
                 <div className="bg-dash-bg rounded-lg p-3 space-y-2">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-dash-danger">Money Out</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-red-400">Money Out</p>
                   {(selectedDeal.purchaseOrders ?? []).map((po) => (
                     <div key={po.id} className="flex items-center justify-between text-xs">
                       <span className="text-dash-text-secondary">
@@ -2773,7 +2769,7 @@ const PipelinePageInner = () => {
                       <span className="flex items-center gap-2">
                         <span className="text-dash-text">${po.totalAmount.toLocaleString()} MXN</span>
                         {po.paymentToMfr ? (
-                          <span className="text-dash-success">\u2705</span>
+                          <span className="text-green-400">\u2705</span>
                         ) : (
                           <span className="text-dash-text-secondary">\u23f3</span>
                         )}
@@ -2795,32 +2791,32 @@ const PipelinePageInner = () => {
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-dash-text-secondary">Stripe fees:</span>
-                    <span className="text-dash-danger">-${(selectedDeal.totalStripeFees ?? 0).toLocaleString()} MXN</span>
+                    <span className="text-red-400">-${(selectedDeal.totalStripeFees ?? 0).toLocaleString()} MXN</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-dash-text-secondary">Manufacturer costs:</span>
-                    <span className="text-dash-danger">-${(selectedDeal.totalDealerCost ?? 0).toLocaleString()} MXN</span>
+                    <span className="text-red-400">-${(selectedDeal.totalDealerCost ?? 0).toLocaleString()} MXN</span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-dash-text-secondary">Shipping:</span>
-                    <span className="text-dash-danger">-${(selectedDeal.totalShipping ?? 0).toLocaleString()} MXN</span>
+                    <span className="text-red-400">-${(selectedDeal.totalShipping ?? 0).toLocaleString()} MXN</span>
                   </div>
                   {(selectedDeal.importCosts?.totalImportCost ?? 0) > 0 && (
                     <div className="flex justify-between text-xs">
                       <span className="text-dash-text-secondary">Import costs:</span>
-                      <span className="text-dash-danger">-${(selectedDeal.importCosts?.totalImportCost ?? 0).toLocaleString()} MXN</span>
+                      <span className="text-red-400">-${(selectedDeal.importCosts?.totalImportCost ?? 0).toLocaleString()} MXN</span>
                     </div>
                   )}
                   <div className="border-t border-dash-border my-1" />
                   <div className="flex justify-between text-sm font-semibold">
                     <span className="text-dash-text">Net profit:</span>
-                    <span className="text-dash-success">
+                    <span className="text-green-400">
                       ${((selectedDeal.netMargin ?? 0) - (selectedDeal.importCosts?.totalImportCost ?? 0)).toLocaleString()} MXN
                     </span>
                   </div>
                   <div className="flex justify-between text-xs">
                     <span className="text-dash-text-secondary">Margin:</span>
-                    <span className="text-dash-success font-semibold">{selectedDeal.marginPercent ?? 0}%</span>
+                    <span className="text-green-400 font-semibold">{selectedDeal.marginPercent ?? 0}%</span>
                   </div>
                 </div>
 
@@ -2830,7 +2826,7 @@ const PipelinePageInner = () => {
                   {getDealCompletionChecklist(selectedDeal).map((item, idx) => (
                     <div key={idx} className="flex items-center gap-2 text-xs">
                       {item.checked ? (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-dash-success shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-green-400 shrink-0" />
                       ) : (
                         <Circle className="w-3.5 h-3.5 text-dash-text-secondary shrink-0" />
                       )}
@@ -2840,7 +2836,7 @@ const PipelinePageInner = () => {
                     </div>
                   ))}
                   {getDealCompletionChecklist(selectedDeal).every(i => i.checked) && (
-                    <button className="w-full mt-2 px-4 py-2 text-sm bg-dash-success text-white rounded-lg hover:bg-dash-success/90 transition-colors cursor-pointer">
+                    <button className="w-full mt-2 px-4 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-500/90 transition-colors cursor-pointer">
                       Mark Deal Complete
                     </button>
                   )}
@@ -2979,7 +2975,7 @@ const PipelinePageInner = () => {
               value={activityNote}
               onChange={(e) => setActivityNote(e.target.value)}
               placeholder="What happened? Key takeaways, next steps..."
-              className="w-full h-24 px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder-dash-text-secondary/50 resize-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper/50"
+              className="w-full h-24 px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder-dash-text-secondary/50 resize-none focus:outline-none focus:border-brand-copper/50"
               autoFocus
             />
             <div className="flex gap-2">
@@ -3030,7 +3026,7 @@ const PipelinePageInner = () => {
 
           <div>
             <label className="block text-xs font-medium text-dash-text-secondary mb-1.5">
-              Deal name <span className="text-dash-danger">*</span>
+              Deal name <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
@@ -3039,7 +3035,7 @@ const PipelinePageInner = () => {
                 setNewDealForm((p) => ({ ...p, name: e.target.value }))
               }
               placeholder="Residencial San Antonio — 12 Units"
-              className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
+              className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
               autoFocus
             />
           </div>
@@ -3055,7 +3051,7 @@ const PipelinePageInner = () => {
                 setNewDealForm((p) => ({ ...p, company: e.target.value }))
               }
               placeholder="ARQ. Gabor Goded / Casa Atelier"
-              className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
+              className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
             />
           </div>
 
@@ -3072,7 +3068,7 @@ const PipelinePageInner = () => {
                     stage: e.target.value as PipelineStage,
                   }))
                 }
-                className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
+                className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
               >
                 <option value="discovery">Discovery</option>
                 <option value="design-scope">Design & Scope</option>
@@ -3093,7 +3089,7 @@ const PipelinePageInner = () => {
                   setNewDealForm((p) => ({ ...p, value: e.target.value }))
                 }
                 placeholder="450000"
-                className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
+                className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
               />
             </div>
           </div>
@@ -3112,7 +3108,7 @@ const PipelinePageInner = () => {
                     expectedClose: e.target.value,
                   }))
                 }
-                className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
+                className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
               />
             </div>
             <div>
@@ -3124,7 +3120,7 @@ const PipelinePageInner = () => {
                 onChange={(e) =>
                   setNewDealForm((p) => ({ ...p, source: e.target.value }))
                 }
-                className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
+                className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
               >
                 <option value="Direct">Direct</option>
                 <option value="Email">Email</option>

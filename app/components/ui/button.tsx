@@ -3,7 +3,6 @@
 import { forwardRef, type ButtonHTMLAttributes } from "react";
 import { Link } from "@/app/i18n/navigation";
 import NextLink from "next/link";
-import { focusRing } from "./focus-ring";
 
 type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "whatsapp";
 type ButtonSize = "sm" | "md" | "lg";
@@ -24,7 +23,7 @@ const variantStyles: Record<ButtonVariant, string> = {
   ghost:
     "text-brand-terracotta underline underline-offset-4 hover:text-brand-copper transition-colors duration-200",
   whatsapp:
-    "bg-vendor-whatsapp text-white rounded-md hover:bg-vendor-whatsapp-dark transition-colors duration-200",
+    "bg-[#25D366] text-white rounded-md hover:bg-[#20BD5A] transition-colors duration-200",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -36,8 +35,8 @@ const sizeStyles: Record<ButtonSize, string> = {
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = "primary", size = "lg", className = "", href, children, ...props }, ref) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-body font-medium tracking-wide cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed";
-    const classes = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${focusRing} ${className}`;
+      "inline-flex items-center justify-center font-body font-medium tracking-wide cursor-pointer";
+    const classes = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`;
 
     if (href) {
       // External links, mailto:, tel:, hashes → use regular anchor-like Link

@@ -1,3 +1,5 @@
+"use client";
+
 import { format } from "date-fns";
 import { NeedsYou } from "@/app/(dashboard)/components/needs-you";
 import { NewSinceLastCheck } from "@/app/(dashboard)/components/new-since-last-check";

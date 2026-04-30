@@ -1,3 +1,5 @@
+"use client";
+
 import { CreditCard, AlertTriangle } from "lucide-react";
 
 interface CreditPanelProps {
@@ -66,9 +68,9 @@ const CreditPanel = ({
                 <div
                   className={`h-full transition-all ${
                     overLimit
-                      ? "bg-dash-danger"
+                      ? "bg-red-500"
                       : nearLimit
-                        ? "bg-dash-warn"
+                        ? "bg-amber-500"
                         : "bg-brand-sage"
                   }`}
                   style={{ width: `${Math.min(100, utilization)}%` }}
@@ -79,13 +81,13 @@ const CreditPanel = ({
                   {utilization.toFixed(0)}% utilized
                 </span>
                 {overLimit && (
-                  <span className="inline-flex items-center gap-1 text-dash-danger font-medium">
+                  <span className="inline-flex items-center gap-1 text-red-600 font-medium">
                     <AlertTriangle className="w-3 h-3" />
                     Over limit by {fmt(balance - limit)}
                   </span>
                 )}
                 {nearLimit && (
-                  <span className="text-dash-warn font-medium">
+                  <span className="text-amber-600 font-medium">
                     Approaching limit
                   </span>
                 )}

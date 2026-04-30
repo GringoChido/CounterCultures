@@ -6,7 +6,6 @@
   --color-brand-terracotta: #C4725A;
   --color-brand-terracotta-dark: #A85D48;
   --color-brand-copper: #B87333;
-  --color-brand-copper-dark: #A66628;
   --color-brand-sage: #7A8B6F;
   --color-brand-stone: #A89F91;
   --color-brand-linen: #F5F0EB;
@@ -18,7 +17,7 @@
 
   /* Dashboard surfaces */
   --color-dash-bg: #FAF7F2;
-  --color-dash-surface: #FEFCF9;
+  --color-dash-surface: #FFFFFF;
   --color-dash-surface-2: #F5F0EB;
   --color-dash-sidebar: #EFE7DA;
   --color-dash-sidebar-active: #E5DAC6;
@@ -26,7 +25,7 @@
   --color-dash-border: #E8E0D2;
   --color-dash-border-strong: #D4C5A9;
 
-  /* Dashboard text — dash-text-secondary passes WCAG AA on linen and surface */
+  /* Dashboard text */
   --color-dash-text: #1A1A1A;
   --color-dash-text-secondary: #5C5650;
   --color-dash-text-muted: #8C857C;
@@ -34,44 +33,10 @@
   /* Dashboard accents */
   --color-dash-accent: #B87333;
   --color-dash-accent-soft: #F0E2CF;
-
-  /* Status palette — solid + soft pairs. Use these instead of bg-green-*, bg-red-*, etc. */
   --color-dash-success: #7A8B6F;
-  --color-dash-success-soft: #E8EDE3;
   --color-dash-warn: #C4725A;
-  --color-dash-warn-soft: #F5E2D8;
   --color-dash-danger: #A85D48;
-  --color-dash-danger-soft: #F0D9D0;
   --color-dash-info: #6E7A85;
-  --color-dash-info-soft: #DDE2E6;
-  --color-dash-pending: #8C857C;
-  --color-dash-pending-soft: #ECE7DF;
-
-  /* Third-party brand colors. Use only for the literal third-party badge/button. */
-  --color-vendor-stripe: #635BFF;
-  --color-vendor-stripe-dark: #5851DB;
-  --color-vendor-whatsapp: #25D366;
-  --color-vendor-whatsapp-dark: #20BD5A;
-
-  /* PDF/document preview backdrop — neutral gray that mimics paper out-of-page. */
-  --color-dash-preview-bg: #F0F0F0;
-
-  /* Categorical palette — dashboard-only, for non-semantic differentiation
-     (customs status, pipeline stages, persona tags). Picked to harmonize
-     with the warm brand palette rather than fight it. */
-  --color-dash-cat-violet: #8B7AA8;
-  --color-dash-cat-violet-soft: #E8E3F0;
-  --color-dash-cat-pink: #C48B9F;
-  --color-dash-cat-pink-soft: #F0DEE6;
-  --color-dash-cat-teal: #6FA89F;
-  --color-dash-cat-teal-soft: #DBEAE6;
-  --color-dash-cat-lime: #A8B36F;
-  --color-dash-cat-lime-soft: #ECEDD9;
-  --color-dash-cat-rose: #C47A85;
-  --color-dash-cat-rose-soft: #F0DCDF;
-
-  /* Focus ring — used by the focus-ring utility export */
-  --color-focus-ring: #B87333;
 
   /* Spacing rhythm */
   --space-1: 4px;
@@ -167,7 +132,7 @@ html {
 .prose-custom p {
   font-family: var(--font-body);
   font-size: 1rem;
-  color: var(--color-dash-text-secondary);
+  color: var(--color-brand-stone);
   line-height: 1.75;
   margin-bottom: 1rem;
 }
@@ -184,7 +149,7 @@ html {
 .prose-custom li {
   font-family: var(--font-body);
   font-size: 1rem;
-  color: var(--color-dash-text-secondary);
+  color: var(--color-brand-stone);
   line-height: 1.75;
 }
 
@@ -198,7 +163,7 @@ html {
 .prose-custom td {
   padding: 0.5rem 1rem;
   font-family: var(--font-body);
-  color: var(--color-dash-text-secondary);
+  color: var(--color-brand-stone);
   border-bottom: 1px solid rgba(168, 159, 145, 0.1);
 }
 

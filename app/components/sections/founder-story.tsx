@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { Button } from "@/app/components/ui/button";
@@ -48,7 +50,7 @@ const FounderStory = ({ locale = "en" }: { locale?: string }) => {
             <h2 className="mt-4 font-display text-4xl md:text-5xl font-normal tracking-wide text-brand-charcoal leading-tight">
               {t.title}
             </h2>
-            <div className="mt-6 space-y-4 font-body text-base text-dash-text-secondary leading-relaxed">
+            <div className="mt-6 space-y-4 font-body text-base text-brand-stone leading-relaxed">
               <p>{t.p1}</p>
               <p>{t.p2}</p>
               <p>{t.p3}</p>

@@ -235,7 +235,7 @@ const CustomersPage = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search name, email, phone, RFC, city…"
-            className="w-full pl-10 pr-4 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
+            className="w-full pl-10 pr-4 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus:border-dash-accent rounded"
           />
           {loading && (
             <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dash-text-secondary animate-spin" />
@@ -259,7 +259,7 @@ const CustomersPage = () => {
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortBy)}
-          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
+          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus:border-dash-accent rounded"
         >
           <option value="activity">Most recent activity</option>
           <option value="name">Name A-Z</option>

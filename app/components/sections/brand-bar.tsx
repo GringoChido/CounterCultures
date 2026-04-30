@@ -1,3 +1,5 @@
+"use client";
+
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { ShieldCheck, Package, Wrench, Truck } from "lucide-react";
 

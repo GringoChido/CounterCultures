@@ -109,7 +109,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               href={`https://wa.me/${SITE_CONFIG.showroom.whatsapp.replace(/\s+/g, "")}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center w-11 h-11 text-vendor-whatsapp hover:text-vendor-whatsapp-dark transition-colors"
+              className="flex items-center justify-center w-11 h-11 text-[#25D366] hover:text-[#20BD5A] transition-colors"
               aria-label="WhatsApp"
             >
               <MessageCircle className="w-5 h-5" />
@@ -122,20 +122,20 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                 className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors ${
                   lang === "en"
                     ? "text-brand-terracotta font-bold pointer-events-none"
-                    : "text-dash-text-secondary hover:text-brand-charcoal"
+                    : "text-brand-stone hover:text-brand-charcoal"
                 }`}
                 aria-current={lang === "en" ? "true" : undefined}
               >
                 <span className="sm:hidden">EN</span>
                 <span className="hidden sm:inline">English</span>
               </a>
-              <span className="text-dash-text-secondary/40">|</span>
+              <span className="text-brand-stone/40">|</span>
               <a
                 href={`/es${intlPathname}`}
                 className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors ${
                   lang === "es"
                     ? "text-brand-terracotta font-bold pointer-events-none"
-                    : "text-dash-text-secondary hover:text-brand-charcoal"
+                    : "text-brand-stone hover:text-brand-charcoal"
                 }`}
                 aria-current={lang === "es" ? "true" : undefined}
               >
@@ -170,7 +170,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.2 }}
-            className="hidden lg:block absolute left-0 right-0 top-full bg-dash-surface shadow-lg border border-brand-stone/10"
+            className="hidden lg:block absolute left-0 right-0 top-full bg-white shadow-lg border border-brand-stone/10"
             onMouseEnter={() => setMegaMenuOpen(true)}
             onMouseLeave={() => setMegaMenuOpen(false)}
           >
@@ -190,7 +190,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                         <li key={sub.slug}>
                           <NextLink
                             href={localizedHref(`/shop/${key}/${sub.slug}`)}
-                            className="font-body text-sm text-dash-text-secondary hover:text-brand-terracotta transition-colors duration-200"
+                            className="font-body text-sm text-brand-stone hover:text-brand-terracotta transition-colors duration-200"
                           >
                             {sub.label[lang]}
                           </NextLink>
@@ -218,12 +218,12 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                   <span className="font-body text-sm font-medium text-brand-charcoal group-hover:text-brand-terracotta transition-colors">
                     {lang === "en" ? "Artisanal Collection" : "Colección Artesanal"}
                   </span>
-                  <span className="font-body text-xs text-dash-text-secondary">
+                  <span className="font-body text-xs text-brand-stone">
                     {lang === "en"
                       ? "Browse handcrafted pieces by Mexico's master artisans"
                       : "Explora piezas hechas a mano por los maestros artesanos de México"}
                   </span>
-                  <ChevronRight className="w-3 h-3 text-dash-text-secondary ml-auto group-hover:text-brand-terracotta transition-colors" />
+                  <ChevronRight className="w-3 h-3 text-brand-stone ml-auto group-hover:text-brand-terracotta transition-colors" />
                 </NextLink>
               </div>
             </div>
@@ -271,7 +271,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                                 {cat.label[lang]}
                               </span>
                               <ChevronDown
-                                className={`w-4 h-4 text-dash-text-secondary transition-transform shrink-0 ${
+                                className={`w-4 h-4 text-brand-stone transition-transform shrink-0 ${
                                   mobileCategoryOpen === key ? "rotate-180" : ""
                                 }`}
                               />
@@ -291,7 +291,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                                         key={sub.slug}
                                         href={localizedHref(`/shop/${key}/${sub.slug}`)}
                                         onClick={() => setMobileOpen(false)}
-                                        className="flex items-center py-2.5 min-h-[44px] text-sm text-dash-text-secondary hover:text-brand-terracotta transition-colors"
+                                        className="flex items-center py-2.5 min-h-[44px] text-sm text-brand-stone hover:text-brand-terracotta transition-colors"
                                       >
                                         {sub.label[lang]}
                                       </NextLink>
@@ -331,7 +331,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                 href={`https://wa.me/${SITE_CONFIG.showroom.whatsapp.replace(/\s+/g, "")}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 py-3.5 min-h-[44px] font-body text-base font-medium text-vendor-whatsapp border-b border-brand-stone/5"
+                className="flex items-center gap-2 py-3.5 min-h-[44px] font-body text-base font-medium text-[#25D366] border-b border-brand-stone/5"
               >
                 <MessageCircle className="w-5 h-5" />
                 WhatsApp
@@ -345,19 +345,19 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                   className={`font-body text-base font-medium transition-colors ${
                     lang === "en"
                       ? "text-brand-terracotta pointer-events-none"
-                      : "text-dash-text-secondary hover:text-brand-charcoal"
+                      : "text-brand-stone hover:text-brand-charcoal"
                   }`}
                 >
                   English
                 </a>
-                <span className="text-dash-text-secondary/40">|</span>
+                <span className="text-brand-stone/40">|</span>
                 <a
                   href={`/es${intlPathname}`}
                   onClick={() => setMobileOpen(false)}
                   className={`font-body text-base font-medium transition-colors ${
                     lang === "es"
                       ? "text-brand-terracotta pointer-events-none"
-                      : "text-dash-text-secondary hover:text-brand-charcoal"
+                      : "text-brand-stone hover:text-brand-charcoal"
                   }`}
                 >
                   Español

@@ -43,21 +43,21 @@ const formatDate = (dateStr: string) => {
 };
 
 const stateLabels: Record<string, { label: string; className: string }> = {
-  draft: { label: "Draft", className: "bg-dash-surface-2 text-dash-text-secondary" },
-  sent: { label: "Sent", className: "bg-dash-info-soft text-dash-info" },
-  sale: { label: "Confirmed", className: "bg-dash-success-soft text-dash-success" },
-  done: { label: "Done", className: "bg-dash-success-soft text-dash-success" },
-  cancel: { label: "Cancelled", className: "bg-dash-danger-soft text-dash-danger" },
-  posted: { label: "Posted", className: "bg-dash-success-soft text-dash-success" },
-  purchase: { label: "Confirmed", className: "bg-dash-success-soft text-dash-success" },
+  draft: { label: "Draft", className: "bg-gray-100 text-gray-600" },
+  sent: { label: "Sent", className: "bg-blue-50 text-blue-700" },
+  sale: { label: "Confirmed", className: "bg-emerald-50 text-emerald-700" },
+  done: { label: "Done", className: "bg-emerald-50 text-emerald-700" },
+  cancel: { label: "Cancelled", className: "bg-red-50 text-red-700" },
+  posted: { label: "Posted", className: "bg-emerald-50 text-emerald-700" },
+  purchase: { label: "Confirmed", className: "bg-emerald-50 text-emerald-700" },
 };
 
 const paymentLabels: Record<string, { label: string; className: string }> = {
-  paid: { label: "Paid", className: "bg-dash-success-soft text-dash-success" },
-  not_paid: { label: "Unpaid", className: "bg-dash-warn-soft text-dash-warn" },
-  partial: { label: "Partial", className: "bg-dash-warn-soft text-dash-warn" },
-  in_payment: { label: "In Payment", className: "bg-dash-info-soft text-dash-info" },
-  reversed: { label: "Reversed", className: "bg-dash-danger-soft text-dash-danger" },
+  paid: { label: "Paid", className: "bg-emerald-50 text-emerald-700" },
+  not_paid: { label: "Unpaid", className: "bg-amber-50 text-amber-700" },
+  partial: { label: "Partial", className: "bg-orange-50 text-orange-700" },
+  in_payment: { label: "In Payment", className: "bg-blue-50 text-blue-700" },
+  reversed: { label: "Reversed", className: "bg-red-50 text-red-700" },
 };
 
 const priorityLabels: Record<string, string> = {
@@ -196,7 +196,7 @@ const OdooPage = () => {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-dash-text">Odoo Data Import</h1>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-dash-warn-soft text-dash-warn border border-dash-warn">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
               <AlertTriangle className="w-3 h-3" />
               Retiring
             </span>
@@ -204,8 +204,8 @@ const OdooPage = () => {
               <span
                 className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
                   connected
-                    ? "bg-dash-success/10 text-dash-success"
-                    : "bg-dash-danger/10 text-dash-danger"
+                    ? "bg-emerald-500/10 text-emerald-400"
+                    : "bg-red-500/10 text-red-400"
                 }`}
               >
                 {connected ? (
@@ -246,18 +246,18 @@ const OdooPage = () => {
 
       {/* Error */}
       {error && !loading && (
-        <div className="bg-dash-danger/10 border border-dash-danger/20 rounded-xl p-4 flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-dash-danger shrink-0 mt-0.5" />
+        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-dash-danger">Connection Error</p>
-            <p className="text-sm text-dash-danger/80 mt-1">{error}</p>
+            <p className="text-sm font-medium text-red-400">Connection Error</p>
+            <p className="text-sm text-red-400/80 mt-1">{error}</p>
             {error.toLowerCase().includes("authentication") && (
-              <div className="mt-3 text-sm text-dash-danger/70 space-y-1">
-                <p className="font-medium text-dash-danger">How to fix:</p>
+              <div className="mt-3 text-sm text-red-400/70 space-y-1">
+                <p className="font-medium text-red-400">How to fix:</p>
                 <ol className="list-decimal list-inside space-y-1">
-                  <li>Log in to <a href="https://counter-cultures.odoo.com/odoo/settings/users" target="_blank" rel="noopener noreferrer" className="underline hover:text-dash-danger">Odoo → Settings → Users</a></li>
+                  <li>Log in to <a href="https://counter-cultures.odoo.com/odoo/settings/users" target="_blank" rel="noopener noreferrer" className="underline hover:text-red-300">Odoo → Settings → Users</a></li>
                   <li>Click your user → &quot;API Keys&quot; tab → &quot;New API Key&quot;</li>
-                  <li>Copy the new key and update <code className="px-1.5 py-0.5 bg-dash-danger/10 rounded text-xs font-mono">ODOO_API_KEY</code> in your <code className="px-1.5 py-0.5 bg-dash-danger/10 rounded text-xs font-mono">.env.local</code></li>
+                  <li>Copy the new key and update <code className="px-1.5 py-0.5 bg-red-500/10 rounded text-xs font-mono">ODOO_API_KEY</code> in your <code className="px-1.5 py-0.5 bg-red-500/10 rounded text-xs font-mono">.env.local</code></li>
                   <li>Restart the dev server and click Refresh</li>
                 </ol>
               </div>
@@ -268,11 +268,11 @@ const OdooPage = () => {
 
       {/* Warnings */}
       {warnings.length > 0 && !loading && (
-        <div className="bg-dash-warn/10 border border-dash-warn/20 rounded-xl p-4 flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-dash-warn shrink-0 mt-0.5" />
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-dash-warn">Some data failed to load</p>
-            <ul className="text-sm text-dash-warn/80 mt-1 space-y-0.5">
+            <p className="text-sm font-medium text-amber-400">Some data failed to load</p>
+            <ul className="text-sm text-amber-400/80 mt-1 space-y-0.5">
               {warnings.map((w) => (
                 <li key={w}>{w}</li>
               ))}
@@ -329,19 +329,19 @@ const OdooPage = () => {
                       label="Total Revenue"
                       value={formatCurrency(summary.sales.totalRevenue)}
                       icon={DollarSign}
-                      accentColor="bg-dash-success"
+                      accentColor="bg-emerald-500"
                     />
                     <KPICard
                       label="Open Receivables"
                       value={formatCurrency(summary.invoices.totalReceivable)}
                       icon={FileText}
-                      accentColor="bg-dash-warn"
+                      accentColor="bg-amber-500"
                     />
                     <KPICard
                       label="Purchase Spend"
                       value={formatCurrency(summary.purchases.totalSpend)}
                       icon={Truck}
-                      accentColor="bg-dash-info"
+                      accentColor="bg-blue-500"
                     />
                     <KPICard
                       label="Customers"
@@ -398,21 +398,21 @@ const OdooPage = () => {
                       <div className="space-y-3">
                         <div className="flex justify-between text-sm">
                           <span className="text-dash-text-secondary flex items-center gap-1.5">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-dash-success" /> Paid
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Paid
                           </span>
                           <span className="font-medium text-dash-text">{summary.invoices.paid}</span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-dash-text-secondary flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5 text-dash-warn" /> Unpaid
+                            <Clock className="w-3.5 h-3.5 text-amber-500" /> Unpaid
                           </span>
                           <span className="font-medium text-dash-text">{summary.invoices.unpaid}</span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-dash-text-secondary flex items-center gap-1.5">
-                            <AlertTriangle className="w-3.5 h-3.5 text-dash-danger" /> Overdue
+                            <AlertTriangle className="w-3.5 h-3.5 text-red-500" /> Overdue
                           </span>
-                          <span className="font-medium text-dash-danger">{summary.invoices.overdue}</span>
+                          <span className="font-medium text-red-600">{summary.invoices.overdue}</span>
                         </div>
                         <div className="border-t border-dash-border pt-3 flex justify-between text-sm">
                           <span className="font-medium text-dash-text">Total</span>
@@ -468,7 +468,7 @@ const OdooPage = () => {
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-dash-text-secondary flex items-center gap-1.5">
-                            <Building2 className="w-3.5 h-3.5 text-dash-info" /> Suppliers
+                            <Building2 className="w-3.5 h-3.5 text-blue-500" /> Suppliers
                           </span>
                           <span className="font-medium text-dash-text">{summary.contacts.suppliers}</span>
                         </div>
@@ -531,7 +531,7 @@ const OdooPage = () => {
                 </>
               ) : (
                 <div className="bg-dash-surface rounded-xl border border-dash-border p-8 text-center">
-                  <AlertTriangle className="w-8 h-8 text-dash-warn mx-auto mb-3" />
+                  <AlertTriangle className="w-8 h-8 text-amber-400 mx-auto mb-3" />
                   <p className="text-sm text-dash-text-secondary">
                     Summary data unavailable \u2014 try refreshing. Other tabs may still have data.
                   </p>
@@ -649,9 +649,9 @@ const OdooPage = () => {
                           </td>
                           <td className="px-5 py-3 text-right font-medium text-dash-text">
                             {inv.amount_residual > 0 ? (
-                              <span className="text-dash-warn">{formatCurrency(inv.amount_residual)}</span>
+                              <span className="text-amber-600">{formatCurrency(inv.amount_residual)}</span>
                             ) : (
-                              <span className="text-dash-success">$0</span>
+                              <span className="text-emerald-600">$0</span>
                             )}
                           </td>
                         </tr>
@@ -687,7 +687,7 @@ const OdooPage = () => {
                       setSearchTerm(e.target.value);
                       loadContacts(e.target.value);
                     }}
-                    className="pl-9 pr-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+                    className="pl-9 pr-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
                   />
                 </div>
               </div>
@@ -797,7 +797,7 @@ const OdooPage = () => {
               </div>
               {crmError ? (
                 <div className="p-8 text-center">
-                  <AlertTriangle className="w-8 h-8 text-dash-warn mx-auto mb-3" />
+                  <AlertTriangle className="w-8 h-8 text-amber-400 mx-auto mb-3" />
                   <p className="text-sm text-dash-text-secondary">{crmError}</p>
                 </div>
               ) : (
@@ -821,7 +821,7 @@ const OdooPage = () => {
                             <div>
                               <p className="font-medium text-dash-text">{lead.name}</p>
                               {lead.priority !== "0" && (
-                                <span className="text-[10px] text-dash-warn">{priorityLabels[lead.priority]}</span>
+                                <span className="text-[10px] text-amber-400">{priorityLabels[lead.priority]}</span>
                               )}
                             </div>
                           </td>

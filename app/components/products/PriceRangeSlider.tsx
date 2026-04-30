@@ -103,7 +103,7 @@ const PriceRangeSlider = ({
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
-          <label className="block font-mono text-xs text-dash-text-secondary uppercase tracking-wide">
+          <label className="block font-mono text-xs text-brand-stone uppercase tracking-wide">
             Mínimo
           </label>
           <input
@@ -114,11 +114,11 @@ const PriceRangeSlider = ({
               setLocalMin(val);
               onChange([val, localMax]);
             }}
-            className="w-full px-3 py-2 border border-brand-stone/30 rounded-sm font-mono text-sm focus:border-brand-terracotta focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2"
+            className="w-full px-3 py-2 border border-brand-stone/30 rounded-sm font-mono text-sm focus:border-brand-terracotta focus:outline-none"
           />
         </div>
         <div className="space-y-1">
-          <label className="block font-mono text-xs text-dash-text-secondary uppercase tracking-wide">
+          <label className="block font-mono text-xs text-brand-stone uppercase tracking-wide">
             Máximo
           </label>
           <input
@@ -129,12 +129,12 @@ const PriceRangeSlider = ({
               setLocalMax(val);
               onChange([localMin, val]);
             }}
-            className="w-full px-3 py-2 border border-brand-stone/30 rounded-sm font-mono text-sm focus:border-brand-terracotta focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2"
+            className="w-full px-3 py-2 border border-brand-stone/30 rounded-sm font-mono text-sm focus:border-brand-terracotta focus:outline-none"
           />
         </div>
       </div>
 
-      <p className="font-mono text-xs text-dash-text-secondary">
+      <p className="font-mono text-xs text-brand-stone">
         ${localMin.toLocaleString()} - ${localMax.toLocaleString()} {currency}
       </p>
     </div>

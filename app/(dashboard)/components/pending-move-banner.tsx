@@ -92,12 +92,12 @@ const PendingMoveBanner = ({ dealId, toStage, queuedAt, onAction }: Props) => {
     <div
       className={`flex items-start gap-3 p-3 border rounded-lg mb-4 ${
         overdue || nearZero
-          ? "bg-dash-danger/10 border-dash-danger/30"
-          : "bg-dash-warn/10 border-dash-warn/30"
+          ? "bg-red-500/10 border-red-500/30"
+          : "bg-amber-500/10 border-amber-500/30"
       }`}
     >
       <AlertTriangle
-        className={`shrink-0 mt-0.5 w-4 h-4 ${overdue || nearZero ? "text-dash-danger" : "text-dash-warn"}`}
+        className={`shrink-0 mt-0.5 w-4 h-4 ${overdue || nearZero ? "text-red-400" : "text-amber-400"}`}
       />
       <div className="flex-1 min-w-0">
         <div className="text-sm font-medium text-dash-text">
@@ -119,7 +119,7 @@ const PendingMoveBanner = ({ dealId, toStage, queuedAt, onAction }: Props) => {
         <button
           onClick={handleCancel}
           disabled={busy !== null}
-          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs bg-dash-surface border border-dash-border rounded hover:border-dash-danger/40 hover:text-dash-danger transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-1 px-2.5 py-1 text-xs bg-dash-surface border border-dash-border rounded hover:border-red-400/40 hover:text-red-400 transition-colors disabled:opacity-50"
         >
           {busy === "cancel" ? <Loader2 className="w-3 h-3 animate-spin" /> : <X className="w-3 h-3" />}
           Cancel

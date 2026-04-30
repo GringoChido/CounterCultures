@@ -106,7 +106,7 @@ const DrivePage = () => {
       />
 
       {error && !needsReconnect && (
-        <div className="bg-dash-danger-soft border border-dash-danger rounded-lg px-4 py-3 text-[13px] text-dash-danger">
+        <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-[13px] text-red-700">
           {error}
         </div>
       )}

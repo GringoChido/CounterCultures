@@ -226,16 +226,14 @@ const Hero = ({ locale = "en" }: { locale?: string }) => {
         ))}
       </div>
 
-      {/* Progress bar — animated via transform: scaleX so the browser
-          composites instead of laying out every frame. */}
+      {/* Progress bar */}
       <div className="absolute bottom-0 left-0 right-0 z-20 h-0.5 bg-white/10">
         <motion.div
           key={current}
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
+          initial={{ width: "0%" }}
+          animate={{ width: "100%" }}
           transition={{ duration: INTERVAL / 1000, ease: "linear" }}
-          style={{ transformOrigin: "left center" }}
-          className="h-full w-full bg-brand-copper"
+          className="h-full bg-brand-copper"
         />
       </div>
     </section>

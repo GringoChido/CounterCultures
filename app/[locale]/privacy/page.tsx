@@ -46,7 +46,7 @@ const PrivacyPage = async ({ params }: PageProps) => {
   return (
     <>
       <Header locale={lang} />
-      <main id="main" tabIndex={-1} className="pt-20 bg-brand-linen min-h-screen">
+      <main className="pt-20 bg-brand-linen min-h-screen">
         <div className="mx-auto max-w-3xl px-6 lg:px-8 py-16 md:py-24">
           <h1 className="font-display text-3xl md:text-4xl font-light text-brand-charcoal mb-8">
             {isEs ? "Política de Privacidad" : "Privacy Policy"}
@@ -118,7 +118,7 @@ const PrivacyPage = async ({ params }: PageProps) => {
               : "Counter Cultures reserves the right to modify this privacy notice. Updates will be published at countercultures.com.mx"}
           </p>
 
-          <div className="font-body text-sm text-dash-text-secondary mt-8 pt-8 border-t border-brand-stone/10">
+          <div className="font-body text-sm text-brand-stone mt-8 pt-8 border-t border-brand-stone/10">
             <p>
               {isEs ? "Contacto" : "Contact"}:{" "}
               <a href="mailto:equipo@countercultures.com.mx" className="text-brand-terracotta hover:underline">

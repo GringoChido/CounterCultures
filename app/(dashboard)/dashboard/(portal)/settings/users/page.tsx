@@ -232,7 +232,7 @@ const UsersAdminPage = () => {
   if (features.ready && !features.has("manage_users")) {
     return (
       <div className="max-w-3xl mx-auto py-12">
-        <div className="bg-dash-surface border border-dash-border rounded-xl p-8 text-center">
+        <div className="bg-white border border-dash-border rounded-xl p-8 text-center">
           <Lock className="w-8 h-8 mx-auto text-dash-text-muted mb-3" />
           <h1 className="text-lg font-semibold text-dash-text">Restricted</h1>
           <p className="text-sm text-dash-text-secondary mt-2">
@@ -265,7 +265,7 @@ const UsersAdminPage = () => {
         </button>
       </div>
 
-      <div className="bg-dash-surface border border-dash-border rounded-xl overflow-hidden">
+      <div className="bg-white border border-dash-border rounded-xl overflow-hidden">
         {loading && !users && (
           <div className="flex items-center justify-center py-12 text-dash-text-secondary">
             <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -311,8 +311,8 @@ const UsersAdminPage = () => {
                       <span
                         className={`inline-block px-2 py-0.5 rounded-md text-[11px] font-medium ${
                           u.active
-                            ? "bg-dash-success-soft text-dash-success"
-                            : "bg-dash-danger-soft text-dash-danger"
+                            ? "bg-green-50 text-green-700"
+                            : "bg-red-50 text-red-700"
                         }`}
                       >
                         {u.active ? "Active" : "Inactive"}
@@ -337,7 +337,7 @@ const UsersAdminPage = () => {
                           <button
                             type="button"
                             onClick={() => handleDeactivate(u.email)}
-                            className="p-1.5 rounded-md text-dash-danger hover:bg-dash-danger-soft transition-colors cursor-pointer"
+                            className="p-1.5 rounded-md text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
                             aria-label="Deactivate user"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -361,7 +361,7 @@ const UsersAdminPage = () => {
             if (e.target === e.currentTarget && !saving) setForm(null);
           }}
         >
-          <div className="w-full max-w-2xl bg-dash-surface rounded-xl shadow-2xl flex flex-col max-h-[90vh]">
+          <div className="w-full max-w-2xl bg-white rounded-xl shadow-2xl flex flex-col max-h-[90vh]">
             <div className="px-6 py-4 border-b border-dash-border">
               <h2 className="font-display text-xl font-light text-dash-text">
                 {form.mode === "create" ? "Add user" : `Edit ${form.email}`}
@@ -379,7 +379,7 @@ const UsersAdminPage = () => {
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
                     placeholder="user@countercultures.com.mx"
                     disabled={form.mode === "edit"}
-                    className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg disabled:bg-dash-bg-muted disabled:text-dash-text-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+                    className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg disabled:bg-dash-bg-muted disabled:text-dash-text-secondary focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
                   />
                 </div>
                 <div>
@@ -391,7 +391,7 @@ const UsersAdminPage = () => {
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                     placeholder="Full name"
-                    className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+                    className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
                   />
                 </div>
               </div>
@@ -404,7 +404,7 @@ const UsersAdminPage = () => {
                   <select
                     value={form.role}
                     onChange={(e) => handleRoleChange(e.target.value as UserRole)}
-                    className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg bg-dash-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+                    className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
                   >
                     <option value="owner">Owner — all features</option>
                     <option value="finance">Finance — money + invoicing</option>
@@ -449,7 +449,7 @@ const UsersAdminPage = () => {
                             <label
                               key={f}
                               className={`flex items-start gap-2 px-2 py-1.5 rounded-md cursor-pointer hover:bg-dash-bg-muted transition-colors ${
-                                enabled !== isDefault ? "bg-dash-warn-soft/50" : ""
+                                enabled !== isDefault ? "bg-amber-50/50" : ""
                               }`}
                             >
                               <input
@@ -461,7 +461,7 @@ const UsersAdminPage = () => {
                               <span className="text-xs text-dash-text leading-tight">
                                 <span className="font-medium">{FEATURES[f]}</span>
                                 {enabled !== isDefault && (
-                                  <span className="ml-1 text-[10px] uppercase tracking-wider text-dash-warn">
+                                  <span className="ml-1 text-[10px] uppercase tracking-wider text-amber-700">
                                     {enabled ? "added" : "removed"}
                                   </span>
                                 )}

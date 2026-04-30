@@ -451,7 +451,7 @@ const InboxPage = () => {
             rest and never leave the Counter Cultures workspace.
           </p>
           {!status.oauthConfigured && (
-            <div className="flex items-start gap-2 mt-3 p-3 bg-dash-warn/10 border border-dash-warn/30 rounded-lg text-left text-xs text-dash-warn">
+            <div className="flex items-start gap-2 mt-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg text-left text-xs text-amber-400">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>
                 OAuth isn&apos;t configured yet — set{" "}
@@ -499,7 +499,7 @@ const InboxPage = () => {
               if (e.key === "Enter") fetchThreads(query || undefined);
             }}
             placeholder="Gmail search — from:gabor  subject:quote  has:attachment …"
-            className="w-full pl-9 pr-3 py-2 bg-dash-surface border border-dash-border rounded-lg text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
+            className="w-full pl-9 pr-3 py-2 bg-dash-surface border border-dash-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
           />
         </div>
         <button
@@ -587,7 +587,7 @@ const InboxPage = () => {
               Loading threads…
             </div>
           ) : error ? (
-            <div className="px-3 py-6 text-xs text-dash-danger">{error}</div>
+            <div className="px-3 py-6 text-xs text-red-400">{error}</div>
           ) : threads.length === 0 ? (
             <div className="px-3 py-6 text-xs text-dash-text-secondary">
               No threads match.
@@ -753,7 +753,7 @@ const InboxPage = () => {
                             value={dealSearch}
                             onChange={(e) => setDealSearch(e.target.value)}
                             placeholder="Search deals…"
-                            className="w-full px-2 py-1.5 text-xs bg-dash-bg border border-dash-border rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper"
+                            className="w-full px-2 py-1.5 text-xs bg-dash-bg border border-dash-border rounded focus:outline-none focus:ring-1 focus:ring-brand-copper"
                           />
                         </div>
                         {deals === null ? (
@@ -827,7 +827,7 @@ const InboxPage = () => {
                     value={replyBody}
                     onChange={(e) => setReplyBody(e.target.value)}
                     rows={6}
-                    className="w-full px-3 py-2 bg-dash-surface border border-dash-border rounded-lg text-sm text-dash-text resize-y focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
+                    className="w-full px-3 py-2 bg-dash-surface border border-dash-border rounded-lg text-sm text-dash-text resize-y focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
                   />
                   <div className="flex items-center justify-end gap-2 mt-2">
                     <button
@@ -941,26 +941,26 @@ const InboxPage = () => {
                 value={composeDraft.to}
                 onChange={(e) => setComposeDraft((d) => ({ ...d, to: e.target.value }))}
                 placeholder="To"
-                className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
+                className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
               />
               <input
                 value={composeDraft.cc}
                 onChange={(e) => setComposeDraft((d) => ({ ...d, cc: e.target.value }))}
                 placeholder="Cc (optional)"
-                className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
+                className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
               />
               <input
                 value={composeDraft.subject}
                 onChange={(e) => setComposeDraft((d) => ({ ...d, subject: e.target.value }))}
                 placeholder="Subject"
-                className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
+                className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
               />
               <textarea
                 value={composeDraft.body}
                 onChange={(e) => setComposeDraft((d) => ({ ...d, body: e.target.value }))}
                 placeholder="Write your message…"
                 rows={10}
-                className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg resize-y focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
+                className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
               />
               <div className="flex items-center justify-between pt-2 border-t border-dash-border">
                 <div className="flex items-center gap-2 min-w-0">

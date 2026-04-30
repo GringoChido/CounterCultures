@@ -12,7 +12,7 @@ const bgStyles = {
   linen: "bg-brand-linen",
   sand: "bg-brand-sand/30",
   charcoal: "bg-brand-charcoal text-white",
-  white: "bg-dash-surface",
+  white: "bg-white",
 };
 
 const Section = ({

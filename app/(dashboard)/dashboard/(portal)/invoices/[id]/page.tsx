@@ -215,20 +215,20 @@ const ReminderBar = ({ ctx }: { ctx: ReminderContext }) => {
   const wa = `https://wa.me/?text=${encodeURIComponent(body)}`;
 
   return (
-    <section className="bg-dash-warn-soft border border-dash-warn rounded p-4 mb-6">
+    <section className="bg-amber-50 border border-amber-200 rounded p-4 mb-6">
       <div className="flex items-center gap-2 mb-3">
-        <AlertCircle className="w-4 h-4 text-dash-warn" />
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-dash-warn">
+        <AlertCircle className="w-4 h-4 text-amber-700" />
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-amber-800">
           Payment reminder
         </h2>
       </div>
       <div className="flex flex-wrap items-center gap-2">
-        <label className="text-xs text-dash-warn">
+        <label className="text-xs text-amber-800">
           Template
           <select
             value={tplId}
             onChange={(e) => setTplId(e.target.value)}
-            className="ml-2 text-xs bg-dash-surface border border-dash-warn rounded px-2 py-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-dash-warn"
+            className="ml-2 text-xs bg-white border border-amber-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-amber-400"
           >
             {REMINDER_TEMPLATES.map((t) => (
               <option key={t.id} value={t.id}>
@@ -241,14 +241,14 @@ const ReminderBar = ({ ctx }: { ctx: ReminderContext }) => {
           <button
             type="button"
             onClick={copy}
-            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs border border-dash-warn bg-dash-surface rounded hover:border-dash-warn transition-colors cursor-pointer text-dash-warn"
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs border border-amber-300 bg-white rounded hover:border-amber-500 transition-colors cursor-pointer text-amber-800"
           >
             <Copy className="w-3 h-3" />
             Copy
           </button>
           <a
             href={mailto}
-            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs border border-dash-warn bg-dash-surface rounded hover:border-dash-warn transition-colors text-dash-warn"
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs border border-amber-300 bg-white rounded hover:border-amber-500 transition-colors text-amber-800"
           >
             <Mail className="w-3 h-3" />
             Email
@@ -257,7 +257,7 @@ const ReminderBar = ({ ctx }: { ctx: ReminderContext }) => {
             href={wa}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs border border-dash-success bg-dash-surface rounded hover:border-dash-success transition-colors text-dash-success"
+            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs border border-emerald-300 bg-white rounded hover:border-emerald-500 transition-colors text-emerald-700"
           >
             <MessageCircle className="w-3 h-3" />
             WhatsApp
@@ -265,10 +265,10 @@ const ReminderBar = ({ ctx }: { ctx: ReminderContext }) => {
         </div>
       </div>
       <details className="mt-3">
-        <summary className="cursor-pointer text-[11px] text-dash-warn/80 hover:text-dash-warn">
+        <summary className="cursor-pointer text-[11px] text-amber-800/80 hover:text-amber-900">
           Preview
         </summary>
-        <div className="mt-2 bg-dash-surface rounded border border-dash-warn p-3 text-xs text-dash-text whitespace-pre-wrap">
+        <div className="mt-2 bg-white rounded border border-amber-200 p-3 text-xs text-dash-text whitespace-pre-wrap">
           <p className="font-medium mb-2">{subject}</p>
           {body}
         </div>
@@ -642,10 +642,10 @@ const DetailRow = ({
 }) => (
   <div className="grid grid-cols-[120px_1fr] gap-2 items-baseline">
     <dt className="text-[10px] uppercase tracking-wider text-dash-text-secondary">{label}</dt>
-    <dd className={`text-xs ${warn ? "text-dash-warn" : "text-dash-text"}`}>
+    <dd className={`text-xs ${warn ? "text-amber-700" : "text-dash-text"}`}>
       {value || "—"}
       {warn && warnMessage && (
-        <span className="ml-1.5 text-[10px] uppercase tracking-wider text-dash-warn/80">
+        <span className="ml-1.5 text-[10px] uppercase tracking-wider text-amber-700/80">
           · {warnMessage}
         </span>
       )}

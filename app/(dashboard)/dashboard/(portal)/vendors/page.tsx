@@ -112,12 +112,12 @@ const VendorsPage = () => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search vendor name or email…"
-          className="w-full pl-9 pr-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+          className="w-full pl-9 pr-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
         />
       </div>
 
       {error && (
-        <div className="bg-dash-danger-soft border border-dash-danger rounded p-4 text-sm text-dash-danger">
+        <div className="bg-red-50 border border-red-200 rounded p-4 text-sm text-red-700">
           {error}
         </div>
       )}

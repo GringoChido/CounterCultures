@@ -202,7 +202,7 @@ const ProjectListBar = ({ locale }: ProjectListBarProps) => {
             }}
             aria-hidden
           />
-          <aside className="relative ml-auto w-[520px] max-w-[95vw] h-full bg-dash-surface border-l border-brand-stone/15 shadow-xl flex flex-col overflow-hidden">
+          <aside className="relative ml-auto w-[520px] max-w-[95vw] h-full bg-white border-l border-brand-stone/15 shadow-xl flex flex-col overflow-hidden">
             <header className="px-6 py-5 border-b border-brand-stone/10 flex items-start justify-between gap-3">
               <div>
                 <div className="text-[10px] tracking-[0.2em] uppercase text-brand-copper font-body font-semibold">
@@ -218,7 +218,7 @@ const ProjectListBar = ({ locale }: ProjectListBarProps) => {
                   setExpanded(false);
                   setFormOpen(false);
                 }}
-                className="p-1.5 text-dash-text-secondary hover:text-brand-charcoal cursor-pointer shrink-0"
+                className="p-1.5 text-brand-stone hover:text-brand-charcoal cursor-pointer shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -226,7 +226,7 @@ const ProjectListBar = ({ locale }: ProjectListBarProps) => {
 
             <div className="flex-1 overflow-y-auto">
               {items.length === 0 ? (
-                <div className="py-16 text-center text-sm font-body text-dash-text-secondary px-6">
+                <div className="py-16 text-center text-sm font-body text-brand-stone px-6">
                   {t.empty}
                 </div>
               ) : !formOpen ? (
@@ -234,13 +234,13 @@ const ProjectListBar = ({ locale }: ProjectListBarProps) => {
                   {items.map((it) => (
                     <li key={it.id} className="px-6 py-4 flex items-start gap-3">
                       <div className="flex-1 min-w-0">
-                        <div className="font-mono text-[10px] text-dash-text-secondary truncate">
+                        <div className="font-mono text-[10px] text-brand-stone truncate">
                           {it.sku}
                         </div>
                         <div className="font-body text-sm text-brand-charcoal truncate">
                           {it.name}
                         </div>
-                        <div className="mt-0.5 text-[11px] text-dash-text-secondary">
+                        <div className="mt-0.5 text-[11px] text-brand-stone">
                           {it.brand} · {it.category}
                         </div>
                       </div>
@@ -252,12 +252,12 @@ const ProjectListBar = ({ locale }: ProjectListBarProps) => {
                           onChange={(e) =>
                             updateQty(it.id, Math.max(1, parseInt(e.target.value) || 1))
                           }
-                          className="w-14 px-2 py-1 text-sm border border-brand-stone/20 bg-dash-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper font-body text-center"
+                          className="w-14 px-2 py-1 text-sm border border-brand-stone/20 bg-white focus:outline-none focus:border-brand-copper font-body text-center"
                         />
                         <button
                           type="button"
                           onClick={() => remove(it.id)}
-                          className="p-1.5 text-dash-text-secondary hover:text-dash-danger cursor-pointer"
+                          className="p-1.5 text-brand-stone hover:text-red-500 cursor-pointer"
                           title={t.remove}
                         >
                           <Trash2 className="w-4 h-4" />
@@ -284,14 +284,14 @@ const ProjectListBar = ({ locale }: ProjectListBarProps) => {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder={t.yourName}
-                      className="px-3 py-2.5 text-sm border border-brand-stone/20 bg-dash-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper font-body"
+                      className="px-3 py-2.5 text-sm border border-brand-stone/20 bg-white focus:outline-none focus:border-brand-copper font-body"
                     />
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder={t.yourEmail}
-                      className="px-3 py-2.5 text-sm border border-brand-stone/20 bg-dash-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper font-body"
+                      className="px-3 py-2.5 text-sm border border-brand-stone/20 bg-white focus:outline-none focus:border-brand-copper font-body"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -300,14 +300,14 @@ const ProjectListBar = ({ locale }: ProjectListBarProps) => {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder={t.yourPhone}
-                      className="px-3 py-2.5 text-sm border border-brand-stone/20 bg-dash-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper font-body"
+                      className="px-3 py-2.5 text-sm border border-brand-stone/20 bg-white focus:outline-none focus:border-brand-copper font-body"
                     />
                     <input
                       type="text"
                       value={company}
                       onChange={(e) => setCompany(e.target.value)}
                       placeholder={t.company}
-                      className="px-3 py-2.5 text-sm border border-brand-stone/20 bg-dash-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper font-body"
+                      className="px-3 py-2.5 text-sm border border-brand-stone/20 bg-white focus:outline-none focus:border-brand-copper font-body"
                     />
                   </div>
                   <input
@@ -315,14 +315,14 @@ const ProjectListBar = ({ locale }: ProjectListBarProps) => {
                     value={projectName}
                     onChange={(e) => setProjectName(e.target.value)}
                     placeholder={t.projectName}
-                    className="w-full px-3 py-2.5 text-sm border border-brand-stone/20 bg-dash-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper font-body"
+                    className="w-full px-3 py-2.5 text-sm border border-brand-stone/20 bg-white focus:outline-none focus:border-brand-copper font-body"
                   />
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder={t.notes}
                     rows={4}
-                    className="w-full px-3 py-2.5 text-sm border border-brand-stone/20 bg-dash-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper font-body resize-none"
+                    className="w-full px-3 py-2.5 text-sm border border-brand-stone/20 bg-white focus:outline-none focus:border-brand-copper font-body resize-none"
                   />
                 </div>
               )}
@@ -330,13 +330,13 @@ const ProjectListBar = ({ locale }: ProjectListBarProps) => {
 
             {/* Footer actions */}
             {items.length > 0 && !submitted && (
-              <footer className="border-t border-brand-stone/10 bg-dash-surface px-6 py-4 flex items-center gap-2">
+              <footer className="border-t border-brand-stone/10 bg-white px-6 py-4 flex items-center gap-2">
                 {!formOpen ? (
                   <>
                     <button
                       type="button"
                       onClick={clear}
-                      className="px-3 py-2.5 text-xs text-dash-text-secondary hover:text-dash-danger font-body cursor-pointer"
+                      className="px-3 py-2.5 text-xs text-brand-stone hover:text-red-500 font-body cursor-pointer"
                     >
                       {t.clearAll}
                     </button>
@@ -355,7 +355,7 @@ const ProjectListBar = ({ locale }: ProjectListBarProps) => {
                       type="button"
                       onClick={() => setFormOpen(false)}
                       disabled={submitting}
-                      className="px-3 py-2.5 text-xs text-dash-text-secondary hover:text-brand-charcoal font-body cursor-pointer"
+                      className="px-3 py-2.5 text-xs text-brand-stone hover:text-brand-charcoal font-body cursor-pointer"
                     >
                       ← {locale === "es" ? "Regresar" : "Back"}
                     </button>

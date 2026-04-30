@@ -25,9 +25,9 @@ interface TradeMember {
 }
 
 const tierColors: Record<Tier, string> = {
-  Gold: "bg-dash-warn/10 text-dash-warn",
-  Silver: "bg-dash-text-muted/10 text-dash-text-muted",
-  Bronze: "bg-dash-warn/10 text-dash-warn",
+  Gold: "bg-amber-500/10 text-amber-400",
+  Silver: "bg-gray-500/10 text-gray-400",
+  Bronze: "bg-orange-500/10 text-orange-400",
 };
 
 const statusVariants: Record<string, BadgeVariant> = {
@@ -145,7 +145,7 @@ const TradeProgramPage = () => {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <KPICard label="Active Members" value="18" change={12.5} icon={Users} accentColor="bg-brand-copper" />
         <KPICard label="Pending Apps" value={String(pendingApplications.length)} icon={Clock} accentColor="bg-status-new" />
-        <KPICard label="Active Projects" value={String(totalActiveProjects)} icon={Briefcase} accentColor="bg-dash-info" />
+        <KPICard label="Active Projects" value={String(totalActiveProjects)} icon={Briefcase} accentColor="bg-blue-500" />
         <KPICard label="Trade Revenue" value={formatCurrency(totalTradeRevenue)} change={18.3} icon={DollarSign} accentColor="bg-brand-terracotta" />
         <KPICard label="Avg Discount" value="20%" icon={Percent} accentColor="bg-brand-sage" />
       </div>
@@ -162,17 +162,17 @@ const TradeProgramPage = () => {
             <span className="text-xs text-dash-text-secondary">Trade ({tradeRevPct}%)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-dash-info" />
+            <div className="w-3 h-3 rounded-full bg-blue-400" />
             <span className="text-xs text-dash-text-secondary">Direct ({directRevPct}%)</span>
           </div>
         </div>
         <div className="w-full h-4 bg-dash-bg rounded-full overflow-hidden flex">
           <div className="h-full bg-brand-copper transition-all" style={{ width: `${tradeRevPct}%` }} />
-          <div className="h-full bg-dash-info transition-all" style={{ width: `${directRevPct}%` }} />
+          <div className="h-full bg-blue-400 transition-all" style={{ width: `${directRevPct}%` }} />
         </div>
         <div className="flex justify-between mt-2">
           <span className="text-xs font-medium text-brand-copper">{formatCurrency(totalTradeRevenue)}</span>
-          <span className="text-xs font-medium text-dash-info">{formatCurrency(directRevenue)}</span>
+          <span className="text-xs font-medium text-blue-400">{formatCurrency(directRevenue)}</span>
         </div>
       </div>
 
@@ -256,7 +256,7 @@ const TradeProgramPage = () => {
                   type="button"
                   onClick={() => handleDecision(app, "approved")}
                   disabled={actingOn === app.id}
-                  className="p-1.5 rounded-lg bg-dash-success/10 text-dash-success hover:bg-dash-success/20 transition-colors cursor-pointer disabled:opacity-50"
+                  className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer disabled:opacity-50"
                   title="Approve"
                 >
                   {actingOn === app.id ? (
@@ -269,7 +269,7 @@ const TradeProgramPage = () => {
                   type="button"
                   onClick={() => handleDecision(app, "rejected")}
                   disabled={actingOn === app.id}
-                  className="p-1.5 rounded-lg bg-dash-danger/10 text-dash-danger hover:bg-dash-danger/20 transition-colors cursor-pointer disabled:opacity-50"
+                  className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer disabled:opacity-50"
                   title="Decline"
                 >
                   <XCircle className="w-4 h-4" />
@@ -304,7 +304,7 @@ const TradeProgramPage = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-dash-text mb-1.5">Assign Tier</label>
-              <select className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper/50">
+              <select className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text focus:outline-none focus:border-brand-copper/50">
                 <option>Bronze (12%)</option>
                 <option>Silver (18%)</option>
                 <option>Gold (25%)</option>
@@ -318,7 +318,7 @@ const TradeProgramPage = () => {
                 type="button"
                 onClick={() => handleDecision(selectedApp, "approved")}
                 disabled={actingOn === selectedApp.id}
-                className="flex-1 py-2.5 bg-dash-success text-white rounded-lg text-sm font-medium hover:bg-dash-success transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+                className="flex-1 py-2.5 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
               >
                 {actingOn === selectedApp.id ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -331,7 +331,7 @@ const TradeProgramPage = () => {
                 type="button"
                 onClick={() => handleDecision(selectedApp, "rejected")}
                 disabled={actingOn === selectedApp.id}
-                className="flex-1 py-2.5 bg-dash-danger text-white rounded-lg text-sm font-medium hover:bg-dash-danger transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
+                className="flex-1 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-60"
               >
                 <XCircle className="w-4 h-4" />
                 Decline

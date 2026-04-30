@@ -31,9 +31,9 @@ const QuotePaidPage = async ({ params }: QuotePaidProps) => {
   const t = await getTranslations({ locale, namespace: "quote" });
 
   return (
-    <main id="main" tabIndex={-1} className="min-h-screen bg-brand-linen flex items-center justify-center p-6">
+    <main className="min-h-screen bg-[#F5F0EB] flex items-center justify-center p-6">
       <div className="max-w-md text-center">
-        <div className="w-14 h-14 mx-auto mb-6 rounded-full bg-brand-copper flex items-center justify-center">
+        <div className="w-14 h-14 mx-auto mb-6 rounded-full bg-[#B87333] flex items-center justify-center">
           <svg
             width="28"
             height="28"
@@ -47,11 +47,11 @@ const QuotePaidPage = async ({ params }: QuotePaidProps) => {
             <polyline points="20 6 9 17 4 12" />
           </svg>
         </div>
-        <h1 className="font-['Cormorant',serif] text-3xl font-light text-brand-charcoal mb-2">
+        <h1 className="font-['Cormorant',serif] text-3xl font-light text-[#1a1a1a] mb-2">
           {t("paidTitle")}
         </h1>
-        <p className="text-sm text-dash-text-secondary max-w-sm mx-auto">{t("paidBody")}</p>
-        <p className="mt-8 text-[11px] text-dash-text-muted">
+        <p className="text-sm text-[#6B6B6B] max-w-sm mx-auto">{t("paidBody")}</p>
+        <p className="mt-8 text-[11px] text-[#999]">
           {t("footerAddress")}
           <br />
           {t("footerContact")}

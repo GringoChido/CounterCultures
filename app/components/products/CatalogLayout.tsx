@@ -116,7 +116,7 @@ const CatalogLayout = ({
             Product Catalog
           </h1>
           {activeFilterCount > 0 && (
-            <p className="font-body text-sm text-dash-text-secondary">
+            <p className="font-body text-sm text-brand-stone">
               {activeFilterCount} filter{activeFilterCount !== 1 ? "s" : ""} applied
             </p>
           )}

@@ -50,7 +50,7 @@ const BRAND_KIT_FOLDER_ID = "11dN5ngdFuLWvOKMfyRKk0tjCjXHgjSjj";
 const labelClass =
   "block text-xs font-medium text-dash-text-secondary mb-1.5 uppercase tracking-wider";
 const inputClass =
-  "w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 placeholder:text-dash-text-secondary/50";
+  "w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-copper/30 placeholder:text-dash-text-secondary/50";
 const sectionClass =
   "bg-dash-surface border border-dash-border rounded-xl p-5 space-y-5";
 
@@ -166,7 +166,7 @@ const BrandEditPage = () => {
           <ArrowLeft className="w-4 h-4" />
           Back to brands
         </Link>
-        <p className="text-dash-danger">{error}</p>
+        <p className="text-red-400">{error}</p>
       </div>
     );
   }
@@ -215,9 +215,9 @@ const BrandEditPage = () => {
 
           <div className="flex items-center gap-2">
             {saveMsg && (
-              <span className="text-xs text-dash-success">{saveMsg}</span>
+              <span className="text-xs text-emerald-400">{saveMsg}</span>
             )}
-            {error && <span className="text-xs text-dash-danger">{error}</span>}
+            {error && <span className="text-xs text-red-400">{error}</span>}
             <button
               onClick={save}
               disabled={!dirty || saving}
@@ -538,8 +538,8 @@ const BrandEditPage = () => {
             <h2 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
               Products (Shopify)
             </h2>
-            <div className="flex items-start gap-2 bg-dash-warn/5 border border-dash-warn/20 rounded-lg px-3 py-2.5 text-xs text-dash-text-secondary">
-              <AlertTriangle className="w-3.5 h-3.5 text-dash-warn flex-shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2 bg-amber-400/5 border border-amber-400/20 rounded-lg px-3 py-2.5 text-xs text-dash-text-secondary">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
               <div>
                 Shopify admin access is still pending. Once connected,
                 attach/detach products for this brand will live here.

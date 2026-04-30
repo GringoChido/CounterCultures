@@ -310,7 +310,7 @@ const InventoryPage = () => {
                   ? "bg-dash-accent text-white border-dash-accent"
                   : l.company === "Counter Cultures"
                     ? "bg-brand-sage/5 text-dash-text border-brand-sage/40 hover:border-brand-sage"
-                    : "bg-dash-warn-soft/40 text-dash-text border-dash-warn hover:border-dash-warn";
+                    : "bg-amber-50/40 text-dash-text border-amber-200 hover:border-amber-400";
                 return (
                   <button
                     key={l.locationId || l.name}
@@ -349,7 +349,7 @@ const InventoryPage = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search product name or lot…"
-            className="w-full pl-10 pr-4 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
+            className="w-full pl-10 pr-4 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus:border-dash-accent rounded"
           />
           {loading && (
             <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dash-text-secondary animate-spin" />
@@ -358,7 +358,7 @@ const InventoryPage = () => {
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortBy)}
-          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
+          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus:border-dash-accent rounded"
         >
           <option value="product">Product A-Z</option>
           <option value="location">Location A-Z</option>

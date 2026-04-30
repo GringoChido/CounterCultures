@@ -212,7 +212,7 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
             )}
             {receivedNotBilled && (
               <span
-                className="text-xs inline-flex items-center gap-1 px-2 py-1 bg-dash-warn-soft text-dash-warn border border-dash-warn rounded"
+                className="text-xs inline-flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded"
                 title={`Received ${matchTotals.received.toLocaleString()} units, billed only ${matchTotals.invoiced.toLocaleString()}. Capture the vendor bill for the difference.`}
               >
                 <AlertTriangle className="w-3 h-3" />
@@ -220,13 +220,13 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
               </span>
             )}
             {awaitingReceipt && !receivedNotBilled && (
-              <span className="text-xs inline-flex items-center gap-1 px-2 py-1 bg-dash-info-soft text-dash-info border border-dash-info rounded">
+              <span className="text-xs inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-800 border border-blue-200 rounded">
                 <Truck className="w-3 h-3" />
                 Awaiting receipt
               </span>
             )}
             {fullyMatched && (
-              <span className="text-xs inline-flex items-center gap-1 px-2 py-1 bg-dash-success-soft text-dash-success border border-dash-success rounded">
+              <span className="text-xs inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 border border-green-200 rounded">
                 3-way match
               </span>
             )}
@@ -274,8 +274,8 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
 
       {/* Source — what triggered this PO */}
       {(rawOrder.origin || linkedSaleOrder) && (
-        <section className="mb-6 bg-dash-warn-soft/40 border border-dash-warn/70 rounded p-4 flex flex-wrap items-center gap-x-6 gap-y-2">
-          <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-dash-warn/80">
+        <section className="mb-6 bg-amber-50/40 border border-amber-200/70 rounded p-4 flex flex-wrap items-center gap-x-6 gap-y-2">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-amber-900/80">
             <FileText className="w-3.5 h-3.5" />
             Created for
           </div>

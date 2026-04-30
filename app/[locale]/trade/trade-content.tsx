@@ -7,11 +7,6 @@ import { CategoryHero } from "@/app/components/sections/category-hero";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { Button } from "@/app/components/ui/button";
 import {
-  TextField,
-  TextAreaField,
-  SelectField,
-} from "@/app/components/ui/field";
-import {
   Check,
   DollarSign,
   Clock,
@@ -183,7 +178,7 @@ export const TradeContent = () => {
   return (
   <>
     <Header locale={locale} />
-    <main id="main" tabIndex={-1}>
+    <main>
       <CategoryHero
         eyebrow={t.heroEyebrow[locale]}
         title={t.heroTitle[locale]}
@@ -208,12 +203,12 @@ export const TradeContent = () => {
           <div className="mt-10 md:mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {benefits.map((benefit) => (
               <AnimatedSection key={benefit.title.en}>
-                <div className="p-6 bg-dash-surface rounded-lg border border-brand-stone/10">
+                <div className="p-6 bg-white rounded-lg border border-brand-stone/10">
                   <benefit.icon className="w-6 h-6 text-brand-terracotta mb-4" />
                   <h3 className="font-display text-xl text-brand-charcoal">
                     {benefit.title[locale]}
                   </h3>
-                  <p className="mt-2 font-body text-sm text-dash-text-secondary leading-relaxed">
+                  <p className="mt-2 font-body text-sm text-brand-stone leading-relaxed">
                     {benefit.description[locale]}
                   </p>
                 </div>
@@ -276,7 +271,7 @@ export const TradeContent = () => {
               ].map((brand) => (
                 <span
                   key={brand}
-                  className="font-body text-sm text-dash-text-secondary tracking-wider"
+                  className="font-body text-sm text-brand-stone tracking-wider"
                 >
                   {brand}
                 </span>
@@ -296,7 +291,7 @@ export const TradeContent = () => {
             <h2 className="mt-4 font-display text-3xl md:text-5xl font-light tracking-wide text-brand-charcoal">
               {t.formTitle[locale]}
             </h2>
-            <p className="mt-4 font-body text-base text-dash-text-secondary leading-relaxed">
+            <p className="mt-4 font-body text-base text-brand-stone leading-relaxed">
               {t.formDescription[locale]}
             </p>
           </AnimatedSection>
@@ -304,37 +299,30 @@ export const TradeContent = () => {
           <AnimatedSection delay={0.2}>
             <form className="mt-10 space-y-5" onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <TextField
-                  label={t.firstName[locale]}
-                  hideLabel
-                  name="firstName"
+                <input
                   type="text"
+                  name="firstName"
                   required
                   placeholder={t.firstName[locale]}
-                  autoComplete="given-name"
+                  className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
                 />
-                <TextField
-                  label={t.lastName[locale]}
-                  hideLabel
-                  name="lastName"
+                <input
                   type="text"
+                  name="lastName"
                   placeholder={t.lastName[locale]}
-                  autoComplete="family-name"
+                  className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
                 />
               </div>
-              <TextField
-                label={t.company[locale]}
-                hideLabel
-                name="company"
+              <input
                 type="text"
+                name="company"
                 required
                 placeholder={t.company[locale]}
-                autoComplete="organization"
+                className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
               />
-              <SelectField
-                label={t.profession[locale]}
-                hideLabel
+              <select
                 name="profession"
+                className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal focus:outline-none focus:border-brand-terracotta transition-colors"
                 defaultValue=""
               >
                 <option value="" disabled>
@@ -345,45 +333,37 @@ export const TradeContent = () => {
                 <option value="contractor">{t.profContractor[locale]}</option>
                 <option value="developer">{t.profDeveloper[locale]}</option>
                 <option value="other">{t.profOther[locale]}</option>
-              </SelectField>
-              <TextField
-                label={t.email[locale]}
-                hideLabel
-                name="email"
+              </select>
+              <input
                 type="email"
+                name="email"
                 required
                 placeholder={t.email[locale]}
-                autoComplete="email"
+                className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
               />
-              <TextField
-                label={t.phone[locale]}
-                hideLabel
-                name="phone"
+              <input
                 type="tel"
+                name="phone"
                 placeholder={t.phone[locale]}
-                autoComplete="tel"
+                className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
               />
-              <TextField
-                label={t.website[locale]}
-                hideLabel
-                name="website"
+              <input
                 type="url"
+                name="website"
                 placeholder={t.website[locale]}
-                autoComplete="url"
+                className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
               />
-              <TextField
-                label={t.license[locale]}
-                hideLabel
-                name="license"
+              <input
                 type="text"
+                name="license"
                 placeholder={t.license[locale]}
+                className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
               />
-              <TextAreaField
-                label={t.messagePlaceholder[locale]}
-                hideLabel
+              <textarea
                 name="message"
                 placeholder={t.messagePlaceholder[locale]}
                 rows={4}
+                className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors resize-none"
               />
 
               <div className="flex items-start gap-3">
@@ -395,7 +375,7 @@ export const TradeContent = () => {
                 />
                 <label
                   htmlFor="terms"
-                  className="font-body text-sm text-dash-text-secondary"
+                  className="font-body text-sm text-brand-stone"
                 >
                   {t.terms[locale]}
                 </label>
@@ -406,19 +386,19 @@ export const TradeContent = () => {
               </Button>
 
               {status === "sent" && (
-                <p role="status" aria-live="polite" className="font-body text-sm text-brand-sage text-center">
+                <p className="font-body text-sm text-brand-sage text-center">
                   {t.thankYou[locale]}
                 </p>
               )}
               {status === "error" && (
-                <p role="alert" aria-live="assertive" className="font-body text-sm text-dash-danger text-center">
+                <p className="font-body text-sm text-red-600 text-center">
                   {t.error[locale]}
                 </p>
               )}
               {status === "idle" && (
                 <div className="flex items-center gap-2 justify-center">
                   <Check className="w-4 h-4 text-brand-sage" />
-                  <p className="font-body text-sm text-dash-text-secondary">
+                  <p className="font-body text-sm text-brand-stone">
                     {t.reviewedTime[locale]}
                   </p>
                 </div>

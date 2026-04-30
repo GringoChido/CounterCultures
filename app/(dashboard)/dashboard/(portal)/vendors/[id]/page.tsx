@@ -168,7 +168,7 @@ const VendorDetailPage = ({
           <ArrowLeft className="w-4 h-4" />
           Back to vendors
         </Link>
-        <div className="bg-dash-danger-soft border border-dash-danger rounded p-4 text-sm text-dash-danger inline-flex items-center gap-2">
+        <div className="bg-red-50 border border-red-200 rounded p-4 text-sm text-red-700 inline-flex items-center gap-2">
           <AlertCircle className="w-4 h-4" />
           {error}
         </div>
@@ -280,9 +280,9 @@ const VendorDetailPage = ({
           <h2 className="font-display text-sm uppercase tracking-wider text-dash-text-secondary mb-3">
             Open AP ({openAP.length})
           </h2>
-          <div className="bg-dash-warn-soft/60 border border-dash-warn rounded overflow-x-auto">
+          <div className="bg-amber-50/60 border border-amber-200 rounded overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="border-b border-dash-warn text-xs uppercase tracking-wider text-dash-warn/80">
+              <thead className="border-b border-amber-200 text-xs uppercase tracking-wider text-amber-900/80">
                 <tr>
                   <th className="text-left p-3">Bill #</th>
                   <th className="text-left p-3">PO ref</th>
@@ -294,7 +294,7 @@ const VendorDetailPage = ({
               </thead>
               <tbody>
                 {openAP.map((b) => (
-                  <tr key={b.id} className="border-b border-dash-warn/50">
+                  <tr key={b.id} className="border-b border-amber-200/50">
                     <td className="p-3 font-mono text-xs">
                       <Link href={`/dashboard/invoices/${b.id}`} className="hover:text-dash-accent">
                         {b.name}

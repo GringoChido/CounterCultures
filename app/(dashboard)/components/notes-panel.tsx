@@ -140,11 +140,11 @@ export const NotesPanel = ({
           }}
           placeholder="Add a note — ⌘↵ to save…"
           rows={2}
-          className="w-full bg-dash-bg border border-dash-border rounded-lg px-3 py-2 text-sm text-dash-text placeholder:text-dash-text-secondary/50 resize-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
+          className="w-full bg-dash-bg border border-dash-border rounded-lg px-3 py-2 text-sm text-dash-text placeholder:text-dash-text-secondary/50 resize-none focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
         />
         <div className="flex items-center justify-between">
           {error ? (
-            <p className="text-xs text-dash-danger">{error}</p>
+            <p className="text-xs text-red-400">{error}</p>
           ) : (
             <span className="text-[10px] text-dash-text-secondary">
               as {authorEmail}

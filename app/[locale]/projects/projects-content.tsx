@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
@@ -16,7 +18,7 @@ export const ProjectsContent = () => {
   return (
   <>
     <Header locale={locale} />
-    <main id="main" tabIndex={-1}>
+    <main>
       <CategoryHero
         eyebrow={t("Our Work", "Nuestro Trabajo")}
         title={t("Projects", "Proyectos")}
@@ -60,14 +62,14 @@ export const ProjectsContent = () => {
                       <h3 className="font-display text-xl text-brand-charcoal">
                         {project.title}
                       </h3>
-                      <span className="font-body font-medium text-[10px] tracking-wider text-dash-text-secondary uppercase">
+                      <span className="font-body font-medium text-[10px] tracking-wider text-brand-stone uppercase">
                         {project.type[lang]}
                       </span>
                     </div>
                     <p className="mt-1 font-body font-semibold text-xs tracking-wider text-brand-terracotta uppercase">
                       {project.architect}
                     </p>
-                    <p className="mt-1 font-body text-sm text-dash-text-secondary">
+                    <p className="mt-1 font-body text-sm text-brand-stone">
                       {project.location[lang]}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -80,7 +82,7 @@ export const ProjectsContent = () => {
                         </span>
                       ))}
                       {project.brands.length > 3 && (
-                        <span className="px-2 py-0.5 text-[10px] font-body font-medium tracking-wider text-dash-text-secondary">
+                        <span className="px-2 py-0.5 text-[10px] font-body font-medium tracking-wider text-brand-stone">
                           +{project.brands.length - 3}
                         </span>
                       )}

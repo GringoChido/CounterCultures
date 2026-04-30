@@ -30,7 +30,7 @@ export const Toolbar = ({
         value={query}
         onChange={(e) => onQueryChange(e.target.value)}
         placeholder={searchPlaceholder}
-        className="w-full pl-9 pr-3 py-2 bg-dash-surface border border-dash-border rounded-lg text-[13px] text-dash-text placeholder:text-dash-text-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper transition-colors"
+        className="w-full pl-9 pr-3 py-2 bg-dash-surface border border-dash-border rounded-lg text-[13px] text-dash-text placeholder:text-dash-text-muted focus:outline-none focus:border-brand-copper transition-colors"
       />
     </div>
     <div className="flex items-center gap-0.5 bg-dash-surface border border-dash-border rounded-lg p-0.5">

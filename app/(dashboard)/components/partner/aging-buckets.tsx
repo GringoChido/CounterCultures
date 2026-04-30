@@ -1,3 +1,5 @@
+"use client";
+
 import { Calendar } from "lucide-react";
 import { MoneyEquiv } from "@/app/(dashboard)/components/money/money-equiv";
 
@@ -49,10 +51,10 @@ const AgingBuckets = ({ aging, mode }: AgingBucketsProps) => {
   };
   const bucketTones: Record<(typeof order)[number], string> = {
     current: "bg-brand-sage/70",
-    "0-30": "bg-dash-warn",
-    "30-60": "bg-dash-warn",
-    "60-90": "bg-dash-warn",
-    "90+": "bg-dash-danger",
+    "0-30": "bg-amber-400",
+    "30-60": "bg-amber-500",
+    "60-90": "bg-orange-500",
+    "90+": "bg-red-500",
   };
   const totals = order.map((k) => sumValues(aging[k]));
   const max = Math.max(1, ...totals);

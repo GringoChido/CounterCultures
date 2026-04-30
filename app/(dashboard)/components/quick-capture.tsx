@@ -178,7 +178,7 @@ export const QuickCapture = () => {
           {/* Name */}
           <div>
             <label className="block text-xs font-medium text-dash-text-secondary mb-1.5">
-              Name <span className="text-dash-danger">*</span>
+              Name <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
@@ -186,7 +186,7 @@ export const QuickCapture = () => {
               onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
               placeholder="Full name"
               autoFocus
-              className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
+              className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
             />
           </div>
 
@@ -200,7 +200,7 @@ export const QuickCapture = () => {
               value={form.phone}
               onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
               placeholder="+52 415 123 4567"
-              className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
+              className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
             />
           </div>
 
@@ -249,7 +249,7 @@ export const QuickCapture = () => {
               onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))}
               placeholder="Anything worth remembering later…"
               rows={3}
-              className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 resize-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
+              className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
             />
           </div>
 

@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useMemo, useEffect, useId, useRef } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useFeatures } from "@/app/lib/use-features";
 import type { Feature } from "@/app/lib/features";
-import { useFocusTrap } from "@/app/components/ui/use-focus-trap";
 import {
   LayoutDashboard,
   Users,
@@ -166,22 +165,6 @@ const Sidebar = ({ mobileOpen = false, onMobileClose }: SidebarProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = usePathname();
   const features = useFeatures();
-  const mobileTitleId = useId();
-  const mobileDrawerRef = useRef<HTMLElement>(null);
-  useFocusTrap(mobileDrawerRef as React.RefObject<HTMLElement | null>, mobileOpen);
-
-  useEffect(() => {
-    if (!mobileOpen || !onMobileClose) return;
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onMobileClose();
-    };
-    document.addEventListener("keydown", handleEsc);
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", handleEsc);
-      document.body.style.overflow = "";
-    };
-  }, [mobileOpen, onMobileClose]);
 
   // Filter nav items by the user's enabled features. Items without a
   // `feature` always show. While the session is loading, render nothing
@@ -320,18 +303,8 @@ const Sidebar = ({ mobileOpen = false, onMobileClose }: SidebarProps) => {
           <div
             className="absolute inset-0 bg-black/50"
             onClick={onMobileClose}
-            aria-hidden="true"
           />
-          <aside
-            ref={mobileDrawerRef}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={mobileTitleId}
-            className="relative w-72 max-w-[85vw] h-full bg-dash-sidebar text-dash-text border-r border-dash-border flex flex-col z-10"
-          >
-            <span id={mobileTitleId} className="sr-only">
-              Navigation
-            </span>
+          <aside className="relative w-72 max-w-[85vw] h-full bg-dash-sidebar text-dash-text border-r border-dash-border flex flex-col z-10">
             {navContent}
           </aside>
         </div>

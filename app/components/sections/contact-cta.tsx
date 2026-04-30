@@ -3,11 +3,6 @@
 import { useState, type FormEvent } from "react";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { Button } from "@/app/components/ui/button";
-import {
-  TextField,
-  TextAreaField,
-  SelectField,
-} from "@/app/components/ui/field";
 import { MapPin, Clock, Phone, MessageCircle } from "lucide-react";
 import { SITE_CONFIG } from "@/app/lib/constants";
 
@@ -143,36 +138,29 @@ const ContactCTA = ({ locale = "en" }: { locale?: string }) => {
               {t.formTitle}
             </h3>
             <form className="space-y-4" onSubmit={handleSubmit}>
-              <TextField
-                label={t.name}
-                hideLabel
-                name="name"
+              <input
                 type="text"
+                name="name"
                 required
                 placeholder={t.name}
-                autoComplete="name"
+                className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
               />
-              <TextField
-                label={t.email}
-                hideLabel
-                name="email"
+              <input
                 type="email"
+                name="email"
                 required
                 placeholder={t.email}
-                autoComplete="email"
+                className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
               />
-              <TextField
-                label={t.phone}
-                hideLabel
-                name="phone"
+              <input
                 type="tel"
+                name="phone"
                 placeholder={t.phone}
-                autoComplete="tel"
+                className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
               />
-              <SelectField
-                label={t.projectType}
-                hideLabel
+              <select
                 name="type"
+                className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal focus:outline-none focus:border-brand-terracotta transition-colors"
                 defaultValue=""
               >
                 <option value="" disabled>
@@ -181,25 +169,24 @@ const ContactCTA = ({ locale = "en" }: { locale?: string }) => {
                 <option value="residential">{t.residential}</option>
                 <option value="commercial">{t.commercial}</option>
                 <option value="trade">{t.trade}</option>
-              </SelectField>
-              <TextAreaField
-                label={t.message}
-                hideLabel
+              </select>
+              <textarea
                 name="message"
                 placeholder={t.message}
                 rows={3}
+                className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors resize-none"
               />
               <Button variant="primary" className="w-full" disabled={status === "sending"}>
                 {status === "sending" ? t.sending : status === "sent" ? t.sent : t.send}
               </Button>
               {status === "sent" && (
-                <p role="status" aria-live="polite" className="font-body text-sm text-brand-sage text-center">{t.successMsg}</p>
+                <p className="font-body text-sm text-brand-sage text-center">{t.successMsg}</p>
               )}
               {status === "error" && (
-                <p role="alert" aria-live="assertive" className="font-body text-sm text-dash-danger text-center">{t.errorMsg}</p>
+                <p className="font-body text-sm text-red-600 text-center">{t.errorMsg}</p>
               )}
               {status === "idle" && (
-                <p className="font-body text-sm text-dash-text-secondary text-center">{t.responseTime}</p>
+                <p className="font-body text-sm text-brand-stone text-center">{t.responseTime}</p>
               )}
             </form>
           </AnimatedSection>

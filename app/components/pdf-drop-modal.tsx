@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useId, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   X,
   Upload,
@@ -12,9 +12,6 @@ import {
 } from "lucide-react";
 import type { ProductFull } from "@/app/lib/products-full";
 import type { PdfMatch } from "@/app/lib/pdf-extraction";
-import { DialogRoot } from "@/app/components/ui/modal";
-import { IconButton } from "@/app/components/ui/icon-button";
-import { focusRing } from "@/app/components/ui/focus-ring";
 
 export interface PdfDropResult {
   product: ProductFull;
@@ -103,12 +100,12 @@ interface RowState {
 
 const confidenceColor = (c: PdfMatch["confidence"]) =>
   c === "high"
-    ? "bg-dash-success/10 text-dash-success border-dash-success/30"
+    ? "bg-green-500/10 text-green-700 border-green-500/30"
     : c === "medium"
-      ? "bg-dash-warn/10 text-dash-warn border-dash-warn/30"
+      ? "bg-amber-500/10 text-amber-700 border-amber-500/30"
       : c === "low"
-        ? "bg-dash-warn/10 text-dash-warn border-dash-warn/30"
-        : "bg-dash-danger/10 text-dash-danger border-dash-danger/30";
+        ? "bg-orange-500/10 text-orange-700 border-orange-500/30"
+        : "bg-red-500/10 text-red-700 border-red-500/30";
 
 const PdfDropModal = ({
   open,
@@ -119,8 +116,6 @@ const PdfDropModal = ({
   theme = "public",
 }: PdfDropModalProps) => {
   const t = T[locale];
-  const titleId = useId();
-  const subtitleId = useId();
   const fileInput = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -244,40 +239,44 @@ const PdfDropModal = ({
 
   const selectedCount = rowState.filter((r) => r.selectedIdx !== null).length;
 
-  const surface = theme === "public" ? "bg-dash-surface" : "bg-dash-surface";
+  if (!open) return null;
+
+  const surface = theme === "public" ? "bg-white" : "bg-dash-surface";
   const text = theme === "public" ? "text-brand-charcoal" : "text-dash-text";
   const muted =
-    theme === "public" ? "text-dash-text-secondary" : "text-dash-text-secondary";
+    theme === "public" ? "text-brand-stone" : "text-dash-text-secondary";
   const border =
     theme === "public" ? "border-brand-stone/15" : "border-dash-border";
   const subBg = theme === "public" ? "bg-brand-linen" : "bg-dash-bg";
 
   return (
-    <DialogRoot
-      open={open}
-      onClose={handleClose}
-      labelledBy={titleId}
-      describedBy={subtitleId}
-      zIndex={80}
-      containerClassName={`w-full max-w-3xl max-h-[90vh] ${surface} ${text} border ${border} rounded-lg shadow-xl flex flex-col overflow-hidden`}
-    >
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-black/50"
+        onClick={handleClose}
+        aria-hidden
+      />
+      <div
+        className={`relative w-full max-w-3xl max-h-[90vh] ${surface} ${text} border ${border} rounded-lg shadow-xl flex flex-col overflow-hidden`}
+      >
+        {/* Header */}
         <header className={`flex items-start justify-between gap-4 px-6 py-4 border-b ${border}`}>
           <div className="min-w-0">
-            <h3 id={titleId} className="font-display text-xl font-light tracking-wide">
+            <h3 className="font-display text-xl font-light tracking-wide">
               {t.title}
             </h3>
-            <p id={subtitleId} className={`mt-1 font-body text-xs ${muted} max-w-lg`}>
+            <p className={`mt-1 font-body text-xs ${muted} max-w-lg`}>
               {t.subtitle}
             </p>
           </div>
-          <IconButton
-            aria-label={t.close}
+          <button
+            type="button"
             onClick={handleClose}
-            variant="ghost"
-            size="sm"
-            icon={<X className="w-5 h-5" />}
-            className="shrink-0"
-          />
+            className={`p-1.5 ${muted} hover:${text} cursor-pointer shrink-0`}
+            aria-label={t.close}
+          >
+            <X className="w-5 h-5" />
+          </button>
         </header>
 
         {/* Body */}
@@ -292,8 +291,7 @@ const PdfDropModal = ({
                 setDragOver(true);
               }}
               onDragLeave={() => setDragOver(false)}
-              aria-label={t.dragHere}
-              className={`w-full flex flex-col items-center justify-center gap-3 py-16 px-6 border-2 border-dashed rounded-lg transition-colors cursor-pointer ${focusRing} ${
+              className={`w-full flex flex-col items-center justify-center gap-3 py-16 px-6 border-2 border-dashed rounded-lg transition-colors cursor-pointer ${
                 dragOver
                   ? "border-brand-copper bg-brand-copper/5"
                   : `${border} ${subBg} hover:border-brand-copper/60`
@@ -320,7 +318,7 @@ const PdfDropModal = ({
           )}
 
           {error && (
-            <div className="flex items-start gap-3 p-4 rounded-md border border-dash-danger/40 bg-dash-danger/5 text-dash-danger">
+            <div className="flex items-start gap-3 p-4 rounded-md border border-red-500/40 bg-red-500/5 text-red-600">
               <AlertCircle className="w-5 h-5 mt-0.5 shrink-0" />
               <div className="text-sm">
                 <p className="font-medium">{t.extractError}</p>
@@ -381,16 +379,15 @@ const PdfDropModal = ({
                           )}
                         </div>
                         <div className="flex items-center gap-1.5 shrink-0">
-                          <span className={`font-body text-[10px] uppercase tracking-wider ${muted}`} aria-hidden="true">
+                          <label className={`font-body text-[10px] uppercase tracking-wider ${muted}`}>
                             {t.qty}
-                          </span>
+                          </label>
                           <input
                             type="number"
                             min={1}
                             value={r.quantity}
                             onChange={(e) => updateQty(idx, Number(e.target.value))}
-                            aria-label={`${t.qty} ${m.extracted.sku}`}
-                            className={`w-14 px-2 py-1 text-sm border ${border} ${surface} ${text} rounded ${focusRing}`}
+                            className={`w-14 px-2 py-1 text-sm border ${border} ${surface} ${text} rounded`}
                           />
                         </div>
                       </div>
@@ -418,7 +415,7 @@ const PdfDropModal = ({
                             <button
                               type="button"
                               onClick={() => togglePick(idx, null)}
-                              className={`text-[11px] ${muted} hover:${text} cursor-pointer rounded px-1 ${focusRing}`}
+                              className={`text-[11px] ${muted} hover:${text} cursor-pointer`}
                             >
                               {t.skip}
                             </button>
@@ -427,7 +424,7 @@ const PdfDropModal = ({
                               type="button"
                               onClick={() => togglePick(idx, 0)}
                               disabled={m.candidates.length === 0}
-                              className={`text-[11px] text-brand-copper hover:underline cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed rounded px-1 ${focusRing}`}
+                              className="text-[11px] text-brand-copper hover:underline cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                             >
                               {t.selectMatch}
                             </button>
@@ -436,8 +433,7 @@ const PdfDropModal = ({
                             <button
                               type="button"
                               onClick={() => toggleExpand(idx)}
-                              aria-expanded={isOpen}
-                              className={`flex items-center gap-1 text-[11px] ${muted} hover:${text} cursor-pointer rounded px-1 ${focusRing}`}
+                              className={`flex items-center gap-1 text-[11px] ${muted} hover:${text} cursor-pointer`}
                             >
                               {t.altMatches(m.candidates.length - 1)}
                               <ChevronDown
@@ -455,8 +451,7 @@ const PdfDropModal = ({
                               key={c.product.id}
                               type="button"
                               onClick={() => togglePick(idx, ci)}
-                              aria-pressed={r.selectedIdx === ci}
-                              className={`w-full flex items-center justify-between gap-3 p-2 rounded text-left transition-colors cursor-pointer ${focusRing} ${
+                              className={`w-full flex items-center justify-between gap-3 p-2 rounded text-left transition-colors cursor-pointer ${
                                 r.selectedIdx === ci
                                   ? "bg-brand-copper/10 border border-brand-copper/40"
                                   : `hover:${subBg}`
@@ -495,7 +490,7 @@ const PdfDropModal = ({
             <button
               type="button"
               onClick={handleClose}
-              className={`px-3 py-1.5 text-sm ${muted} hover:${text} cursor-pointer rounded ${focusRing}`}
+              className={`px-3 py-1.5 text-sm ${muted} hover:${text} cursor-pointer`}
             >
               {t.cancel}
             </button>
@@ -503,7 +498,7 @@ const PdfDropModal = ({
               type="button"
               onClick={commit}
               disabled={selectedCount === 0 || committing}
-              className={`px-4 py-2 text-sm font-medium bg-brand-copper text-white rounded hover:bg-brand-copper/90 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${focusRing}`}
+              className="px-4 py-2 text-sm font-medium bg-brand-copper text-white rounded hover:bg-brand-copper/90 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {committing ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -513,7 +508,8 @@ const PdfDropModal = ({
             </button>
           </footer>
         )}
-    </DialogRoot>
+      </div>
+    </div>
   );
 };
 

@@ -148,8 +148,8 @@ export const SendDialog = ({
                       onClick={() => setChannel("whatsapp")}
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors cursor-pointer ${
                         channel === "whatsapp"
-                          ? "bg-dash-success/10 text-dash-success border border-dash-success/30"
-                          : "bg-dash-bg text-dash-text-secondary border border-dash-border hover:border-dash-success/30"
+                          ? "bg-green-500/10 text-green-400 border border-green-500/30"
+                          : "bg-dash-bg text-dash-text-secondary border border-dash-border hover:border-green-500/30"
                       }`}
                     >
                       <MessageCircle className="w-4 h-4" />
@@ -164,7 +164,7 @@ export const SendDialog = ({
                     To
                   </label>
                   <input
-                    className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper transition-colors"
+                    className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus:border-brand-copper transition-colors"
                     value={to}
                     onChange={(e) => setTo(e.target.value)}
                     placeholder={
@@ -182,7 +182,7 @@ export const SendDialog = ({
                       Subject
                     </label>
                     <input
-                      className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper transition-colors"
+                      className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus:border-brand-copper transition-colors"
                       value={subject}
                       onChange={(e) => setSubject(e.target.value)}
                     />
@@ -195,7 +195,7 @@ export const SendDialog = ({
                     Message
                   </label>
                   <textarea
-                    className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper transition-colors resize-none"
+                    className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus:border-brand-copper transition-colors resize-none"
                     rows={5}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}

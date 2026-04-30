@@ -370,10 +370,8 @@ export function AIChatWidget({ hideOwnFab = false }: { hideOwnFab?: boolean } = 
             <div className="flex items-center gap-1">
               {messages.length > 0 && (
                 <button
-                  type="button"
                   onClick={clearChat}
                   title="Clear chat"
-                  aria-label="Clear chat"
                   className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
                 >
                   <Trash2 className="w-3.5 h-3.5 text-white/50" />
@@ -431,7 +429,7 @@ export function AIChatWidget({ hideOwnFab = false }: { hideOwnFab?: boolean } = 
                           value={nameDraft}
                           onChange={(e) => setNameDraft(e.target.value)}
                           onBlur={() => persistName(nameDraft)}
-                          className="w-20 px-1.5 py-0.5 text-xs bg-dash-bg border border-dash-border rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper"
+                          className="w-20 px-1.5 py-0.5 text-xs bg-dash-bg border border-dash-border rounded focus:outline-none focus:ring-1 focus:ring-brand-copper"
                           placeholder="Name"
                         />
                       </form>
@@ -544,7 +542,7 @@ export function AIChatWidget({ hideOwnFab = false }: { hideOwnFab?: boolean } = 
                   }
                 }}
                 placeholder="Ask anything about the dashboard…"
-                className="flex-1 bg-dash-bg border border-dash-border rounded-xl px-3.5 py-2.5 text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
+                className="flex-1 bg-dash-bg border border-dash-border rounded-xl px-3.5 py-2.5 text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-brand-copper/30"
               />
               <button
                 onClick={() => sendMessage(input)}
@@ -573,7 +571,7 @@ export function AIChatWidget({ hideOwnFab = false }: { hideOwnFab?: boolean } = 
           ) : (
             <div className="relative">
               <MessageCircle className="w-5 h-5" />
-              <Sparkles className="absolute -top-1.5 -right-1.5 w-3 h-3 text-dash-warn" />
+              <Sparkles className="absolute -top-1.5 -right-1.5 w-3 h-3 text-yellow-300" />
             </div>
           )}
         </button>

@@ -403,7 +403,7 @@ const PaymentsPage = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search payment #, partner, memo, CFDI…"
-            className="w-full pl-10 pr-4 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
+            className="w-full pl-10 pr-4 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus:border-dash-accent rounded"
           />
           {loading && (
             <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dash-text-secondary animate-spin" />
@@ -412,7 +412,7 @@ const PaymentsPage = () => {
         <select
           value={paymentType}
           onChange={(e) => setPaymentType(e.target.value as PaymentTypeFilter)}
-          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
+          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus:border-dash-accent rounded"
         >
           <option value="all">All directions</option>
           <option value="inbound">Received (inbound)</option>
@@ -421,7 +421,7 @@ const PaymentsPage = () => {
         <select
           value={state}
           onChange={(e) => setState(e.target.value as PaymentStateFilter)}
-          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
+          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus:border-dash-accent rounded"
         >
           <option value="all">All states</option>
           <option value="posted">Posted</option>
@@ -431,7 +431,7 @@ const PaymentsPage = () => {
         <select
           value={currency}
           onChange={(e) => setCurrency(e.target.value)}
-          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
+          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus:border-dash-accent rounded"
         >
           <option value="">All currencies</option>
           {currencyOptions.map((c) => (
@@ -443,7 +443,7 @@ const PaymentsPage = () => {
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortBy)}
-          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
+          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus:border-dash-accent rounded"
         >
           <option value="date_desc">Newest first</option>
           <option value="date_asc">Oldest first</option>

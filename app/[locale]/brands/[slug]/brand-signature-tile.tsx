@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import type { ProductFull } from "@/app/lib/products-full";
 import { ProductVisual } from "@/app/components/product-visual";
@@ -23,7 +25,7 @@ const BrandSignatureTile = ({ product, locale }: BrandSignatureTileProps) => {
   return (
     <Link
       href={catalogHref}
-      className="group block bg-dash-surface border border-brand-stone/15 hover:border-brand-copper/60 transition-colors"
+      className="group block bg-white border border-brand-stone/15 hover:border-brand-copper/60 transition-colors"
     >
       <ProductVisual
         id={product.id}
@@ -35,14 +37,14 @@ const BrandSignatureTile = ({ product, locale }: BrandSignatureTileProps) => {
         className="group-hover:[&>img]:scale-[1.02] [&>img]:transition-transform [&>img]:duration-500"
       />
       <div className="p-3">
-        <p className="font-mono text-[10px] text-dash-text-secondary truncate">
+        <p className="font-mono text-[10px] text-brand-stone truncate">
           {product.sku || "—"}
         </p>
         <h3 className="mt-1 font-body text-sm text-brand-charcoal line-clamp-2 leading-snug group-hover:text-brand-copper transition-colors">
           {product.name || product.sku}
         </h3>
         {price && (
-          <p className="mt-2 font-body text-[11px] text-dash-text-secondary">
+          <p className="mt-2 font-body text-[11px] text-brand-stone">
             <span>{locale === "es" ? "desde" : "from"}</span>{" "}
             <span className="text-brand-charcoal">{price}</span>
           </p>

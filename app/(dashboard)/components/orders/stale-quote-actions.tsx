@@ -214,12 +214,12 @@ const StaleQuoteActions = ({
 
   return (
     <>
-      <section className="mb-6 bg-dash-warn-soft border border-dash-warn rounded p-4">
+      <section className="mb-6 bg-amber-50 border border-amber-200 rounded p-4">
         <div className="flex flex-wrap items-center gap-2 mb-3">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-dash-warn">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-amber-800">
             Stale quote · {daysOpen} days open
           </h2>
-          <span className="text-[11px] text-dash-warn/80">
+          <span className="text-[11px] text-amber-700/80">
             Customer hasn't responded. Push to close, or close it out.
           </span>
         </div>
@@ -228,7 +228,7 @@ const StaleQuoteActions = ({
             <button
               type="button"
               onClick={openModal}
-              className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium border border-dash-warn bg-dash-surface text-dash-warn rounded hover:border-dash-warn transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium border border-amber-300 bg-white text-amber-900 rounded hover:border-amber-500 transition-colors cursor-pointer"
             >
               <Send className="w-3.5 h-3.5" />
               Send follow-up
@@ -239,7 +239,7 @@ const StaleQuoteActions = ({
               type="button"
               onClick={handleCancel}
               disabled={cancelling}
-              className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium border border-dash-danger bg-dash-surface text-dash-danger rounded hover:border-dash-danger disabled:opacity-50 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium border border-red-300 bg-white text-red-700 rounded hover:border-red-500 disabled:opacity-50 transition-colors cursor-pointer"
             >
               {cancelling ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -259,7 +259,7 @@ const StaleQuoteActions = ({
             if (e.target === e.currentTarget && !sending) setOpen(false);
           }}
         >
-          <div className="w-full max-w-2xl bg-dash-surface rounded-xl shadow-2xl flex flex-col max-h-[90vh]">
+          <div className="w-full max-w-2xl bg-white rounded-xl shadow-2xl flex flex-col max-h-[90vh]">
             <div className="px-5 py-4 border-b border-dash-border flex items-center justify-between">
               <h2 className="font-display text-lg font-light text-dash-text">
                 Follow-up on {orderName}
@@ -282,7 +282,7 @@ const StaleQuoteActions = ({
                 <select
                   value={tplId}
                   onChange={(e) => applyTemplate(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg bg-dash-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+                  className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
                 >
                   {TEMPLATES.map((t) => (
                     <option key={t.id} value={t.id}>
@@ -301,10 +301,10 @@ const StaleQuoteActions = ({
                   value={to}
                   onChange={(e) => setTo(e.target.value)}
                   placeholder="customer@example.com"
-                  className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+                  className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
                 />
                 {!partnerEmail && (
-                  <p className="text-[11px] text-dash-warn mt-1">
+                  <p className="text-[11px] text-amber-700 mt-1">
                     No email on file for {partnerName}. Add one in Odoo's
                     contact record, or paste here for this send.
                   </p>
@@ -322,7 +322,7 @@ const StaleQuoteActions = ({
                     setSubject(e.target.value);
                     setTouched(true);
                   }}
-                  className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+                  className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
                 />
               </div>
 
@@ -337,7 +337,7 @@ const StaleQuoteActions = ({
                     setTouched(true);
                   }}
                   rows={12}
-                  className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+                  className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
                 />
               </div>
             </div>
@@ -346,14 +346,14 @@ const StaleQuoteActions = ({
                 <button
                   type="button"
                   onClick={copyMessage}
-                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs border border-dash-border bg-dash-surface rounded hover:border-brand-copper transition-colors cursor-pointer text-dash-text"
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs border border-dash-border bg-white rounded hover:border-brand-copper transition-colors cursor-pointer text-dash-text"
                 >
                   <Copy className="w-3 h-3" />
                   Copy
                 </button>
                 <a
                   href={mailto}
-                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs border border-dash-border bg-dash-surface rounded hover:border-brand-copper transition-colors text-dash-text"
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs border border-dash-border bg-white rounded hover:border-brand-copper transition-colors text-dash-text"
                 >
                   <Mail className="w-3 h-3" />
                   mailto
@@ -362,7 +362,7 @@ const StaleQuoteActions = ({
                   href={wa}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs border border-dash-success bg-dash-surface rounded hover:border-dash-success transition-colors text-dash-success"
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs border border-emerald-300 bg-white rounded hover:border-emerald-500 transition-colors text-emerald-700"
                 >
                   <MessageCircle className="w-3 h-3" />
                   WhatsApp

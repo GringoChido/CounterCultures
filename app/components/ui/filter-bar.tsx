@@ -52,7 +52,7 @@ const FilterBar = ({
               {activeBrand || "Brand"}
             </button>
             {expanded === "brand" && (
-              <div className="absolute top-full left-0 mt-2 bg-dash-surface shadow-lg border border-brand-stone/10 rounded-sm py-2 min-w-[180px] z-40 max-h-72 overflow-y-auto">
+              <div className="absolute top-full left-0 mt-2 bg-white shadow-lg border border-brand-stone/10 rounded-sm py-2 min-w-[180px] z-40 max-h-72 overflow-y-auto">
                 {BRANDS.map((brand) => (
                   <button
                     key={brand.slug}
@@ -86,7 +86,7 @@ const FilterBar = ({
                 : "Price Range"}
             </button>
             {expanded === "price" && (
-              <div className="absolute top-full left-0 mt-2 bg-dash-surface shadow-lg border border-brand-stone/10 rounded-sm py-2 min-w-[180px] z-40">
+              <div className="absolute top-full left-0 mt-2 bg-white shadow-lg border border-brand-stone/10 rounded-sm py-2 min-w-[180px] z-40">
                 {PRICE_RANGES.map((pr) => (
                   <button
                     key={pr.label}
@@ -119,7 +119,7 @@ const FilterBar = ({
                 {activeFinish || "Finish"}
               </button>
               {expanded === "finish" && (
-                <div className="absolute top-full left-0 mt-2 bg-dash-surface shadow-lg border border-brand-stone/10 rounded-sm py-2 min-w-[180px] max-h-60 overflow-y-auto z-40">
+                <div className="absolute top-full left-0 mt-2 bg-white shadow-lg border border-brand-stone/10 rounded-sm py-2 min-w-[180px] max-h-60 overflow-y-auto z-40">
                   {availableFinishes.map((finish) => (
                     <button
                       key={finish}
@@ -141,7 +141,7 @@ const FilterBar = ({
           {hasFilters && (
             <button
               onClick={onClear}
-              className="inline-flex items-center gap-1 px-3 py-2.5 min-h-[44px] text-sm font-body text-dash-text-secondary hover:text-brand-terracotta transition-colors shrink-0"
+              className="inline-flex items-center gap-1 px-3 py-2.5 min-h-[44px] text-sm font-body text-brand-stone hover:text-brand-terracotta transition-colors shrink-0"
             >
               <X className="w-3.5 h-3.5" /> Clear
             </button>

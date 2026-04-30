@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
@@ -14,7 +16,7 @@ const ProjectGallery = ({ locale = "en" }: { locale?: string }) => {
         <h2 className="text-center font-display text-3xl md:text-5xl font-normal tracking-wide text-brand-charcoal mb-4">
           {locale === "en" ? "Installed. Admired. Credited." : "Instalado. Admirado. Acreditado."}
         </h2>
-        <p className="text-center font-body text-dash-text-secondary mb-12 max-w-2xl mx-auto">
+        <p className="text-center font-body text-brand-stone mb-12 max-w-2xl mx-auto">
           {locale === "en"
             ? "Real projects featuring Counter Cultures fixtures, credited to the architects and designers who specified them."
             : "Proyectos reales con accesorios Counter Cultures, acreditados a los arquitectos y diseñadores que los especificaron."}

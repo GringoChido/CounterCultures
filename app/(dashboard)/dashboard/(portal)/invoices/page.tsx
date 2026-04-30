@@ -337,7 +337,7 @@ const InvoicesPage = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search invoice #, customer, CFDI, origin…"
-            className="w-full pl-10 pr-4 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
+            className="w-full pl-10 pr-4 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus:border-dash-accent rounded"
           />
           {loading && (
             <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dash-text-secondary animate-spin" />
@@ -346,7 +346,7 @@ const InvoicesPage = () => {
         <select
           value={moveType}
           onChange={(e) => setMoveType(e.target.value as MoveTypeFilter)}
-          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
+          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus:border-dash-accent rounded"
         >
           <option value="customer">Customer invoices</option>
           <option value="vendor">Vendor bills</option>
@@ -356,7 +356,7 @@ const InvoicesPage = () => {
         <select
           value={paymentState}
           onChange={(e) => setPaymentState(e.target.value as PaymentStateFilter)}
-          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
+          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus:border-dash-accent rounded"
         >
           <option value="all">All payment states</option>
           <option value="open">Open (not paid / partial)</option>
@@ -366,7 +366,7 @@ const InvoicesPage = () => {
         <select
           value={agingBucket}
           onChange={(e) => setAgingBucket(e.target.value as AgingBucket | "")}
-          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
+          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus:border-dash-accent rounded"
         >
           <option value="">All ages</option>
           <option value="current">Current</option>
@@ -392,7 +392,7 @@ const InvoicesPage = () => {
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortBy)}
-          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
+          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus:border-dash-accent rounded"
         >
           <option value="date_desc">Newest first</option>
           <option value="date_asc">Oldest first</option>

@@ -370,7 +370,7 @@ const ReportsPage = () => {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <AlertTriangle
-              className={`w-4 h-4 ${healthScore >= 75 ? "text-dash-success" : healthScore >= 50 ? "text-dash-warn" : "text-dash-danger"}`}
+              className={`w-4 h-4 ${healthScore >= 75 ? "text-emerald-400" : healthScore >= 50 ? "text-amber-400" : "text-red-400"}`}
             />
             <h3 className="text-sm font-semibold text-dash-text">
               Sales Health Checklist
@@ -378,7 +378,7 @@ const ReportsPage = () => {
           </div>
           <div className="flex items-center gap-2">
             <span
-              className={`text-sm font-bold ${healthScore >= 75 ? "text-dash-success" : healthScore >= 50 ? "text-dash-warn" : "text-dash-danger"}`}
+              className={`text-sm font-bold ${healthScore >= 75 ? "text-emerald-400" : healthScore >= 50 ? "text-amber-400" : "text-red-400"}`}
             >
               {healthScore}%
             </span>
@@ -395,12 +395,12 @@ const ReportsPage = () => {
             >
               <div className="flex items-center gap-3">
                 {item.pass ? (
-                  <CheckCircle2 className="w-4 h-4 text-dash-success shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                 ) : (
-                  <XCircle className="w-4 h-4 text-dash-danger shrink-0" />
+                  <XCircle className="w-4 h-4 text-red-400 shrink-0" />
                 )}
                 <span
-                  className={`text-sm ${item.pass ? "text-dash-text" : "text-dash-danger"}`}
+                  className={`text-sm ${item.pass ? "text-dash-text" : "text-red-400"}`}
                 >
                   {item.label}
                 </span>

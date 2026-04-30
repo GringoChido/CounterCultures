@@ -1,3 +1,5 @@
+"use client";
+
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
@@ -97,7 +99,7 @@ export const BlogContent = () => {
   return (
   <>
     <Header locale={locale} />
-    <main id="main" tabIndex={-1}>
+    <main>
       {/* Hero */}
       <section className="pt-32 pb-16 md:pt-40 md:pb-20 bg-brand-charcoal">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -162,10 +164,10 @@ export const BlogContent = () => {
                 <h2 className="mt-4 font-display text-3xl md:text-4xl font-light text-brand-charcoal tracking-wide group-hover:text-brand-terracotta transition-colors">
                   {posts[0].title}
                 </h2>
-                <p className="mt-3 font-body text-base text-dash-text-secondary leading-relaxed">
+                <p className="mt-3 font-body text-base text-brand-stone leading-relaxed">
                   {posts[0].excerpt}
                 </p>
-                <div className="mt-4 flex items-center gap-3 font-body font-medium text-xs text-dash-text-secondary uppercase tracking-wider">
+                <div className="mt-4 flex items-center gap-3 font-body font-medium text-xs text-brand-stone uppercase tracking-wider">
                   <span>{posts[0].date}</span>
                   <span>·</span>
                   <span>{posts[0].readTime}</span>
@@ -201,10 +203,10 @@ export const BlogContent = () => {
                     <h3 className="mt-3 font-display text-xl text-brand-charcoal group-hover:text-brand-terracotta transition-colors">
                       {post.title}
                     </h3>
-                    <p className="mt-2 font-body text-sm text-dash-text-secondary leading-relaxed line-clamp-3">
+                    <p className="mt-2 font-body text-sm text-brand-stone leading-relaxed line-clamp-3">
                       {post.excerpt}
                     </p>
-                    <div className="mt-3 flex items-center gap-3 font-body font-medium text-[10px] text-dash-text-secondary uppercase tracking-wider">
+                    <div className="mt-3 flex items-center gap-3 font-body font-medium text-[10px] text-brand-stone uppercase tracking-wider">
                       <span>{post.date}</span>
                       <span>·</span>
                       <span>{post.readTime}</span>

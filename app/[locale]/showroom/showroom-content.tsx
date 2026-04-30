@@ -6,11 +6,6 @@ import { Footer } from "@/app/components/layout/footer";
 import { CategoryHero } from "@/app/components/sections/category-hero";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { Button } from "@/app/components/ui/button";
-import {
-  TextField,
-  TextAreaField,
-  SelectField,
-} from "@/app/components/ui/field";
 import { MapPin, Clock, Phone, MessageCircle, Mail } from "lucide-react";
 import { useLocale } from "next-intl";
 import { SITE_CONFIG } from "@/app/lib/constants";
@@ -114,7 +109,7 @@ export const ShowroomContent = () => {
   return (
   <>
     <Header locale={locale} />
-    <main id="main" tabIndex={-1}>
+    <main>
       <CategoryHero
         eyebrow={t.heroEyebrow[locale]}
         title={t.heroTitle[locale]}
@@ -144,7 +139,7 @@ export const ShowroomContent = () => {
                     <p className="font-body text-base text-brand-charcoal font-medium">
                       {SITE_CONFIG.showroom.address}
                     </p>
-                    <p className="font-body text-sm text-dash-text-secondary mt-1">
+                    <p className="font-body text-sm text-brand-stone mt-1">
                       {t.designDistrict[locale]}
                     </p>
                   </div>
@@ -155,7 +150,7 @@ export const ShowroomContent = () => {
                     <p className="font-body text-base text-brand-charcoal font-medium">
                       {SITE_CONFIG.showroom.hours}
                     </p>
-                    <p className="font-body text-sm text-dash-text-secondary mt-1">
+                    <p className="font-body text-sm text-brand-stone mt-1">
                       {t.privateAppointments[locale]}
                     </p>
                   </div>
@@ -203,42 +198,34 @@ export const ShowroomContent = () => {
                 {t.bookingTitle[locale]}
               </h3>
               <form className="space-y-4" onSubmit={handleSubmit}>
-                <TextField
-                  label={t.placeholderName[locale]}
-                  hideLabel
-                  name="name"
+                <input
                   type="text"
+                  name="name"
                   required
                   placeholder={t.placeholderName[locale]}
-                  autoComplete="name"
+                  className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
                 />
-                <TextField
-                  label={t.placeholderEmail[locale]}
-                  hideLabel
-                  name="email"
+                <input
                   type="email"
+                  name="email"
                   required
                   placeholder={t.placeholderEmail[locale]}
-                  autoComplete="email"
+                  className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
                 />
-                <TextField
-                  label={t.placeholderPhone[locale]}
-                  hideLabel
-                  name="phone"
+                <input
                   type="tel"
+                  name="phone"
                   placeholder={t.placeholderPhone[locale]}
-                  autoComplete="tel"
+                  className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors"
                 />
-                <TextField
-                  label={t.preferredTime[locale]}
-                  hideLabel
-                  name="date"
+                <input
                   type="date"
+                  name="date"
+                  className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal focus:outline-none focus:border-brand-terracotta transition-colors"
                 />
-                <SelectField
-                  label={t.preferredTime[locale]}
-                  hideLabel
+                <select
                   name="time"
+                  className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal focus:outline-none focus:border-brand-terracotta transition-colors"
                   defaultValue=""
                 >
                   <option value="" disabled>
@@ -248,29 +235,28 @@ export const ShowroomContent = () => {
                   <option value="midday">{t.timeMidday[locale]}</option>
                   <option value="afternoon">{t.timeAfternoon[locale]}</option>
                   <option value="late">{t.timeLate[locale]}</option>
-                </SelectField>
-                <TextAreaField
-                  label={t.placeholderNotes[locale]}
-                  hideLabel
+                </select>
+                <textarea
                   name="notes"
                   placeholder={t.placeholderNotes[locale]}
                   rows={3}
+                  className="w-full px-4 py-3 bg-white border border-brand-stone/20 rounded-md font-body text-sm text-brand-charcoal placeholder:text-brand-stone/50 focus:outline-none focus:border-brand-terracotta transition-colors resize-none"
                 />
                 <Button variant="primary" className="w-full" disabled={status === "sending"}>
                   {status === "sending" ? t.sending[locale] : status === "sent" ? t.booked[locale] : t.requestAppointment[locale]}
                 </Button>
                 {status === "sent" && (
-                  <p role="status" aria-live="polite" className="font-body text-sm text-brand-sage text-center">
+                  <p className="font-body text-sm text-brand-sage text-center">
                     {t.statusSent[locale]}
                   </p>
                 )}
                 {status === "error" && (
-                  <p role="alert" aria-live="assertive" className="font-body text-sm text-dash-danger text-center">
+                  <p className="font-body text-sm text-red-600 text-center">
                     {t.statusError[locale]}
                   </p>
                 )}
                 {status === "idle" && (
-                  <p className="font-body text-sm text-dash-text-secondary text-center">
+                  <p className="font-body text-sm text-brand-stone text-center">
                     {t.statusIdle[locale]}
                   </p>
                 )}

@@ -116,16 +116,16 @@ const formatDate = (timestamp: number) =>
   }).format(new Date(timestamp * 1000));
 
 const statusConfig: Record<string, { label: string; className: string; icon: React.ElementType }> = {
-  succeeded: { label: "Succeeded", className: "bg-dash-success/10 text-dash-success", icon: CheckCircle2 },
-  pending: { label: "Pending", className: "bg-dash-warn/10 text-dash-warn", icon: Clock },
-  failed: { label: "Failed", className: "bg-dash-danger/10 text-dash-danger", icon: XCircle },
-  canceled: { label: "Canceled", className: "bg-dash-text-muted/10 text-dash-text-muted", icon: Ban },
-  paid: { label: "Paid", className: "bg-dash-success/10 text-dash-success", icon: CheckCircle2 },
-  in_transit: { label: "In Transit", className: "bg-dash-info/10 text-dash-info", icon: Clock },
-  draft: { label: "Draft", className: "bg-dash-text-muted/10 text-dash-text-muted", icon: FileText },
-  open: { label: "Open", className: "bg-dash-warn/10 text-dash-warn", icon: Clock },
-  void: { label: "Void", className: "bg-dash-danger/10 text-dash-danger", icon: Ban },
-  uncollectible: { label: "Uncollectible", className: "bg-dash-danger/10 text-dash-danger", icon: XCircle },
+  succeeded: { label: "Succeeded", className: "bg-emerald-500/10 text-emerald-400", icon: CheckCircle2 },
+  pending: { label: "Pending", className: "bg-amber-500/10 text-amber-400", icon: Clock },
+  failed: { label: "Failed", className: "bg-red-500/10 text-red-400", icon: XCircle },
+  canceled: { label: "Canceled", className: "bg-gray-500/10 text-gray-400", icon: Ban },
+  paid: { label: "Paid", className: "bg-emerald-500/10 text-emerald-400", icon: CheckCircle2 },
+  in_transit: { label: "In Transit", className: "bg-blue-500/10 text-blue-400", icon: Clock },
+  draft: { label: "Draft", className: "bg-gray-500/10 text-gray-400", icon: FileText },
+  open: { label: "Open", className: "bg-amber-500/10 text-amber-400", icon: Clock },
+  void: { label: "Void", className: "bg-red-500/10 text-red-400", icon: Ban },
+  uncollectible: { label: "Uncollectible", className: "bg-red-500/10 text-red-400", icon: XCircle },
 };
 
 const StripePage = () => {
@@ -259,7 +259,7 @@ const StripePage = () => {
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-dash-text">Stripe</h1>
             {!loading && !error && (
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-dash-success/10 text-dash-success">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400">
                 <CheckCircle2 className="w-3 h-3" />
                 Connected
               </span>
@@ -282,7 +282,7 @@ const StripePage = () => {
           <button
             onClick={loadAll}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-vendor-stripe rounded-lg hover:bg-vendor-stripe-dark transition-colors disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#635bff] rounded-lg hover:bg-[#5851db] transition-colors disabled:opacity-50 cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
             Refresh
@@ -293,7 +293,7 @@ const StripePage = () => {
       {loading && (
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
-            <RefreshCw className="w-8 h-8 text-vendor-stripe animate-spin mx-auto" />
+            <RefreshCw className="w-8 h-8 text-[#635bff] animate-spin mx-auto" />
             <p className="text-sm text-dash-text-secondary mt-3">Loading Stripe data...</p>
           </div>
         </div>
@@ -323,10 +323,10 @@ const StripePage = () => {
           {tab === "overview" && summary && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <KPICard label="Available Balance" value={formatAmount(summary.balance.available, currency)} icon={DollarSign} accentColor="bg-dash-success" />
-                <KPICard label="Pending Balance" value={formatAmount(summary.balance.pending, currency)} icon={Clock} accentColor="bg-dash-warn" />
-                <KPICard label="30-Day Volume" value={formatAmount(summary.last30Days.volume, currency)} icon={CreditCard} accentColor="bg-vendor-stripe" />
-                <KPICard label="30-Day Charges" value={summary.last30Days.charges.toString()} icon={Receipt} accentColor="bg-dash-info" />
+                <KPICard label="Available Balance" value={formatAmount(summary.balance.available, currency)} icon={DollarSign} accentColor="bg-emerald-500" />
+                <KPICard label="Pending Balance" value={formatAmount(summary.balance.pending, currency)} icon={Clock} accentColor="bg-amber-500" />
+                <KPICard label="30-Day Volume" value={formatAmount(summary.last30Days.volume, currency)} icon={CreditCard} accentColor="bg-[#635bff]" />
+                <KPICard label="30-Day Charges" value={summary.last30Days.charges.toString()} icon={Receipt} accentColor="bg-blue-500" />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -339,7 +339,7 @@ const StripePage = () => {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-dash-text-secondary">Gross Volume</span>
-                      <span className="font-medium text-dash-success">{formatAmount(summary.last30Days.volume, currency)}</span>
+                      <span className="font-medium text-emerald-400">{formatAmount(summary.last30Days.volume, currency)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-dash-text-secondary">Refunds</span>
@@ -347,7 +347,7 @@ const StripePage = () => {
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-dash-text-secondary">Refunded Amount</span>
-                      <span className="font-medium text-dash-danger">{formatAmount(summary.last30Days.refundedAmount, currency)}</span>
+                      <span className="font-medium text-red-400">{formatAmount(summary.last30Days.refundedAmount, currency)}</span>
                     </div>
                     <div className="border-t border-dash-border pt-3 flex justify-between text-sm">
                       <span className="font-medium text-dash-text">Net Volume</span>
@@ -361,11 +361,11 @@ const StripePage = () => {
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
                       <span className="text-dash-text-secondary">Available</span>
-                      <span className="font-medium text-dash-success">{formatAmount(summary.balance.available, currency)}</span>
+                      <span className="font-medium text-emerald-400">{formatAmount(summary.balance.available, currency)}</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-dash-text-secondary">Pending</span>
-                      <span className="font-medium text-dash-warn">{formatAmount(summary.balance.pending, currency)}</span>
+                      <span className="font-medium text-amber-400">{formatAmount(summary.balance.pending, currency)}</span>
                     </div>
                     <div className="border-t border-dash-border pt-3 flex justify-between text-sm">
                       <span className="font-medium text-dash-text">Total</span>
@@ -379,7 +379,7 @@ const StripePage = () => {
               <div className="bg-dash-surface rounded-xl border border-dash-border">
                 <div className="px-5 py-4 border-b border-dash-border flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-dash-text">Recent Payments</h3>
-                  <button onClick={() => setTab("payments")} className="text-xs text-vendor-stripe hover:underline cursor-pointer flex items-center gap-0.5">
+                  <button onClick={() => setTab("payments")} className="text-xs text-[#635bff] hover:underline cursor-pointer flex items-center gap-0.5">
                     View all <ChevronRight className="w-3 h-3" />
                   </button>
                 </div>
@@ -409,7 +409,7 @@ const StripePage = () => {
                             </td>
                             <td className="px-5 py-3 text-dash-text-secondary capitalize">{p.paymentMethod?.replace("_", " ") ?? "\u2014"}</td>
                             <td className="px-5 py-3 text-right font-medium text-dash-text">
-                              {p.refunded ? <span className="text-dash-danger line-through">{formatAmount(p.amount, p.currency)}</span> : formatAmount(p.amount, p.currency)}
+                              {p.refunded ? <span className="text-red-400 line-through">{formatAmount(p.amount, p.currency)}</span> : formatAmount(p.amount, p.currency)}
                             </td>
                           </tr>
                         );
@@ -453,7 +453,7 @@ const StripePage = () => {
                           <td className="px-5 py-3 text-dash-text-secondary capitalize">{p.paymentMethod?.replace("_", " ") ?? "\u2014"}</td>
                           <td className="px-5 py-3 text-right font-medium text-dash-text">{formatAmount(p.amount, p.currency)}</td>
                           <td className="px-5 py-3 text-right">
-                            {p.receiptUrl && <a href={p.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-vendor-stripe hover:underline text-xs">View</a>}
+                            {p.receiptUrl && <a href={p.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-[#635bff] hover:underline text-xs">View</a>}
                           </td>
                         </tr>
                       );
@@ -472,7 +472,7 @@ const StripePage = () => {
                 <h3 className="text-sm font-semibold text-dash-text">Customers ({customers.length})</h3>
                 <div className="relative max-w-sm">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dash-text-secondary" />
-                  <input type="text" placeholder="Search customers..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); loadCustomers(e.target.value); }} className="pl-9 pr-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg w-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-vendor-stripe/30 focus:border-vendor-stripe" />
+                  <input type="text" placeholder="Search customers..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); loadCustomers(e.target.value); }} className="pl-9 pr-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-[#635bff]/30 focus:border-[#635bff]" />
                 </div>
               </div>
               <div className="overflow-x-auto">
@@ -581,7 +581,7 @@ const StripePage = () => {
                         </td>
                         <td className="px-5 py-3 text-dash-text-secondary truncate max-w-[200px]">{p.description ?? "\u2014"}</td>
                         <td className="px-5 py-3">
-                          <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${p.active ? "bg-dash-success/10 text-dash-success" : "bg-dash-text-muted/10 text-dash-text-muted"}`}>
+                          <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${p.active ? "bg-emerald-500/10 text-emerald-400" : "bg-gray-500/10 text-gray-400"}`}>
                             {p.active ? "Active" : "Inactive"}
                           </span>
                         </td>
@@ -604,7 +604,7 @@ const StripePage = () => {
               <div className="flex justify-end">
                 <button
                   onClick={() => setCreateLinkOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2 text-sm bg-vendor-stripe text-white rounded-lg hover:bg-vendor-stripe-dark transition-colors cursor-pointer"
+                  className="flex items-center gap-2 px-4 py-2 text-sm bg-[#635bff] text-white rounded-lg hover:bg-[#5851db] transition-colors cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   Create Payment Link
@@ -628,12 +628,12 @@ const StripePage = () => {
                       {paymentLinks.map((l) => (
                         <tr key={l.id} className="border-b border-dash-border last:border-0 hover:bg-dash-bg/50 transition-colors">
                           <td className="px-5 py-3">
-                            <a href={l.url} target="_blank" rel="noopener noreferrer" className="text-vendor-stripe hover:underline text-xs font-mono truncate block max-w-[300px]">
+                            <a href={l.url} target="_blank" rel="noopener noreferrer" className="text-[#635bff] hover:underline text-xs font-mono truncate block max-w-[300px]">
                               {l.url}
                             </a>
                           </td>
                           <td className="px-5 py-3">
-                            <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${l.active ? "bg-dash-success/10 text-dash-success" : "bg-dash-text-muted/10 text-dash-text-muted"}`}>
+                            <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${l.active ? "bg-emerald-500/10 text-emerald-400" : "bg-gray-500/10 text-gray-400"}`}>
                               {l.active ? "Active" : "Inactive"}
                             </span>
                           </td>
@@ -688,7 +688,7 @@ const StripePage = () => {
                           <td className="px-5 py-3 text-right text-dash-text-secondary">{formatAmount(inv.amountPaid, inv.currency)}</td>
                           <td className="px-5 py-3 text-dash-text-secondary">{formatDate(inv.created)}</td>
                           <td className="px-5 py-3 text-right">
-                            {inv.hostedInvoiceUrl && <a href={inv.hostedInvoiceUrl} target="_blank" rel="noopener noreferrer" className="text-vendor-stripe hover:underline text-xs">View</a>}
+                            {inv.hostedInvoiceUrl && <a href={inv.hostedInvoiceUrl} target="_blank" rel="noopener noreferrer" className="text-[#635bff] hover:underline text-xs">View</a>}
                           </td>
                         </tr>
                       );
@@ -713,13 +713,13 @@ const StripePage = () => {
               value={customAmount}
               onChange={(e) => setCustomAmount(e.target.value)}
               placeholder="e.g. 5000"
-              className="mt-2 w-full px-4 py-2.5 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-vendor-stripe/30"
+              className="mt-2 w-full px-4 py-2.5 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#635bff]/30"
             />
           </div>
           <button
             onClick={createPaymentLink}
             disabled={!customAmount}
-            className="w-full px-4 py-2.5 text-sm bg-vendor-stripe text-white rounded-lg hover:bg-vendor-stripe-dark transition-colors disabled:opacity-50 cursor-pointer"
+            className="w-full px-4 py-2.5 text-sm bg-[#635bff] text-white rounded-lg hover:bg-[#5851db] transition-colors disabled:opacity-50 cursor-pointer"
           >
             Create & Copy Link
           </button>

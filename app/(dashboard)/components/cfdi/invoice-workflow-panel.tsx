@@ -263,11 +263,11 @@ const InvoiceWorkflowPanel = ({
 
       {/* General-public marker, shown after the type is set */}
       {state !== "draft" && isGeneralPublic && (
-        <div className="bg-dash-info-soft border border-dash-info rounded p-3 mb-4 text-xs text-dash-info flex items-start gap-2">
+        <div className="bg-blue-50 border border-blue-200 rounded p-3 mb-4 text-xs text-blue-900 flex items-start gap-2">
           <Globe className="w-3.5 h-3.5 shrink-0 mt-0.5" />
           <div>
             <div className="font-medium">Público en general</div>
-            <p className="mt-0.5 text-dash-info/80">
+            <p className="mt-0.5 text-blue-900/80">
               No internal approval needed. Stamp directly in Solución
               Factible, then attach the XML + PDF here.
             </p>
@@ -332,7 +332,7 @@ const InvoiceWorkflowPanel = ({
           <button
             type="button"
             onClick={() => setShowPrefactura(true)}
-            className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium border border-dash-border bg-dash-surface text-dash-text rounded hover:border-brand-copper transition-colors cursor-pointer"
+            className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium border border-dash-border bg-white text-dash-text rounded hover:border-brand-copper transition-colors cursor-pointer"
           >
             <Send className="w-3.5 h-3.5" />
             {state === "prefactura_sent" ? "Re-send prefactura" : "Send prefactura"}
@@ -528,14 +528,14 @@ const FacturaTypeChooser = ({
           disabled={submitting !== null}
           className={`flex items-start gap-3 p-3 border rounded text-left transition-colors cursor-pointer ${
             currentType === "general_public"
-              ? "border-dash-info bg-dash-info-soft/40"
-              : "border-dash-border hover:border-dash-info/50"
+              ? "border-blue-500 bg-blue-50/40"
+              : "border-dash-border hover:border-blue-400/50"
           }`}
         >
           {submitting === "general_public" ? (
             <Loader2 className="w-4 h-4 animate-spin shrink-0 mt-0.5" />
           ) : (
-            <Globe className="w-4 h-4 shrink-0 mt-0.5 text-dash-info" />
+            <Globe className="w-4 h-4 shrink-0 mt-0.5 text-blue-600" />
           )}
           <div className="flex-1 min-w-0">
             <div className="text-sm font-medium text-dash-text">
@@ -716,7 +716,7 @@ const PrefacturaThreadView = ({
             <button
               type="button"
               onClick={onMarkApproved}
-              className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 text-[11px] font-medium border border-brand-sage/40 bg-dash-surface text-brand-sage rounded hover:bg-brand-sage/10 transition-colors cursor-pointer"
+              className="mt-2 inline-flex items-center gap-1.5 px-2 py-1 text-[11px] font-medium border border-brand-sage/40 bg-white text-brand-sage rounded hover:bg-brand-sage/10 transition-colors cursor-pointer"
             >
               <ShieldCheck className="w-3 h-3" />
               Looks approved — log it
@@ -890,9 +890,9 @@ const SendPrefacturaModal = ({
 
   return (
     <ModalShell title={`Send prefactura · ${invoiceName}`} onClose={onClose} disabled={submitting}>
-      <div className="bg-dash-warn-soft border border-dash-warn rounded p-3 text-xs text-dash-warn">
+      <div className="bg-amber-50 border border-amber-200 rounded p-3 text-xs text-amber-900">
         <div className="font-medium">Internal review, not customer-facing</div>
-        <p className="mt-0.5 text-dash-warn/80">
+        <p className="mt-0.5 text-amber-900/80">
           Send the prefactura to <strong>Javier</strong> (or whoever
           requested this factura on the customer's behalf). They confirm by
           email; then come back here to "Mark approved" and stamp.
@@ -912,7 +912,7 @@ const SendPrefacturaModal = ({
           value={to}
           onChange={(e) => setTo(e.target.value)}
           placeholder="javier@countercultures.com.mx"
-          className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+          className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
         />
       </Field>
       <Field label="CC (optional)">
@@ -921,7 +921,7 @@ const SendPrefacturaModal = ({
           value={cc}
           onChange={(e) => setCc(e.target.value)}
           placeholder="finance@countercultures.com.mx"
-          className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+          className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
         />
       </Field>
       <Field label="Subject">
@@ -929,7 +929,7 @@ const SendPrefacturaModal = ({
           type="text"
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
-          className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+          className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
         />
       </Field>
       <Field label="Message">
@@ -937,7 +937,7 @@ const SendPrefacturaModal = ({
           value={body}
           onChange={(e) => setBody(e.target.value)}
           rows={10}
-          className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+          className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
         />
       </Field>
       <Field label="Prefactura PDF">
@@ -1017,7 +1017,7 @@ const MarkApprovedModal = ({
         <select
           value={method}
           onChange={(e) => setMethod(e.target.value as typeof method)}
-          className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+          className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
         >
           <option value="email_reply">Email reply (Javier wrote back "approved" / "ok")</option>
           <option value="signature">Signature (signed copy)</option>
@@ -1032,7 +1032,7 @@ const MarkApprovedModal = ({
           onChange={(e) => setNote(e.target.value)}
           rows={4}
           placeholder="Paste Javier's email reply, or any context — kept on the audit trail next to the timestamp."
-          className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+          className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
         />
       </Field>
       <p className="text-[11px] text-dash-text-muted">
@@ -1125,7 +1125,7 @@ const AttachCFDIModal = ({
         team's Drive folder. The USB step disappears.
       </p>
       {requireOverride && (
-        <div className="bg-dash-warn-soft border border-dash-warn rounded p-3 text-xs text-dash-warn space-y-2">
+        <div className="bg-amber-50 border border-amber-200 rounded p-3 text-xs text-amber-900 space-y-2">
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
             <div>
@@ -1147,7 +1147,7 @@ const AttachCFDIModal = ({
               <span>I confirm approval was received outside the system. Attach anyway.</span>
             </label>
           ) : (
-            <p className="text-dash-warn/80">
+            <p className="text-amber-900/80">
               Only owners can override. Ask Roger to attach this one, or go
               back and "Mark approved" first.
             </p>
@@ -1190,7 +1190,7 @@ const ModalShell = ({
       if (e.target === e.currentTarget && !disabled) onClose();
     }}
   >
-    <div className="w-full max-w-xl bg-dash-surface rounded-xl shadow-2xl flex flex-col max-h-[90vh]">
+    <div className="w-full max-w-xl bg-white rounded-xl shadow-2xl flex flex-col max-h-[90vh]">
       <div className="px-5 py-4 border-b border-dash-border flex items-center justify-between">
         <h2 className="font-display text-lg font-light text-dash-text">{title}</h2>
         <button
@@ -1238,7 +1238,7 @@ const ModalFooter = ({
   submitDisabled: boolean;
   submitIcon: React.ReactNode;
 }) => (
-  <div className="px-5 py-4 border-t border-dash-border flex items-center justify-end gap-2 mt-auto sticky bottom-0 bg-dash-surface">
+  <div className="px-5 py-4 border-t border-dash-border flex items-center justify-end gap-2 mt-auto sticky bottom-0 bg-white">
     <button
       type="button"
       onClick={onClose}

@@ -46,10 +46,10 @@ const ProductGrid = ({
   if (filteredAndSorted.length === 0) {
     return (
       <div className="col-span-full py-20 text-center">
-        <p className="font-display text-2xl text-dash-text-secondary mb-4">
+        <p className="font-display text-2xl text-brand-stone mb-4">
           No products found
         </p>
-        <p className="font-body text-sm text-dash-text-secondary">
+        <p className="font-body text-sm text-brand-stone">
           Try adjusting your filters to find what you're looking for
         </p>
       </div>
@@ -58,7 +58,7 @@ const ProductGrid = ({
 
   return (
     <>
-      <p className="font-mono text-xs text-dash-text-secondary mb-8 tracking-wide uppercase">
+      <p className="font-mono text-xs text-brand-stone mb-8 tracking-wide uppercase">
         {filteredAndSorted.length} product
         {filteredAndSorted.length !== 1 ? "s" : ""}
       </p>

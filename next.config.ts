@@ -4,15 +4,6 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin("./app/i18n/request.ts");
 
 const nextConfig: NextConfig = {
-  compiler: {
-    // Strip console.* from production bundles, but keep error and warn —
-    // those are intentional and aid post-deploy debugging via the browser
-    // console / error reporting (Sentry, etc.).
-    removeConsole:
-      process.env.NODE_ENV === "production"
-        ? { exclude: ["error", "warn"] }
-        : false,
-  },
   async headers() {
     return [
       {

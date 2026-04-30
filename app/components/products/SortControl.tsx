@@ -32,14 +32,14 @@ const SortControl = ({ currentSort, onSortChange }: SortControlProps) => {
       >
         <span className="font-body text-sm text-brand-charcoal">{currentLabel}</span>
         <ChevronDown
-          className={`w-4 h-4 text-dash-text-secondary transition-transform ${
+          className={`w-4 h-4 text-brand-stone transition-transform ${
             isOpen ? "rotate-180" : ""
           }`}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full mt-2 right-0 bg-dash-surface shadow-lg border border-brand-stone/10 rounded-sm py-2 min-w-[200px] z-40">
+        <div className="absolute top-full mt-2 right-0 bg-white shadow-lg border border-brand-stone/10 rounded-sm py-2 min-w-[200px] z-40">
           {SORT_OPTIONS.map((option) => (
             <button
               key={option.value}

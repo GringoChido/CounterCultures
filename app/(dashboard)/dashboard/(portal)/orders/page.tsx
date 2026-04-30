@@ -369,7 +369,7 @@ const OrdersPage = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search order #, customer, salesperson…"
-            className="w-full pl-10 pr-4 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
+            className="w-full pl-10 pr-4 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus:border-dash-accent rounded"
           />
           {loading && (
             <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dash-text-secondary animate-spin" />
@@ -378,7 +378,7 @@ const OrdersPage = () => {
         <select
           value={state}
           onChange={(e) => setState(e.target.value as OrderStateFilter)}
-          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
+          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus:border-dash-accent rounded"
         >
           <option value="all">All states</option>
           <option value="quote">Quotes (draft + sent)</option>
@@ -391,7 +391,7 @@ const OrdersPage = () => {
         <select
           value={invoiceStatus}
           onChange={(e) => setInvoiceStatus(e.target.value as InvoiceStatusFilter)}
-          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
+          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus:border-dash-accent rounded"
         >
           <option value="all">All invoice statuses</option>
           <option value="no">Nothing to invoice</option>
@@ -425,7 +425,7 @@ const OrdersPage = () => {
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortBy)}
-          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
+          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus:border-dash-accent rounded"
         >
           <option value="date_desc">Newest first</option>
           <option value="date_asc">Oldest first</option>
