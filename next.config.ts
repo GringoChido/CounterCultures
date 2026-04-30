@@ -13,6 +13,12 @@ const nextConfig: NextConfig = {
         ? { exclude: ["error", "warn"] }
         : false,
   },
+  async rewrites() {
+    return [
+      // Clean URL for the client-pitch walkthrough served from public/.
+      { source: "/how-it-works", destination: "/how-it-works.html" },
+    ];
+  },
   async headers() {
     return [
       {

@@ -1,0 +1,1414 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Counter Cultures · How an Order Moves Through the Portal</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --linen: #FAF7F2;
+    --paper: #FFFFFF;
+    --ink: #1A1A1A;
+    --body: #5C5650;
+    --muted: #908980;
+    --rule: #E8E2D7;
+    --rule-soft: #EFEAE0;
+    --copper: #B87333;
+    --terracotta: #C4725A;
+    --violet: #6E5BA0;
+    --lime: #A6B96B;
+    --amber: #D9A441;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--linen);
+    color: var(--body);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .display {
+    font-family: 'Cormorant Garamond', 'Times New Roman', serif;
+    font-weight: 300;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+    line-height: 1.05;
+  }
+  .display-italic { font-style: italic; font-weight: 300; }
+  .eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: 11px;
+    color: var(--copper);
+  }
+  .label {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 10.5px;
+    color: var(--muted);
+  }
+  .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  .body-text { color: var(--body); line-height: 1.65; font-size: 17px; }
+  .hairline { border-color: var(--rule); }
+  .hairline-soft { border-color: var(--rule-soft); }
+  .ink { color: var(--ink); }
+  .copper { color: var(--copper); }
+  .terra { color: var(--terracotta); }
+  .bg-linen { background: var(--linen); }
+  .bg-paper { background: var(--paper); }
+
+  /* Sticky header */
+  .header-blur {
+    background: color-mix(in srgb, var(--linen) 88%, transparent);
+    backdrop-filter: saturate(140%) blur(10px);
+    -webkit-backdrop-filter: saturate(140%) blur(10px);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  /* Progress rail */
+  .rail-dot {
+    width: 7px; height: 7px; border-radius: 999px;
+    background: transparent;
+    border: 1px solid #C9C2B5;
+    transition: all .35s ease;
+  }
+  .rail-dot.active {
+    background: var(--copper);
+    border-color: var(--copper);
+    transform: scale(1.25);
+  }
+  .rail-dot.passed {
+    background: #C9C2B5;
+    border-color: #C9C2B5;
+  }
+  .rail-label {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition: color .35s ease, opacity .35s ease;
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  .rail-item:hover .rail-label,
+  .rail-item.active .rail-label {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  .rail-item.active .rail-label { color: var(--ink); }
+
+  /* Section */
+  section.stage {
+    padding: 9rem 0;
+    border-top: 1px solid var(--rule);
+  }
+  section.stage:first-of-type { border-top: 0; }
+
+  /* Buttons (visually quiet) */
+  .btn-primary {
+    background: var(--terracotta);
+    color: #FDFBF7;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    padding: 11px 20px;
+    border-radius: 2px;
+    border: 1px solid color-mix(in srgb, var(--terracotta) 80%, black);
+    transition: background .2s ease;
+  }
+  .btn-primary:hover { background: color-mix(in srgb, var(--terracotta) 92%, black); }
+  .btn-ghost {
+    color: var(--ink);
+    border: 1px solid var(--rule);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    padding: 11px 20px;
+    border-radius: 2px;
+    background: transparent;
+  }
+  .next-link {
+    display: inline-flex; align-items: center; gap: 14px;
+    color: var(--ink);
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: 22px;
+    text-decoration: none;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 8px;
+  }
+  .next-link:hover { border-bottom-color: var(--copper); color: var(--copper); }
+
+  /* Quiet cards / mockup frames */
+  .mockup-frame {
+    background: #FFFFFF;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+  }
+  .mockup-bar {
+    border-bottom: 1px solid var(--rule);
+    background: #FCFAF6;
+  }
+
+  /* Pill / tag */
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    background: #FFFDF8;
+    white-space: nowrap;
+  }
+  .pill-new { background: #1A1A1A; color: #FAF7F2; border-color: #1A1A1A; letter-spacing: 0.14em; }
+  .pill-copper { background: color-mix(in srgb, var(--copper) 10%, white); border-color: color-mix(in srgb, var(--copper) 35%, white); color: var(--copper); }
+  .pill-violet { background: color-mix(in srgb, var(--violet) 10%, white); border-color: color-mix(in srgb, var(--violet) 35%, white); color: var(--violet); }
+  .pill-lime { background: color-mix(in srgb, var(--lime) 14%, white); border-color: color-mix(in srgb, var(--lime) 40%, white); color: #5A6E2F; }
+  .pill-amber { background: color-mix(in srgb, var(--amber) 14%, white); border-color: color-mix(in srgb, var(--amber) 40%, white); color: #8C6A22; }
+
+  .dot-violet { background: var(--violet); }
+  .dot-lime { background: var(--lime); }
+  .dot-amber { background: var(--amber); }
+  .dot-copper { background: var(--copper); }
+
+  /* Table rows */
+  .row { display: grid; align-items: center; padding: 14px 18px; border-top: 1px solid var(--rule-soft); font-size: 13.5px; }
+  .row.head { background: #FBF8F2; color: var(--muted); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; padding: 11px 18px; border-top: 0; }
+  .row.highlight { background: #FBF7EE; }
+
+  /* Phone frame */
+  .phone {
+    width: 260px;
+    background: #1A1A1A;
+    border-radius: 36px;
+    padding: 9px;
+    margin: 0 auto;
+  }
+  .phone-screen {
+    background: #FAF7F2;
+    border-radius: 28px;
+    overflow: hidden;
+    aspect-ratio: 9/19;
+  }
+
+  /* Drive folder tree */
+  .tree-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px;
+    border-radius: 2px;
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .tree-row + .tree-row { border-top: 1px solid var(--rule-soft); }
+
+  /* Live preview ticking caret */
+  .caret { display: inline-block; width: 1px; height: 1em; background: var(--copper); margin-left: 2px; vertical-align: middle; animation: blink 1.1s steps(2,end) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* Subtle reveal */
+  .reveal { opacity: 0; transform: translateY(14px); transition: opacity .9s ease, transform .9s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  /* Asymmetric column widths */
+  .col-copy { max-width: 28rem; }
+
+  /* Letterhead ornament */
+  .ornament {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--copper) 20%, var(--copper) 80%, transparent);
+  }
+
+  /* Customs tracker */
+  .customs-step {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+    flex: 1 1 0; min-width: 0;
+  }
+  .customs-bar { height: 3px; width: 100%; background: var(--rule); border-radius: 2px; }
+  .customs-bar.done { background: var(--lime); }
+  .customs-bar.active { background: var(--copper); }
+  .customs-num { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 0.05em; }
+  .customs-num.active { color: var(--copper); }
+
+  /* KPI tile */
+  .kpi { padding: 22px 18px; border: 1px solid var(--rule); background: #FFFFFF; }
+  .kpi-num { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 32px; color: var(--ink); line-height: 1; letter-spacing: -0.01em; white-space: nowrap; }
+  .kpi-delta { font-size: 10.5px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+
+  /* Kanban */
+  .kanban-col { background: #FBF8F2; border: 1px solid var(--rule); padding: 12px; min-height: 180px; }
+  .kanban-card { background: #fff; border: 1px solid var(--rule); padding: 12px; font-size: 12.5px; }
+  .kanban-card + .kanban-card { margin-top: 8px; }
+
+  /* Activity timeline */
+  .tl-row { display: grid; grid-template-columns: 90px 1fr; gap: 24px; padding: 14px 0; border-top: 1px solid var(--rule-soft); font-size: 13.5px; }
+
+  /* Stage number */
+  .stage-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    color: var(--copper);
+    font-size: 12.5px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+  }
+
+  /* Misc */
+  .ring-soft { box-shadow: 0 0 0 1px var(--rule); }
+  .divider { height: 1px; background: var(--rule); }
+
+  /* Hide scrollbar on horizontal scrollers */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
+
+  @media (max-width: 768px) {
+    section.stage { padding: 5rem 0; }
+    .col-copy { max-width: 100%; }
+    .display { line-height: 1.08; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============== STICKY HEADER ============== -->
+<header class="header-blur fixed top-0 left-0 right-0 z-50">
+  <div class="max-w-[1320px] mx-auto px-6 md:px-12 h-16 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <!-- Wordmark -->
+      <a href="#top" class="flex items-baseline gap-2">
+        <span class="display text-[20px] tracking-tight" style="letter-spacing: 0.02em;">Counter Cultures</span>
+      </a>
+      <span class="hidden md:inline-block w-px h-4 bg-[color:var(--rule)] mx-2"></span>
+      <span class="hidden md:inline label" style="color: var(--body);">How an Order Moves Through the Portal</span>
+    </div>
+    <div class="flex items-center gap-5">
+      <span class="label hidden sm:inline">
+        Step <span id="step-current" class="ink mono" style="font-size: 12px;">1</span>
+        <span class="opacity-60"> / 10</span>
+      </span>
+      <div class="hidden md:flex items-center gap-2 w-32 h-[2px] bg-[color:var(--rule)] relative">
+        <div id="progress-bar" class="absolute left-0 top-0 h-full bg-[color:var(--copper)]" style="width: 0%; transition: width .35s ease;"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============== PROGRESS RAIL (left) ============== -->
+<nav class="hidden lg:flex fixed left-8 xl:left-12 top-1/2 -translate-y-1/2 z-40 flex-col gap-5" aria-label="Stage navigation">
+  <!-- 11 dots: 10 stages + closing -->
+  <a href="#stage-1" class="rail-item flex items-center gap-3" data-stage="1"><span class="rail-dot"></span><span class="rail-label">01 · Inquiry</span></a>
+  <a href="#stage-2" class="rail-item flex items-center gap-3" data-stage="2"><span class="rail-dot"></span><span class="rail-label">02 · Lead</span></a>
+  <a href="#stage-3" class="rail-item flex items-center gap-3" data-stage="3"><span class="rail-dot"></span><span class="rail-label">03 · Triage</span></a>
+  <a href="#stage-4" class="rail-item flex items-center gap-3" data-stage="4"><span class="rail-dot"></span><span class="rail-label">04 · Deal</span></a>
+  <a href="#stage-5" class="rail-item flex items-center gap-3" data-stage="5"><span class="rail-dot"></span><span class="rail-label">05 · Quote</span></a>
+  <a href="#stage-6" class="rail-item flex items-center gap-3" data-stage="6"><span class="rail-dot"></span><span class="rail-label">06 · Sent</span></a>
+  <a href="#stage-7" class="rail-item flex items-center gap-3" data-stage="7"><span class="rail-dot"></span><span class="rail-label">07 · Deposit</span></a>
+  <a href="#stage-8" class="rail-item flex items-center gap-3" data-stage="8"><span class="rail-dot"></span><span class="rail-label">08 · Order</span></a>
+  <a href="#stage-9" class="rail-item flex items-center gap-3" data-stage="9"><span class="rail-dot"></span><span class="rail-label">09 · Customs</span></a>
+  <a href="#stage-10" class="rail-item flex items-center gap-3" data-stage="10"><span class="rail-dot"></span><span class="rail-label">10 · Closed</span></a>
+</nav>
+
+<!-- ============== HERO / INTRO ============== -->
+<main id="top" class="pt-16">
+  <section class="stage bg-linen" style="border-top: 0;">
+    <div class="max-w-[1100px] mx-auto px-6 md:px-12">
+      <div class="eyebrow mb-8">A Walkthrough</div>
+      <h1 class="display text-[56px] md:text-[88px] leading-[0.95]" style="letter-spacing: -0.015em;">
+        How a single inquiry<br />
+        becomes a delivered order —<br />
+        <span class="display-italic copper">in ten quiet steps.</span>
+      </h1>
+      <div class="mt-12 grid md:grid-cols-12 gap-10">
+        <p class="md:col-span-7 body-text" style="font-size: 19px;">
+          Counter Cultures sells imported plumbing and architectural fixtures —
+          Kohler, Brizo, BLANCO, TOTO — to architects, designers and builders across Mexico.
+          A single deal involves a public website, an inbox, a catalogue of 354,000 SKUs,
+          a customs broker, a payment processor, and a fiscally-compliant invoice.
+          The portal is the one place all of that lives.
+        </p>
+        <div class="md:col-span-4 md:col-start-9 md:pl-10 md:border-l hairline">
+          <div class="label mb-3">In this walkthrough</div>
+          <ul class="space-y-2 text-[14px] ink">
+            <li>Ten stages of one real order</li>
+            <li>From contact form to delivery receipt</li>
+            <li>Across six systems, one tab</li>
+          </ul>
+          <a href="#stage-1" class="next-link mt-8 inline-flex">Begin <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== STAGE 1 — Customer Inquiry ============== -->
+  <section id="stage-1" class="stage bg-paper" data-stage="1">
+    <div class="max-w-[1320px] mx-auto px-6 md:px-12 grid md:grid-cols-12 gap-12 items-start">
+      <div class="md:col-span-5 col-copy">
+        <div class="stage-num mb-6">Stage One</div>
+        <h2 class="display text-[44px] md:text-[60px]">The buyer arrives <span class="display-italic">on the storefront.</span></h2>
+        <p class="body-text mt-8">
+          A designer specifying a new kitchen lands on <span class="ink">countercultures.mx</span>,
+          finds the BLANCO QUATRUS she has been looking for, and asks for a quote.
+        </p>
+        <p class="body-text mt-4">
+          Whether she fills the contact form, clicks <span class="ink">Request a Quote</span> on
+          a product page, or simply emails — every path posts straight into the dashboard.
+          The website <span class="copper">is</span> the lead funnel.
+        </p>
+        <a href="#stage-2" class="next-link mt-10">Next — the lead arrives <span aria-hidden="true">→</span></a>
+      </div>
+
+      <!-- MOCKUP: storefront catalog page -->
+      <div class="md:col-span-7">
+        <div class="mockup-frame overflow-hidden">
+          <!-- top bar -->
+          <div class="mockup-bar px-5 py-3 flex items-center justify-between text-[11px]" style="color: var(--muted);">
+            <span class="mono">countercultures.mx/catalogo/grifería</span>
+            <span class="label" style="font-size: 9.5px;">ES&nbsp;·&nbsp;EN</span>
+          </div>
+          <!-- nav -->
+          <div class="px-8 pt-6 pb-4 flex items-center justify-between border-b hairline-soft">
+            <span class="display text-[20px]" style="letter-spacing: 0.02em;">Counter Cultures</span>
+            <div class="hidden md:flex gap-7 text-[12px] ink">
+              <span>Catálogo</span><span>Marcas</span><span>Showroom</span><span>Trade</span><span class="copper">Contacto</span>
+            </div>
+          </div>
+          <!-- catalog grid -->
+          <div class="p-8 relative">
+            <div class="flex items-baseline justify-between mb-6">
+              <div>
+                <div class="label mb-1">Grifería · 412 piezas</div>
+                <div class="display text-[32px]">Kitchen &amp; Bath, considered.</div>
+              </div>
+              <div class="hidden md:flex gap-3 text-[11px]" style="color: var(--muted);">
+                <span class="ink">Marca</span><span>·</span><span>Acabado</span><span>·</span><span>Colección</span>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-5">
+              <!-- 6 product tiles -->
+              <div>
+                <div class="aspect-[4/5] bg-[#F4EFE5] flex items-center justify-center">
+                  <!-- faucet svg -->
+                  <svg viewBox="0 0 80 100" class="w-16 h-20" fill="none" stroke="#1A1A1A" stroke-width="1.2">
+                    <path d="M40 12v34"/><path d="M30 46h20"/><path d="M30 46v20q0 8 10 8t10-8V46"/><circle cx="40" cy="10" r="4"/><path d="M22 70h36" stroke-width="0.6"/>
+                  </svg>
+                </div>
+                <div class="mt-3">
+                  <div class="text-[11px]" style="color: var(--muted); letter-spacing: 0.08em;">BRIZO</div>
+                  <div class="text-[13px] ink">Litze · Pull-down</div>
+                  <div class="text-[12px] mono mt-1">$28,400 MXN</div>
+                </div>
+              </div>
+              <div>
+                <div class="aspect-[4/5] bg-[#F4EFE5] flex items-center justify-center">
+                  <svg viewBox="0 0 80 100" class="w-16 h-20" fill="none" stroke="#1A1A1A" stroke-width="1.2">
+                    <rect x="14" y="40" width="52" height="34"/><path d="M14 50h52M40 40v34"/><circle cx="40" cy="20" r="6"/><path d="M40 26v14"/>
+                  </svg>
+                </div>
+                <div class="mt-3">
+                  <div class="text-[11px]" style="color: var(--muted); letter-spacing: 0.08em;">BLANCO</div>
+                  <div class="text-[13px] ink">QUATRUS R15 · Doble</div>
+                  <div class="text-[12px] mono mt-1">$48,500 MXN</div>
+                </div>
+              </div>
+              <div>
+                <div class="aspect-[4/5] bg-[#F4EFE5] flex items-center justify-center">
+                  <svg viewBox="0 0 80 100" class="w-16 h-20" fill="none" stroke="#1A1A1A" stroke-width="1.2">
+                    <path d="M30 12v28"/><path d="M22 40h16M30 40v22q0 6 8 6"/><path d="M50 12v28"/><path d="M42 40h16M50 40v22q0 6 -8 6"/>
+                  </svg>
+                </div>
+                <div class="mt-3">
+                  <div class="text-[11px]" style="color: var(--muted); letter-spacing: 0.08em;">KOHLER</div>
+                  <div class="text-[13px] ink">Artifacts · Bridge</div>
+                  <div class="text-[12px] mono mt-1">$36,200 MXN</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Drop spec PDF CTA — quiet, in corner -->
+            <div class="absolute bottom-7 right-7 flex items-center gap-3 px-4 py-3 border hairline bg-[#FBF8F2]">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="color: var(--copper);">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/>
+              </svg>
+              <div>
+                <div class="text-[12px] ink">Drop spec PDF</div>
+                <div class="text-[10.5px]" style="color: var(--muted);">We'll quote it.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="text-[11px] mt-3 label" style="color: var(--muted);">Storefront · countercultures.mx</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== STAGE 2 — Lead Lands ============== -->
+  <section id="stage-2" class="stage bg-linen" data-stage="2">
+    <div class="max-w-[1320px] mx-auto px-6 md:px-12 grid md:grid-cols-12 gap-12 items-start">
+      <div class="md:col-span-5 col-copy">
+        <div class="stage-num mb-6">Stage Two</div>
+        <h2 class="display text-[44px] md:text-[60px]">A new row appears, <span class="display-italic">tagged and timed.</span></h2>
+        <p class="body-text mt-8">
+          The form posts to <span class="mono ink">/dashboard/leads</span>. A row materialises with the source pre-filled
+          — Website, Showroom Walk-in, WhatsApp, Trade Program, Referral — and the message body
+          is read by a small NLP pass that suggests the brands mentioned.
+        </p>
+        <p class="body-text mt-4">
+          Roger gets a desktop notification within thirty seconds. He doesn't have to refresh anything.
+        </p>
+        <a href="#stage-3" class="next-link mt-10">Next — triage <span aria-hidden="true">→</span></a>
+      </div>
+
+      <!-- MOCKUP: Leads table -->
+      <div class="md:col-span-7">
+        <div class="mockup-frame overflow-hidden">
+          <div class="mockup-bar px-5 py-3 flex items-center justify-between text-[11px]" style="color: var(--muted);">
+            <div class="flex items-center gap-3">
+              <span class="mono">/dashboard/leads</span>
+              <span class="ink">·</span>
+              <span>This week · 14</span>
+            </div>
+            <span class="label" style="font-size: 9.5px;">R · Roger</span>
+          </div>
+
+          <div class="px-7 pt-6 pb-2 flex items-baseline justify-between">
+            <div class="display text-[28px] ink">Leads</div>
+            <div class="flex items-center gap-3 text-[12px]">
+              <span class="pill">All sources</span>
+              <span class="pill">Last 7 days</span>
+            </div>
+          </div>
+
+          <div class="px-1">
+            <div class="row head" style="grid-template-columns: 110px 1.4fr 0.9fr 1fr 90px;">
+              <div>Received</div><div>Name &amp; message</div><div>Source</div><div>Brands</div><div></div>
+            </div>
+            <div class="row highlight" style="grid-template-columns: 110px 1.4fr 0.9fr 1fr 90px;">
+              <div class="mono text-[12px]">14:32 · today</div>
+              <div>
+                <div class="ink" style="font-weight: 500;">María Rentería</div>
+                <div class="text-[12px]" style="color: var(--muted);">"…specifying BLANCO QUATRUS for a residence in San Pedro…"</div>
+              </div>
+              <div class="text-[12.5px] ink">Website Form</div>
+              <div class="flex gap-1.5 flex-wrap">
+                <span class="pill pill-copper">Kohler</span><span class="pill pill-copper">Brizo</span>
+              </div>
+              <div class="text-right"><span class="pill pill-new">NEW</span></div>
+            </div>
+            <div class="row" style="grid-template-columns: 110px 1.4fr 0.9fr 1fr 90px; color: var(--body);">
+              <div class="mono text-[12px]">11:08 · today</div>
+              <div><div class="ink">Estudio Artillería</div><div class="text-[12px]" style="color: var(--muted);">Boutique hotel project — full bath spec</div></div>
+              <div class="text-[12.5px]">WhatsApp</div>
+              <div><span class="pill">TOTO</span></div>
+              <div></div>
+            </div>
+            <div class="row" style="grid-template-columns: 110px 1.4fr 0.9fr 1fr 90px; color: var(--body);">
+              <div class="mono text-[12px]">Yesterday</div>
+              <div><div class="ink">Carlos Mendívil</div><div class="text-[12px]" style="color: var(--muted);">Showroom visit — handed business card</div></div>
+              <div class="text-[12.5px]">Walk-in</div>
+              <div><span class="pill">Brizo</span></div>
+              <div></div>
+            </div>
+            <div class="row" style="grid-template-columns: 110px 1.4fr 0.9fr 1fr 90px; color: var(--body);">
+              <div class="mono text-[12px]">2 days ago</div>
+              <div><div class="ink">Grupo Habita</div><div class="text-[12px]" style="color: var(--muted);">Trade pricing inquiry, multiple SKUs</div></div>
+              <div class="text-[12.5px]">Trade Program</div>
+              <div class="flex gap-1.5 flex-wrap"><span class="pill">Kohler</span><span class="pill">BLANCO</span></div>
+              <div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Side note callout -->
+        <div class="mt-6 flex items-start gap-4 max-w-md">
+          <div class="w-8 h-px mt-3" style="background: var(--copper);"></div>
+          <div>
+            <div class="label" style="color: var(--copper);">A side note</div>
+            <p class="ink mt-1" style="font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18px; line-height: 1.4;">
+              Roger gets a desktop notification within thirty seconds.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== STAGE 3 — Triage ============== -->
+  <section id="stage-3" class="stage bg-paper" data-stage="3">
+    <div class="max-w-[1320px] mx-auto px-6 md:px-12 grid md:grid-cols-12 gap-12 items-start">
+      <div class="md:col-span-5 col-copy">
+        <div class="stage-num mb-6">Stage Three</div>
+        <h2 class="display text-[44px] md:text-[60px]">A panel slides open. <span class="display-italic">Roger reads.</span></h2>
+        <p class="body-text mt-8">
+          He clicks the row. The right-hand panel opens over the table — full message,
+          a notes field, a profession dropdown (Architect, Designer, Builder, Hospitality),
+          and two buttons: <span class="ink">Qualified</span> or <span class="ink">Lost</span>.
+        </p>
+        <p class="body-text mt-4">
+          Most leads take ninety seconds to triage. The qualified ones convert to a deal in one click.
+        </p>
+        <a href="#stage-4" class="next-link mt-10">Next — the deal <span aria-hidden="true">→</span></a>
+      </div>
+
+      <!-- MOCKUP: triage panel -->
+      <div class="md:col-span-7">
+        <div class="mockup-frame overflow-hidden relative">
+          <div class="mockup-bar px-5 py-3 flex items-center justify-between text-[11px]" style="color: var(--muted);">
+            <span class="mono">/dashboard/leads</span>
+            <span class="label" style="font-size: 9.5px;">R · Roger</span>
+          </div>
+          <!-- behind: dim table -->
+          <div class="grid" style="grid-template-columns: 1fr 360px;">
+            <div class="px-7 py-6 opacity-50">
+              <div class="display text-[26px] ink">Leads</div>
+              <div class="mt-5 space-y-3">
+                <div class="h-9 border hairline-soft"></div>
+                <div class="h-9 border hairline-soft" style="background: #FBF8F2;"></div>
+                <div class="h-9 border hairline-soft"></div>
+                <div class="h-9 border hairline-soft"></div>
+                <div class="h-9 border hairline-soft"></div>
+              </div>
+            </div>
+            <!-- side panel -->
+            <aside class="border-l hairline p-6 bg-white">
+              <div class="flex items-center justify-between">
+                <div class="label">Lead · received 14:32</div>
+                <span class="text-[14px]" style="color: var(--muted); cursor: default;">×</span>
+              </div>
+              <div class="display text-[26px] mt-2 ink">María Rentería</div>
+              <div class="text-[12px] mono mt-1" style="color: var(--muted);">maria@reesteresarq.mx · +52 81 ··· 4421</div>
+
+              <div class="mt-5 p-4 border hairline-soft text-[13px]" style="background: #FCFAF6; line-height: 1.55;">
+                "Hola, estoy especificando una <span class="ink">BLANCO QUATRUS R15</span>
+                doble tarja para una residencia en San Pedro. También me interesan dos
+                <span class="ink">Brizo Litze</span> y la <span class="ink">Kohler Artifacts</span> bridge
+                en bronce. ¿Pueden cotizarme con tiempos de entrega?"
+              </div>
+
+              <div class="mt-5">
+                <div class="label mb-2">Notes</div>
+                <div class="border hairline-soft p-3 text-[13px] ink" style="min-height: 60px;">
+                  Designer · residential, San Pedro<br />
+                  Has a builder lined up. Wants ETAs before specifying.<span class="caret"></span>
+                </div>
+              </div>
+
+              <div class="mt-5">
+                <div class="label mb-2">Profession</div>
+                <div class="border hairline-soft p-3 flex items-center justify-between text-[13px] ink">
+                  Designer
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+              </div>
+
+              <div class="mt-6 flex items-center gap-3">
+                <button class="btn-primary flex-1">Convert to Deal</button>
+                <button class="btn-ghost">Lost</button>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== STAGE 4 — Deal + Drive folder ============== -->
+  <section id="stage-4" class="stage bg-linen" data-stage="4">
+    <div class="max-w-[1320px] mx-auto px-6 md:px-12 grid md:grid-cols-12 gap-12 items-start">
+      <div class="md:col-span-5 col-copy">
+        <div class="stage-num mb-6">Stage Four</div>
+        <h2 class="display text-[44px] md:text-[60px]">A deal opens — <span class="display-italic">and a folder is born.</span></h2>
+        <p class="body-text mt-8">
+          The lead becomes <span class="mono ink">CC-2026-0142</span> on the Pipeline kanban.
+          At the same instant, the system provisions a Google Drive folder under the Shared Drive
+          with five subfolders — Email Attachments, Quotes, Invoices, Pedimentos, Misc.
+        </p>
+        <p class="body-text mt-4">
+          From this moment on, every PDF the deal ever produces will land here automatically.
+          Nobody has to remember to file anything.
+        </p>
+        <a href="#stage-5" class="next-link mt-10">Next — the quote <span aria-hidden="true">→</span></a>
+      </div>
+
+      <!-- MOCKUP: split — kanban left, drive right -->
+      <div class="md:col-span-7 grid md:grid-cols-2 gap-5">
+        <!-- Kanban -->
+        <div class="mockup-frame overflow-hidden">
+          <div class="mockup-bar px-4 py-3 text-[11px]" style="color: var(--muted);">
+            <span class="mono">/dashboard/pipeline</span>
+          </div>
+          <div class="p-4">
+            <div class="display text-[18px] ink mb-3">Pipeline</div>
+            <div class="grid grid-cols-3 gap-2 text-[10.5px]">
+              <div class="kanban-col">
+                <div class="label mb-2" style="font-size: 9px;">New · 4</div>
+                <div class="kanban-card" style="border-left: 2px solid var(--copper);">
+                  <div class="mono text-[10px]" style="color: var(--muted);">CC-2026-0142</div>
+                  <div class="ink mt-1" style="font-weight:500;">M. Rentería</div>
+                  <div class="text-[10px] mt-2" style="color: var(--muted);">3 SKUs · ~$113K</div>
+                </div>
+                <div class="kanban-card">
+                  <div class="mono text-[10px]" style="color: var(--muted);">CC-2026-0141</div>
+                  <div class="ink mt-1" style="font-weight:500;">Habita</div>
+                </div>
+              </div>
+              <div class="kanban-col">
+                <div class="label mb-2" style="font-size: 9px;">Quoted · 6</div>
+                <div class="kanban-card"><div class="mono text-[10px]" style="color: var(--muted);">CC-2026-0138</div><div class="ink mt-1">Estudio MMX</div></div>
+                <div class="kanban-card"><div class="mono text-[10px]" style="color: var(--muted);">CC-2026-0136</div><div class="ink mt-1">C. Mendívil</div></div>
+              </div>
+              <div class="kanban-col">
+                <div class="label mb-2" style="font-size: 9px;">Deposit · 3</div>
+                <div class="kanban-card"><div class="mono text-[10px]" style="color: var(--muted);">CC-2026-0133</div><div class="ink mt-1">Casa Bosques</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Drive folder tree -->
+        <div class="mockup-frame overflow-hidden">
+          <div class="mockup-bar px-4 py-3 flex items-center gap-2 text-[11px]" style="color: var(--muted);">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <span class="mono">drive.google.com · Shared Drive</span>
+          </div>
+          <div class="p-4">
+            <div class="display text-[18px] ink mb-3">Counter Cultures · Drive</div>
+            <div class="border hairline-soft">
+              <div class="tree-row" style="background: #FBF8F2;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--copper);"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <span class="mono text-[12px] ink">Deals/CC-2026-0142/</span>
+                <span class="ml-auto pill pill-lime" style="font-size: 9.5px;">just now</span>
+              </div>
+              <div class="tree-row" style="padding-left: 32px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--muted);"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <span class="mono text-[12px]">Email Attachments/</span>
+              </div>
+              <div class="tree-row" style="padding-left: 32px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--muted);"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <span class="mono text-[12px]">Quotes/</span>
+              </div>
+              <div class="tree-row" style="padding-left: 32px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--muted);"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <span class="mono text-[12px]">Invoices/</span>
+              </div>
+              <div class="tree-row" style="padding-left: 32px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--muted);"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <span class="mono text-[12px]">Pedimentos/</span>
+              </div>
+              <div class="tree-row" style="padding-left: 32px;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--muted);"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <span class="mono text-[12px]">Misc/</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="md:col-span-2 flex items-center gap-4">
+          <div class="w-8 h-px" style="background: var(--copper);"></div>
+          <p class="text-[15px] ink" style="font-family: 'Cormorant Garamond', serif; font-style: italic;">
+            Drive folder created in 1.2 seconds. Every file from now on lands here automatically.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== STAGE 5 — Building the Quote ============== -->
+  <section id="stage-5" class="stage bg-paper" data-stage="5">
+    <div class="max-w-[1320px] mx-auto px-6 md:px-12 grid md:grid-cols-12 gap-12 items-start">
+      <div class="md:col-span-5 col-copy">
+        <div class="stage-num mb-6">Stage Five</div>
+        <h2 class="display text-[44px] md:text-[60px]">A quote, <span class="display-italic">written live.</span></h2>
+        <p class="body-text mt-8">
+          Roger clicks <span class="ink">New Quote</span>. The Document Generator opens — a smart form on the left,
+          the rendered PDF on the right, updating as he types. Customer info auto-fills from the lead.
+          Line items pull from a 354,000-piece catalogue via fuzzy search.
+        </p>
+        <p class="body-text mt-4">
+          If the customer sent a spec PDF, he drops it onto the form. The system OCRs it,
+          matches SKUs against the catalogue, and adds the line items in one click.
+        </p>
+        <a href="#stage-6" class="next-link mt-10">Next — sending it <span aria-hidden="true">→</span></a>
+      </div>
+
+      <!-- MOCKUP: 40/60 form + PDF -->
+      <div class="md:col-span-7">
+        <div class="mockup-frame overflow-hidden">
+          <div class="mockup-bar px-4 py-3 text-[11px] flex items-center justify-between" style="color: var(--muted);">
+            <span class="mono">/deals/CC-2026-0142/quote/new</span>
+            <span class="label" style="font-size: 9.5px;">Document Generator</span>
+          </div>
+          <div class="grid" style="grid-template-columns: 40% 60%;">
+            <!-- form -->
+            <div class="p-5 border-r hairline-soft" style="background: #FCFAF6;">
+              <div class="label mb-3">Customer</div>
+              <div class="border hairline-soft p-2.5 text-[12px] ink mb-3">María Rentería · Reester Arq.</div>
+              <div class="label mb-3">Line items</div>
+              <!-- search -->
+              <div class="border hairline-soft p-2.5 flex items-center gap-2 text-[12px]" style="color: var(--muted);">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <span>Search 354,000 SKUs…</span>
+              </div>
+              <!-- items -->
+              <div class="mt-3 space-y-2">
+                <div class="border hairline-soft p-2.5 text-[11.5px]">
+                  <div class="ink">BLANCO QUATRUS R15 · Doble</div>
+                  <div class="flex items-center justify-between mt-1.5">
+                    <span class="mono" style="color: var(--muted); font-size: 10.5px;">BL-401-915 · ×1</span>
+                    <span class="mono ink">$48,500</span>
+                  </div>
+                </div>
+                <div class="border hairline-soft p-2.5 text-[11.5px]">
+                  <div class="ink">Brizo Litze · Pull-down</div>
+                  <div class="flex items-center justify-between mt-1.5">
+                    <span class="mono" style="color: var(--muted); font-size: 10.5px;">BR-LITZE-PD · ×2</span>
+                    <span class="mono ink">$56,800</span>
+                  </div>
+                </div>
+                <div class="border hairline-soft p-2.5 text-[11.5px]" style="background: #FFF7E8;">
+                  <div class="ink">Kohler Artifacts · Bridge, bronce</div>
+                  <div class="flex items-center justify-between mt-1.5">
+                    <span class="mono" style="color: var(--muted); font-size: 10.5px;">KOH-ART-BR · ×1</span>
+                    <span class="mono ink">$36,200</span>
+                  </div>
+                  <div class="text-[10px] mt-2" style="color: var(--copper); letter-spacing: 0.06em;">+ FROM SPEC PDF · OCR'd</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PDF preview -->
+            <div class="p-6" style="background: #F4EFE5;">
+              <div class="bg-white shadow-none border hairline" style="aspect-ratio: 8.5/11; padding: 22px;">
+                <!-- letterhead -->
+                <div class="flex items-baseline justify-between">
+                  <div class="display text-[14px]" style="letter-spacing: 0.06em;">COUNTER CULTURES</div>
+                  <div class="mono text-[9px]" style="color: var(--muted);">QUOTE · CC-2026-0142</div>
+                </div>
+                <div class="ornament mt-2 mb-4"></div>
+                <div class="text-[8.5px]" style="color: var(--body); line-height: 1.5;">
+                  <div class="flex justify-between mb-3">
+                    <div>
+                      <div class="label" style="font-size: 7px;">Bill to</div>
+                      <div class="ink mt-0.5">María Rentería</div>
+                      <div>Reester Arquitectura</div>
+                      <div>San Pedro Garza García, NL</div>
+                    </div>
+                    <div class="text-right">
+                      <div class="label" style="font-size: 7px;">Issued</div>
+                      <div class="ink mt-0.5">30 abril 2026</div>
+                      <div class="label mt-1" style="font-size: 7px;">Valid until</div>
+                      <div class="ink">30 mayo 2026</div>
+                    </div>
+                  </div>
+                  <table class="w-full text-[8px]">
+                    <thead>
+                      <tr class="text-left" style="color: var(--muted);">
+                        <th class="py-1 font-normal" style="letter-spacing: 0.1em;">SKU</th>
+                        <th class="py-1 font-normal">DESCRIPCIÓN</th>
+                        <th class="py-1 font-normal text-right">CANT</th>
+                        <th class="py-1 font-normal text-right">SUBTOTAL</th>
+                      </tr>
+                    </thead>
+                    <tbody class="ink">
+                      <tr class="border-t hairline-soft"><td class="py-1.5 mono">BL-401-915</td><td>BLANCO QUATRUS R15</td><td class="text-right">1</td><td class="text-right mono">$48,500</td></tr>
+                      <tr class="border-t hairline-soft"><td class="py-1.5 mono">BR-LITZE-PD</td><td>Brizo Litze Pull-down</td><td class="text-right">2</td><td class="text-right mono">$56,800</td></tr>
+                      <tr class="border-t hairline-soft"><td class="py-1.5 mono">KOH-ART-BR</td><td>Kohler Artifacts Bridge</td><td class="text-right">1</td><td class="text-right mono">$36,200</td></tr>
+                    </tbody>
+                  </table>
+                  <div class="mt-3 ml-auto w-2/3 text-[8.5px]">
+                    <div class="flex justify-between"><span style="color: var(--muted);">Subtotal</span><span class="mono ink">$141,500 MXN</span></div>
+                    <div class="flex justify-between"><span style="color: var(--muted);">IVA 16%</span><span class="mono ink">$22,640 MXN</span></div>
+                    <div class="flex justify-between mt-1.5 pt-1.5 border-t hairline-soft" style="font-size: 10px;"><span class="ink" style="font-weight: 500;">Total</span><span class="mono copper" style="font-weight: 500;">$164,140 MXN</span></div>
+                  </div>
+                  <div class="ornament mt-4"></div>
+                  <div class="mt-2 text-[7px]" style="color: var(--muted); letter-spacing: 0.1em;">COUNTER CULTURES · MONTERREY · COUNTERCULTURES.MX</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== STAGE 6 — Quote Sent ============== -->
+  <section id="stage-6" class="stage bg-linen" data-stage="6">
+    <div class="max-w-[1320px] mx-auto px-6 md:px-12 grid md:grid-cols-12 gap-12 items-start">
+      <div class="md:col-span-5 col-copy">
+        <div class="stage-num mb-6">Stage Six</div>
+        <h2 class="display text-[44px] md:text-[60px]">Sent — <span class="display-italic">and tracked from here.</span></h2>
+        <p class="body-text mt-8">
+          One click. The PDF saves to <span class="mono ink">Deals/CC-2026-0142/Quotes/</span>,
+          a signed share link is generated (30-day expiry), and Gmail sends a clean editorial email
+          with two buttons: <span class="ink">View Quote</span> and <span class="ink">Pay 50% Deposit</span>.
+        </p>
+        <p class="body-text mt-4">
+          The customer never logs in. They just click.
+        </p>
+        <a href="#stage-7" class="next-link mt-10">Next — the deposit <span aria-hidden="true">→</span></a>
+      </div>
+
+      <!-- MOCKUP: send dialog -->
+      <div class="md:col-span-7">
+        <div class="mockup-frame overflow-hidden">
+          <div class="mockup-bar px-4 py-3 text-[11px]" style="color: var(--muted);">
+            <span class="mono">/deals/CC-2026-0142 · Send quote</span>
+          </div>
+          <div class="grid md:grid-cols-2">
+            <!-- send form -->
+            <div class="p-6 border-r hairline-soft">
+              <div class="display text-[22px] ink mb-1">Send to customer</div>
+              <div class="text-[12px]" style="color: var(--muted);">Quote · CC-2026-0142 · 3 line items</div>
+
+              <div class="mt-5">
+                <div class="label mb-1.5">To</div>
+                <div class="border-b hairline pb-2 text-[13px] ink mono">maria@reesteresarq.mx</div>
+              </div>
+              <div class="mt-4">
+                <div class="label mb-1.5">CC</div>
+                <div class="border-b hairline pb-2 text-[13px]" style="color: var(--muted);">— optional —</div>
+              </div>
+              <div class="mt-4">
+                <div class="label mb-1.5">Personal note</div>
+                <div class="border hairline-soft p-3 text-[13px] ink" style="min-height: 78px; line-height: 1.5;">
+                  María, gracias por la consulta. Adjunto la cotización con tiempos de entrega de 6–8 semanas para el QUATRUS y 4 para los demás. Cualquier ajuste me dices.
+                </div>
+              </div>
+              <div class="mt-5 flex items-center justify-between">
+                <div class="flex items-center gap-2 text-[11.5px]" style="color: var(--muted);">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>
+                  Stripe deposit link · auto-attached
+                </div>
+                <button class="btn-primary">Send</button>
+              </div>
+            </div>
+            <!-- email preview -->
+            <div class="p-6" style="background: #FCFAF6;">
+              <div class="label mb-3">Email preview</div>
+              <div class="bg-white border hairline p-5">
+                <div class="display text-[16px] ink" style="letter-spacing: 0.04em;">COUNTER CULTURES</div>
+                <div class="ornament my-3"></div>
+                <div class="text-[13px] ink" style="line-height: 1.55;">
+                  Hola María,
+                  <br /><br />
+                  Adjunto su cotización <span class="mono">CC-2026-0142</span> con tiempos de entrega de 6–8 semanas para el QUATRUS y 4 para los demás.
+                </div>
+                <div class="mt-5 flex flex-col gap-2">
+                  <button class="btn-ghost w-full text-left flex items-center justify-between">
+                    <span>View Quote</span>
+                    <span class="copper">→</span>
+                  </button>
+                  <button class="btn-primary w-full text-left flex items-center justify-between">
+                    <span>Pay 50% Deposit · $82,070 MXN</span>
+                    <span>→</span>
+                  </button>
+                </div>
+                <div class="mt-5 text-[10.5px]" style="color: var(--muted); letter-spacing: 0.04em;">
+                  Roger Treviño · Counter Cultures<br />
+                  countercultures.mx
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== STAGE 7 — Customer Pays ============== -->
+  <section id="stage-7" class="stage bg-paper" data-stage="7">
+    <div class="max-w-[1320px] mx-auto px-6 md:px-12 grid md:grid-cols-12 gap-12 items-start">
+      <div class="md:col-span-5 col-copy">
+        <div class="stage-num mb-6">Stage Seven</div>
+        <h2 class="display text-[44px] md:text-[60px]">She pays <span class="display-italic">on her phone.</span></h2>
+        <p class="body-text mt-8">
+          María opens the email, taps <span class="ink">View Quote</span>, lands on a customer-facing page
+          at <span class="mono ink">/quote/CC-2026-0142</span>. She reviews the line items, hits
+          <span class="ink">Pay 50% Deposit</span>, and goes to Stripe Checkout.
+        </p>
+        <p class="body-text mt-4">
+          Stripe's webhook fires back to the dashboard the moment it clears.
+          The deal moves to <span class="ink">Deposit Paid</span>. Roger gets a notification.
+        </p>
+        <a href="#stage-8" class="next-link mt-10">Next — the manufacturer <span aria-hidden="true">→</span></a>
+      </div>
+
+      <!-- MOCKUP: phone -->
+      <div class="md:col-span-7 flex justify-center">
+        <div class="grid md:grid-cols-2 gap-10 items-center w-full">
+          <div class="phone">
+            <div class="phone-screen relative">
+              <div class="px-5 pt-4">
+                <div class="flex justify-between text-[10px] ink mono">
+                  <span>14:47</span><span>···</span>
+                </div>
+                <div class="display text-[15px] mt-3" style="letter-spacing: 0.05em;">COUNTER CULTURES</div>
+                <div class="ornament my-2"></div>
+                <div class="text-[10px]" style="color: var(--muted);">Quote · CC-2026-0142</div>
+                <div class="display text-[19px] ink mt-1" style="line-height: 1.1;">For María Rentería</div>
+
+                <div class="mt-4 space-y-2 text-[10px]">
+                  <div class="border-t hairline-soft pt-2">
+                    <div class="ink">BLANCO QUATRUS R15</div>
+                    <div class="flex justify-between mono" style="color: var(--muted);"><span>×1</span><span>$48,500</span></div>
+                  </div>
+                  <div class="border-t hairline-soft pt-2">
+                    <div class="ink">Brizo Litze Pull-down</div>
+                    <div class="flex justify-between mono" style="color: var(--muted);"><span>×2</span><span>$56,800</span></div>
+                  </div>
+                  <div class="border-t hairline-soft pt-2">
+                    <div class="ink">Kohler Artifacts Bridge</div>
+                    <div class="flex justify-between mono" style="color: var(--muted);"><span>×1</span><span>$36,200</span></div>
+                  </div>
+                  <div class="border-t hairline pt-2 flex justify-between text-[12px]">
+                    <span class="ink">Total</span><span class="mono copper">$164,140 MXN</span>
+                  </div>
+                </div>
+              </div>
+              <!-- confirmation overlay -->
+              <div class="absolute inset-x-3 bottom-3 bg-white border hairline p-4">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full" style="background: var(--lime);"></span>
+                  <div class="label" style="color: #5A6E2F;">Deposit received</div>
+                </div>
+                <div class="display text-[18px] ink mt-1.5">$82,070 MXN</div>
+                <div class="text-[10px] mono mt-1" style="color: var(--muted);">via Stripe · 14:46</div>
+                <div class="ornament mt-3 mb-2"></div>
+                <div class="text-[10px]" style="color: var(--body);">We'll be in touch with production updates.</div>
+              </div>
+            </div>
+          </div>
+          <!-- side beat -->
+          <div class="space-y-4">
+            <div class="flex items-start gap-4">
+              <div class="w-8 h-px mt-3" style="background: var(--copper);"></div>
+              <div>
+                <div class="label" style="color: var(--copper);">Meanwhile, in the dashboard</div>
+                <div class="mt-3 border hairline p-4 bg-white">
+                  <div class="text-[10.5px] mono" style="color: var(--muted);">Activity · CC-2026-0142</div>
+                  <div class="mt-3 space-y-2.5 text-[12px]">
+                    <div class="flex gap-3"><span class="mono" style="color: var(--muted);">14:46</span><span class="ink">Stripe webhook · deposit received</span></div>
+                    <div class="flex gap-3"><span class="mono" style="color: var(--muted);">14:46</span><span class="ink">Stage → Deposit Paid</span></div>
+                    <div class="flex gap-3"><span class="mono" style="color: var(--muted);">14:46</span><span class="ink">Roger notified</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== STAGE 8 — PO ============== -->
+  <section id="stage-8" class="stage bg-linen" data-stage="8">
+    <div class="max-w-[1320px] mx-auto px-6 md:px-12 grid md:grid-cols-12 gap-12 items-start">
+      <div class="md:col-span-5 col-copy">
+        <div class="stage-num mb-6">Stage Eight</div>
+        <h2 class="display text-[44px] md:text-[60px]">The order goes <span class="display-italic">to the manufacturer.</span></h2>
+        <p class="body-text mt-8">
+          Same Document Generator, different document. Roger picks the manufacturer
+          — Kohler, BLANCO, Brizo, TOTO — and sends the Purchase Order. The PDF saves to
+          <span class="mono ink">Deals/CC-2026-0142/</span> alongside the quote.
+        </p>
+        <p class="body-text mt-4">
+          The kanban card moves to <span class="ink">In Production</span>. A small coloured dot
+          tracks customs status: <span class="copper">violet</span> in production,
+          <span class="copper">amber</span> in transit, <span class="copper">lime</span> cleared.
+        </p>
+        <a href="#stage-9" class="next-link mt-10">Next — customs <span aria-hidden="true">→</span></a>
+      </div>
+
+      <!-- MOCKUP: pipeline + shipments -->
+      <div class="md:col-span-7 space-y-5">
+        <div class="mockup-frame overflow-hidden">
+          <div class="mockup-bar px-4 py-3 text-[11px] flex items-center justify-between" style="color: var(--muted);">
+            <span class="mono">/dashboard/pipeline</span>
+            <span class="label" style="font-size: 9.5px;">In production · 5</span>
+          </div>
+          <div class="p-4 grid grid-cols-4 gap-2 text-[10.5px]">
+            <div class="kanban-col">
+              <div class="label mb-2" style="font-size: 9px;">Quoted</div>
+              <div class="kanban-card"><div class="mono text-[10px]" style="color: var(--muted);">CC-2026-0145</div><div class="ink mt-1">Estudio MMX</div></div>
+            </div>
+            <div class="kanban-col">
+              <div class="label mb-2" style="font-size: 9px;">Deposit</div>
+              <div class="kanban-card"><div class="mono text-[10px]" style="color: var(--muted);">CC-2026-0144</div><div class="ink mt-1">Casa Bosques</div></div>
+            </div>
+            <div class="kanban-col" style="background: #F6F2E8;">
+              <div class="label mb-2" style="font-size: 9px;">In Production</div>
+              <div class="kanban-card" style="border-left: 2px solid var(--violet);">
+                <div class="flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full dot-violet"></span>
+                  <span class="mono text-[10px]" style="color: var(--muted);">CC-2026-0142</span>
+                </div>
+                <div class="ink mt-1" style="font-weight: 500;">M. Rentería</div>
+                <div class="flex items-center gap-1.5 text-[10px] mt-2" style="color: var(--muted);">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                  ETA · 14 jun
+                </div>
+              </div>
+              <div class="kanban-card" style="border-left: 2px solid var(--amber);">
+                <div class="flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 rounded-full dot-amber"></span>
+                  <span class="mono text-[10px]" style="color: var(--muted);">CC-2026-0140</span>
+                </div>
+                <div class="ink mt-1">Habita</div>
+              </div>
+            </div>
+            <div class="kanban-col">
+              <div class="label mb-2" style="font-size: 9px;">Delivered</div>
+              <div class="kanban-card"><div class="mono text-[10px]" style="color: var(--muted);">CC-2026-0133</div><div class="ink mt-1">Mendívil</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shipments table excerpt -->
+        <div class="mockup-frame overflow-hidden">
+          <div class="mockup-bar px-4 py-3 text-[11px]" style="color: var(--muted);">
+            <span class="mono">/dashboard/shipments</span>
+          </div>
+          <div class="row head" style="grid-template-columns: 130px 1fr 1fr 0.7fr 0.6fr;">
+            <div>Deal</div><div>Manufacturer</div><div>Origin → Port</div><div>Factory ETA</div><div>Status</div>
+          </div>
+          <div class="row" style="grid-template-columns: 130px 1fr 1fr 0.7fr 0.6fr;">
+            <div class="mono ink">CC-2026-0142</div>
+            <div class="ink">Kohler · BLANCO · Brizo</div>
+            <div>Wisconsin → Manzanillo</div>
+            <div class="mono ink">14 jun</div>
+            <div><span class="pill pill-violet">In production</span></div>
+          </div>
+          <div class="row" style="grid-template-columns: 130px 1fr 1fr 0.7fr 0.6fr;">
+            <div class="mono ink">CC-2026-0140</div>
+            <div class="ink">TOTO</div>
+            <div>Tokyo → Manzanillo</div>
+            <div class="mono ink">02 jun</div>
+            <div><span class="pill pill-amber">In transit</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== STAGE 9 — Customs, Invoice ============== -->
+  <section id="stage-9" class="stage bg-paper" data-stage="9">
+    <div class="max-w-[1320px] mx-auto px-6 md:px-12 grid md:grid-cols-12 gap-12 items-start">
+      <div class="md:col-span-5 col-copy">
+        <div class="stage-num mb-6">Stage Nine</div>
+        <h2 class="display text-[44px] md:text-[60px]">Customs, delivery, <span class="display-italic">and a stamped CFDI.</span></h2>
+        <p class="body-text mt-8">
+          The shipment moves through twelve customs stages, each colour-coded.
+          When it lands at the showroom, Roger generates the final Invoice — a Mexican
+          fiscal CFDI. The system collects the customer's RFC, emails it to the accountant
+          for stamping, and attaches the stamped XML and PDF back to the deal.
+        </p>
+        <p class="body-text mt-4">
+          A Delivery Receipt is generated when María takes possession.
+          All four documents live side by side in Drive.
+        </p>
+        <a href="#stage-10" class="next-link mt-10">Next — closed <span aria-hidden="true">→</span></a>
+      </div>
+
+      <!-- MOCKUP: customs tracker + drive 4 files -->
+      <div class="md:col-span-7 space-y-5">
+        <!-- customs tracker -->
+        <div class="mockup-frame overflow-hidden">
+          <div class="mockup-bar px-4 py-3 text-[11px]" style="color: var(--muted);">
+            <span class="mono">/deals/CC-2026-0142 · Customs</span>
+          </div>
+          <div class="p-5">
+            <div class="flex items-baseline justify-between mb-4">
+              <div class="display text-[20px] ink">Customs · 12 stages</div>
+              <div class="text-[11px]" style="color: var(--muted);">Stage 9 · <span class="ink">Liberación SAT</span></div>
+            </div>
+            <div class="flex gap-1">
+              <!-- 12 bars · numbered, only milestones labelled -->
+              <div class="customs-step"><div class="customs-bar done"></div><div class="customs-num">01</div></div>
+              <div class="customs-step"><div class="customs-bar done"></div><div class="customs-num">02</div></div>
+              <div class="customs-step"><div class="customs-bar done"></div><div class="customs-num">03</div></div>
+              <div class="customs-step"><div class="customs-bar done"></div><div class="customs-num">04</div></div>
+              <div class="customs-step"><div class="customs-bar done"></div><div class="customs-num">05</div></div>
+              <div class="customs-step"><div class="customs-bar done"></div><div class="customs-num">06</div></div>
+              <div class="customs-step"><div class="customs-bar done"></div><div class="customs-num">07</div></div>
+              <div class="customs-step"><div class="customs-bar done"></div><div class="customs-num">08</div></div>
+              <div class="customs-step"><div class="customs-bar active"></div><div class="customs-num active">09</div></div>
+              <div class="customs-step"><div class="customs-bar"></div><div class="customs-num">10</div></div>
+              <div class="customs-step"><div class="customs-bar"></div><div class="customs-num">11</div></div>
+              <div class="customs-step"><div class="customs-bar"></div><div class="customs-num">12</div></div>
+            </div>
+            <!-- milestone legend, not packed under bars -->
+            <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-2 text-[11px]">
+              <div class="flex gap-2"><span class="mono" style="color: var(--muted);">01</span><span style="color: var(--body);">Pickup</span></div>
+              <div class="flex gap-2"><span class="mono" style="color: var(--muted);">03</span><span style="color: var(--body);">Origin port</span></div>
+              <div class="flex gap-2"><span class="mono" style="color: var(--muted);">06</span><span style="color: var(--body);">Manzanillo</span></div>
+              <div class="flex gap-2"><span class="mono" style="color: var(--muted);">07</span><span style="color: var(--body);">Pedimento</span></div>
+              <div class="flex gap-2"><span class="mono copper">09</span><span class="ink" style="font-weight: 500;">Liberación SAT · now</span></div>
+              <div class="flex gap-2"><span class="mono" style="color: var(--muted);">10</span><span style="color: var(--body);">Trucking</span></div>
+              <div class="flex gap-2"><span class="mono" style="color: var(--muted);">11</span><span style="color: var(--body);">Showroom</span></div>
+              <div class="flex gap-2"><span class="mono" style="color: var(--muted);">12</span><span style="color: var(--body);">Delivered</span></div>
+            </div>
+            <div class="mt-4 flex items-center gap-2 text-[11.5px]" style="color: var(--body);">
+              <span class="pill pill-amber">CFDI · awaiting RFC</span>
+              <span style="color: var(--muted);">RFC requested from customer · email sent to accountant on stamp</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Drive folder with 4 files -->
+        <div class="mockup-frame overflow-hidden">
+          <div class="mockup-bar px-4 py-3 flex items-center gap-2 text-[11px]" style="color: var(--muted);">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <span class="mono">Deals / CC-2026-0142 /</span>
+          </div>
+          <div class="grid grid-cols-4">
+            <div class="p-5 border-r hairline-soft text-center">
+              <svg viewBox="0 0 32 40" class="w-10 h-12 mx-auto" fill="none" stroke="#1A1A1A" stroke-width="1.2"><path d="M4 2h16l8 8v28H4z"/><path d="M20 2v8h8"/><text x="16" y="28" text-anchor="middle" font-size="6" fill="#B87333" font-family="monospace" stroke="none">PDF</text></svg>
+              <div class="mono text-[11px] ink mt-2">quote.pdf</div>
+              <div class="text-[10px] mt-0.5" style="color: var(--muted);">2.1 MB · Apr 30</div>
+            </div>
+            <div class="p-5 border-r hairline-soft text-center">
+              <svg viewBox="0 0 32 40" class="w-10 h-12 mx-auto" fill="none" stroke="#1A1A1A" stroke-width="1.2"><path d="M4 2h16l8 8v28H4z"/><path d="M20 2v8h8"/><text x="16" y="28" text-anchor="middle" font-size="6" fill="#B87333" font-family="monospace" stroke="none">PDF</text></svg>
+              <div class="mono text-[11px] ink mt-2">po.pdf</div>
+              <div class="text-[10px] mt-0.5" style="color: var(--muted);">1.4 MB · May 02</div>
+            </div>
+            <div class="p-5 border-r hairline-soft text-center">
+              <svg viewBox="0 0 32 40" class="w-10 h-12 mx-auto" fill="none" stroke="#1A1A1A" stroke-width="1.2"><path d="M4 2h16l8 8v28H4z"/><path d="M20 2v8h8"/><text x="16" y="28" text-anchor="middle" font-size="6" fill="#B87333" font-family="monospace" stroke="none">PDF</text></svg>
+              <div class="mono text-[11px] ink mt-2">invoice.pdf</div>
+              <div class="text-[10px] mt-0.5" style="color: var(--muted);">CFDI · Jun 16</div>
+            </div>
+            <div class="p-5 text-center">
+              <svg viewBox="0 0 32 40" class="w-10 h-12 mx-auto" fill="none" stroke="#1A1A1A" stroke-width="1.2"><path d="M4 2h16l8 8v28H4z"/><path d="M20 2v8h8"/><text x="16" y="28" text-anchor="middle" font-size="6" fill="#B87333" font-family="monospace" stroke="none">PDF</text></svg>
+              <div class="mono text-[11px] ink mt-2">delivery-receipt.pdf</div>
+              <div class="text-[10px] mt-0.5" style="color: var(--muted);">Jun 18</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== STAGE 10 — Closed-Won ============== -->
+  <section id="stage-10" class="stage bg-linen" data-stage="10">
+    <div class="max-w-[1320px] mx-auto px-6 md:px-12 grid md:grid-cols-12 gap-12 items-start">
+      <div class="md:col-span-5 col-copy">
+        <div class="stage-num mb-6">Stage Ten</div>
+        <h2 class="display text-[44px] md:text-[60px]">Closed. <span class="display-italic">The numbers roll up.</span></h2>
+        <p class="body-text mt-8">
+          The deal moves to <span class="ink">Closed-Won</span>. The Today page updates —
+          pipeline value, 30-day revenue, deals closed. The Activity feed holds the full timeline,
+          end to end.
+        </p>
+        <p class="body-text mt-4">
+          From <span class="mono ink">14:32</span> on April 30 to <span class="mono ink">11:04</span>
+          on May 14 — fourteen days, one tab.
+        </p>
+        <a href="#closing" class="next-link mt-10">In summary <span aria-hidden="true">→</span></a>
+      </div>
+
+      <!-- MOCKUP: Today / Overview -->
+      <div class="md:col-span-7">
+        <div class="mockup-frame overflow-hidden">
+          <div class="mockup-bar px-4 py-3 text-[11px]" style="color: var(--muted);">
+            <span class="mono">/dashboard/today</span>
+          </div>
+          <div class="p-7">
+            <div class="display text-[28px] ink">Buenas tardes, Roger.</div>
+            <div class="text-[12px] mt-1" style="color: var(--muted);">Jueves, 14 de mayo · 16 deals activos</div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-px mt-6" style="background: var(--rule);">
+              <div class="kpi">
+                <div class="kpi-delta">Pipeline</div>
+                <div class="kpi-num mt-3">$2.84M</div>
+                <div class="text-[10.5px] mono mt-2" style="color: var(--muted);">MXN · 16 deals</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-delta">Revenue 30d</div>
+                <div class="kpi-num mt-3">$684K</div>
+                <div class="text-[10.5px] mono mt-2" style="color: var(--muted);">+$164K today</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-delta">Closed</div>
+                <div class="kpi-num mt-3">7</div>
+                <div class="text-[10.5px] mono mt-2" style="color: var(--muted);">this month</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-delta">Avg cycle</div>
+                <div class="kpi-num mt-3">16.4d</div>
+                <div class="text-[10.5px] mono mt-2" style="color: var(--muted);">lead → delivery</div>
+              </div>
+            </div>
+
+            <!-- closed-won badge + activity -->
+            <div class="mt-7 grid md:grid-cols-2 gap-6">
+              <div>
+                <div class="label mb-3">Just closed</div>
+                <div class="border hairline p-4 bg-white">
+                  <div class="flex items-center justify-between">
+                    <span class="mono text-[11px]" style="color: var(--muted);">CC-2026-0142</span>
+                    <span class="pill pill-lime">Closed · Won</span>
+                  </div>
+                  <div class="display text-[22px] ink mt-2">María Rentería</div>
+                  <div class="text-[12px] mt-1" style="color: var(--muted);">3 SKUs · BLANCO · Brizo · Kohler</div>
+                  <div class="ornament my-3"></div>
+                  <div class="flex items-baseline justify-between">
+                    <div>
+                      <div class="kpi-delta">Total</div>
+                      <div class="display text-[20px] ink mono mt-1">$164,140 MXN</div>
+                    </div>
+                    <span class="pill pill-copper">Closed in 14 days</span>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div class="label mb-3">Activity · CC-2026-0142</div>
+                <div class="border hairline-soft" style="background: #FCFAF6;">
+                  <div class="tl-row px-4"><span class="mono text-[11px]" style="color: var(--muted);">Apr 30</span><span class="ink">Lead received · Website</span></div>
+                  <div class="tl-row px-4"><span class="mono text-[11px]" style="color: var(--muted);">Apr 30</span><span class="ink">Quote sent · $164,140 MXN</span></div>
+                  <div class="tl-row px-4"><span class="mono text-[11px]" style="color: var(--muted);">May 01</span><span class="ink">Deposit paid · Stripe</span></div>
+                  <div class="tl-row px-4"><span class="mono text-[11px]" style="color: var(--muted);">May 02</span><span class="ink">PO sent · Kohler · BLANCO · Brizo</span></div>
+                  <div class="tl-row px-4"><span class="mono text-[11px]" style="color: var(--muted);">May 12</span><span class="ink">Customs cleared</span></div>
+                  <div class="tl-row px-4"><span class="mono text-[11px]" style="color: var(--muted);">May 14</span><span class="ink">Invoice (CFDI) stamped &amp; delivered</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== CLOSING ============== -->
+  <section id="closing" class="stage bg-paper">
+    <div class="max-w-[1100px] mx-auto px-6 md:px-12">
+      <div class="eyebrow mb-8">In summary</div>
+      <h2 class="display text-[48px] md:text-[80px]" style="line-height: 1.0;">
+        Six systems.<br />
+        <span class="display-italic copper">One tab.</span>
+      </h2>
+      <p class="body-text mt-10 max-w-2xl" style="font-size: 19px;">
+        The whole flow runs across the website, Gmail, Google Sheets (lead and deal data),
+        Google Drive (every PDF, organised per deal), Stripe (deposits and final invoices),
+        and the dashboard itself. Roger only ever opens one tab.
+      </p>
+
+      <!-- Integration row -->
+      <div class="mt-16 grid grid-cols-2 md:grid-cols-6 gap-px" style="background: var(--rule);">
+        <div class="bg-paper p-6 flex flex-col items-center text-center gap-3">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" style="color: var(--ink);"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <div class="label">Website</div>
+        </div>
+        <div class="bg-paper p-6 flex flex-col items-center text-center gap-3">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" style="color: var(--ink);"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <div class="label">Gmail</div>
+        </div>
+        <div class="bg-paper p-6 flex flex-col items-center text-center gap-3">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" style="color: var(--ink);"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+          <div class="label">Sheets</div>
+        </div>
+        <div class="bg-paper p-6 flex flex-col items-center text-center gap-3">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" style="color: var(--ink);"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <div class="label">Drive</div>
+        </div>
+        <div class="bg-paper p-6 flex flex-col items-center text-center gap-3">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" style="color: var(--ink);"><rect x="3" y="6" width="18" height="13" rx="1"/><path d="M3 10h18"/><path d="M7 15h2"/></svg>
+          <div class="label">Stripe</div>
+        </div>
+        <div class="bg-paper p-6 flex flex-col items-center text-center gap-3">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" style="color: var(--copper);"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/><path d="M3 12h18"/></svg>
+          <div class="label" style="color: var(--copper);">The Portal</div>
+        </div>
+      </div>
+
+      <!-- The 14 days -->
+      <div class="mt-20 grid md:grid-cols-12 gap-10 items-start border-t hairline pt-12">
+        <div class="md:col-span-5">
+          <div class="label mb-3">CC-2026-0142 · in full</div>
+          <div class="display text-[36px] md:text-[44px] ink">From inquiry to delivery,<br /><span class="display-italic copper">fourteen days.</span></div>
+        </div>
+        <div class="md:col-span-7 space-y-2.5 text-[14px]">
+          <div class="flex justify-between border-b hairline-soft pb-2.5"><span class="mono" style="color: var(--muted);">Apr 30 · 14:32</span><span class="ink">Lead received via website</span></div>
+          <div class="flex justify-between border-b hairline-soft pb-2.5"><span class="mono" style="color: var(--muted);">Apr 30 · 15:48</span><span class="ink">Quote sent · $164,140 MXN</span></div>
+          <div class="flex justify-between border-b hairline-soft pb-2.5"><span class="mono" style="color: var(--muted);">May 01 · 09:14</span><span class="ink">Deposit received via Stripe</span></div>
+          <div class="flex justify-between border-b hairline-soft pb-2.5"><span class="mono" style="color: var(--muted);">May 02 · 11:30</span><span class="ink">PO sent to manufacturers</span></div>
+          <div class="flex justify-between border-b hairline-soft pb-2.5"><span class="mono" style="color: var(--muted);">May 12 · 16:02</span><span class="ink">Customs cleared at Manzanillo</span></div>
+          <div class="flex justify-between border-b hairline-soft pb-2.5"><span class="mono" style="color: var(--muted);">May 14 · 11:04</span><span class="ink">Delivered, CFDI stamped, deal closed</span></div>
+        </div>
+      </div>
+
+      <div class="mt-24 flex items-center justify-between border-t hairline pt-8">
+        <span class="display text-[18px]" style="letter-spacing: 0.04em;">Counter Cultures</span>
+        <span class="label">Powered by Untold.works</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============== JS: scroll progress + active rail ============== -->
+<script>
+  (function () {
+    const sections = Array.from(document.querySelectorAll('section.stage[data-stage]'));
+    const railItems = Array.from(document.querySelectorAll('.rail-item'));
+    const stepEl = document.getElementById('step-current');
+    const progressBar = document.getElementById('progress-bar');
+    const total = 10;
+
+    function update() {
+      const mid = window.scrollY + window.innerHeight * 0.4;
+      let active = 1;
+      for (const s of sections) {
+        const top = s.offsetTop;
+        if (mid >= top) active = parseInt(s.dataset.stage, 10);
+      }
+      if (stepEl) stepEl.textContent = String(active);
+      if (progressBar) progressBar.style.width = (active / total * 100) + '%';
+      railItems.forEach((el, i) => {
+        const stage = parseInt(el.dataset.stage, 10);
+        const dot = el.querySelector('.rail-dot');
+        el.classList.toggle('active', stage === active);
+        if (dot) {
+          dot.classList.toggle('active', stage === active);
+          dot.classList.toggle('passed', stage < active);
+        }
+      });
+    }
+
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(() => { update(); ticking = false; });
+        ticking = true;
+      }
+    }, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+
+    // Reveal on view
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => e.isIntersecting && e.target.classList.add('in'));
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    // Lucide icons (if used)
+    if (window.lucide && window.lucide.createIcons) window.lucide.createIcons();
+  })();
+</script>
+
+</body>
+</html>

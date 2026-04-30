@@ -55,6 +55,7 @@ export default async function middleware(req: NextRequest) {
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/_vercel") ||
+    pathname === "/how-it-works" ||
     pathname.includes(".")
   ) {
     return NextResponse.next();
