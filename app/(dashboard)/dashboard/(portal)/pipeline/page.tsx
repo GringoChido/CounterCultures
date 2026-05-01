@@ -993,6 +993,8 @@ const PipelinePageInner = () => {
       const data = (await res.json()) as {
         created: PurchaseOrder[];
         skipped: number;
+        fromStock?: Array<{ sku: string; productName: string; brand: string; vendor: string; quantity: number }>;
+        inStockSkippedBrands?: number;
       };
       setSelectedDeal((cur) =>
         cur && cur.id === dealId
@@ -1003,12 +1005,14 @@ const PipelinePageInner = () => {
           : cur
       );
       const n = data.created.length;
-      if (n === 0) {
+      const fromStockN = data.fromStock?.length ?? 0;
+      if (n === 0 && fromStockN === 0) {
         toast(`Already up to date — ${data.skipped} POs already exist.`);
       } else {
-        toast.success(
-          `Created ${n} draft purchase order${n === 1 ? "" : "s"}.`
-        );
+        const parts: string[] = [];
+        if (n > 0) parts.push(`${n} draft PO${n === 1 ? "" : "s"}`);
+        if (fromStockN > 0) parts.push(`${fromStockN} line${fromStockN === 1 ? "" : "s"} from stock`);
+        toast.success(`Created ${parts.join(" · ")}.`);
       }
     } catch (e) {
       console.error("[Pipeline] generate POs failed", e);

@@ -446,6 +446,27 @@ export const getProductById = async (
   return p ? stripIndex(p) : null;
 };
 
+/** Bulk SKU lookup — returns a Map<UPPER_SKU, ProductFull> for the SKUs
+ *  that exist in the catalog. Used by the PO generator's stock check so
+ *  one round-trip covers every line item on a deal. */
+export const getProductsBySkus = async (
+  skus: string[]
+): Promise<Map<string, ProductFull>> => {
+  const out = new Map<string, ProductFull>();
+  const wanted = new Set(
+    skus.map((s) => s.trim().toUpperCase()).filter(Boolean),
+  );
+  if (wanted.size === 0) return out;
+  const c = await getCache();
+  for (const p of c.products) {
+    const key = (p.sku ?? "").trim().toUpperCase();
+    if (key && wanted.has(key) && !out.has(key)) {
+      out.set(key, stripIndex(p));
+    }
+  }
+  return out;
+};
+
 // ── Variants (same SKU family, different finish) ────────────────────────
 // Heuristic: many SKUs end with a short alphanumeric "finish code" suffix
 // separated by "-" (e.g. Brizo "BRI- 63054LF-GL" / "-PC" / "-BN"). Strip

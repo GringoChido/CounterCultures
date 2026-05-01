@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import type { PipelineDeal } from "@/app/lib/sample-dashboard-data";
 import type { DocumentType } from "@/app/lib/document-numbers";
 import { getDocumentTypeLabel } from "@/app/lib/document-numbers";
+import { getVendorForBrand, hasVendorMapping } from "@/app/lib/brand-vendors";
 import { QuoteTemplate, type LineItem, type QuoteData } from "./templates/quote-template";
 import { InvoiceTemplate, type InvoiceData } from "./templates/invoice-template";
 import { POTemplate, type POData } from "./templates/po-template";
@@ -441,6 +442,20 @@ export const DocumentGenerator = ({
                       onChange={(e) => updateItem(i, "product", e.target.value)}
                       placeholder="Product name"
                     />
+                    {item.brand && (
+                      <p className="text-[10px] text-dash-text-secondary mt-1 leading-tight">
+                        <span className="text-brand-charcoal">{item.brand}</span>
+                        {hasVendorMapping(item.brand) && (
+                          <>
+                            <span className="mx-1">&middot;</span>
+                            ordered via{" "}
+                            <span className="text-brand-copper">
+                              {getVendorForBrand(item.brand)}
+                            </span>
+                          </>
+                        )}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="col-span-2">
