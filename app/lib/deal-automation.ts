@@ -59,9 +59,9 @@ export const calculateDealFinancials = (deal: PipelineDeal) => {
   const totalStripeFees = payments
     .filter((p) => p.status === "paid")
     .reduce((sum, p) => sum + (p.stripeFees ?? calculateStripeFees(p.amount)), 0);
-  const totalPaidToManufacturers = purchaseOrders
-    .filter((po) => po.paymentToMfr)
-    .reduce((sum, po) => sum + (po.paymentToMfr?.amount ?? 0), 0);
+  const totalPaidToVendors = purchaseOrders
+    .filter((po) => po.paymentToVendor)
+    .reduce((sum, po) => sum + (po.paymentToVendor?.amount ?? 0), 0);
 
   const netMargin = totalQuoted - totalDealerCost - totalShipping - totalStripeFees;
   const marginPercent =
@@ -73,7 +73,7 @@ export const calculateDealFinancials = (deal: PipelineDeal) => {
     totalShipping,
     totalStripeFees,
     totalCollected,
-    totalPaidToManufacturers,
+    totalPaidToVendors,
     netMargin,
     marginPercent,
   };
@@ -171,7 +171,7 @@ export const onAllPOsConfirmed = (
   const allConfirmed = pos.length > 0 && pos.every(
     (po) =>
       po.status === "confirmed" ||
-      po.status === "paid-to-manufacturer" ||
+      po.status === "paid-to-vendor" ||
       po.status === "in-production" ||
       po.status === "shipped" ||
       po.status === "received"
@@ -309,7 +309,7 @@ export const generatePOsFromLineItems = (
       id: `CC-PO-${year}-${seq}`,
       dealId: deal.id,
       brand,
-      manufacturerName: brand,
+      vendorName: brand,
       items: brandItems.map((li) => ({
         sku: li.sku,
         productName: li.productName,
@@ -355,7 +355,7 @@ export const getDealCompletionChecklist = (
     (p) => p.status === "paid" || p.status === "cancelled"
   );
 
-  const allMfrPaid = pos.length > 0 && pos.every((po) => !!po.paymentToMfr);
+  const allVendorsPaid = pos.length > 0 && pos.every((po) => !!po.paymentToVendor);
 
   const noIssues =
     shipments.every((s) => s.inspectionStatus !== "damaged" && s.inspectionStatus !== "wrong-item") &&
@@ -375,8 +375,8 @@ export const getDealCompletionChecklist = (
       checked: allPaid,
     },
     {
-      label: { en: "All manufacturers paid", es: "Todos los fabricantes pagados" },
-      checked: allMfrPaid,
+      label: { en: "All vendors paid", es: "Todos los proveedores pagados" },
+      checked: allVendorsPaid,
     },
     {
       label: { en: "No open issues", es: "Sin incidencias abiertas" },

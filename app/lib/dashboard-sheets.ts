@@ -41,7 +41,7 @@ type SheetTab =
   | "Purchase_Orders"
   | "Shipments"
   | "Deal_Payments"
-  | "Manufacturers"
+  | "Vendors"
   | "Traficos"
   | "Trafico_Items"
   | "USMCA_Certificates"

@@ -920,7 +920,8 @@ const PipelinePageInner = () => {
           PO_ID: string;
           Deal_ID: string;
           Brand: string;
-          Manufacturer: string;
+          Vendor: string;
+          Manufacturer?: string;
           Items_JSON: string;
           Total_Amount: string;
           Currency: string;
@@ -947,7 +948,7 @@ const PipelinePageInner = () => {
             id: r.PO_ID,
             dealId: r.Deal_ID,
             brand: r.Brand,
-            manufacturerName: r.Manufacturer || r.Brand,
+            vendorName: r.Vendor || r.Manufacturer || r.Brand,
             items,
             totalAmount: parseFloat(r.Total_Amount) || 0,
             currency: r.Currency || "MXN",
@@ -960,7 +961,7 @@ const PipelinePageInner = () => {
           if (r.Tracking) po.trackingNumber = r.Tracking;
           if (r.Received_Date) po.receivedDate = r.Received_Date;
           if (r.Payment_Date && r.Payment_Amount) {
-            po.paymentToMfr = {
+            po.paymentToVendor = {
               date: r.Payment_Date,
               amount: parseFloat(r.Payment_Amount) || 0,
               method: r.Payment_Method || "",
@@ -2376,13 +2377,13 @@ const PipelinePageInner = () => {
                         <div className="flex items-start justify-between">
                           <div>
                             <p className="text-sm font-medium text-dash-text">{po.id}</p>
-                            <p className="text-[11px] text-dash-text-secondary">{po.brand} &bull; {po.manufacturerName}</p>
+                            <p className="text-[11px] text-dash-text-secondary">{po.brand} &bull; {po.vendorName}</p>
                           </div>
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
                             po.status === "received" ? "bg-dash-success/10 text-dash-success" :
                             po.status === "shipped" ? "bg-dash-info/10 text-dash-info" :
                             po.status === "in-production" ? "bg-dash-cat-violet/10 text-dash-cat-violet" :
-                            po.status === "confirmed" || po.status === "paid-to-manufacturer" ? "bg-dash-info/10 text-dash-info" :
+                            po.status === "confirmed" || po.status === "paid-to-vendor" ? "bg-dash-info/10 text-dash-info" :
                             po.status === "sent" ? "bg-dash-warn/10 text-dash-warn" :
                             po.status === "issue" ? "bg-dash-danger/10 text-dash-danger" :
                             "bg-dash-text-secondary/10 text-dash-text-secondary"
@@ -2401,8 +2402,8 @@ const PipelinePageInner = () => {
                           </div>
                           <div>
                             <p className="text-dash-text-secondary">Mfr Paid</p>
-                            <p className={`font-medium ${po.paymentToMfr ? "text-dash-success" : "text-dash-warn"}`}>
-                              {po.paymentToMfr ? `\u2713 ${po.paymentToMfr.date}` : "Pending"}
+                            <p className={`font-medium ${po.paymentToVendor ? "text-dash-success" : "text-dash-warn"}`}>
+                              {po.paymentToVendor ? `\u2713 ${po.paymentToVendor.date}` : "Pending"}
                             </p>
                           </div>
                         </div>
@@ -2772,7 +2773,7 @@ const PipelinePageInner = () => {
                       </span>
                       <span className="flex items-center gap-2">
                         <span className="text-dash-text">${po.totalAmount.toLocaleString()} MXN</span>
-                        {po.paymentToMfr ? (
+                        {po.paymentToVendor ? (
                           <span className="text-dash-success">\u2705</span>
                         ) : (
                           <span className="text-dash-text-secondary">\u23f3</span>
@@ -2781,7 +2782,7 @@ const PipelinePageInner = () => {
                     </div>
                   ))}
                   <div className="flex items-center justify-between text-xs font-semibold border-t border-dash-border pt-1">
-                    <span className="text-dash-text-secondary">Total manufacturer cost:</span>
+                    <span className="text-dash-text-secondary">Total vendor cost:</span>
                     <span className="text-dash-text">${(selectedDeal.totalDealerCost ?? 0).toLocaleString()} MXN</span>
                   </div>
                 </div>
@@ -2798,7 +2799,7 @@ const PipelinePageInner = () => {
                     <span className="text-dash-danger">-${(selectedDeal.totalStripeFees ?? 0).toLocaleString()} MXN</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-dash-text-secondary">Manufacturer costs:</span>
+                    <span className="text-dash-text-secondary">Vendor costs:</span>
                     <span className="text-dash-danger">-${(selectedDeal.totalDealerCost ?? 0).toLocaleString()} MXN</span>
                   </div>
                   <div className="flex justify-between text-xs">

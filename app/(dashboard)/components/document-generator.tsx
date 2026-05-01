@@ -102,7 +102,7 @@ export const DocumentGenerator = ({
   const [dueDate, setDueDate] = useState(addDays(today(), 30));
 
   // PO-specific
-  const [manufacturerName, setManufacturerName] = useState("");
+  const [vendorName, setVendorName] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState(
     "Providencia, San Miguel de Allende, Guanajuato, Mexico"
   );
@@ -184,7 +184,7 @@ export const DocumentGenerator = ({
     docNumber,
     date,
     requestedDelivery,
-    manufacturerName,
+    vendorName,
     deliveryAddress,
     items,
     notes,
@@ -332,19 +332,19 @@ export const DocumentGenerator = ({
             </div>
           )}
 
-          {/* PO: Manufacturer */}
+          {/* PO: Vendor */}
           {docType === "po" && (
             <div className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
-                Manufacturer
+                Vendor
               </p>
               <div>
-                <label className={labelCls}>Manufacturer / Brand</label>
+                <label className={labelCls}>Vendor</label>
                 <input
                   className={inputCls}
-                  value={manufacturerName}
-                  onChange={(e) => setManufacturerName(e.target.value)}
-                  placeholder="e.g. Kohler, Brizo"
+                  value={vendorName}
+                  onChange={(e) => setVendorName(e.target.value)}
+                  placeholder="e.g. Ferguson, JCR"
                 />
               </div>
               <div>

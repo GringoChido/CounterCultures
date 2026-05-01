@@ -36,7 +36,7 @@ type PurchaseOrderRecord = {
   PO_ID: string;
   Deal_ID: string;
   Brand: string;
-  Manufacturer: string;
+  Vendor: string;
   Items_JSON: string;
   Total_Amount: string;
   Currency: string;
@@ -62,7 +62,7 @@ const PO_COLUMNS: (keyof PurchaseOrderRecord)[] = [
   "PO_ID",
   "Deal_ID",
   "Brand",
-  "Manufacturer",
+  "Vendor",
   "Items_JSON",
   "Total_Amount",
   "Currency",
@@ -103,7 +103,7 @@ interface GeneratedPo {
   id: string;
   dealId: string;
   brand: string;
-  manufacturerName: string;
+  vendorName: string;
   items: Array<{
     sku: string;
     productName: string;
@@ -175,7 +175,7 @@ export const POST = async (
         PO_ID: poId,
         Deal_ID: dealId,
         Brand: brand,
-        Manufacturer: brand,
+        Vendor: brand,
         Items_JSON: JSON.stringify(items),
         Total_Amount: totalAmount.toFixed(2),
         Currency: "MXN",
@@ -204,7 +204,7 @@ export const POST = async (
         id: poId,
         dealId,
         brand,
-        manufacturerName: brand,
+        vendorName: brand,
         items,
         totalAmount,
         currency: "MXN",

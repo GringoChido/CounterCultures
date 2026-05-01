@@ -10,7 +10,7 @@ type PurchaseOrderRecord = {
   PO_ID: string;
   Deal_ID: string;
   Brand: string;
-  Manufacturer: string;
+  Vendor: string;
   Items_JSON: string;
   Total_Amount: string;
   Currency: string;
@@ -36,7 +36,7 @@ const PO_COLUMNS: (keyof PurchaseOrderRecord)[] = [
   "PO_ID",
   "Deal_ID",
   "Brand",
-  "Manufacturer",
+  "Vendor",
   "Items_JSON",
   "Total_Amount",
   "Currency",
