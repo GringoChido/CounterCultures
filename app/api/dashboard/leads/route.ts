@@ -6,6 +6,10 @@ import {
   findRowIndex,
 } from "@/app/lib/dashboard-sheets";
 
+// Column order MUST match the actual Leads sheet header row, since
+// updateRow / appendRow write values positionally (A:Z), not by header
+// name. Sheet currently has: A-M = the original 13 fields, N = notes,
+// O = source_message_id, P-T = the 5 classifier fields.
 type LeadRecord = {
   id: string;
   name: string;
@@ -20,6 +24,13 @@ type LeadRecord = {
   next_followup: string;
   last_contact_date: string;
   brand_slugs: string; // pipe-separated ("kohler|dornbracht")
+  notes: string;
+  source_message_id: string;
+  classifier_brands: string; // pipe-separated, populated by /leads/classify
+  classifier_skus: string; // pipe-separated
+  classifier_profession: string; // Architect | Designer | Builder | Hospitality | Homeowner | Unknown
+  classifier_confidence: string; // string-encoded float 0-1
+  classifier_run_at: string; // ISO timestamp of last classifier run
 };
 
 const LEAD_COLUMNS: (keyof LeadRecord)[] = [
@@ -36,6 +47,13 @@ const LEAD_COLUMNS: (keyof LeadRecord)[] = [
   "next_followup",
   "last_contact_date",
   "brand_slugs",
+  "notes",
+  "source_message_id",
+  "classifier_brands",
+  "classifier_skus",
+  "classifier_profession",
+  "classifier_confidence",
+  "classifier_run_at",
 ];
 
 // GET — list all leads, optionally filter by status
