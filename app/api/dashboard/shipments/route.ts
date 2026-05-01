@@ -22,6 +22,12 @@ type ShipmentRecord = {
   Inspection_Status: string;
   Inspection_Notes: string;
   Photo_IDs: string;
+  // PR 9 — Skydropx integration columns
+  Label_Drive_File_ID: string;
+  Tracking_URL: string;
+  Skydropx_Mode: string; // "dry-run" | "live"
+  Rate_MXN: string;
+  Carrier_Display: string;
 };
 
 const SHIPMENT_COLUMNS: (keyof ShipmentRecord)[] = [
@@ -40,6 +46,11 @@ const SHIPMENT_COLUMNS: (keyof ShipmentRecord)[] = [
   "Inspection_Status",
   "Inspection_Notes",
   "Photo_IDs",
+  "Label_Drive_File_ID",
+  "Tracking_URL",
+  "Skydropx_Mode",
+  "Rate_MXN",
+  "Carrier_Display",
 ];
 
 // ---------------------------------------------------------------------------

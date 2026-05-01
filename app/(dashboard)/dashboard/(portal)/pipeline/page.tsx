@@ -57,6 +57,7 @@ import DealHistoryPanel from "@/app/(dashboard)/components/deal-history-panel";
 import PendingMoveBanner from "@/app/(dashboard)/components/pending-move-banner";
 import { DocumentGenerator } from "@/app/(dashboard)/components/document-generator";
 import { SendDialog } from "@/app/(dashboard)/components/send-dialog";
+import { SkydropxShipPanel } from "@/app/(dashboard)/components/shipments/skydropx-ship-panel";
 import { PreviewPanel, type PreviewFile } from "@/app/(dashboard)/components/preview-panel";
 import { NotesPanel } from "@/app/(dashboard)/components/notes-panel";
 import { ShareButton } from "@/app/(dashboard)/components/share-button";
@@ -2434,6 +2435,18 @@ const PipelinePageInner = () => {
             {/* Shipments Tab */}
             {dealTab === "shipments" && (
               <div className="space-y-4">
+                <SkydropxShipPanel
+                  dealId={selectedDeal.id}
+                  defaultRecipient={{
+                    name: selectedDeal.contactName,
+                    email: selectedDeal.contactCompany ?? "",
+                  }}
+                  onShipped={() => {
+                    // Optimistic refetch: pulse the shipments lazy-load by
+                    // toggling the deal selection and back.
+                    setSelectedDeal((cur) => (cur ? { ...cur } : cur));
+                  }}
+                />
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
                   Shipments
                 </h4>
