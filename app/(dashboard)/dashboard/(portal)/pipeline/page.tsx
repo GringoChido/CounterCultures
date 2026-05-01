@@ -210,6 +210,44 @@ const DOC_STATUS_STYLES: Record<string, string> = {
 };
 
 // ---------------------------------------------------------------------------
+// PoLink — renders a PO number as a copper-underlined link. If the PO has a
+// Drive file ID, we link directly to the PDF; otherwise we deep-link back
+// into the pipeline page with the deal+POs tab pre-opened so the user can
+// drill into payment / shipment details on that PO.
+// ---------------------------------------------------------------------------
+
+const poHref = (po: PurchaseOrder): string =>
+  po.driveFileId
+    ? `https://drive.google.com/file/d/${po.driveFileId}/view`
+    : `/dashboard/pipeline?deal=${encodeURIComponent(po.dealId)}&tab=purchase-orders`;
+
+const PoLink = ({
+  po,
+  className = "",
+}: {
+  po: PurchaseOrder;
+  className?: string;
+}) => {
+  const isExternal = !!po.driveFileId;
+  return (
+    <a
+      href={poHref(po)}
+      target={isExternal ? "_blank" : undefined}
+      rel={isExternal ? "noopener noreferrer" : undefined}
+      onClick={(e) => e.stopPropagation()}
+      className={`font-mono text-brand-copper hover:text-brand-copper/80 underline decoration-brand-copper/40 underline-offset-2 transition-colors ${className}`}
+      title={
+        isExternal
+          ? `Open ${po.id} PDF in Drive`
+          : `Open ${po.id} on the deal`
+      }
+    >
+      {po.id}
+    </a>
+  );
+};
+
+// ---------------------------------------------------------------------------
 // DealCard
 // ---------------------------------------------------------------------------
 
@@ -367,6 +405,23 @@ const DealCard = ({ deal, onClick, shipmentRisk, sla }: DealCardProps) => {
           {deal.brandSlugs.length > 3 && (
             <span className="text-[9px] text-dash-text-secondary self-center">
               +{deal.brandSlugs.length - 3}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* PO numbers — only render when already hydrated on the deal. POs
+          load lazily for live-sheet deals (the user has to open the POs
+          tab once), so absence here doesn't mean none exist. */}
+      {deal.purchaseOrders && deal.purchaseOrders.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 mb-1.5 text-[10px]">
+          <span className="text-dash-text-secondary">PO</span>
+          {deal.purchaseOrders.slice(0, 3).map((po) => (
+            <PoLink key={po.id} po={po} className="text-[10px]" />
+          ))}
+          {deal.purchaseOrders.length > 3 && (
+            <span className="text-dash-text-secondary">
+              +{deal.purchaseOrders.length - 3}
             </span>
           )}
         </div>
@@ -670,17 +725,30 @@ const PipelinePageInner = () => {
     }
   }, [newDealActionParam, router]);
 
-  // Deep-link: /dashboard/pipeline?deal=<id> from Needs You panel, bell drop-down,
-  // etc. Opens the slideout for that deal once deals are loaded, then strips the
-  // param so a refresh doesn't re-trigger the open.
+  // Deep-link: /dashboard/pipeline?deal=<id>[&tab=<tabKey>] from Needs You,
+  // bell drop-down, PO links, etc. Opens the slideout for that deal once
+  // deals are loaded, switches to the requested tab if supplied, then
+  // strips the params so a refresh doesn't re-trigger the open.
+  const tabDeepLinkParam = searchParams.get("tab");
   useEffect(() => {
     if (!dealDeepLinkParam || deals.length === 0) return;
     const hit = deals.find((d) => d.id === dealDeepLinkParam);
     if (hit) {
       setSelectedDeal(hit);
+      const validTabs: DealTabKey[] = [
+        "details", "documents", "line-items", "payments",
+        "purchase-orders", "shipments", "customs", "landed-cost",
+        "financial", "history",
+      ];
+      if (
+        tabDeepLinkParam &&
+        validTabs.includes(tabDeepLinkParam as DealTabKey)
+      ) {
+        setDealTab(tabDeepLinkParam as DealTabKey);
+      }
       router.replace("/dashboard/pipeline");
     }
-  }, [dealDeepLinkParam, deals, router]);
+  }, [dealDeepLinkParam, tabDeepLinkParam, deals, router]);
   const [newDealForm, setNewDealForm] = useState(emptyNewDealForm);
   const [newDealSaving, setNewDealSaving] = useState(false);
   const [brandOptions, setBrandOptions] = useState<BrandOption[]>([]);
@@ -2375,7 +2443,9 @@ const PipelinePageInner = () => {
                       <div key={po.id} className="bg-dash-bg rounded-lg p-3 space-y-2">
                         <div className="flex items-start justify-between">
                           <div>
-                            <p className="text-sm font-medium text-dash-text">{po.id}</p>
+                            <p className="text-sm font-medium text-dash-text">
+                              <PoLink po={po} className="text-sm" />
+                            </p>
                             <p className="text-[11px] text-dash-text-secondary">{po.brand} &bull; {po.manufacturerName}</p>
                           </div>
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
@@ -2768,7 +2838,7 @@ const PipelinePageInner = () => {
                   {(selectedDeal.purchaseOrders ?? []).map((po) => (
                     <div key={po.id} className="flex items-center justify-between text-xs">
                       <span className="text-dash-text-secondary">
-                        {po.id} ({po.brand}):
+                        <PoLink po={po} className="text-xs" /> ({po.brand}):
                       </span>
                       <span className="flex items-center gap-2">
                         <span className="text-dash-text">${po.totalAmount.toLocaleString()} MXN</span>
