@@ -368,6 +368,17 @@ export interface PipelineDeal {
   dateAtBorder?: string;         // YYYY-MM-DD — Trafico bridge: triggers in-customs rule
   dateCustomsCleared?: string;   // YYYY-MM-DD — Trafico bridge: triggers customs-cleared rule
   requiresCustoms?: boolean;     // false for domestic artisan brands → skip customs stages
+
+  // PR 10 — Local delivery + signature capture. Window fields are ISO
+  // strings; phone-confirmed is timestamped when Miguel calls the
+  // customer; signature fields populate after the delivery receipt
+  // PDF is uploaded.
+  deliveryWindowStart?: string;
+  deliveryWindowEnd?: string;
+  deliveryPhoneConfirmedAt?: string;
+  deliverySignatureDriveFileId?: string;
+  deliverySignedAt?: string;
+  deliverySignedBy?: string;
 }
 
 export interface ActivityItem {

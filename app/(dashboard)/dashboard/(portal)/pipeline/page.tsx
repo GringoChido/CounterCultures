@@ -57,6 +57,7 @@ import DealHistoryPanel from "@/app/(dashboard)/components/deal-history-panel";
 import PendingMoveBanner from "@/app/(dashboard)/components/pending-move-banner";
 import { DocumentGenerator } from "@/app/(dashboard)/components/document-generator";
 import { SendDialog } from "@/app/(dashboard)/components/send-dialog";
+import { DeliveryPanel } from "@/app/(dashboard)/components/delivery/delivery-panel";
 import { PreviewPanel, type PreviewFile } from "@/app/(dashboard)/components/preview-panel";
 import { NotesPanel } from "@/app/(dashboard)/components/notes-panel";
 import { ShareButton } from "@/app/(dashboard)/components/share-button";
@@ -235,6 +236,62 @@ const DOC_STATUS_STYLES: Record<string, string> = {
   Sent: "bg-dash-info/10 text-dash-info",
   Paid: "bg-status-won/10 text-status-won",
   Signed: "bg-dash-success/10 text-dash-success",
+};
+
+// ---------------------------------------------------------------------------
+// DeliveryPanelWrapper — wraps DeliveryPanel with a small fulfillment-mode
+// picker (local / pickup) since PipelineDeal doesn't yet store the deal's
+// fulfillment plan. Roger picks the mode at delivery time and the panel
+// renders the right scheduling + signature flow underneath.
+// ---------------------------------------------------------------------------
+
+const DeliveryPanelWrapper = ({
+  deal,
+  onUpdated,
+}: {
+  deal: PipelineDeal;
+  onUpdated: (patch: Partial<PipelineDeal>) => void;
+}) => {
+  const [mode, setMode] = useState<"local" | "pickup">("local");
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-[10px] uppercase tracking-wider text-dash-text-secondary">
+          Fulfillment
+        </span>
+        {(["local", "pickup"] as const).map((m) => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => setMode(m)}
+            className={`text-[11px] px-2.5 py-0.5 rounded-full border transition-colors cursor-pointer ${
+              mode === m
+                ? "bg-brand-copper text-white border-brand-copper"
+                : "bg-dash-surface text-dash-text-secondary border-dash-border hover:border-brand-copper/40"
+            }`}
+          >
+            {m === "local" ? "Local SMA · Miguel" : "Pickup · Warehouse"}
+          </button>
+        ))}
+      </div>
+      <DeliveryPanel
+        dealId={deal.id}
+        fulfillmentMode={mode}
+        contactName={deal.contactName}
+        deliveryAddress={deal.deliveryAddress}
+        itemsSummary={deal.products}
+        initial={{
+          windowStart: deal.deliveryWindowStart,
+          windowEnd: deal.deliveryWindowEnd,
+          phoneConfirmedAt: deal.deliveryPhoneConfirmedAt,
+          signatureDriveFileId: deal.deliverySignatureDriveFileId,
+          signedAt: deal.deliverySignedAt,
+          signedBy: deal.deliverySignedBy,
+        }}
+        onUpdated={onUpdated}
+      />
+    </div>
+  );
 };
 
 // ---------------------------------------------------------------------------
@@ -838,6 +895,15 @@ const PipelinePageInner = () => {
               pendingMoveAt: d.pending_move_at || undefined,
               dateAtBorder: d.date_at_border || undefined,
               dateCustomsCleared: d.date_customs_cleared || undefined,
+              // PR 10 — delivery / signature fields
+              deliveryWindowStart: d.delivery_window_start || undefined,
+              deliveryWindowEnd: d.delivery_window_end || undefined,
+              deliveryPhoneConfirmedAt:
+                d.delivery_phone_confirmed_at || undefined,
+              deliverySignatureDriveFileId:
+                d.delivery_signature_drive_file_id || undefined,
+              deliverySignedAt: d.delivery_signed_at || undefined,
+              deliverySignedBy: d.delivery_signed_by || undefined,
             }));
             setDeals(mapped);
           }
@@ -2515,6 +2581,17 @@ const PipelinePageInner = () => {
             {/* Shipments Tab */}
             {dealTab === "shipments" && (
               <div className="space-y-4">
+                <DeliveryPanelWrapper
+                  deal={selectedDeal}
+                  onUpdated={(patch) => {
+                    setSelectedDeal((d) => (d ? { ...d, ...patch } : d));
+                    setDeals((prev) =>
+                      prev.map((d) =>
+                        d.id === selectedDeal.id ? { ...d, ...patch } : d,
+                      ),
+                    );
+                  }}
+                />
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
                   Shipments
                 </h4>

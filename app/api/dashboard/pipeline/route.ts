@@ -21,13 +21,26 @@ type PipelineRecord = {
   source: string;
   created_at: string;
   notes: string;
-  brand_slugs: string; // pipe-separated ("kohler|dornbracht")
+  brand_slugs: string;
   source_message_id: string;
   stage_entered_at: string;
   pending_move_to: string;
   pending_move_at: string;
   date_at_border: string;
   date_customs_cleared: string;
+  // PR 5 — CFDI fields (live sheet has cols S-U). Listed here so writes
+  // pass the right number of positional values even when this branch
+  // doesn't itself expose CFDI logic.
+  requires_cfdi: string;
+  constancia_drive_file_id: string;
+  constancia_uploaded_at: string;
+  // PR 10 — delivery / signature
+  delivery_window_start: string;
+  delivery_window_end: string;
+  delivery_phone_confirmed_at: string;
+  delivery_signature_drive_file_id: string;
+  delivery_signed_at: string;
+  delivery_signed_by: string;
 };
 
 const PIPELINE_COLUMNS: (keyof PipelineRecord)[] = [
@@ -49,6 +62,15 @@ const PIPELINE_COLUMNS: (keyof PipelineRecord)[] = [
   "pending_move_at",
   "date_at_border",
   "date_customs_cleared",
+  "requires_cfdi",
+  "constancia_drive_file_id",
+  "constancia_uploaded_at",
+  "delivery_window_start",
+  "delivery_window_end",
+  "delivery_phone_confirmed_at",
+  "delivery_signature_drive_file_id",
+  "delivery_signed_at",
+  "delivery_signed_by",
 ];
 
 // Fields whose write should trigger a rule-engine evaluation. Anything else
