@@ -11,7 +11,7 @@
  */
 
 import { differenceInDays, parseISO } from "date-fns";
-import { CLOSED_STAGES, type PipelineStage } from "./sample-dashboard-data";
+import { CLOSED_STAGES, WON_STAGES, type PipelineStage } from "./sample-dashboard-data";
 
 // ---------------------------------------------------------------------------
 // Inputs the generator can ask for. Caller (the API route) hydrates these
@@ -82,7 +82,6 @@ export interface BriefPulseStat {
 
 export interface OwnerMorningBrief {
   generatedAt: string;
-  greeting: string;
   /** Top metrics row. */
   pulse: BriefPulseStat[];
   /** Things only Roger can unblock. Capped at 6 — anything more is noise. */
@@ -115,8 +114,9 @@ const STAGE_SLA_DAYS: Partial<Record<PipelineStage, number>> = {
   "customs-cleared": 7,
   received: 5,
   "delivery-scheduled": 5,
-  delivered: 14,
-  "balance-pending": 7,
+  // delivered + balance-pending intentionally omitted: they're in
+  // CLOSED_STAGES so the stuck filter would never see them. Revisit
+  // once those stages move out of CLOSED_STAGES.
 };
 
 const inDays = (iso: string | undefined, now: Date): number | null => {
@@ -139,9 +139,6 @@ export const generateOwnerBrief = (
   input: MorningBriefInput,
 ): OwnerMorningBrief => {
   const now = new Date(input.generatedAt);
-  const dayHour = now.getHours();
-  const greeting =
-    dayHour < 12 ? "Buenos días" : dayHour < 19 ? "Buenas tardes" : "Buenas noches";
 
   const activeDeals = input.deals.filter(
     (d) => !CLOSED_STAGES.includes(d.stage as PipelineStage),
@@ -149,13 +146,13 @@ export const generateOwnerBrief = (
 
   // ── Pulse ─────────────────────────────────────────────────────────────
   const pipelineValue = activeDeals.reduce((s, d) => s + d.value, 0);
-  const closedThisWeek = input.deals.filter((d) => {
+  const wonThisWeek = input.deals.filter((d) => {
     const stage = d.stage as PipelineStage;
-    if (!CLOSED_STAGES.includes(stage)) return false;
+    if (!WON_STAGES.includes(stage)) return false;
     const days = inDays(d.stageEnteredAt ?? d.createdAt, now);
     return days !== null && days <= 7;
   });
-  const wonRevenueWtd = closedThisWeek.reduce((s, d) => s + d.value, 0);
+  const wonRevenueWtd = wonThisWeek.reduce((s, d) => s + d.value, 0);
   const newSinceYesterday = input.deals.filter((d) => {
     const days = inDays(d.createdAt, now);
     return days !== null && days <= 1;
@@ -163,16 +160,18 @@ export const generateOwnerBrief = (
 
   const pulse: BriefPulseStat[] = [
     { label: "Pipeline", value: fmtMoneyMxn(pipelineValue), delta: `${activeDeals.length} active` },
-    { label: "Won this week", value: fmtMoneyMxn(wonRevenueWtd), delta: `${closedThisWeek.length} closed` },
+    { label: "Won this week", value: fmtMoneyMxn(wonRevenueWtd), delta: `${wonThisWeek.length} won` },
     { label: "New leads", value: String(newSinceYesterday), delta: "since yesterday" },
   ];
 
   // ── Needs you ─────────────────────────────────────────────────────────
   const needsYou: BriefAction[] = [];
 
-  // 1. Unanswered ¿Requiere CFDI? (PR 5) — past 24h
+  // 1. Unanswered ¿Requiere CFDI? (PR 5) — past 24h.
+  // Only fires on explicit empty string. `undefined` means the column
+  // is missing from the sheet (not "unanswered") — see route guard.
   const cfdiOpen = activeDeals.filter((d) => {
-    if (d.requiresCfdi === "yes" || d.requiresCfdi === "no") return false;
+    if (d.requiresCfdi !== "") return false;
     const days = inDays(d.createdAt, now);
     return days !== null && days >= 1;
   });
@@ -237,7 +236,9 @@ export const generateOwnerBrief = (
   }
 
   // ── Advanced overnight ─────────────────────────────────────────────────
-  const advanced: BriefAction[] = activeDeals
+  // Runs against input.deals (not activeDeals) so deals that closed-won
+  // overnight surface here — exactly the news Roger most wants to see.
+  const advanced: BriefAction[] = input.deals
     .filter((d) => {
       const days = inDays(d.stageEnteredAt, now);
       return days !== null && days <= 1 && days >= 0;
@@ -272,7 +273,6 @@ export const generateOwnerBrief = (
 
   return {
     generatedAt: input.generatedAt,
-    greeting,
     pulse,
     needsYou: needsYou.slice(0, 6),
     advanced,

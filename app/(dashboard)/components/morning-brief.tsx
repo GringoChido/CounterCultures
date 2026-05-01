@@ -93,10 +93,23 @@ const Section = ({
   </div>
 );
 
+// Greeting derived from the user's local clock, not the server's UTC.
+// Renders an empty string until mount so SSR/CSR markup matches.
+const greetingForHour = (hour: number): string => {
+  if (hour < 12) return "Buenos días";
+  if (hour < 19) return "Buenas tardes";
+  return "Buenas noches";
+};
+
 export const MorningBrief = () => {
   const [brief, setBrief] = useState<OwnerMorningBrief | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [greeting, setGreeting] = useState<string>("");
+
+  useEffect(() => {
+    setGreeting(greetingForHour(new Date().getHours()));
+  }, []);
 
   const load = async () => {
     setLoading(true);
@@ -168,7 +181,7 @@ export const MorningBrief = () => {
             Morning brief
           </p>
           <h3 className="font-display text-[24px] text-dash-text mt-1">
-            {brief.greeting}, Roger.
+            {greeting ? `${greeting}, Roger.` : "Roger."}
           </h3>
           {generated && (
             <p className="text-[10px] text-dash-text-secondary mt-0.5">

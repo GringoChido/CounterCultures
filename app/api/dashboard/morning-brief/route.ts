@@ -41,6 +41,19 @@ export const GET = async (_request: NextRequest) => {
     );
     const poDealIds = new Set(poRows.map((p) => p.Deal_ID));
 
+    // Detect whether brief-only columns exist on the Pipeline sheet.
+    // readSheet seeds every header as a row key, so a missing column
+    // means the key never appears. Without this guard, a missing
+    // `requires_cfdi` column would flood "Needs you" with a CFDI-question
+    // action on every deal older than 24h.
+    const sample = pipelineRows[0];
+    const hasCfdiColumn = sample ? "requires_cfdi" in sample : true;
+    if (!hasCfdiColumn) {
+      console.warn(
+        "[Morning brief] Pipeline sheet missing 'requires_cfdi' column — CFDI-question rule disabled",
+      );
+    }
+
     const deals: BriefDealRow[] = pipelineRows.map((r) => ({
       id: r.id,
       name: r.name || "(untitled)",
@@ -51,7 +64,10 @@ export const GET = async (_request: NextRequest) => {
       source: r.source || "",
       createdAt: r.created_at || new Date().toISOString(),
       stageEnteredAt: r.stage_entered_at || r.created_at || undefined,
-      requiresCfdi: r.requires_cfdi || "",
+      // `??` not `||` so we preserve the difference between
+      // "column present, cell empty" (rule should fire) and
+      // "column absent" (rule should be inert).
+      requiresCfdi: hasCfdiColumn ? (r.requires_cfdi ?? "") : undefined,
       constanciaDriveFileId: r.constancia_drive_file_id || undefined,
       hasPaidDeposit: paidDealIds.has(r.id),
       hasPo: poDealIds.has(r.id),
