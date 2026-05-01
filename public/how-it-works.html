@@ -366,16 +366,18 @@
         <p class="md:col-span-7 body-text" style="font-size: 19px;">
           Counter Cultures sells imported plumbing and architectural fixtures —
           Kohler, Brizo, BLANCO, TOTO — to architects, designers and builders across Mexico.
-          Most inquiries arrive on WhatsApp as a phone number with no name attached.
-          A single deal threads through that first message, a quote in two languages, a fiscal CFDI,
+          Inquiries arrive through three doors: a <span class="ink">WhatsApp message</span> from
+          a phone Roger doesn't know, a <span class="ink">walk-in</span> at the SMA showroom, or
+          a <span class="ink">website inquiry</span> from countercultures.com.mx.
+          A single deal threads through that first touch, a quote in two languages, a fiscal CFDI,
           a vendor in another country, customs paperwork, and a signed delivery slip in San Miguel.
           The portal is the one place all of that lives.
         </p>
         <div class="md:col-span-4 md:col-start-9 md:pl-10 md:border-l hairline">
           <div class="label mb-3">In this walkthrough</div>
           <ul class="space-y-2 text-[14px] ink">
-            <li>Eleven stages of one real order</li>
-            <li>From WhatsApp ping to signed receipt</li>
+            <li>Three doors in, eleven stages out</li>
+            <li>From first touch to signed receipt</li>
             <li>Across eight systems, one tab</li>
           </ul>
           <a href="#stage-1" class="next-link mt-8 inline-flex">Begin <span aria-hidden="true">→</span></a>
@@ -384,108 +386,198 @@
     </div>
   </section>
 
-  <!-- ============== STAGE 1 — Lead Arrives ============== -->
+  <!-- ============== STAGE 1 — Lead Arrives (three doors) ============== -->
   <section id="stage-1" class="stage bg-paper" data-stage="1">
-    <div class="max-w-[1320px] mx-auto px-6 md:px-12 grid md:grid-cols-12 gap-12 items-start">
-      <div class="md:col-span-5 col-copy">
-        <div class="stage-num mb-6">Stage One</div>
-        <h2 class="display text-[44px] md:text-[60px]">A WhatsApp ping <span class="display-italic">from a stranger.</span></h2>
-        <p class="body-text mt-8">
-          Most leads come in on WhatsApp. The phone shows a <span class="ink">number</span>, not a name —
-          unless that contact has been manually saved on Roger's physical phone, which it almost never has.
-          The portal accepts that as the starting condition.
-        </p>
-        <p class="body-text mt-4">
-          The inbound message lands at <span class="mono ink">/dashboard/leads</span>. Claude reads the body,
-          identifies the brands and SKUs mentioned, and creates a row with the source set to
-          <span class="ink">WhatsApp</span> and the name field marked
-          <span class="copper">pending — phone-only contact</span>.
-          Roger gets a desktop notification within thirty seconds.
-        </p>
-        <a href="#stage-2" class="next-link mt-10">Next — convert to a deal <span aria-hidden="true">→</span></a>
-      </div>
-
-      <!-- MOCKUP: WhatsApp phone (left) + lead row in dashboard (right) -->
-      <div class="md:col-span-7">
-        <div class="grid md:grid-cols-2 gap-6 items-start">
-
-          <!-- WhatsApp phone -->
-          <div class="phone">
-            <div class="phone-screen">
-              <!-- WA header -->
-              <div class="px-3 pt-3 pb-2" style="background: #075E54; color: #fff;">
-                <div class="flex items-center gap-2">
-                  <div class="w-7 h-7 rounded-full" style="background: #ffffff22; display:flex; align-items:center; justify-content:center;">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><path d="M20 15.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-                  </div>
-                  <div>
-                    <div class="text-[11px]" style="font-weight:500;">+52 81 ··· 4421</div>
-                    <div class="text-[9px]" style="opacity:.7;">not in contacts</div>
-                  </div>
-                </div>
-              </div>
-              <!-- WA chat -->
-              <div class="p-3 space-y-2" style="background: #ECE5DD; min-height: 280px;">
-                <div class="wa-bubble in" style="max-width: 85%;">
-                  Hola, estoy especificando una <span class="ink" style="font-weight:500;">BLANCO QUATRUS R15</span> doble tarja para una residencia. También me interesan dos <span class="ink" style="font-weight:500;">Brizo Litze</span> y la <span class="ink" style="font-weight:500;">Kohler Artifacts</span> bridge en bronce. ¿Pueden cotizarme?
-                  <div class="text-[8px] mt-1" style="color: var(--muted); text-align:right;">14:32</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Lead row + Claude classifier -->
-          <div class="space-y-4">
-            <div class="mockup-frame overflow-hidden">
-              <div class="mockup-bar px-4 py-3 flex items-center justify-between text-[11px]" style="color: var(--muted);">
-                <span class="mono">/dashboard/leads</span>
-                <span class="label" style="font-size: 9.5px;">just now</span>
-              </div>
-              <div class="row head" style="grid-template-columns: 90px 1.4fr 0.9fr 90px;">
-                <div>Received</div><div>Contact &amp; message</div><div>Source</div><div></div>
-              </div>
-              <div class="row highlight" style="grid-template-columns: 90px 1.4fr 0.9fr 90px;">
-                <div class="mono text-[12px]">14:32</div>
-                <div>
-                  <div class="ink" style="font-weight: 500;">+52 81 ··· 4421</div>
-                  <div class="text-[11px] copper" style="letter-spacing: 0.04em;">name pending · phone-only</div>
-                  <div class="text-[12px] mt-1" style="color: var(--muted);">"…BLANCO QUATRUS R15 doble tarja…"</div>
-                </div>
-                <div class="text-[12.5px] flex items-center gap-1.5">
-                  <span class="w-1.5 h-1.5 rounded-full dot-wa"></span>
-                  <span class="ink">WhatsApp</span>
-                </div>
-                <div class="text-right"><span class="pill pill-new">NEW</span></div>
-              </div>
-            </div>
-
-            <!-- Claude classifier card -->
-            <div class="border hairline p-4 bg-white">
-              <div class="flex items-center gap-2">
-                <span class="w-1.5 h-1.5 rounded-full dot-copper"></span>
-                <div class="label" style="color: var(--copper);">Claude · classifier</div>
-              </div>
-              <div class="mt-3 text-[12px] ink" style="line-height: 1.55;">
-                Identified <span class="copper">3 brands</span> and <span class="copper">3 likely SKUs</span> in the message body.
-              </div>
-              <div class="mt-3 flex gap-1.5 flex-wrap">
-                <span class="pill pill-copper">BLANCO QUATRUS R15</span>
-                <span class="pill pill-copper">Brizo Litze</span>
-                <span class="pill pill-copper">Kohler Artifacts</span>
-              </div>
-              <div class="mt-3 text-[11px]" style="color: var(--muted);">
-                Profession guess: <span class="ink">Designer</span> · confidence 0.78
-              </div>
-            </div>
-          </div>
-
+    <div class="max-w-[1320px] mx-auto px-6 md:px-12">
+      <div class="grid md:grid-cols-12 gap-12 items-start mb-12">
+        <div class="md:col-span-5 col-copy">
+          <div class="stage-num mb-6">Stage One</div>
+          <h2 class="display text-[44px] md:text-[60px]">Three doors. <span class="display-italic">One file.</span></h2>
+          <p class="body-text mt-8">
+            Counter Cultures meets customers in three places. The portal accepts each one
+            on its own terms — a phone-only WhatsApp ping, a name jotted on a contact card
+            at the showroom, or a typed website form — and lands them all in the same
+            row at <span class="mono ink">/dashboard/leads</span>.
+          </p>
+          <p class="body-text mt-4">
+            The <span class="ink">Source</span> column carries that origin forward through
+            every later stage: it's how the portal knows to send the quote back on
+            WhatsApp <span class="ink">and</span> email when the lead came in on WhatsApp,
+            email-only when it came in on the website, and printed in person when it
+            came in through the showroom door.
+          </p>
+          <a href="#stage-2" class="next-link mt-10">Next — convert to a deal <span aria-hidden="true">→</span></a>
         </div>
 
-        <div class="mt-6 flex items-start gap-4 max-w-md">
-          <div class="w-8 h-px mt-3" style="background: var(--copper);"></div>
-          <p class="ink" style="font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18px; line-height: 1.4;">
-            We start with a phone number. The portal does the rest.
+        <div class="md:col-span-7">
+          <div class="mockup-frame overflow-hidden">
+            <div class="mockup-bar px-4 py-3 flex items-center justify-between text-[11px]" style="color: var(--muted);">
+              <span class="mono">/dashboard/leads · today</span>
+              <span class="label" style="font-size: 9.5px;">3 new in the last 4 hours</span>
+            </div>
+            <div class="row head" style="grid-template-columns: 80px 1.4fr 0.9fr 80px;">
+              <div>Received</div><div>Contact &amp; message</div><div>Source</div><div></div>
+            </div>
+            <!-- Walk-in row -->
+            <div class="row" style="grid-template-columns: 80px 1.4fr 0.9fr 80px;">
+              <div class="mono text-[12px]">10:05</div>
+              <div>
+                <div class="ink" style="font-weight: 500;">Arq. Gabor Goded</div>
+                <div class="text-[11px]" style="color: var(--muted);">Casa Atelier · in for a Brizo + Sun Valley Bronze pack</div>
+              </div>
+              <div class="text-[12.5px] flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full" style="background: var(--terracotta);"></span>
+                <span class="ink">Walk-in · SMA</span>
+              </div>
+              <div class="text-right"><span class="pill pill-new">NEW</span></div>
+            </div>
+            <!-- WhatsApp row -->
+            <div class="row highlight" style="grid-template-columns: 80px 1.4fr 0.9fr 80px;">
+              <div class="mono text-[12px]">14:32</div>
+              <div>
+                <div class="ink" style="font-weight: 500;">+52 81 ··· 4421</div>
+                <div class="text-[11px] copper" style="letter-spacing: 0.04em;">name pending · phone-only</div>
+                <div class="text-[12px] mt-1" style="color: var(--muted);">"…BLANCO QUATRUS R15 doble tarja…"</div>
+              </div>
+              <div class="text-[12.5px] flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full dot-wa"></span>
+                <span class="ink">WhatsApp</span>
+              </div>
+              <div class="text-right"><span class="pill pill-new">NEW</span></div>
+            </div>
+            <!-- Website row -->
+            <div class="row" style="grid-template-columns: 80px 1.4fr 0.9fr 80px;">
+              <div class="mono text-[12px]">15:18</div>
+              <div>
+                <div class="ink" style="font-weight: 500;">María Rentería</div>
+                <div class="text-[11px]" style="color: var(--muted);">Reester Arq. · maria@reesteresarq.mx</div>
+                <div class="text-[12px] mt-1" style="color: var(--muted);">"Necesito una cotización para 12 unidades de TOTO Neorest…"</div>
+              </div>
+              <div class="text-[12.5px] flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full" style="background: var(--violet);"></span>
+                <span class="ink">Website</span>
+              </div>
+              <div class="text-right"><span class="pill pill-new">NEW</span></div>
+            </div>
+          </div>
+
+          <div class="mt-6 flex items-start gap-4 max-w-md">
+            <div class="w-8 h-px mt-3" style="background: var(--copper);"></div>
+            <p class="ink" style="font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18px; line-height: 1.4;">
+              Three doors in. The portal handles each one on its own terms,
+              then lines them up the same way.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- The three doors, side by side -->
+      <div class="grid md:grid-cols-3 gap-6 mt-8">
+
+        <!-- DOOR 1 — WhatsApp -->
+        <div class="border hairline bg-white p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-2 h-2 rounded-full dot-wa"></span>
+            <div class="label" style="color: #1B7F3E;">Door 1 · WhatsApp</div>
+          </div>
+          <h3 class="display text-[22px] ink mb-3">A phone number, no name.</h3>
+          <p class="body-text" style="font-size: 14px;">
+            Most inquiries land here. The phone shows a number — Roger almost never has
+            it saved as a contact. The portal accepts that as the starting condition,
+            displays the redacted phone (<span class="mono ink">+52 81 ··· 4421</span>),
+            and tags the lead <span class="copper">name pending · phone-only</span>.
           </p>
+          <p class="body-text mt-3" style="font-size: 14px;">
+            Claude reads the message body and pulls out brands, SKUs, and a profession
+            guess so Roger has context before he even types back.
+          </p>
+          <div class="border hairline-soft p-3 mt-4 bg-white" style="background: #FBF8F2;">
+            <div class="label" style="color: var(--copper);">Claude · classifier</div>
+            <div class="mt-2 flex gap-1.5 flex-wrap">
+              <span class="pill pill-copper">BLANCO QUATRUS R15</span>
+              <span class="pill pill-copper">Brizo Litze</span>
+              <span class="pill pill-copper">Kohler Artifacts</span>
+            </div>
+            <div class="mt-2 text-[11px]" style="color: var(--muted);">
+              Profession: <span class="ink">Designer</span> · 0.78
+            </div>
+          </div>
+        </div>
+
+        <!-- DOOR 2 — Walk-in -->
+        <div class="border hairline bg-white p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-2 h-2 rounded-full" style="background: var(--terracotta);"></span>
+            <div class="label" style="color: var(--terracotta);">Door 2 · Walk-in</div>
+          </div>
+          <h3 class="display text-[22px] ink mb-3">Someone at the showroom.</h3>
+          <p class="body-text" style="font-size: 14px;">
+            Architects drop in on the way to a site visit. Builders come asking after
+            a finish they saw in another job. Roger captures the lead in a single
+            screen — name, role, brands they're after, project context — and the row
+            lands at <span class="mono ink">/dashboard/leads</span> with source set
+            <span class="ink">Walk-in · SMA</span>.
+          </p>
+          <p class="body-text mt-3" style="font-size: 14px;">
+            Most walk-ins leave with a quote and a payment link before they get back
+            to the car.
+          </p>
+          <div class="border hairline-soft p-3 mt-4" style="background: #FCFAF6;">
+            <div class="label">Quick capture</div>
+            <div class="mt-2 space-y-1.5 text-[12px]">
+              <div class="flex items-center justify-between">
+                <span class="text-dash" style="color: var(--muted);">Name</span>
+                <span class="ink">Arq. Gabor Goded</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span style="color: var(--muted);">Role</span>
+                <span class="pill" style="font-size: 9.5px;">Architect</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span style="color: var(--muted);">Brands</span>
+                <div class="flex gap-1">
+                  <span class="pill pill-copper" style="font-size: 9.5px;">Brizo</span>
+                  <span class="pill pill-copper" style="font-size: 9.5px;">Sun Valley Bronze</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DOOR 3 — Website -->
+        <div class="border hairline bg-white p-5">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-2 h-2 rounded-full" style="background: var(--violet);"></span>
+            <div class="label" style="color: var(--violet);">Door 3 · Website</div>
+          </div>
+          <h3 class="display text-[22px] ink mb-3">A form on countercultures.com.mx.</h3>
+          <p class="body-text" style="font-size: 14px;">
+            The contact form on the public site posts straight into the Leads tab.
+            Name, email, phone (optional), and the inquiry body. Source is set to
+            <span class="ink">Website</span> — Roger touches them back on email,
+            never assuming WhatsApp without an explicit phone in the form.
+          </p>
+          <p class="body-text mt-3" style="font-size: 14px;">
+            Claude runs the same brand / SKU / profession classifier on the message
+            body so the lead arrives pre-tagged.
+          </p>
+          <div class="border hairline-soft p-3 mt-4" style="background: #FCFAF6;">
+            <div class="label">Form submission</div>
+            <div class="mt-2 space-y-1.5 text-[12px]">
+              <div class="flex items-center justify-between">
+                <span style="color: var(--muted);">Name</span>
+                <span class="ink">María Rentería</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span style="color: var(--muted);">Email</span>
+                <span class="ink mono text-[10px]">maria@reesteresarq.mx</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span style="color: var(--muted);">Pages viewed</span>
+                <span class="ink">/shop/toilets · /brands/toto</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -498,15 +590,19 @@
         <div class="stage-num mb-6">Stage Two</div>
         <h2 class="display text-[44px] md:text-[60px]">Every inquiry <span class="display-italic">becomes a deal.</span></h2>
         <p class="body-text mt-8">
-          Roger's rule: every inquiry gets quoted. Not every one closes — but every one gets a quote.
-          One click converts the lead to <span class="mono ink">CC-2026-0142</span> on the Pipeline kanban,
-          and everything for this customer — quote, PO, invoice, delivery receipt, notes — lives under
-          that single Deal record.
+          Roger's rule: every inquiry gets quoted. Walk-in, WhatsApp, website — same rule.
+          Not every one closes — but every one gets a quote. One click converts the lead to
+          <span class="mono ink">CC-2026-0142</span> on the Pipeline kanban,
+          and everything for this customer — quote, PO, CFDI, delivery receipt, notes —
+          lives under that single Deal record.
         </p>
         <p class="body-text mt-4">
-          At the same instant, the system provisions a Google Drive folder under the Shared Drive
-          with five subfolders. From this moment on, every PDF the deal ever produces lands here automatically.
-          Nobody has to remember to file anything.
+          The deal carries the <span class="ink">Source</span> field forward from the lead so
+          later stages know how to behave: WhatsApp leads get the quote sent on both WhatsApp
+          and email, walk-ins get a printed copy plus an email follow-up, website leads get
+          email-only. At the same instant the system provisions a Google Drive folder under
+          the Shared Drive with five subfolders. From this moment on, every PDF the deal
+          ever produces lands here automatically. Nobody has to remember to file anything.
         </p>
         <a href="#stage-3" class="next-link mt-10">Next — building the quote <span aria-hidden="true">→</span></a>
       </div>
@@ -794,11 +890,17 @@
         <div class="stage-num mb-6">Stage Four</div>
         <h2 class="display text-[44px] md:text-[60px]">Sent back <span class="display-italic">where she came from.</span></h2>
         <p class="body-text mt-8">
-          Roger touches every customer back through the channel that found him. María came in on
-          WhatsApp, so the quote goes out on <span class="ink">WhatsApp and email both</span> —
-          the WhatsApp message carries a short note and a link, the email carries the full PDF.
-          A customer who arrived by email gets email only.
+          Roger touches every customer back through the channel that found him. The Source field
+          on the deal drives the default — but he can always override.
         </p>
+        <ul class="body-text mt-4 space-y-1.5" style="font-size: 16px;">
+          <li>· <span class="ink">WhatsApp source</span> → both channels. WhatsApp carries a short
+            note and a link; email carries the full PDF and payment link.</li>
+          <li>· <span class="ink">Walk-in source</span> → printed in the showroom on the spot, plus an
+            email follow-up so the customer has it on their phone.</li>
+          <li>· <span class="ink">Website source</span> → email only. No WhatsApp unless they typed a
+            phone in the form and explicitly asked for it.</li>
+        </ul>
         <p class="body-text mt-4">
           The PDF saves to <span class="mono ink">Deals/CC-2026-0142/Quotes/</span>,
           a 30-day signed share link is generated, and the deal moves to <span class="ink">Quoted</span>.
@@ -991,9 +1093,11 @@
         <h2 class="display text-[44px] md:text-[60px]">Eleven ways <span class="display-italic">to pay.</span></h2>
         <p class="body-text mt-8">
           Counter Cultures takes the deposit through whichever channel suits the customer —
-          Stripe online, a Santander fiscal terminal in the showroom, a Netpay non-fiscal swipe,
-          cash in either currency, a check, a Zelle, a domestic or international wire.
-          Each path is wired into the deal record so the books always agree with the fiscal record.
+          and the right channel depends on which door they came through.
+          <span class="ink">WhatsApp and website</span> leads usually pay by Stripe link, wire,
+          or Zelle. <span class="ink">Walk-in</span> leads usually swipe at the counter on
+          Santander Fiscal or Netpay, or hand over cash or a check. The portal handles all
+          eleven methods so the books always agree with the fiscal record either way.
         </p>
         <p class="body-text mt-4">
           Default is <span class="ink">70% deposit</span>; some customers pay <span class="ink">100%</span>
