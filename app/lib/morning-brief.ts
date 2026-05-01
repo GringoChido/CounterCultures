@@ -105,6 +105,7 @@ const STAGE_SLA_DAYS: Partial<Record<PipelineStage, number>> = {
   negotiation: 14,
   "follow-up-negotiation": 14,
   "verbal-yes": 5,
+  "quote-approved": 5,
   "deposit-pending": 5,
   "deposit-received": 7,
   ordering: 10,
@@ -117,6 +118,16 @@ const STAGE_SLA_DAYS: Partial<Record<PipelineStage, number>> = {
   // delivered + balance-pending intentionally omitted: they're in
   // CLOSED_STAGES so the stuck filter would never see them. Revisit
   // once those stages move out of CLOSED_STAGES.
+};
+
+// Customs SLA: a Trafico that's been "open" longer than this is stuck.
+const TRAFICO_SLA_DAYS = 21;
+
+// Used to sort needsYou before slicing to 6. Higher wins.
+const SEVERITY_WEIGHT: Record<NonNullable<BriefAction["severity"]>, number> = {
+  urgent: 100,
+  warn: 50,
+  info: 10,
 };
 
 const inDays = (iso: string | undefined, now: Date): number | null => {
@@ -158,10 +169,27 @@ export const generateOwnerBrief = (
     return days !== null && days <= 1;
   }).length;
 
+  // ── Customs ──────────────────────────────────────────────────────────
+  // A Trafico is "open" until status indicates it's cleared/closed. Stuck
+  // = open longer than TRAFICO_SLA_DAYS. Status vocabulary varies, so
+  // pattern-match instead of enumerating.
+  const isClosedTrafico = (t: BriefTraficoRow): boolean =>
+    /clear|closed|complete|received/i.test(t.status);
+  const openTraficos = input.traficos.filter((t) => !isClosedTrafico(t));
+  const stuckTraficos = openTraficos.filter((t) => {
+    const days = inDays(t.initiatedDate, now);
+    return days !== null && days > TRAFICO_SLA_DAYS;
+  });
+
   const pulse: BriefPulseStat[] = [
     { label: "Pipeline", value: fmtMoneyMxn(pipelineValue), delta: `${activeDeals.length} active` },
     { label: "Won this week", value: fmtMoneyMxn(wonRevenueWtd), delta: `${wonThisWeek.length} won` },
     { label: "New leads", value: String(newSinceYesterday), delta: "since yesterday" },
+    {
+      label: "In customs",
+      value: String(openTraficos.length),
+      delta: stuckTraficos.length > 0 ? `${stuckTraficos.length} over ${TRAFICO_SLA_DAYS}d` : "all on track",
+    },
   ];
 
   // ── Needs you ─────────────────────────────────────────────────────────
@@ -219,7 +247,9 @@ export const generateOwnerBrief = (
     });
   }
 
-  // 4. Local delivery scheduled but no phone-confirm with Miguel
+  // 4. Local delivery scheduled but no phone-confirm with Miguel.
+  // Severity bumps to warn when the window is within 24 hours — a missed
+  // confirm on tomorrow's delivery is materially worse than next week's.
   const miguelUnconfirmed = activeDeals.filter(
     (d) =>
       d.deliveryWindowStart &&
@@ -227,11 +257,16 @@ export const generateOwnerBrief = (
       ["received", "delivery-scheduled"].includes(d.stage as string),
   );
   for (const d of miguelUnconfirmed.slice(0, 2)) {
+    const daysUntil = d.deliveryWindowStart
+      ? differenceInDays(parseISO(d.deliveryWindowStart), now)
+      : null;
+    const isImminent = daysUntil !== null && daysUntil <= 1;
     needsYou.push({
       label: `Phone-confirm window with Miguel for ${d.name}`,
       href: `/dashboard/pipeline?deal=${encodeURIComponent(d.id)}&tab=shipments`,
       detail: `Scheduled ${d.deliveryWindowStart?.split("T")[0] ?? ""}`,
-      severity: "info",
+      badge: isImminent ? "tomorrow" : undefined,
+      severity: isImminent ? "warn" : "info",
     });
   }
 
@@ -270,6 +305,15 @@ export const generateOwnerBrief = (
       badge: daysOver >= 14 ? "critical" : daysOver >= 7 ? "urgent" : "warn",
       severity: daysOver >= 14 ? "urgent" : "warn",
     }));
+
+  // Sort needsYou by severity weight before slicing so urgent items
+  // (Constancia blocking, imminent delivery) never get pushed out by
+  // lower-priority items (CFDI questions on early-stage deals).
+  needsYou.sort(
+    (a, b) =>
+      SEVERITY_WEIGHT[b.severity ?? "info"] -
+      SEVERITY_WEIGHT[a.severity ?? "info"],
+  );
 
   return {
     generatedAt: input.generatedAt,

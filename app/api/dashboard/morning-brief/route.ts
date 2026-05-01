@@ -1,22 +1,21 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { readSheet } from "@/app/lib/dashboard-sheets";
+import { appendRow, readSheet } from "@/app/lib/dashboard-sheets";
 import {
   generateOwnerBrief,
   type BriefDealRow,
   type BriefTraficoRow,
+  type OwnerMorningBrief,
 } from "@/app/lib/morning-brief";
 import type { PipelineStage } from "@/app/lib/sample-dashboard-data";
 
 /**
  * GET /api/dashboard/morning-brief
  *
- * Generates Roger's morning brief on demand from current Pipeline +
- * Deal_Payments + Purchase_Orders + Traficos state. v0 doesn't yet
- * persist to a Morning_Briefs sheet — Roger pulls fresh on each load,
- * which keeps the surface trivially correct while we tune the content.
- * Once the content is approved we'll add the cron + sheet persistence
- * so the brief becomes a real day-stamped artifact (and so the email
- * delivery can read from the same source).
+ * Generates Roger's morning brief from current Pipeline + Deal_Payments +
+ * Purchase_Orders + Traficos state. Cached in-process for 5 min — pass
+ * `?refresh=1` to bypass (the UI's Refresh button does this). Each cache
+ * miss appends a snapshot row to Morning_Briefs so the email job and a
+ * future "yesterday's brief" view can read from the same source.
  */
 
 type PipelineRow = Record<string, string>;
@@ -24,7 +23,39 @@ type PaymentRow = Record<string, string>;
 type PoRow = Record<string, string>;
 type TraficoRow = Record<string, string>;
 
-export const GET = async (_request: NextRequest) => {
+const CACHE_TTL_MS = 5 * 60 * 1000;
+let CACHE: { ts: number; brief: OwnerMorningBrief } | null = null;
+
+const ROGER_EMAIL = "roger@countercultures.com.mx";
+
+const persistBrief = async (brief: OwnerMorningBrief, userEmail: string) => {
+  // Append-only. Latest row per (date, user) wins downstream.
+  // Failures here must not break the user-facing response — log and move on.
+  try {
+    const ts = Date.now();
+    const date = brief.generatedAt.slice(0, 10);
+    await appendRow("Morning_Briefs", [
+      `BRIEF-${date}-${ts}`,
+      date,
+      userEmail,
+      brief.generatedAt,
+      JSON.stringify(brief),
+    ]);
+  } catch (err) {
+    console.error("[Morning brief API] persist failed:", err);
+  }
+};
+
+export const GET = async (request: NextRequest) => {
+  const bypass = request.nextUrl.searchParams.get("refresh") === "1";
+
+  if (!bypass && CACHE && Date.now() - CACHE.ts < CACHE_TTL_MS) {
+    return NextResponse.json(
+      { brief: CACHE.brief, cached: true },
+      { headers: { "Cache-Control": "private, max-age=300" } },
+    );
+  }
+
   try {
     const [pipelineRows, paymentRows, poRows, traficoRows] = await Promise.all([
       readSheet<PipelineRow>("Pipeline").catch(() => [] as PipelineRow[]),
@@ -86,12 +117,20 @@ export const GET = async (_request: NextRequest) => {
     // up the current user's role from the session and dispatch on it.
     const brief = generateOwnerBrief({
       generatedAt: new Date().toISOString(),
-      user: { email: "roger@countercultures.com.mx", name: "Roger", role: "owner" },
+      user: { email: ROGER_EMAIL, name: "Roger", role: "owner" },
       deals,
       traficos,
     });
 
-    return NextResponse.json({ brief });
+    CACHE = { ts: Date.now(), brief };
+    // Don't await — persistence shouldn't gate the response. Errors are
+    // logged inside persistBrief.
+    void persistBrief(brief, ROGER_EMAIL);
+
+    return NextResponse.json(
+      { brief, cached: false },
+      { headers: { "Cache-Control": "private, max-age=300" } },
+    );
   } catch (err) {
     console.error("[Morning brief API] error:", err);
     return NextResponse.json(

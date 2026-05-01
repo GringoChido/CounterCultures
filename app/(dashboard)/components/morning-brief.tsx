@@ -111,13 +111,16 @@ export const MorningBrief = () => {
     setGreeting(greetingForHour(new Date().getHours()));
   }, []);
 
-  const load = async () => {
+  // bypass=true sends ?refresh=1 so the route skips its 5min in-memory
+  // cache. Initial mount uses the cache; the Refresh button bypasses it.
+  const load = async (bypass = false) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/dashboard/morning-brief", {
-        cache: "no-store",
-      });
+      const url = bypass
+        ? "/api/dashboard/morning-brief?refresh=1"
+        : "/api/dashboard/morning-brief";
+      const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = (await res.json()) as { brief: OwnerMorningBrief };
       setBrief(data.brief);
@@ -129,7 +132,7 @@ export const MorningBrief = () => {
   };
 
   useEffect(() => {
-    load();
+    load(false);
   }, []);
 
   if (loading && !brief) {
@@ -152,7 +155,7 @@ export const MorningBrief = () => {
         </p>
         <button
           type="button"
-          onClick={load}
+          onClick={() => load(true)}
           className="text-[11px] text-brand-copper hover:underline mt-1"
         >
           Try again
@@ -191,7 +194,7 @@ export const MorningBrief = () => {
         </div>
         <button
           type="button"
-          onClick={load}
+          onClick={() => load(true)}
           disabled={loading}
           className="text-[11px] text-dash-text-secondary hover:text-dash-text inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-dash-bg transition-colors disabled:opacity-50"
           title="Regenerate"
@@ -202,7 +205,7 @@ export const MorningBrief = () => {
       </div>
 
       {/* Pulse */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {brief.pulse.map((stat) => (
           <div
             key={stat.label}
