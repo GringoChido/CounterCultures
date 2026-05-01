@@ -368,6 +368,15 @@ export interface PipelineDeal {
   dateAtBorder?: string;         // YYYY-MM-DD — Trafico bridge: triggers in-customs rule
   dateCustomsCleared?: string;   // YYYY-MM-DD — Trafico bridge: triggers customs-cleared rule
   requiresCustoms?: boolean;     // false for domestic artisan brands → skip customs stages
+
+  // PR 5 — CFDI early-prompt + Constancia branch
+  // requiresCFDI is asked at deal creation; the answer drives whether we
+  // collect a Constancia and stamp a CFDI at deposit, or queue a factura
+  // general al público. Customer can switch from "no" to "yes" any time
+  // before delivery.
+  requiresCFDI?: "yes" | "no";
+  constanciaDriveFileId?: string;
+  constanciaUploadedAt?: string;
 }
 
 export interface ActivityItem {
