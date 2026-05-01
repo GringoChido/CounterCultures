@@ -2921,6 +2921,8 @@ const PipelinePageInner = () => {
         customerName={selectedDeal?.contactName ?? ""}
         customerEmail=""
         dealName={selectedDeal?.name}
+        leadSource={selectedDeal?.leadSource}
+        customerPhone={(selectedDeal as PipelineDeal & { contactPhone?: string })?.contactPhone}
         onSent={() => {
           if (selectedDeal) {
             fetchDealDocs(selectedDeal.id);

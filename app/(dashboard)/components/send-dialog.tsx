@@ -21,6 +21,12 @@ interface SendDialogProps {
   customerEmail: string;
   dealName?: string;
   onSent?: () => void;
+  // PR 8 — auto-route the quote send back to the channel the lead came in
+  // on. When leadSource === "WhatsApp" and customerPhone is provided, both
+  // channels are checked by default and the customer gets a short note +
+  // link on WA plus the full PDF + payment link on email.
+  leadSource?: string;
+  customerPhone?: string;
 }
 
 export const SendDialog = ({
@@ -32,45 +38,71 @@ export const SendDialog = ({
   customerEmail,
   dealName,
   onSent,
+  leadSource,
+  customerPhone,
 }: SendDialogProps) => {
-  const [channel, setChannel] = useState<"email" | "whatsapp">("email");
-  const [to, setTo] = useState(customerEmail);
+  const sourceIsWA = leadSource === "WhatsApp" || leadSource === "whatsapp";
+  // Default channel selection follows the lead's origin: WA leads get both
+  // channels checked when we have a phone; everyone else defaults to email.
+  const [emailChecked, setEmailChecked] = useState(true);
+  const [waChecked, setWaChecked] = useState(sourceIsWA && !!customerPhone);
+  const [emailTo, setEmailTo] = useState(customerEmail);
+  const [waTo, setWaTo] = useState(customerPhone ?? "");
   const [subject, setSubject] = useState(
     `Your ${docType} from Counter Cultures${dealName ? ` — ${dealName}` : ""}`
   );
   const [message, setMessage] = useState(
     `Hi ${customerName || "there"},\n\nPlease find attached your ${docType.toLowerCase()} from Counter Cultures.\n\nIf you have any questions, feel free to reply to this email or message us on WhatsApp.\n\nBest regards,\nCounter Cultures\nSan Miguel de Allende`
   );
+  const [waMessage, setWaMessage] = useState(
+    `Hola ${customerName || ""}, gracias por la consulta. Le adjunto su ${docType.toLowerCase()}${dealName ? ` para ${dealName}` : ""}.`
+  );
   const [sending, setSending] = useState(false);
 
   const handleSend = async () => {
+    if (!emailChecked && !waChecked) {
+      toast.error("Pick at least one channel");
+      return;
+    }
     setSending(true);
     try {
       const res = await fetch("/api/dashboard/documents/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: channel === "email" ? "send-email" : "send-whatsapp",
+          action: "send-multi",
           docId,
-          to,
-          subject,
-          message,
+          email: emailChecked ? emailTo : undefined,
+          phone: waChecked ? waTo : undefined,
+          emailSubject: subject,
+          emailMessage: message,
+          whatsappMessage: waMessage,
+          leadSource,
         }),
       });
 
       if (!res.ok) throw new Error("Send failed");
+      const data = (await res.json()) as {
+        emailSent: boolean;
+        whatsappUrl: string | null;
+        whatsappDryRun: boolean;
+        warnings: string[];
+      };
 
-      const data = await res.json();
-
-      if (channel === "whatsapp" && data.whatsappUrl) {
+      if (data.whatsappUrl) {
         window.open(data.whatsappUrl, "_blank");
       }
 
+      const parts: string[] = [];
+      if (data.emailSent) parts.push("email");
+      if (data.whatsappUrl)
+        parts.push(data.whatsappDryRun ? "WhatsApp (dry-run)" : "WhatsApp");
       toast.success(
-        channel === "email"
-          ? `${docType} sent to ${customerName || to}`
-          : "WhatsApp opened with share link"
+        parts.length > 0
+          ? `${docType} sent · ${parts.join(" + ")}`
+          : `${docType} dispatched`,
       );
+      for (const w of data.warnings) toast.warning(w);
       onSent?.();
       onClose();
     } catch {
@@ -127,80 +159,117 @@ export const SendDialog = ({
                   </div>
                 </div>
 
-                {/* Channel toggle */}
+                {/* Channel selection — dual-checkbox now. Defaults are
+                    auto-set from the lead's source so a WhatsApp lead gets
+                    both checked, an email lead gets just email. */}
                 <div>
                   <label className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-dash-text-secondary mb-2 block">
-                    Send via
+                    Channels{leadSource ? ` · source: ${leadSource}` : ""}
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
                     <button
-                      onClick={() => setChannel("email")}
+                      type="button"
+                      onClick={() => setEmailChecked((v) => !v)}
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors cursor-pointer ${
-                        channel === "email"
+                        emailChecked
                           ? "bg-brand-copper/10 text-brand-copper border border-brand-copper/30"
                           : "bg-dash-bg text-dash-text-secondary border border-dash-border hover:border-brand-copper/30"
                       }`}
                     >
                       <Mail className="w-4 h-4" />
-                      Email
+                      Email {emailChecked ? "✓" : ""}
                     </button>
                     <button
-                      onClick={() => setChannel("whatsapp")}
+                      type="button"
+                      onClick={() => setWaChecked((v) => !v)}
                       className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors cursor-pointer ${
-                        channel === "whatsapp"
-                          ? "bg-dash-success/10 text-dash-success border border-dash-success/30"
-                          : "bg-dash-bg text-dash-text-secondary border border-dash-border hover:border-dash-success/30"
+                        waChecked
+                          ? "bg-vendor-whatsapp/15 text-vendor-whatsapp-dark border border-vendor-whatsapp/40"
+                          : "bg-dash-bg text-dash-text-secondary border border-dash-border hover:border-vendor-whatsapp/40"
                       }`}
                     >
                       <MessageCircle className="w-4 h-4" />
-                      WhatsApp
+                      WhatsApp {waChecked ? "✓" : ""}
                     </button>
                   </div>
+                  {sourceIsWA && (
+                    <p className="text-[10px] text-dash-text-secondary mt-1.5">
+                      WhatsApp lead — Roger&rsquo;s rule: send on the channel that
+                      found us. Email carries the full PDF; WhatsApp carries
+                      a short note + link.
+                    </p>
+                  )}
                 </div>
 
-                {/* To */}
-                <div>
-                  <label className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-dash-text-secondary mb-1 block">
-                    To
-                  </label>
-                  <input
-                    className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper transition-colors"
-                    value={to}
-                    onChange={(e) => setTo(e.target.value)}
-                    placeholder={
-                      channel === "email"
-                        ? "email@example.com"
-                        : "+52 415 123 4567"
-                    }
-                  />
-                </div>
-
-                {/* Subject (email only) */}
-                {channel === "email" && (
-                  <div>
-                    <label className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-dash-text-secondary mb-1 block">
-                      Subject
-                    </label>
-                    <input
-                      className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper transition-colors"
-                      value={subject}
-                      onChange={(e) => setSubject(e.target.value)}
-                    />
+                {/* Email block */}
+                {emailChecked && (
+                  <div className="space-y-2 border border-dash-border rounded-lg p-3 bg-dash-bg/40">
+                    <div>
+                      <label className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-dash-text-secondary mb-1 block">
+                        Email · To
+                      </label>
+                      <input
+                        className="w-full px-3 py-2 bg-dash-surface border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper transition-colors"
+                        value={emailTo}
+                        onChange={(e) => setEmailTo(e.target.value)}
+                        placeholder="email@example.com"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-dash-text-secondary mb-1 block">
+                        Subject
+                      </label>
+                      <input
+                        className="w-full px-3 py-2 bg-dash-surface border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper transition-colors"
+                        value={subject}
+                        onChange={(e) => setSubject(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-dash-text-secondary mb-1 block">
+                        Message
+                      </label>
+                      <textarea
+                        className="w-full px-3 py-2 bg-dash-surface border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper transition-colors resize-none"
+                        rows={4}
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                      />
+                    </div>
                   </div>
                 )}
 
-                {/* Message */}
-                <div>
-                  <label className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-dash-text-secondary mb-1 block">
-                    Message
-                  </label>
-                  <textarea
-                    className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper transition-colors resize-none"
-                    rows={5}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                  />
-                </div>
+                {/* WhatsApp block */}
+                {waChecked && (
+                  <div className="space-y-2 border border-vendor-whatsapp/30 rounded-lg p-3 bg-vendor-whatsapp/5">
+                    <div>
+                      <label className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-dash-text-secondary mb-1 block">
+                        WhatsApp · Phone
+                      </label>
+                      <input
+                        className="w-full px-3 py-2 bg-dash-surface border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper transition-colors"
+                        value={waTo}
+                        onChange={(e) => setWaTo(e.target.value)}
+                        placeholder="+52 415 123 4567"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-dash-text-secondary mb-1 block">
+                        WhatsApp · Note
+                      </label>
+                      <textarea
+                        className="w-full px-3 py-2 bg-dash-surface border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper transition-colors resize-none"
+                        rows={3}
+                        value={waMessage}
+                        onChange={(e) => setWaMessage(e.target.value)}
+                      />
+                      <p className="text-[10px] text-dash-text-secondary mt-1">
+                        A signed share link to the document is appended
+                        automatically. WhatsApp opens in a new tab.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Footer */}
@@ -213,7 +282,12 @@ export const SendDialog = ({
                 </button>
                 <button
                   onClick={handleSend}
-                  disabled={sending || !to}
+                  disabled={
+                    sending ||
+                    (!emailChecked && !waChecked) ||
+                    (emailChecked && !emailTo) ||
+                    (waChecked && !waTo)
+                  }
                   className="flex items-center gap-2 px-4 py-2 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   {sending ? (
@@ -221,7 +295,11 @@ export const SendDialog = ({
                   ) : (
                     <Send className="w-4 h-4" />
                   )}
-                  {channel === "email" ? "Send Email" : "Open WhatsApp"}
+                  {emailChecked && waChecked
+                    ? "Send to both"
+                    : emailChecked
+                    ? "Send Email"
+                    : "Open WhatsApp"}
                 </button>
               </div>
             </motion.div>
