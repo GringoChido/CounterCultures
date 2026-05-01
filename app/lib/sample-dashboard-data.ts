@@ -173,6 +173,10 @@ export interface DealPayment {
   dueDate?: string;
   paidDate?: string;
   installmentNumber?: number;
+  // PR 6 — payment-method picker. Defaults to "stripe" for legacy rows.
+  method?: import("./payment-methods").PaymentMethodId;
+  fiscalPosture?: import("./payment-methods").FiscalPosture;
+  reference?: string;
 }
 
 export interface PurchaseOrder {

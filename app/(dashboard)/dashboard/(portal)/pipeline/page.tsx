@@ -57,6 +57,7 @@ import DealHistoryPanel from "@/app/(dashboard)/components/deal-history-panel";
 import PendingMoveBanner from "@/app/(dashboard)/components/pending-move-banner";
 import { DocumentGenerator } from "@/app/(dashboard)/components/document-generator";
 import { SendDialog } from "@/app/(dashboard)/components/send-dialog";
+import { TakePaymentPanel } from "@/app/(dashboard)/components/payments/take-payment-panel";
 import { PreviewPanel, type PreviewFile } from "@/app/(dashboard)/components/preview-panel";
 import { NotesPanel } from "@/app/(dashboard)/components/notes-panel";
 import { ShareButton } from "@/app/(dashboard)/components/share-button";
@@ -2260,6 +2261,28 @@ const PipelinePageInner = () => {
             {/* Payments Tab */}
             {dealTab === "payments" && (
               <div className="space-y-4">
+                <TakePaymentPanel
+                  dealId={selectedDeal.id}
+                  dealValue={selectedDeal.value}
+                  dealCurrency={(selectedDeal.dealCurrency ?? "MXN") as "MXN" | "USD"}
+                  alreadyCollected={(selectedDeal.payments ?? [])
+                    .filter((p) => p.status === "paid")
+                    .reduce((s, p) => s + p.amount, 0)}
+                  onRecorded={(p) => {
+                    setSelectedDeal((cur) =>
+                      cur
+                        ? { ...cur, payments: [...(cur.payments ?? []), p] }
+                        : cur,
+                    );
+                    setDeals((prev) =>
+                      prev.map((d) =>
+                        d.id === selectedDeal.id
+                          ? { ...d, payments: [...(d.payments ?? []), p] }
+                          : d,
+                      ),
+                    );
+                  }}
+                />
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
                     Payments
@@ -2308,14 +2331,37 @@ const PipelinePageInner = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-dash-text">{payment.invoiceId}</p>
-                          <div className="flex items-center gap-2 text-[11px] text-dash-text-secondary">
+                          <div className="flex items-center gap-2 text-[11px] text-dash-text-secondary flex-wrap">
                             <span className="capitalize">{payment.type}{payment.installmentNumber ? ` ${payment.installmentNumber}` : ""}</span>
                             <span className="text-dash-border">&bull;</span>
                             <span className="text-brand-copper">${payment.amount.toLocaleString()} {payment.currency}</span>
-                            {payment.stripeFees && (
+                            {payment.method && (
+                              <>
+                                <span className="text-dash-border">&bull;</span>
+                                <span className="text-dash-text">{payment.method}</span>
+                              </>
+                            )}
+                            {payment.fiscalPosture && (
+                              <span
+                                className={`px-1.5 py-0.5 rounded-full text-[9px] uppercase tracking-wider ${
+                                  payment.fiscalPosture === "fiscal"
+                                    ? "bg-brand-copper/15 text-brand-copper border border-brand-copper/30"
+                                    : "bg-dash-bg text-dash-text-secondary border border-dash-border"
+                                }`}
+                              >
+                                {payment.fiscalPosture}
+                              </span>
+                            )}
+                            {payment.stripeFees ? (
                               <>
                                 <span className="text-dash-border">&bull;</span>
                                 <span>Fees: -${payment.stripeFees.toLocaleString()}</span>
+                              </>
+                            ) : null}
+                            {payment.reference && (
+                              <>
+                                <span className="text-dash-border">&bull;</span>
+                                <span className="font-mono text-[10px]">{payment.reference}</span>
                               </>
                             )}
                           </div>

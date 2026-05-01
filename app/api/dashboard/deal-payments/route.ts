@@ -21,6 +21,10 @@ type DealPaymentRecord = {
   Due_Date: string;
   Paid_Date: string;
   Installment_Num: string;
+  // PR 6 — payment-method picker on the deposit panel.
+  Method: string; // PaymentMethodId — see app/lib/payment-methods.ts
+  Fiscal_Posture: string; // "fiscal" | "non-fiscal"
+  Reference: string; // free-text — wire confirmation, check #, etc.
 };
 
 const PAYMENT_COLUMNS: (keyof DealPaymentRecord)[] = [
@@ -38,6 +42,9 @@ const PAYMENT_COLUMNS: (keyof DealPaymentRecord)[] = [
   "Due_Date",
   "Paid_Date",
   "Installment_Num",
+  "Method",
+  "Fiscal_Posture",
+  "Reference",
 ];
 
 // ---------------------------------------------------------------------------
