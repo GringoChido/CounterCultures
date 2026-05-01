@@ -25,7 +25,7 @@ export type DealSubfolder =
   | "Email Attachments"
   | "Quotes"
   | "Invoices"
-  | "Pedimentos"
+  | "Pedimentos & Importación"
   | "Misc";
 
 /**

@@ -57,6 +57,12 @@ import DealHistoryPanel from "@/app/(dashboard)/components/deal-history-panel";
 import PendingMoveBanner from "@/app/(dashboard)/components/pending-move-banner";
 import { DocumentGenerator } from "@/app/(dashboard)/components/document-generator";
 import { SendDialog } from "@/app/(dashboard)/components/send-dialog";
+import { ImportsPanel } from "@/app/(dashboard)/components/customs/imports-panel";
+import {
+  getVendorPaymentTerms,
+  getVendorPaymentDueDate,
+  formatVendorTerms,
+} from "@/app/lib/vendor-terms";
 import { PreviewPanel, type PreviewFile } from "@/app/(dashboard)/components/preview-panel";
 import { NotesPanel } from "@/app/(dashboard)/components/notes-panel";
 import { ShareButton } from "@/app/(dashboard)/components/share-button";
@@ -207,6 +213,30 @@ const DOC_STATUS_STYLES: Record<string, string> = {
   Sent: "bg-dash-info/10 text-dash-info",
   Paid: "bg-status-won/10 text-status-won",
   Signed: "bg-dash-success/10 text-dash-success",
+};
+
+// ---------------------------------------------------------------------------
+// derivedCustomsStage — map a PipelineDeal's coarse stage onto the
+// 12-stage customs tracker. Conservative defaults; once the Trafico
+// records carry a stage int themselves we'll pull from there.
+// ---------------------------------------------------------------------------
+
+const derivedCustomsStage = (stage: PipelineStage): number => {
+  switch (stage) {
+    case "ordering": return 1;
+    case "in-production": return 3;
+    case "shipping": return 4;
+    case "in-customs": return 7;
+    case "customs-cleared": return 9;
+    case "received": return 11;
+    case "delivery-scheduled":
+    case "delivered":
+    case "balance-pending":
+    case "complete":
+      return 12;
+    default:
+      return 0;
+  }
 };
 
 // ---------------------------------------------------------------------------
@@ -2376,7 +2406,22 @@ const PipelinePageInner = () => {
                         <div className="flex items-start justify-between">
                           <div>
                             <p className="text-sm font-medium text-dash-text">{po.id}</p>
-                            <p className="text-[11px] text-dash-text-secondary">{po.brand} &bull; {po.manufacturerName}</p>
+                            <p className="text-[11px] text-dash-text-secondary inline-flex items-center gap-1.5">
+                              <span>{po.brand} &bull; {po.manufacturerName}</span>
+                              {(() => {
+                                const terms = getVendorPaymentTerms(po.manufacturerName || po.brand);
+                                if (terms === "other") return null;
+                                const due = po.sentDate ? getVendorPaymentDueDate(po.manufacturerName || po.brand, po.sentDate) : "";
+                                return (
+                                  <span
+                                    className="px-1.5 py-0 rounded-full text-[9px] uppercase tracking-wider bg-dash-bg border border-dash-border"
+                                    title={due ? `Vendor payment due ${due}` : `Vendor terms: ${formatVendorTerms(terms)}`}
+                                  >
+                                    {formatVendorTerms(terms)}
+                                  </span>
+                                );
+                              })()}
+                            </p>
                           </div>
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
                             po.status === "received" ? "bg-dash-success/10 text-dash-success" :
@@ -2523,6 +2568,12 @@ const PipelinePageInner = () => {
             {/* Customs Tab */}
             {dealTab === "customs" && (
               <div className="space-y-4">
+                <ImportsPanel
+                  data={{
+                    dealId: selectedDeal.id,
+                    currentStage: derivedCustomsStage(selectedDeal.stage),
+                  }}
+                />
                 <div className="flex items-center justify-between gap-2">
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
                     Import Crossings
