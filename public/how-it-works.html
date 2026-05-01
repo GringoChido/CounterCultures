@@ -1475,6 +1475,292 @@
     </div>
   </section>
 
+  <!-- ============== STAGE 8b — Pedimentos & Importación deep dive ============== -->
+  <!-- Same logical stage as 8; this is the detailed customs surface. -->
+  <section id="stage-8-imports" class="stage bg-paper" data-stage="8" style="border-top: 1px solid var(--rule-soft); padding-top: 6rem;">
+    <div class="max-w-[1320px] mx-auto px-6 md:px-12">
+
+      <div class="grid md:grid-cols-12 gap-12 items-start mb-12">
+        <div class="md:col-span-5 col-copy">
+          <div class="stage-num mb-6">Stage Eight · Continued</div>
+          <h2 class="display text-[44px] md:text-[60px]">Importación, <span class="display-italic">end to end.</span></h2>
+          <p class="body-text mt-8">
+            Crossing goods from a US consolidator into Mexico isn't one event — it's a
+            sixteen-state lifecycle with three external counterparties (broker, crossing
+            agent, TGR warehouse), eleven distinct documents, two SPEI payments, and an
+            expediente that has to be physically signed at the end. The portal absorbs all
+            of it under <span class="mono ink">/dashboard/customs</span> so Roger sees one
+            row that always says exactly where the goods are and what's owed next.
+          </p>
+          <p class="body-text mt-4">
+            Roger's goods are consolidated at <span class="ink">TGR Logistic Inc.</span> in
+            Laredo, Texas. <span class="ink">Antonina</span> sends the batch of vendor
+            invoices to broker <span class="ink">Jeanefer Contreras</span>; she runs them
+            through Mexican customs against the cálculo (tax estimate); cleared goods
+            cross at <span class="ink">Lic. Carlos Enrique Garza</span>'s pass; a domestic
+            carrier brings them to the SMA showroom. Every state transition writes back
+            to the deal's timeline so customer-facing stages know when to advance.
+          </p>
+        </div>
+
+        <!-- 16-state lifecycle, curated to 7 readable phases -->
+        <div class="md:col-span-7">
+          <div class="mockup-frame overflow-hidden">
+            <div class="mockup-bar px-4 py-3 text-[11px]" style="color: var(--muted);">
+              <span class="mono">/dashboard/customs · TRF E27-26</span>
+            </div>
+            <div class="p-5">
+              <div class="flex items-baseline justify-between mb-4">
+                <div class="display text-[20px] ink">Trafico · 16 states</div>
+                <div class="text-[11px]" style="color: var(--muted);">
+                  Currently · <span class="ink">Cálculo received</span>
+                </div>
+              </div>
+              <!-- 7-phase visual rollup -->
+              <div class="flex gap-1.5">
+                <div class="customs-step"><div class="customs-bar done"></div><div class="customs-num">01</div><span class="text-[10px] ink">Collecting</span></div>
+                <div class="customs-step"><div class="customs-bar done"></div><div class="customs-num">02</div><span class="text-[10px] ink">Broker</span></div>
+                <div class="customs-step"><div class="customs-bar done"></div><div class="customs-num">03</div><span class="text-[10px] ink">Warehouse</span></div>
+                <div class="customs-step"><div class="customs-bar active"></div><div class="customs-num active">04</div><span class="text-[10px] ink" style="font-weight: 500;">Cálculo</span></div>
+                <div class="customs-step"><div class="customs-bar"></div><div class="customs-num">05</div><span class="text-[10px]" style="color: var(--muted);">Payment</span></div>
+                <div class="customs-step"><div class="customs-bar"></div><div class="customs-num">06</div><span class="text-[10px]" style="color: var(--muted);">Crossing</span></div>
+                <div class="customs-step"><div class="customs-bar"></div><div class="customs-num">07</div><span class="text-[10px]" style="color: var(--muted);">Delivered</span></div>
+              </div>
+              <p class="text-[10.5px] mt-4" style="color: var(--muted);">
+                Underneath these seven phases, the portal tracks the full 16-state
+                progression: Collecting → Sent to Broker → At Warehouse → Import Open →
+                Awaiting Documents → Import Closed → Cálculo Received → Payment Pending →
+                Payment Sent → Crossing Approved → In Transit (MX) → Delivered to CC →
+                Factura Received → Expediente Pending → Complete.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- The eleven documents -->
+      <div class="grid md:grid-cols-12 gap-12 items-start mb-12">
+        <div class="md:col-span-5 col-copy">
+          <h3 class="display text-[28px] ink">Eleven documents, <span class="display-italic">filed before the truck moves.</span></h3>
+          <p class="body-text mt-4" style="font-size: 15px;">
+            Mexican customs runs on paperwork. The portal collects each document into the
+            deal's <span class="mono ink">Pedimentos &amp; Importación/</span> Drive folder
+            as it's produced — no email scavenger hunt when the SAT auditor knocks two
+            years from now. Files are tagged by trafico ID and pedimento number so any
+            crossing can be reconstructed in seconds.
+          </p>
+        </div>
+
+        <div class="md:col-span-7">
+          <div class="border hairline bg-white">
+            <div class="grid grid-cols-2 md:grid-cols-3" style="background: var(--rule-soft);">
+              <!-- Document 1 -->
+              <div class="bg-paper p-3" style="margin-right: 1px; margin-bottom: 1px;">
+                <div class="label copper" style="font-size: 9px;">01 · Hoja de Tráfico</div>
+                <div class="text-[11px] ink mt-1">Master inventory of the crossing</div>
+              </div>
+              <div class="bg-paper p-3" style="margin-right: 1px; margin-bottom: 1px;">
+                <div class="label copper" style="font-size: 9px;">02 · Cálculo</div>
+                <div class="text-[11px] ink mt-1">Tax + fee estimate from broker</div>
+              </div>
+              <div class="bg-paper p-3" style="margin-bottom: 1px;">
+                <div class="label copper" style="font-size: 9px;">03 · Carta 3.1.8</div>
+                <div class="text-[11px] ink mt-1">Customs declaration letter</div>
+              </div>
+              <!-- 4-5 -->
+              <div class="bg-paper p-3" style="margin-right: 1px; margin-bottom: 1px;">
+                <div class="label copper" style="font-size: 9px;">04 · Vendor invoices</div>
+                <div class="text-[11px] ink mt-1">One per vendor in the batch</div>
+              </div>
+              <div class="bg-paper p-3" style="margin-right: 1px; margin-bottom: 1px;">
+                <div class="label copper" style="font-size: 9px;">05 · COVE + Acuse</div>
+                <div class="text-[11px] ink mt-1">Electronic value declarations</div>
+              </div>
+              <div class="bg-paper p-3" style="margin-bottom: 1px;">
+                <div class="label copper" style="font-size: 9px;">06 · Pedimento</div>
+                <div class="text-[11px] ink mt-1">Official customs declaration</div>
+              </div>
+              <!-- 7-8 -->
+              <div class="bg-paper p-3" style="margin-right: 1px; margin-bottom: 1px;">
+                <div class="label copper" style="font-size: 9px;">07 · Factura Cruce</div>
+                <div class="text-[11px] ink mt-1">Carta porte / transport invoice + XML</div>
+              </div>
+              <div class="bg-paper p-3" style="margin-right: 1px; margin-bottom: 1px;">
+                <div class="label copper" style="font-size: 9px;">08 · TGR Invoice</div>
+                <div class="text-[11px] ink mt-1">Warehouse handling charges (USD)</div>
+              </div>
+              <div class="bg-paper p-3" style="margin-bottom: 1px;">
+                <div class="label copper" style="font-size: 9px;">09 · Factura GTA</div>
+                <div class="text-[11px] ink mt-1">Broker's official CFDI invoice</div>
+              </div>
+              <!-- 10-11 -->
+              <div class="bg-paper p-3" style="margin-right: 1px;">
+                <div class="label copper" style="font-size: 9px;">10 · Comprobante de Pago</div>
+                <div class="text-[11px] ink mt-1">SPEI payment receipts</div>
+              </div>
+              <div class="bg-paper p-3" style="margin-right: 1px;">
+                <div class="label copper" style="font-size: 9px;">11 · Manifestación</div>
+                <div class="text-[11px] ink mt-1">Customs value worksheet</div>
+              </div>
+              <div class="bg-paper p-3 flex items-center justify-center" style="background: #FBF8F2;">
+                <span class="label" style="font-size: 9.5px; color: var(--copper);">→ Drive folder</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cálculo breakdown + dual SPEI payment -->
+      <div class="grid md:grid-cols-12 gap-12 items-start mb-12">
+        <div class="md:col-span-5 col-copy">
+          <h3 class="display text-[28px] ink">The cálculo, <span class="display-italic">line by line.</span></h3>
+          <p class="body-text mt-4" style="font-size: 15px;">
+            Every crossing carries three stacks of charges: customs taxes (IGI, IVA, DTA),
+            broker fees on the Mexican side (honorarios, prevalidación, validación,
+            sellos fiscales), and warehouse handling on the US side
+            (revisión / clasificación, carga y descarga, etiquetas y manuales). The portal
+            renders the broker's cálculo PDF as a structured table so Roger sees the
+            real cost of each crossing without re-keying it into a spreadsheet.
+          </p>
+          <p class="body-text mt-3" style="font-size: 15px;">
+            Two SPEI payments leave Counter Cultures' Santander account: one for the
+            taxes + broker fees (PED — to TGR Logistics / Gestores Aduanales del Noreste,
+            BBVA Mexico) and one for the truck-crossing fee (CRUZ — to Lic. Carlos
+            Enrique Garza Roque, Banamex). Both confirmations land back on the trafico
+            row.
+          </p>
+        </div>
+
+        <div class="md:col-span-7 space-y-5">
+          <!-- Cálculo breakdown -->
+          <div class="mockup-frame overflow-hidden">
+            <div class="mockup-bar px-4 py-3 text-[11px]" style="color: var(--muted);">
+              <span class="mono">Cálculo · TRF E27-26</span>
+            </div>
+            <div class="p-5">
+              <div class="flex justify-between items-baseline mb-3">
+                <div class="display text-[18px] ink">Total cálculo</div>
+                <div class="display text-[22px] copper" style="font-weight: 400;">$23,065.51 MXN</div>
+              </div>
+              <div class="grid grid-cols-3 gap-4 text-[11px]">
+                <div>
+                  <div class="label" style="font-size: 9px;">Customs taxes</div>
+                  <div class="space-y-0.5 mt-1.5" style="color: var(--body);">
+                    <div class="flex justify-between"><span>IGI</span><span class="mono ink">$2,842</span></div>
+                    <div class="flex justify-between"><span>IVA 16%</span><span class="mono ink">$8,538</span></div>
+                    <div class="flex justify-between"><span>DTA</span><span class="mono ink">$427</span></div>
+                    <div class="flex justify-between"><span>PRV / CNT</span><span class="mono ink">$310</span></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="label" style="font-size: 9px;">Broker fees</div>
+                  <div class="space-y-0.5 mt-1.5" style="color: var(--body);">
+                    <div class="flex justify-between"><span>Honorarios</span><span class="mono ink">$3,200</span></div>
+                    <div class="flex justify-between"><span>Prevalidación</span><span class="mono ink">$285</span></div>
+                    <div class="flex justify-between"><span>Validación</span><span class="mono ink">$216</span></div>
+                    <div class="flex justify-between"><span>Sellos fiscales</span><span class="mono ink">$190</span></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="label" style="font-size: 9px;">Warehouse · TGR</div>
+                  <div class="space-y-0.5 mt-1.5" style="color: var(--body);">
+                    <div class="flex justify-between"><span>Revisión</span><span class="mono ink">$1,820</span></div>
+                    <div class="flex justify-between"><span>Carga / descarga</span><span class="mono ink">$2,440</span></div>
+                    <div class="flex justify-between"><span>Etiquetas</span><span class="mono ink">$610</span></div>
+                    <div class="flex justify-between"><span>Coordinación</span><span class="mono ink">$1,287</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dual SPEI payment card -->
+          <div class="mockup-frame overflow-hidden">
+            <div class="mockup-bar px-4 py-3 text-[11px]" style="color: var(--muted);">
+              <span class="mono">Pago · TRF E27-26</span>
+            </div>
+            <div class="grid md:grid-cols-2">
+              <div class="p-4 border-r hairline-soft">
+                <div class="label" style="color: var(--copper);">PED · Impuestos</div>
+                <div class="display text-[18px] ink mt-1">$23,065.51 MXN</div>
+                <div class="text-[11px] mt-2" style="color: var(--muted);">
+                  TGR Logistics / Gestores Aduanales del Noreste<br />
+                  BBVA Mexico · CLABE <span class="mono">012821001951426792</span>
+                </div>
+                <span class="pill pill-lime mt-3 inline-flex">SPEI sent · 14:08</span>
+              </div>
+              <div class="p-4">
+                <div class="label" style="color: var(--copper);">CRUZ · Cruce</div>
+                <div class="display text-[18px] ink mt-1">$2,668.00 MXN</div>
+                <div class="text-[11px] mt-2" style="color: var(--muted);">
+                  Lic. Carlos Enrique Garza Roque<br />
+                  Banamex · CLABE <span class="mono">002821700962028128</span>
+                </div>
+                <span class="pill pill-lime mt-3 inline-flex">SPEI sent · 14:09</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Crossing → Domestic → Expediente -->
+      <div class="grid md:grid-cols-12 gap-12 items-start">
+        <div class="md:col-span-5 col-copy">
+          <h3 class="display text-[28px] ink">Approved, crossed, <span class="display-italic">expediente signed.</span></h3>
+          <p class="body-text mt-4" style="font-size: 15px;">
+            Once payment clears the broker confirms the crossing approval. A domestic
+            carrier picks up at the border bodega and runs to SMA. On arrival the deal
+            advances automatically to <span class="ink">received</span> and the goods
+            are physically reconciled against the original PO. The crossing isn't
+            <em>done</em> until the expediente is signed off — a digital signature on
+            the master case file that closes the books on the trafico.
+          </p>
+        </div>
+
+        <div class="md:col-span-7 grid md:grid-cols-3 gap-4">
+          <div class="branch-card">
+            <div class="label" style="color: var(--copper);">Crossing approved</div>
+            <div class="display text-[18px] ink mt-1.5">Pass cleared</div>
+            <p class="text-[11px] mt-2" style="color: var(--body); line-height: 1.5;">
+              Broker confirms; goods cleared to depart Laredo bodega.
+            </p>
+            <div class="mt-3 text-[10px]" style="color: var(--muted);">
+              26 240 3482-6101796
+            </div>
+          </div>
+          <div class="branch-card">
+            <div class="label" style="color: var(--copper);">In transit · MX</div>
+            <div class="display text-[18px] ink mt-1.5">Domestic carrier</div>
+            <p class="text-[11px] mt-2" style="color: var(--body); line-height: 1.5;">
+              Tracking pushed to the deal; ETA visible on the customer's status link.
+            </p>
+            <div class="mt-3 text-[10px]" style="color: var(--muted);">
+              ETA Sunday SMA
+            </div>
+          </div>
+          <div class="branch-card active">
+            <div class="label" style="color: var(--copper);">Expediente</div>
+            <div class="display text-[18px] ink mt-1.5">e-signed</div>
+            <p class="text-[11px] mt-2" style="color: var(--body); line-height: 1.5;">
+              Master case file signed, books closed, trafico → Complete.
+            </p>
+            <div class="mt-3 text-[10px]" style="color: var(--muted);">
+              Saved to Drive
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-12 max-w-2xl">
+        <div class="ornament mb-4"></div>
+        <p class="ink" style="font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 22px; line-height: 1.4;">
+          One trafico touches three counterparties, eleven documents, two payments, and
+          a sixteen-state lifecycle — and Roger sees one row.
+        </p>
+      </div>
+    </div>
+  </section>
+
   <!-- ============== STAGE 9 — Shipping & Delivery ============== -->
   <section id="stage-9" class="stage bg-paper" data-stage="9">
     <div class="max-w-[1320px] mx-auto px-6 md:px-12 grid md:grid-cols-12 gap-12 items-start">
