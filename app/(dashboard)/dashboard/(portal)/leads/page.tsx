@@ -181,6 +181,13 @@ const LeadForm = ({ open, onClose, onSaved, editLead, initialSource }: LeadFormP
       setError("Name is required.");
       return;
     }
+    // R2-3: walk-ins almost never leave with a printed quote — Roger emails
+    // it later. The email captured at the desk is the artifact that makes
+    // that possible, so it's required.
+    if (form.source === "Walk-in" && !form.email.trim()) {
+      setError("Email is required for walk-ins — we email the quote later.");
+      return;
+    }
 
     setSaving(true);
     setError(null);
@@ -242,7 +249,12 @@ const LeadForm = ({ open, onClose, onSaved, editLead, initialSource }: LeadFormP
         {/* Email & Phone */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelClass}>Email</label>
+            <label className={labelClass}>
+              Email
+              {form.source === "Walk-in" && (
+                <span className="text-dash-danger"> *</span>
+              )}
+            </label>
             <input
               type="email"
               value={form.email}
@@ -250,6 +262,11 @@ const LeadForm = ({ open, onClose, onSaved, editLead, initialSource }: LeadFormP
               placeholder="email@example.com"
               className={inputClass}
             />
+            {form.source === "Walk-in" && (
+              <p className="mt-1 text-[10.5px] text-dash-text-secondary/80">
+                Required — walk-ins almost never leave with a printed quote, we email it the next day.
+              </p>
+            )}
           </div>
           <div>
             <label className={labelClass}>Phone</label>
