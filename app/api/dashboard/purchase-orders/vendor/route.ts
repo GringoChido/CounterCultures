@@ -10,6 +10,7 @@ import { google } from "googleapis";
 import { getGooglePrivateKey } from "@/app/lib/google-private-key";
 import { findRowIndex } from "@/app/lib/dashboard-sheets";
 import { ensureColumns } from "@/app/lib/sheet-migrations";
+import { requireFeature, FeatureDeniedError } from "@/app/lib/auth";
 
 const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_ID ?? "";
 
@@ -33,6 +34,10 @@ interface PatchBody {
 
 export const PATCH = async (request: NextRequest): Promise<Response> => {
   try {
+    // Same write-feature gate the rest of /purchase-orders should respect:
+    // any user without create_quote (the closest existing PO-write feature)
+    // can't reroute a vendor.
+    await requireFeature("create_quote");
     const body = (await request.json()) as PatchBody;
     if (!body.PO_ID) {
       return NextResponse.json({ error: "PO_ID required" }, { status: 400 });
@@ -91,6 +96,12 @@ export const PATCH = async (request: NextRequest): Promise<Response> => {
 
     return NextResponse.json({ success: true });
   } catch (err) {
+    if (err instanceof FeatureDeniedError) {
+      return NextResponse.json(
+        { error: "Forbidden", feature: err.feature },
+        { status: 403 }
+      );
+    }
     const msg = err instanceof Error ? err.message : "patch_failed";
     console.error("[/api/dashboard/purchase-orders/vendor] PATCH", msg);
     return NextResponse.json({ error: msg }, { status: 500 });

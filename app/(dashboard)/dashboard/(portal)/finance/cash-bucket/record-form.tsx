@@ -29,6 +29,7 @@ export const RecordCashEntryForm = ({ onRecorded }: Props): React.ReactElement =
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [amount, setAmount] = useState("");
+  const [currency, setCurrency] = useState<"MXN" | "USD">("MXN");
   const [date, setDate] = useState(todayIso());
   const [dealId, setDealId] = useState("");
   const [earmark, setEarmark] = useState<CashEarmark>("");
@@ -36,6 +37,7 @@ export const RecordCashEntryForm = ({ onRecorded }: Props): React.ReactElement =
 
   const reset = (): void => {
     setAmount("");
+    setCurrency("MXN");
     setDate(todayIso());
     setDealId("");
     setEarmark("");
@@ -66,7 +68,7 @@ export const RecordCashEntryForm = ({ onRecorded }: Props): React.ReactElement =
           Stripe_Invoice_ID: "",
           Stripe_Payment_ID: "",
           Amount: numericAmount.toFixed(2),
-          Currency: "MXN",
+          Currency: currency,
           Stripe_Fees: "",
           Net_Received: numericAmount.toFixed(2),
           Status: "paid",
@@ -119,10 +121,10 @@ export const RecordCashEntryForm = ({ onRecorded }: Props): React.ReactElement =
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-[1fr_auto_1fr] gap-3">
         <div>
           <label className={labelClass}>
-            Amount (MXN) <span className="text-dash-danger">*</span>
+            Amount <span className="text-dash-danger">*</span>
           </label>
           <input
             type="number"
@@ -135,6 +137,17 @@ export const RecordCashEntryForm = ({ onRecorded }: Props): React.ReactElement =
             className={inputClass}
             autoFocus
           />
+        </div>
+        <div>
+          <label className={labelClass}>Currency</label>
+          <select
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value as "MXN" | "USD")}
+            className={inputClass}
+          >
+            <option value="MXN">MXN</option>
+            <option value="USD">USD</option>
+          </select>
         </div>
         <div>
           <label className={labelClass}>Date</label>

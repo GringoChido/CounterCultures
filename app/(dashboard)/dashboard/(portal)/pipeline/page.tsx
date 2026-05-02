@@ -98,6 +98,7 @@ import { PoVendorEditor } from "@/app/(dashboard)/components/po/po-vendor-editor
 import { useCurrentUser } from "@/app/lib/use-current-user";
 import {
   MineAllToggle,
+  matchesUser,
   readPersistedMode,
   type MineAllMode,
 } from "@/app/(dashboard)/components/mine-all-toggle";
@@ -1363,10 +1364,9 @@ const PipelinePageInner = () => {
   // journey), but lookups for drag-drop / deep links still use the full
   // `deals` collection so a Mine view can't accidentally orphan a deal id
   // referenced from outside the filter.
-  const myName = (currentUser?.name ?? "").trim().toLowerCase();
   const visibleDeals =
-    repMode === "mine" && myName
-      ? deals.filter((d) => (d.assignedRep ?? "").trim().toLowerCase() === myName)
+    repMode === "mine" && currentUser
+      ? deals.filter((d) => matchesUser(d.assignedRep ?? "", currentUser))
       : deals;
 
   const dealsByStage = (stage: PipelineStage) =>

@@ -66,10 +66,12 @@ const COLUMNS: (keyof VendorRow)[] = [
 ];
 
 /**
- * Seed used when the Vendors sheet doesn't exist yet. Roger should produce
- * the real list (the brief notes this); this is a starting draft sketched
- * from the brand-vendors map + Roger's known billing patterns. Once the
- * Vendors tab exists in the production sheet, that data wins.
+ * Seed used to bootstrap the Vendors tab on first read. These values are
+ * starting drafts — Roger should overwrite them in the sheet once he sees
+ * how a real billing cycle plays out. Lead times and import-ease scores
+ * especially are best-current-estimates, not measurements. Edit any cell
+ * in the Vendors tab and the next read picks it up after the 5-min cache
+ * expires.
  */
 const SEED_VENDORS: VendorTerms[] = [
   {
@@ -80,7 +82,7 @@ const SEED_VENDORS: VendorTerms[] = [
     billingTrigger: "on-ship",
     confirmationPattern: "sends-confirmation",
     defaultLeadTimeDays: 18,
-    notes: "Clean broker. Invoices once goods ship from US warehouse.",
+    notes: "[seed — edit in sheet] Clean broker. Invoices once goods ship from US warehouse.",
   },
   {
     vendor: "jcr",
@@ -90,7 +92,7 @@ const SEED_VENDORS: VendorTerms[] = [
     billingTrigger: "cash-upfront",
     confirmationPattern: "sends-confirmation",
     defaultLeadTimeDays: 22,
-    notes: "BLANCO authorized. Won't start order without payment cleared.",
+    notes: "[seed — edit in sheet] BLANCO authorized. Won't start order without payment cleared.",
   },
   {
     vendor: "svb_direct",
@@ -100,7 +102,7 @@ const SEED_VENDORS: VendorTerms[] = [
     billingTrigger: "never-invoices",
     confirmationPattern: "no-confirmation",
     defaultLeadTimeDays: 60,
-    notes: "Artisan vendor — never sends confirmation or invoice. Manual AP entry only.",
+    notes: "[seed — edit in sheet] Artisan vendor — never sends confirmation or invoice. Manual AP entry only.",
   },
 ];
 
