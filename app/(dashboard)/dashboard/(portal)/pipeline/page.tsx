@@ -89,6 +89,7 @@ import {
   getDealCompletionChecklist,
 } from "@/app/lib/deal-automation";
 import { useActivityStore } from "@/app/lib/stores/activity-store";
+import { LEAD_SOURCES } from "@/app/lib/lead-sources";
 import { usePageContextStore } from "@/app/lib/stores/page-context-store";
 import { TRAFICO_STATUS_CONFIG, type TraficoStatus, getDocumentChecklist } from "@/app/lib/customs-data";
 import type { HydratedTrafico } from "@/app/lib/trafico-hydrator";
@@ -3126,14 +3127,9 @@ const PipelinePageInner = () => {
                 }
                 className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
               >
-                <option value="Direct">Direct</option>
-                <option value="Email">Email</option>
-                <option value="Walk-in">Walk-in</option>
-                <option value="Phone">Phone</option>
-                <option value="WhatsApp">WhatsApp</option>
-                <option value="Referral">Referral</option>
-                <option value="Trade Program">Trade Program</option>
-                <option value="Instagram">Instagram</option>
+                {LEAD_SOURCES.map((src) => (
+                  <option key={src} value={src}>{src}</option>
+                ))}
               </select>
             </div>
           </div>

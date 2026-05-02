@@ -16,6 +16,7 @@ import { LandedCostCalculator } from "@/app/(dashboard)/components/landed-cost-c
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { NotesPanel } from "@/app/(dashboard)/components/notes-panel";
 import { ShareButton } from "@/app/(dashboard)/components/share-button";
+import { LEAD_SOURCE_OPTIONS, LEAD_SOURCE_PILL, normalizeLeadSource, isLeadSource } from "@/app/lib/lead-sources";
 
 // Shape matching Google Sheets Leads tab
 interface SheetLead {
@@ -56,7 +57,7 @@ const mapSheetLead = (s: SheetLead): Lead => ({
   name: s.name,
   email: s.email,
   phone: s.phone,
-  source: s.source,
+  source: normalizeLeadSource(s.source),
   status: s.status || "new",
   contactType: s.contact_type,
   interest: s.interest,
@@ -80,7 +81,7 @@ const statusVariants: Record<string, BadgeVariant> = {
 };
 
 const statusOptions = ["all", "new", "contacted", "qualified", "proposal", "won", "lost"] as const;
-const sourceOptions = ["all", "Showroom Walk-in", "Website Contact Form", "Instagram", "WhatsApp", "Trade Program", "Referral"] as const;
+const sourceOptions = LEAD_SOURCE_OPTIONS;
 const contactTypeOptions = ["Homeowner", "Architect", "Interior Designer", "Builder/Contractor", "Developer", "Hotel/Hospitality", "Trade Program", "Other"] as const;
 
 // ── Lead Form ────────────────────────────────────────────────────────
@@ -96,7 +97,7 @@ const emptyForm = {
   name: "",
   email: "",
   phone: "",
-  source: "Website Contact Form",
+  source: "Website",
   status: "new",
   contact_type: "",
   interest: "",
@@ -522,9 +523,20 @@ const columns = [
   }),
   columnHelper.accessor("source", {
     header: "Source",
-    cell: (info) => (
-      <span className="text-xs text-dash-text-secondary">{info.getValue()}</span>
-    ),
+    cell: (info) => {
+      const value = info.getValue();
+      if (!value) return <span className="text-dash-text-secondary">&mdash;</span>;
+      if (!isLeadSource(value)) {
+        return <span className="text-xs text-dash-text-secondary">{value}</span>;
+      }
+      const pill = LEAD_SOURCE_PILL[value];
+      return (
+        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] border ${pill.bg} ${pill.text} ${pill.border}`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${pill.dot}`} />
+          {value}
+        </span>
+      );
+    },
   }),
   columnHelper.accessor("status", {
     header: "Status",
