@@ -10,10 +10,11 @@
  * for the picker that produces these rows.
  */
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Loader2, ArrowLeft, Coins, Lock } from "lucide-react";
 import { earmarkLabel, type CashEarmark } from "@/app/(dashboard)/components/payments/fiscal-bucket-picker";
+import { RecordCashEntryForm } from "./record-form";
 
 interface DealPaymentRow {
   Payment_ID: string;
@@ -52,7 +53,7 @@ export default function CashBucketPage(): React.ReactElement {
   const [loading, setLoading] = useState(true);
   const [denied, setDenied] = useState(false);
 
-  useEffect(() => {
+  const load = useCallback((): (() => void) => {
     let alive = true;
     fetch("/api/dashboard/finance/cash-bucket")
       .then((res) => {
@@ -78,6 +79,8 @@ export default function CashBucketPage(): React.ReactElement {
       alive = false;
     };
   }, []);
+
+  useEffect(() => load(), [load]);
 
   if (loading) {
     return (
@@ -149,6 +152,9 @@ export default function CashBucketPage(): React.ReactElement {
           </div>
         </div>
       </div>
+
+      {/* Record entry */}
+      <RecordCashEntryForm onRecorded={load} />
 
       {/* By earmark */}
       <section>

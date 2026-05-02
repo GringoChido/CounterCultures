@@ -94,6 +94,7 @@ import { usePageContextStore } from "@/app/lib/stores/page-context-store";
 import { TRAFICO_STATUS_CONFIG, type TraficoStatus, getDocumentChecklist } from "@/app/lib/customs-data";
 import type { HydratedTrafico } from "@/app/lib/trafico-hydrator";
 import { LandedCostCalculator } from "@/app/(dashboard)/components/landed-cost-calculator";
+import { PoVendorEditor } from "@/app/(dashboard)/components/po/po-vendor-editor";
 import { useCurrentUser } from "@/app/lib/use-current-user";
 import {
   MineAllToggle,
@@ -947,6 +948,8 @@ const PipelinePageInner = () => {
           Carrier: string;
           Tracking: string;
           Received_Date: string;
+          Vendor?: string;
+          Vendor_Override_Reason?: string;
         }>;
         const pos: PurchaseOrder[] = rows.map((r) => {
           let items: PurchaseOrder["items"] = [];
@@ -971,6 +974,8 @@ const PipelinePageInner = () => {
           if (r.Carrier) po.trackingCarrier = r.Carrier;
           if (r.Tracking) po.trackingNumber = r.Tracking;
           if (r.Received_Date) po.receivedDate = r.Received_Date;
+          if (r.Vendor) po.vendor = r.Vendor;
+          if (r.Vendor_Override_Reason) po.vendorOverrideReason = r.Vendor_Override_Reason;
           if (r.Payment_Date && r.Payment_Amount) {
             po.paymentToMfr = {
               date: r.Payment_Date,
@@ -2404,9 +2409,36 @@ const PipelinePageInner = () => {
                     {(selectedDeal.purchaseOrders ?? []).map((po) => (
                       <div key={po.id} className="bg-dash-bg rounded-lg p-3 space-y-2">
                         <div className="flex items-start justify-between">
-                          <div>
+                          <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-dash-text">{po.id}</p>
                             <p className="text-[11px] text-dash-text-secondary">{po.brand} &bull; {po.manufacturerName}</p>
+                            <div className="mt-1.5">
+                              <PoVendorEditor
+                                poId={po.id}
+                                dealId={po.dealId}
+                                brand={po.brand}
+                                initialVendor={po.vendor ?? ""}
+                                initialReason={po.vendorOverrideReason ?? ""}
+                                editable={po.status === "draft"}
+                                onSaved={(v, r) => {
+                                  // Optimistic local update so the badge flips immediately
+                                  setDeals((prev) =>
+                                    prev.map((d) =>
+                                      d.id === po.dealId
+                                        ? {
+                                            ...d,
+                                            purchaseOrders: (d.purchaseOrders ?? []).map((p) =>
+                                              p.id === po.id
+                                                ? { ...p, vendor: v, vendorOverrideReason: r }
+                                                : p
+                                            ),
+                                          }
+                                        : d
+                                    )
+                                  );
+                                }}
+                              />
+                            </div>
                           </div>
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
                             po.status === "received" ? "bg-dash-success/10 text-dash-success" :
