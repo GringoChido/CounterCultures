@@ -30,6 +30,7 @@ export const FEATURES = {
   view_blog: "Blog manager",
   view_drive: "Google Drive home",
   view_finance: "Finance overview (legacy)",
+  view_cash_bucket: "Off-books cash bucket — owner-only by default (R2-4)",
   view_stripe: "Stripe transactions",
   view_odoo: "Odoo legacy panel",
   view_trade: "Trade program applications",

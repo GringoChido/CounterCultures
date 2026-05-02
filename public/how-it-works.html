@@ -1203,10 +1203,28 @@
           <span class="ink">before</span> she pays, not after.
         </p>
         <p class="body-text mt-4">
-          If she says yes, the portal collects her <span class="ink">Constancia de Situación Fiscal</span>
-          and the CFDI is stamped at the moment the deposit clears. If she says no, the system queues a
-          <span class="ink">factura general al público</span> instead. Either way, the answer is recorded
-          on the deal and drives the paths in the next two stages.
+          The dashboard answers her with one of three buckets — two on-books
+          and one off-books — depending on how she pays and what she says
+          about CFDI:
+        </p>
+        <ul class="body-text mt-3 space-y-1.5" style="font-size: 16px;">
+          <li>· <span class="ink">Sí — CFDI</span>. Constancia collected,
+            stamped at deposit clear, XML + PDF in Drive.</li>
+          <li>· <span class="ink">No — Público</span>. Factura general al
+            público, on-books, no fiscal data collected.</li>
+          <li>· <span class="ink">Cash bucket</span>. For Netpay-non-fiscal,
+            cash, or check on a small in-stock walk-in. Off-books, earmarked
+            for the same-month cash expenses Counter Cultures pays in cash —
+            partial showroom + bodega rent, petty cash, salaries for the
+            bookkeeper and manager. Honest accounting for Roger's eyes only;
+            the cash-bucket ledger at <span class="mono ink">/dashboard/finance/cash-bucket</span>
+            is owner-gated.</li>
+        </ul>
+        <p class="body-text mt-4">
+          The bucket is recorded on the payment and drives downstream behavior
+          — Sí stamps the CFDI; Público issues the factura at deposit; Cash
+          bucket skips the fiscal moment and lands on the cash-bucket ledger
+          where the earmark answers "where did this go?" at month-end.
         </p>
         <a href="#stage-6" class="next-link mt-10">Next — the deposit <span aria-hidden="true">→</span></a>
       </div>
@@ -1222,27 +1240,27 @@
             <div class="label mb-2">Pregunta fiscal</div>
             <div class="display text-[28px] ink">¿Requiere CFDI para esta orden?</div>
             <p class="text-[13px] mt-2" style="color: var(--muted);">
-              The answer determines whether we collect a Constancia and stamp at deposit, or issue a public-general factura.
+              The answer routes the payment to one of three buckets: stamped CFDI, factura general al público, or the off-books cash bucket.
             </p>
 
-            <div class="grid md:grid-cols-2 gap-4 mt-6">
+            <div class="grid md:grid-cols-3 gap-3 mt-6">
               <!-- Yes branch -->
               <div class="branch-card active">
                 <div class="flex items-center gap-2">
                   <span class="w-2 h-2 rounded-full" style="background: var(--copper);"></span>
                   <div class="label" style="color: var(--copper);">Sí · selected</div>
                 </div>
-                <div class="display text-[20px] ink mt-2">Stamped CFDI</div>
-                <ul class="mt-3 text-[12px] space-y-1.5" style="color: var(--body); line-height: 1.45;">
-                  <li>· Collect <span class="ink">Constancia de Situación Fiscal</span> from customer</li>
-                  <li>· CFDI stamped at deposit moment</li>
-                  <li>· XML + PDF saved to <span class="mono">CFDI &amp; Facturas/</span></li>
+                <div class="display text-[18px] ink mt-2">Stamped CFDI</div>
+                <ul class="mt-3 text-[11px] space-y-1.5" style="color: var(--body); line-height: 1.45;">
+                  <li>· Constancia collected</li>
+                  <li>· Stamped at deposit clear</li>
+                  <li>· XML + PDF to Drive</li>
                 </ul>
                 <div class="mt-4 border hairline-soft p-3" style="background: #FCFAF6;">
-                  <div class="label">Constancia · upload</div>
-                  <div class="mt-2 flex items-center justify-between text-[11.5px]">
-                    <span class="ink">constancia-rentería.pdf</span>
-                    <span class="pill pill-lime" style="font-size: 9.5px;">received</span>
+                  <div class="label" style="font-size: 9px;">Constancia</div>
+                  <div class="mt-1.5 flex items-center justify-between text-[11px]">
+                    <span class="ink">constancia.pdf</span>
+                    <span class="pill pill-lime" style="font-size: 9px;">received</span>
                   </div>
                 </div>
               </div>
@@ -1251,16 +1269,39 @@
               <div class="branch-card">
                 <div class="flex items-center gap-2">
                   <span class="w-2 h-2 rounded-full" style="background: var(--rule);"></span>
-                  <div class="label">No</div>
+                  <div class="label">No · Público</div>
                 </div>
-                <div class="display text-[20px] ink mt-2">Factura general al público</div>
-                <ul class="mt-3 text-[12px] space-y-1.5" style="color: var(--body); line-height: 1.45;">
+                <div class="display text-[18px] ink mt-2">Factura general</div>
+                <ul class="mt-3 text-[11px] space-y-1.5" style="color: var(--body); line-height: 1.45;">
                   <li>· No Constancia required</li>
-                  <li>· Public-general factura issued at deposit</li>
-                  <li>· No customer fiscal data collected</li>
+                  <li>· Public-general factura at deposit</li>
+                  <li>· No customer fiscal data</li>
                 </ul>
-                <div class="mt-4 text-[11px]" style="color: var(--muted);">
-                  Path stays available — customer can switch to CFDI any time before delivery.
+                <div class="mt-4 text-[10.5px]" style="color: var(--muted);">
+                  Customer can switch to CFDI any time before delivery.
+                </div>
+              </div>
+
+              <!-- Cash bucket branch -->
+              <div class="branch-card">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full" style="background: var(--amber);"></span>
+                  <div class="label" style="color: #8C6A22;">Cash bucket</div>
+                </div>
+                <div class="display text-[18px] ink mt-2">Off-books</div>
+                <ul class="mt-3 text-[11px] space-y-1.5" style="color: var(--body); line-height: 1.45;">
+                  <li>· Netpay-non-fiscal · cash · check</li>
+                  <li>· Small in-stock walk-in only</li>
+                  <li>· Earmark required</li>
+                </ul>
+                <div class="mt-4 border hairline-soft p-3" style="background: #FFF7E8;">
+                  <div class="label" style="font-size: 9px; color: #8C6A22;">Earmark</div>
+                  <div class="mt-1.5 flex flex-wrap gap-1">
+                    <span class="pill" style="font-size: 9px;">Rent</span>
+                    <span class="pill" style="font-size: 9px;">Petty</span>
+                    <span class="pill" style="font-size: 9px;">Salaries</span>
+                  </div>
+                  <div class="mt-1.5 text-[9.5px]" style="color: var(--muted); letter-spacing: 0.04em;">owner-gated · /finance/cash-bucket</div>
                 </div>
               </div>
             </div>
