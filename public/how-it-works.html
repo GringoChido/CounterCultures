@@ -1510,18 +1510,21 @@
     <div class="max-w-[1320px] mx-auto px-6 md:px-12 grid md:grid-cols-12 gap-12 items-start">
       <div class="md:col-span-5 col-copy">
         <div class="stage-num mb-6">Stage Seven</div>
-        <h2 class="display text-[44px] md:text-[60px]">Stock first. <span class="display-italic">Then a PO, if needed.</span></h2>
+        <h2 class="display text-[44px] md:text-[60px]">A default. <span class="display-italic">Not a constraint.</span></h2>
         <p class="body-text mt-8">
           The portal checks the warehouse before generating anything. If the SKU is in stock, no PO —
           the line item flips to <span class="ink">From Stock</span> and waits for shipping.
-          If it isn't, a Purchase Order generates automatically against the vendor that's already
-          mapped to that SKU.
+          If it isn't, a Purchase Order generates against the brand's <span class="ink">default vendor</span>:
+          Kohler ships through Ferguson, BLANCO through JCR, Sun Valley Bronze direct.
         </p>
         <p class="body-text mt-4">
-          Vendor mapping lives on the SKU, not in Roger's head. <span class="ink">Kohler</span> is a
-          Ferguson order; <span class="ink">BLANCO</span> is a JCR order. The PO is filed under the deal
-          and the deal's <span class="ink">Status</span> row carries a clickable PO# so any line in
-          production can be opened from the Pipeline view.
+          But the default isn't a constraint. Roger sometimes routes the same brand through
+          a different vendor — JCR has stock, Ferguson is faster on US-East lots, the artisan
+          channel handles customs cleaner. The PO line item exposes a vendor dropdown with
+          live decision context: <span class="ink">stock on hand</span>, <span class="ink">lead
+          time</span>, and an <span class="ink">import-ease</span> score per alternative. When
+          Roger overrides, the dropdown asks why, and the answer is saved on the PO so
+          "why did this Kohler PO go through JCR?" has an answer three months from now.
         </p>
         <a href="#stage-8" class="next-link mt-10">Next — vendor payments &amp; imports <span aria-hidden="true">→</span></a>
       </div>
@@ -1563,10 +1566,59 @@
               <div class="ink" style="font-weight:500;">Kohler Artifacts · Bridge</div>
               <div class="mono text-[11px]" style="color: var(--muted);">KOH-ART-BR</div>
             </div>
-            <div class="ink">Ferguson</div>
+            <div class="ink">JCR <span class="text-[9.5px] uppercase" style="color: #8C6A22; letter-spacing: 0.1em;">override</span></div>
             <div><span class="pill" style="background: #FFF5E8; border-color: color-mix(in srgb, var(--amber) 35%, white); color: #8C6A22;">0 on hand</span></div>
             <div><span class="pill pill-violet">PO generated</span></div>
             <div><a class="mono ink" style="text-decoration: underline; text-decoration-color: var(--copper); text-underline-offset: 3px;">PO-2026-0219</a></div>
+          </div>
+        </div>
+
+        <!-- Vendor override dropdown mockup -->
+        <div class="mockup-frame overflow-hidden">
+          <div class="mockup-bar px-4 py-3 text-[11px] flex items-center justify-between" style="color: var(--muted);">
+            <span class="mono">Override · Kohler Artifacts · KOH-ART-BR</span>
+            <span class="label" style="font-size: 9.5px; color: var(--copper);">vendor picker</span>
+          </div>
+          <div class="p-4 grid md:grid-cols-2 gap-4">
+            <!-- Dropdown options -->
+            <div class="border hairline-soft rounded">
+              <div class="p-3 border-b hairline-soft" style="background: #FCFAF6;">
+                <div class="flex items-center justify-between">
+                  <span class="ink" style="font-weight: 500;">Ferguson <span class="text-[9px] uppercase" style="color: var(--muted); letter-spacing: 0.1em;">default</span></span>
+                  <span class="pill pill-amber" style="font-size: 9.5px;">0 on hand</span>
+                </div>
+                <div class="mt-1 grid grid-cols-2 text-[10.5px]" style="color: var(--muted);">
+                  <span>Lead: 18d</span>
+                  <span class="mono">Import: <span class="copper">▓▓▓▓▓</span></span>
+                </div>
+                <div class="mt-1 text-[10px] italic" style="color: var(--muted);">Net 30 · clean broker</div>
+              </div>
+              <div class="p-3" style="background: #FFFCF5; border-left: 2px solid var(--copper);">
+                <div class="flex items-center justify-between">
+                  <span class="ink" style="font-weight: 500;">✓ JCR</span>
+                  <span class="pill pill-lime" style="font-size: 9.5px;">3 on hand</span>
+                </div>
+                <div class="mt-1 grid grid-cols-2 text-[10.5px]" style="color: var(--muted);">
+                  <span>Lead: 22d</span>
+                  <span class="mono">Import: <span class="copper">▓▓▓▓░</span></span>
+                </div>
+                <div class="mt-1 text-[10px] italic" style="color: var(--muted);">Sometimes faster on US-East stock</div>
+              </div>
+            </div>
+            <!-- Reason capture -->
+            <div class="border rounded p-3" style="border-color: color-mix(in srgb, var(--amber) 40%, white); background: color-mix(in srgb, var(--amber) 5%, white);">
+              <div class="label flex items-center gap-1" style="color: #8C6A22; font-size: 9px;">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Override reason · required
+              </div>
+              <div class="mt-2 text-[11px] ink" style="line-height: 1.4;">
+                Ferguson has a 4-week wait on the bronze finish; JCR pulled three from their San
+                Antonio bodega yesterday. Going with JCR.
+              </div>
+              <div class="mt-2 text-[9.5px]" style="color: var(--muted);">
+                Saved on the PO so this routing decision is auditable later.
+              </div>
+            </div>
           </div>
         </div>
 

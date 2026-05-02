@@ -30,6 +30,18 @@ type PurchaseOrderRecord = {
   Condition: string;
   Notes: string;
   Drive_File_ID: string;
+  /**
+   * R2-5: vendor-key the PO was routed to (e.g. "ferguson", "jcr"). Empty
+   * for legacy rows; downstream code resolves the default vendor for the
+   * brand if absent.
+   */
+  Vendor: string;
+  /**
+   * R2-5: free-text reason when Vendor differs from the brand's default.
+   * Helps Roger answer "why did this Kohler PO go through JCR?" months
+   * later.
+   */
+  Vendor_Override_Reason: string;
 };
 
 const PO_COLUMNS: (keyof PurchaseOrderRecord)[] = [
@@ -56,6 +68,8 @@ const PO_COLUMNS: (keyof PurchaseOrderRecord)[] = [
   "Condition",
   "Notes",
   "Drive_File_ID",
+  "Vendor",
+  "Vendor_Override_Reason",
 ];
 
 // ---------------------------------------------------------------------------

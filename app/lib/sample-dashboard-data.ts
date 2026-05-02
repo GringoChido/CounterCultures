@@ -208,6 +208,10 @@ export interface PurchaseOrder {
   receivedCondition?: "good" | "damaged" | "wrong-item" | "partial";
   receivedNotes?: string;
   driveFileId?: string;
+  /** R2-5: vendor key from BRAND_VENDORS this PO was routed to. */
+  vendor?: string;
+  /** R2-5: required when vendor differs from the brand's mapped default. */
+  vendorOverrideReason?: string;
 }
 
 export interface DealShipment {
