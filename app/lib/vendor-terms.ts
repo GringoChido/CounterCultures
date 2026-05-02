@@ -19,6 +19,7 @@
  */
 
 import { readSheet } from "./dashboard-sheets";
+import { ensureTab, appendRows } from "./sheet-migrations";
 
 export type BillingTrigger =
   | "on-ship"
@@ -145,9 +146,30 @@ const toTerms = (row: VendorRow): VendorTerms | null => {
 const CACHE_TTL = 5 * 60 * 1000;
 let cache: { at: number; vendors: VendorTerms[] } | null = null;
 
+const VENDOR_HEADERS = [
+  "vendor",
+  "name",
+  "credit_terms",
+  "billing_trigger",
+  "confirmation_pattern",
+  "default_lead_time_days",
+  "notes",
+];
+
+const seedToRow = (v: VendorTerms): string[] => [
+  v.vendor,
+  v.name,
+  v.creditTerms,
+  v.billingTrigger,
+  v.confirmationPattern,
+  String(v.defaultLeadTimeDays),
+  v.notes,
+];
+
 /**
- * Reads the Vendors sheet. Falls back to SEED_VENDORS when the tab is
- * missing or empty so dev environments don't blow up. Cached for 5 min.
+ * Reads the Vendors sheet. Self-heals on first call: if the tab doesn't
+ * exist, creates it and seeds it with SEED_VENDORS so Roger has a
+ * starting list rather than an empty surface. Cached for 5 min.
  */
 export const getAllVendorTerms = async (): Promise<VendorTerms[]> => {
   const now = Date.now();
@@ -157,6 +179,21 @@ export const getAllVendorTerms = async (): Promise<VendorTerms[]> => {
     rows = await readSheet<VendorRow>("Vendors");
   } catch {
     rows = [];
+  }
+  // First-run bootstrap: tab missing or empty → create + seed.
+  if (rows.length === 0) {
+    try {
+      await ensureTab("Vendors", VENDOR_HEADERS);
+      await appendRows("Vendors", SEED_VENDORS.map(seedToRow));
+      rows = await readSheet<VendorRow>("Vendors");
+    } catch (err) {
+      // If sheets API write fails (e.g. dev without creds), fall back to
+      // in-memory seed so the dashboard still renders.
+      console.warn(
+        "[vendor-terms] Vendors tab bootstrap failed, using in-memory seed:",
+        err instanceof Error ? err.message : err
+      );
+    }
   }
   const fromSheet = rows
     .map(toTerms)

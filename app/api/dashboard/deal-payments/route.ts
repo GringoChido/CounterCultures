@@ -5,6 +5,7 @@ import {
   updateRow,
   findRowIndex,
 } from "@/app/lib/dashboard-sheets";
+import { ensureColumns } from "@/app/lib/sheet-migrations";
 
 type DealPaymentRecord = {
   Payment_ID: string;
@@ -84,6 +85,10 @@ export const GET = async (request: NextRequest) => {
 export const POST = async (request: NextRequest) => {
   try {
     const body: DealPaymentRecord = await request.json();
+
+    // Self-heal: ensure the R2-4 columns exist before we attempt to write
+    // them. Idempotent — no-op once the sheet is up to date.
+    await ensureColumns("Deal_Payments", ["Fiscal_Disposition", "Cash_Earmark"]);
 
     const values = PAYMENT_COLUMNS.map((col) => body[col] ?? "");
     await appendRow("Deal_Payments", values);
