@@ -3,8 +3,9 @@
 /**
  * Quick-Capture ⚡ — floating header button for 10-second lead capture.
  *
- * Covers three offline channels that previously dead-ended without a CRM
- * entry point: showroom walk-in, phone call, and trade-show business card.
+ * Covers six inbound channels: walk-in, phone, WhatsApp, Email, Meta IG,
+ * Meta FB. Source is recorded canonically (matches LEAD_SOURCES) so the
+ * downstream send/routing logic in PR 8 can dispatch correctly.
  *
  * Writes to `Leads` via /api/dashboard/leads. If a note is supplied, a
  * second POST lands in the `Notes` sheet so the rolling context shows up
@@ -13,16 +14,33 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Zap, Loader2, Save, Phone, Store, IdCard } from "lucide-react";
+import { Zap, Loader2, Save, Phone, Store, Mail, MessageCircle, AtSign, Hash } from "lucide-react";
 import { SlideOut } from "./slide-out";
+import { LEAD_SOURCE_DOORS, type LeadSource } from "@/app/lib/lead-sources";
 
-type Source = "Showroom Walk-in" | "Phone" | "Business Card";
+const SOURCE_ICONS: Record<LeadSource, React.ComponentType<{ className?: string }>> = {
+  "Walk-in": Store,
+  "Phone": Phone,
+  "WhatsApp": MessageCircle,
+  "Email": Mail,
+  "Meta IG": AtSign,
+  "Meta FB": Hash,
+  "Website": Mail,
+  "Trade Program": Store,
+  "Referral": Store,
+};
 
-const SOURCE_OPTIONS: { value: Source; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { value: "Showroom Walk-in", label: "Walk-In", icon: Store },
-  { value: "Phone", label: "Phone", icon: Phone },
-  { value: "Business Card", label: "Business Card", icon: IdCard },
-];
+const SOURCE_LABELS: Record<LeadSource, string> = {
+  "Walk-in": "Walk-in",
+  "Phone": "Phone",
+  "WhatsApp": "WhatsApp",
+  "Email": "Email",
+  "Meta IG": "Meta IG",
+  "Meta FB": "Meta FB",
+  "Website": "Website",
+  "Trade Program": "Trade",
+  "Referral": "Referral",
+};
 
 interface BrandOption {
   slug: string;
@@ -32,7 +50,8 @@ interface BrandOption {
 const emptyForm = {
   name: "",
   phone: "",
-  source: "Showroom Walk-in" as Source,
+  email: "",
+  source: "Walk-in" as LeadSource,
   brand_slugs: [] as string[],
   notes: "",
 };
@@ -75,6 +94,11 @@ export const QuickCapture = () => {
       return;
     }
 
+    if (form.source === "Walk-in" && !form.email.trim()) {
+      toast.error("Email is required for walk-ins — we email the quote later");
+      return;
+    }
+
     setSaving(true);
     try {
       const leadRes = await fetch("/api/dashboard/leads", {
@@ -82,7 +106,7 @@ export const QuickCapture = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: form.name.trim(),
-          email: "",
+          email: form.email.trim(),
           phone: form.phone.trim(),
           source: form.source,
           status: "new",
@@ -127,7 +151,7 @@ export const QuickCapture = () => {
     <>
       <button
         onClick={() => setOpen(true)}
-        title="Quick-Capture: log a walk-in, phone, or business card"
+        title="Quick-Capture: log a walk-in, phone, WhatsApp, email, or Meta inquiry"
         aria-label="Quick-Capture Lead"
         className="relative w-10 h-10 flex items-center justify-center rounded-lg bg-brand-copper/10 text-brand-copper hover:bg-brand-copper/20 transition-colors cursor-pointer"
       >
@@ -144,31 +168,32 @@ export const QuickCapture = () => {
       >
         <div className="space-y-5">
           <p className="text-xs text-dash-text-secondary">
-            10-second capture for walk-in, phone, or trade-show contacts. Only
-            name is required — everything else can be filled in later.
+            10-second capture for any of the six inbound doors. Only name is
+            required — everything else can be filled in later.
           </p>
 
-          {/* Source */}
+          {/* Source — six doors */}
           <div>
             <label className="block text-xs font-medium text-dash-text-secondary mb-1.5">
               Source
             </label>
             <div className="grid grid-cols-3 gap-2">
-              {SOURCE_OPTIONS.map((opt) => {
-                const active = form.source === opt.value;
+              {LEAD_SOURCE_DOORS.map((value) => {
+                const Icon = SOURCE_ICONS[value];
+                const active = form.source === value;
                 return (
                   <button
-                    key={opt.value}
+                    key={value}
                     type="button"
-                    onClick={() => setForm((p) => ({ ...p, source: opt.value }))}
-                    className={`flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg border text-xs transition-colors cursor-pointer ${
+                    onClick={() => setForm((p) => ({ ...p, source: value }))}
+                    className={`flex flex-col items-center gap-1 px-2 py-2.5 rounded-lg border text-xs transition-colors cursor-pointer ${
                       active
                         ? "bg-brand-copper/10 text-brand-copper border-brand-copper/30"
                         : "border-dash-border text-dash-text-secondary hover:border-dash-text-secondary"
                     }`}
                   >
-                    <opt.icon className="w-4 h-4" />
-                    {opt.label}
+                    <Icon className="w-4 h-4" />
+                    {SOURCE_LABELS[value]}
                   </button>
                 );
               })}
@@ -186,6 +211,25 @@ export const QuickCapture = () => {
               onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
               placeholder="Full name"
               autoFocus
+              className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
+            />
+          </div>
+
+          {/* Email — required for walk-ins per R2-3 */}
+          <div>
+            <label className="block text-xs font-medium text-dash-text-secondary mb-1.5">
+              Email{form.source === "Walk-in" && <span className="text-dash-danger"> *</span>}
+              {form.source === "Walk-in" && (
+                <span className="ml-2 text-[10px] text-dash-text-secondary/80 font-normal">
+                  walk-ins almost never leave with a printed quote — we email it later
+                </span>
+              )}
+            </label>
+            <input
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+              placeholder="email@example.com"
               className="w-full text-sm bg-dash-bg border border-dash-border rounded-lg px-3 py-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
             />
           </div>
