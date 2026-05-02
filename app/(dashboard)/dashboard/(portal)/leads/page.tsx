@@ -17,8 +17,16 @@ import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { NotesPanel } from "@/app/(dashboard)/components/notes-panel";
 import { ShareButton } from "@/app/(dashboard)/components/share-button";
 import { LEAD_SOURCE_OPTIONS, LEAD_SOURCE_PILL, normalizeLeadSource, isLeadSource } from "@/app/lib/lead-sources";
+import { useCurrentUser } from "@/app/lib/use-current-user";
+import {
+  MineAllToggle,
+  readPersistedMode,
+  type MineAllMode,
+} from "@/app/(dashboard)/components/mine-all-toggle";
 
-// Shape matching Google Sheets Leads tab
+// Shape matching Google Sheets Leads tab. `assigned_rep` is read-through —
+// when the column is absent from the sheet, readSheet returns "" and the
+// Mine/All filter (R2-2) treats the lead as unassigned.
 interface SheetLead {
   id: string;
   name: string;
@@ -33,6 +41,7 @@ interface SheetLead {
   next_followup: string;
   last_contact_date: string;
   brand_slugs: string;
+  assigned_rep: string;
 }
 
 // UI-friendly lead derived from sheet data
@@ -50,6 +59,7 @@ interface Lead {
   nextFollowUp: string;
   lastContactDate: string;
   brandSlugs: string[];
+  assignedRep: string;
 }
 
 const mapSheetLead = (s: SheetLead): Lead => ({
@@ -69,6 +79,7 @@ const mapSheetLead = (s: SheetLead): Lead => ({
     .split("|")
     .map((x) => x.trim())
     .filter(Boolean),
+  assignedRep: s.assigned_rep ?? "",
 });
 
 const statusVariants: Record<string, BadgeVariant> = {
@@ -712,6 +723,13 @@ const LeadsPageInner = () => {
   const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [contactTypeFilter, setContactTypeFilter] = useState<string>("all");
   const [viewFilter, setViewFilter] = useState<"all" | "stale">("all");
+  const { user: currentUser } = useCurrentUser();
+  const [repMode, setRepMode] = useState<MineAllMode>("all");
+  // Once the current user resolves, hydrate the Mine/All preference from
+  // localStorage (or fall back to the role default — sales=mine, owner=all).
+  useEffect(() => {
+    if (currentUser) setRepMode(readPersistedMode(currentUser, "leads"));
+  }, [currentUser]);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
 
   // Publish open lead to page-context store for the AI chat widget.
@@ -837,10 +855,15 @@ const LeadsPageInner = () => {
   }, [actionParam, router]);
 
   const filteredLeads = useMemo(() => {
+    const myName = (currentUser?.name ?? "").trim().toLowerCase();
     return leads.filter((lead) => {
       if (statusFilter !== "all" && lead.status !== statusFilter) return false;
       if (sourceFilter !== "all" && lead.source !== sourceFilter) return false;
       if (contactTypeFilter !== "all" && lead.contactType !== contactTypeFilter) return false;
+      if (repMode === "mine" && myName) {
+        const assigned = (lead.assignedRep ?? "").trim().toLowerCase();
+        if (assigned !== myName) return false;
+      }
       if (viewFilter === "stale") {
         if (!lead.lastContactDate) return true; // no contact date = stale
         try {
@@ -851,7 +874,7 @@ const LeadsPageInner = () => {
       }
       return true;
     });
-  }, [leads, statusFilter, sourceFilter, contactTypeFilter, viewFilter]);
+  }, [leads, statusFilter, sourceFilter, contactTypeFilter, viewFilter, repMode, currentUser]);
 
   const staleCount = useMemo(() => {
     return leads.filter((l) => {
@@ -945,6 +968,12 @@ const LeadsPageInner = () => {
       {/* Actions */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
+          <MineAllToggle
+            user={currentUser}
+            scope="leads"
+            mode={repMode}
+            onChange={setRepMode}
+          />
           <div className="flex items-center gap-1.5">
             <Filter className="w-4 h-4 text-dash-text-secondary" />
             <select

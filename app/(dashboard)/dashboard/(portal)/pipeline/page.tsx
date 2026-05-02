@@ -94,6 +94,12 @@ import { usePageContextStore } from "@/app/lib/stores/page-context-store";
 import { TRAFICO_STATUS_CONFIG, type TraficoStatus, getDocumentChecklist } from "@/app/lib/customs-data";
 import type { HydratedTrafico } from "@/app/lib/trafico-hydrator";
 import { LandedCostCalculator } from "@/app/(dashboard)/components/landed-cost-calculator";
+import { useCurrentUser } from "@/app/lib/use-current-user";
+import {
+  MineAllToggle,
+  readPersistedMode,
+  type MineAllMode,
+} from "@/app/(dashboard)/components/mine-all-toggle";
 
 // Slim live shape from /api/dashboard/traficos (flat sheet row).
 // Rich shape (items[], documents, calculoBreakdown) loaded separately
@@ -653,6 +659,11 @@ const PipelinePageInner = () => {
     return () => setPageDeal(null);
   }, [selectedDeal, setPageDeal]);
   const [pipelineView, setPipelineView] = useState<PipelineView>("sales");
+  const { user: currentUser } = useCurrentUser();
+  const [repMode, setRepMode] = useState<MineAllMode>("all");
+  useEffect(() => {
+    if (currentUser) setRepMode(readPersistedMode(currentUser, "pipeline"));
+  }, [currentUser]);
   const [activityLogDeal, setActivityLogDeal] = useState<PipelineDeal | null>(null);
   const [activityNote, setActivityNote] = useState("");
   const [activityType, setActivityType] = useState<"call" | "email" | "meeting" | "note" | "whatsapp">("call");
@@ -1343,12 +1354,22 @@ const PipelinePageInner = () => {
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
 
-  const dealsByStage = (stage: PipelineStage) =>
-    deals.filter((d) => d.stage === stage);
+  // R2-2: Mine/All filter is applied to the *display* set (kanban, KPIs,
+  // journey), but lookups for drag-drop / deep links still use the full
+  // `deals` collection so a Mine view can't accidentally orphan a deal id
+  // referenced from outside the filter.
+  const myName = (currentUser?.name ?? "").trim().toLowerCase();
+  const visibleDeals =
+    repMode === "mine" && myName
+      ? deals.filter((d) => (d.assignedRep ?? "").trim().toLowerCase() === myName)
+      : deals;
 
-  const activeDeals = deals.filter((d) => !CLOSED_STAGES.includes(d.stage));
+  const dealsByStage = (stage: PipelineStage) =>
+    visibleDeals.filter((d) => d.stage === stage);
+
+  const activeDeals = visibleDeals.filter((d) => !CLOSED_STAGES.includes(d.stage));
   const totalPipeline = activeDeals.reduce((sum, d) => sum + d.value, 0);
-  const wonValue = deals
+  const wonValue = visibleDeals
     .filter((d) => d.stage === "closed-won" || d.stage === "won")
     .reduce((sum, d) => sum + d.value, 0);
   const weightedValue = activeDeals.reduce(
@@ -1541,7 +1562,7 @@ const PipelinePageInner = () => {
   };
 
   const salesColumns: KanbanColumn[] = SALES_PHASES.map((phase) => {
-    const phaseDeals = deals.filter(
+    const phaseDeals = visibleDeals.filter(
       (d) =>
         getJourneyPhase(d.stage) === phase.id &&
         !CLOSED_STAGES.includes(d.stage)
@@ -1606,27 +1627,35 @@ const PipelinePageInner = () => {
 
       {/* View Toggle + Add Deal */}
       <div className="flex items-center justify-between">
-        <div className="flex gap-1 bg-dash-bg rounded-lg p-1">
-          <button
-            onClick={() => setPipelineView("sales")}
-            className={`px-4 py-2 text-xs font-medium rounded-md transition-colors cursor-pointer ${
-              pipelineView === "sales"
-                ? "bg-dash-surface text-dash-text shadow-sm"
-                : "text-dash-text-secondary hover:text-dash-text"
-            }`}
-          >
-            Sales Pipeline
-          </button>
-          <button
-            onClick={() => setPipelineView("operations")}
-            className={`px-4 py-2 text-xs font-medium rounded-md transition-colors cursor-pointer ${
-              pipelineView === "operations"
-                ? "bg-dash-surface text-dash-text shadow-sm"
-                : "text-dash-text-secondary hover:text-dash-text"
-            }`}
-          >
-            Operations
-          </button>
+        <div className="flex items-center gap-3">
+          <div className="flex gap-1 bg-dash-bg rounded-lg p-1">
+            <button
+              onClick={() => setPipelineView("sales")}
+              className={`px-4 py-2 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                pipelineView === "sales"
+                  ? "bg-dash-surface text-dash-text shadow-sm"
+                  : "text-dash-text-secondary hover:text-dash-text"
+              }`}
+            >
+              Sales Pipeline
+            </button>
+            <button
+              onClick={() => setPipelineView("operations")}
+              className={`px-4 py-2 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                pipelineView === "operations"
+                  ? "bg-dash-surface text-dash-text shadow-sm"
+                  : "text-dash-text-secondary hover:text-dash-text"
+              }`}
+            >
+              Operations
+            </button>
+          </div>
+          <MineAllToggle
+            user={currentUser}
+            scope="pipeline"
+            mode={repMode}
+            onChange={setRepMode}
+          />
         </div>
         <button
           onClick={() => {
