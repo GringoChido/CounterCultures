@@ -31,10 +31,16 @@ export const defaultMode = (role: ClientUser["role"] | undefined): MineAllMode =
 /**
  * Compare an `assignedRep` field on a row to the current user. Tries email
  * first (most reliable), then falls back to name with accent + case
- * normalization. "Roger Treviño" matches "roger trevino" or just "Roger"
- * — the Users sheet often diverges from typed-by-hand assignedRep values,
- * and losing rows from the Mine view because of an accent or shorthand
- * is a worse outcome than a slightly permissive match.
+ * normalization. "Roger Treviño" matches "roger trevino" — the Users
+ * sheet often diverges from typed-by-hand assignedRep values, and
+ * losing rows from the Mine view because of an accent is worse than a
+ * slightly permissive match.
+ *
+ * First-name shorthand ("Roger" matching "Roger Treviño") is intentionally
+ * NOT supported: if two reps share a first name (a future Carlos Mendívil
+ * + Carlos Ruiz), it would silently mis-attribute leads. If that
+ * shorthand becomes important, the assignment field needs to use email
+ * — not free-text names — for unambiguous resolution.
  */
 const normalize = (s: string): string =>
   s.normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLowerCase();
@@ -52,10 +58,7 @@ export const matchesUser = (
   const normAr = normalize(ar);
   const normName = normalize(userName);
   if (!normAr || !normName) return false;
-  if (normAr === normName) return true;
-  // First-name shorthand: "Roger" matches "Roger Treviño"
-  const firstName = normName.split(/\s+/)[0];
-  return normAr === firstName;
+  return normAr === normName;
 };
 
 /**

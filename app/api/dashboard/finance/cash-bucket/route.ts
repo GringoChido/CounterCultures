@@ -69,8 +69,11 @@ export const GET = async (request: NextRequest): Promise<Response> => {
       byEarmark[earmark] = cur;
     }
 
+    // Return only this-month rows — older months balloon the payload and
+    // aren't part of this view. Page can request a different month with
+    // ?month=YYYY-MM.
     return NextResponse.json({
-      payments: cashBucket,
+      payments: thisMonth,
       monthSummary: { month: currentMonth, byEarmark, totalMxn },
     });
   } catch (err) {

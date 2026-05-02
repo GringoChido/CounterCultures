@@ -77,6 +77,7 @@ export const RecordCashEntryForm = ({ onRecorded }: Props): React.ReactElement =
           Installment_Num: "",
           Fiscal_Disposition: "cash_bucket",
           Cash_Earmark: earmark,
+          Memo: memo.trim(),
         }),
       });
       if (!res.ok) throw new Error("save-failed");

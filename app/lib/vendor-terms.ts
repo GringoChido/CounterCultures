@@ -147,6 +147,10 @@ const toTerms = (row: VendorRow): VendorTerms | null => {
 
 const CACHE_TTL = 5 * 60 * 1000;
 let cache: { at: number; vendors: VendorTerms[] } | null = null;
+// In-flight promise so concurrent cold callers share the bootstrap work
+// instead of each running ensureTab + appendRows and producing duplicate
+// seed rows.
+let inflight: Promise<VendorTerms[]> | null = null;
 
 const VENDOR_HEADERS = [
   "vendor",
@@ -172,37 +176,57 @@ const seedToRow = (v: VendorTerms): string[] => [
  * Reads the Vendors sheet. Self-heals on first call: if the tab doesn't
  * exist, creates it and seeds it with SEED_VENDORS so Roger has a
  * starting list rather than an empty surface. Cached for 5 min.
+ *
+ * Concurrency-safe: a single in-flight bootstrap promise is shared across
+ * concurrent cold callers, so two simultaneous requests don't both
+ * append the seed rows.
  */
 export const getAllVendorTerms = async (): Promise<VendorTerms[]> => {
   const now = Date.now();
   if (cache && now - cache.at < CACHE_TTL) return cache.vendors;
-  let rows: VendorRow[] = [];
-  try {
-    rows = await readSheet<VendorRow>("Vendors");
-  } catch {
-    rows = [];
-  }
-  // First-run bootstrap: tab missing or empty → create + seed.
-  if (rows.length === 0) {
+  if (inflight) return inflight;
+
+  inflight = (async (): Promise<VendorTerms[]> => {
+    let rows: VendorRow[] = [];
     try {
-      await ensureTab("Vendors", VENDOR_HEADERS);
-      await appendRows("Vendors", SEED_VENDORS.map(seedToRow));
       rows = await readSheet<VendorRow>("Vendors");
-    } catch (err) {
-      // If sheets API write fails (e.g. dev without creds), fall back to
-      // in-memory seed so the dashboard still renders.
-      console.warn(
-        "[vendor-terms] Vendors tab bootstrap failed, using in-memory seed:",
-        err instanceof Error ? err.message : err
-      );
+    } catch {
+      rows = [];
     }
+    // First-run bootstrap: tab missing or empty → create + seed.
+    if (rows.length === 0) {
+      try {
+        await ensureTab("Vendors", VENDOR_HEADERS);
+        // Re-read after ensureTab to confirm the tab is empty before we
+        // seed — covers the case where another worker raced past the
+        // in-memory inflight guard (different process / cold serverless).
+        const after = await readSheet<VendorRow>("Vendors");
+        if (after.length === 0) {
+          await appendRows("Vendors", SEED_VENDORS.map(seedToRow));
+        }
+        rows = await readSheet<VendorRow>("Vendors");
+      } catch (err) {
+        // If sheets API write fails (e.g. dev without creds), fall back to
+        // in-memory seed so the dashboard still renders.
+        console.warn(
+          "[vendor-terms] Vendors tab bootstrap failed, using in-memory seed:",
+          err instanceof Error ? err.message : err
+        );
+      }
+    }
+    const fromSheet = rows
+      .map(toTerms)
+      .filter((v): v is VendorTerms => v !== null);
+    const vendors = fromSheet.length > 0 ? fromSheet : SEED_VENDORS;
+    cache = { at: Date.now(), vendors };
+    return vendors;
+  })();
+
+  try {
+    return await inflight;
+  } finally {
+    inflight = null;
   }
-  const fromSheet = rows
-    .map(toTerms)
-    .filter((v): v is VendorTerms => v !== null);
-  const vendors = fromSheet.length > 0 ? fromSheet : SEED_VENDORS;
-  cache = { at: now, vendors };
-  return vendors;
 };
 
 /** Look up one vendor's terms. Case-insensitive on the vendor key. */
