@@ -29,6 +29,36 @@ export const defaultMode = (role: ClientUser["role"] | undefined): MineAllMode =
   role === "sales" ? "mine" : "all";
 
 /**
+ * Compare an `assignedRep` field on a row to the current user. Tries email
+ * first (most reliable), then falls back to name with accent + case
+ * normalization. "Roger Treviño" matches "roger trevino" or just "Roger"
+ * — the Users sheet often diverges from typed-by-hand assignedRep values,
+ * and losing rows from the Mine view because of an accent or shorthand
+ * is a worse outcome than a slightly permissive match.
+ */
+const normalize = (s: string): string =>
+  s.normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLowerCase();
+
+export const matchesUser = (
+  assignedRep: string,
+  user: ClientUser | null
+): boolean => {
+  if (!user) return false;
+  const ar = (assignedRep ?? "").trim();
+  if (!ar) return false;
+  if (ar.toLowerCase() === user.email.toLowerCase()) return true;
+  const userName = user.name ?? "";
+  if (!userName) return false;
+  const normAr = normalize(ar);
+  const normName = normalize(userName);
+  if (!normAr || !normName) return false;
+  if (normAr === normName) return true;
+  // First-name shorthand: "Roger" matches "Roger Treviño"
+  const firstName = normName.split(/\s+/)[0];
+  return normAr === firstName;
+};
+
+/**
  * Reads the persisted mode for this user+scope, falling back to the role
  * default. Safe to call from useState initializer once the user is known.
  */

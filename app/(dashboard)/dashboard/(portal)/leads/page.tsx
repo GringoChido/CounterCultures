@@ -20,6 +20,7 @@ import { LEAD_SOURCE_OPTIONS, LEAD_SOURCE_PILL, normalizeLeadSource, isLeadSourc
 import { useCurrentUser } from "@/app/lib/use-current-user";
 import {
   MineAllToggle,
+  matchesUser,
   readPersistedMode,
   type MineAllMode,
 } from "@/app/(dashboard)/components/mine-all-toggle";
@@ -855,14 +856,12 @@ const LeadsPageInner = () => {
   }, [actionParam, router]);
 
   const filteredLeads = useMemo(() => {
-    const myName = (currentUser?.name ?? "").trim().toLowerCase();
     return leads.filter((lead) => {
       if (statusFilter !== "all" && lead.status !== statusFilter) return false;
       if (sourceFilter !== "all" && lead.source !== sourceFilter) return false;
       if (contactTypeFilter !== "all" && lead.contactType !== contactTypeFilter) return false;
-      if (repMode === "mine" && myName) {
-        const assigned = (lead.assignedRep ?? "").trim().toLowerCase();
-        if (assigned !== myName) return false;
+      if (repMode === "mine" && currentUser) {
+        if (!matchesUser(lead.assignedRep ?? "", currentUser)) return false;
       }
       if (viewFilter === "stale") {
         if (!lead.lastContactDate) return true; // no contact date = stale
