@@ -9,6 +9,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { google } from "googleapis";
 import { getGooglePrivateKey } from "@/app/lib/google-private-key";
 import { findRowIndex } from "@/app/lib/dashboard-sheets";
+import { ensureColumns } from "@/app/lib/sheet-migrations";
 
 const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_ID ?? "";
 
@@ -42,10 +43,11 @@ export const PATCH = async (request: NextRequest): Promise<Response> => {
       return NextResponse.json({ error: "PO not found" }, { status: 404 });
     }
 
+    // Self-heal: add the columns if the production sheet doesn't have them
+    // yet. Idempotent — no-op when already present.
+    await ensureColumns("Purchase_Orders", ["Vendor", "Vendor_Override_Reason"]);
+
     const sheets = getSheets();
-    // Read the header to find Vendor / Vendor_Override_Reason column letters.
-    // Skipping the lookup and assuming positions would drift if the sheet
-    // header isn't in lockstep with PO_COLUMNS.
     const headerRes = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
       range: "Purchase_Orders!1:1",
@@ -53,14 +55,10 @@ export const PATCH = async (request: NextRequest): Promise<Response> => {
     const headers = headerRes.data.values?.[0] ?? [];
     const vendorCol = headers.indexOf("Vendor");
     const reasonCol = headers.indexOf("Vendor_Override_Reason");
+    // After ensureColumns(), both should exist. If either is still -1,
+    // the sheet write failed silently — fall through to a 500 with detail.
     if (vendorCol === -1 || reasonCol === -1) {
-      return NextResponse.json(
-        {
-          error:
-            "Purchase_Orders sheet is missing Vendor / Vendor_Override_Reason columns. Add them to the header before saving overrides.",
-        },
-        { status: 409 }
-      );
+      throw new Error("Vendor columns missing after self-heal attempt");
     }
 
     const sheetRow = rowIdx + 2; // +1 header, +1 1-indexed
