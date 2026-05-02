@@ -2922,6 +2922,7 @@ const PipelinePageInner = () => {
         customerName={selectedDeal?.contactName ?? ""}
         customerEmail=""
         dealName={selectedDeal?.name}
+        source={selectedDeal?.leadSource}
         onSent={() => {
           if (selectedDeal) {
             fetchDealDocs(selectedDeal.id);

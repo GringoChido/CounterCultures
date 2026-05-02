@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -11,6 +11,7 @@ import {
   FileText,
 } from "lucide-react";
 import { toast } from "sonner";
+import { defaultSendChannels } from "@/app/lib/lead-sources";
 
 interface SendDialogProps {
   open: boolean;
@@ -20,8 +21,19 @@ interface SendDialogProps {
   customerName: string;
   customerEmail: string;
   dealName?: string;
+  /**
+   * Lead source carried forward from the deal. R2-3: routes the dialog's
+   * default channel — WhatsApp source opens to WhatsApp, everything else
+   * (incl. Walk-in, where the email is the artifact) opens to email.
+   */
+  source?: string;
   onSent?: () => void;
 }
+
+const initialChannelForSource = (source: string | undefined): "email" | "whatsapp" => {
+  const channels = defaultSendChannels(source ?? "");
+  return channels[0] === "whatsapp" ? "whatsapp" : "email";
+};
 
 export const SendDialog = ({
   open,
@@ -31,9 +43,17 @@ export const SendDialog = ({
   customerName,
   customerEmail,
   dealName,
+  source,
   onSent,
 }: SendDialogProps) => {
-  const [channel, setChannel] = useState<"email" | "whatsapp">("email");
+  const [channel, setChannel] = useState<"email" | "whatsapp">(
+    initialChannelForSource(source)
+  );
+  // When source changes (e.g. dialog reopened on a different deal), refresh
+  // the default. User can still flip after.
+  useEffect(() => {
+    if (open) setChannel(initialChannelForSource(source));
+  }, [open, source]);
   const [to, setTo] = useState(customerEmail);
   const [subject, setSubject] = useState(
     `Your ${docType} from Counter Cultures${dealName ? ` — ${dealName}` : ""}`
