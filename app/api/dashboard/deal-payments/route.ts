@@ -21,6 +21,17 @@ type DealPaymentRecord = {
   Due_Date: string;
   Paid_Date: string;
   Installment_Num: string;
+  /**
+   * R2-4: three-bucket fiscal disposition. "cfdi" = stamped CFDI,
+   * "general" = factura general al público, "cash_bucket" = off-books
+   * earmarked cash. Empty for legacy rows.
+   */
+  Fiscal_Disposition: string;
+  /**
+   * R2-4: required when Fiscal_Disposition === "cash_bucket". One of
+   * "rent" | "petty_cash" | "salaries" | "other".
+   */
+  Cash_Earmark: string;
 };
 
 const PAYMENT_COLUMNS: (keyof DealPaymentRecord)[] = [
@@ -38,6 +49,8 @@ const PAYMENT_COLUMNS: (keyof DealPaymentRecord)[] = [
   "Due_Date",
   "Paid_Date",
   "Installment_Num",
+  "Fiscal_Disposition",
+  "Cash_Earmark",
 ];
 
 // ---------------------------------------------------------------------------
