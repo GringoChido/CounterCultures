@@ -247,10 +247,52 @@ const upsertRowByField = async (
   return { action: "updated", rowIndex: idx };
 };
 
+/**
+ * Append a row by header name. Reads the live header, places each field's
+ * value in the right column, fills unknown columns with "". Use this
+ * instead of `appendRow` whenever the route's column order might drift
+ * from the sheet's actual order — which is most cases now that
+ * sheet-migrations may have appended new columns.
+ */
+const appendRowByHeader = async (
+  tab: SheetTab,
+  fields: Record<string, string>
+): Promise<void> => {
+  const headers = await getSheetHeaders(tab);
+  if (headers.length === 0) {
+    throw new Error(`Tab "${tab}" has no header row — cannot append`);
+  }
+  const values = headers.map((h) => fields[h] ?? "");
+  await appendRow(tab, values);
+};
+
+/**
+ * Update a row by header name. Reads the live header AND the existing row,
+ * merges `fields` onto it, then writes the full row back in the live
+ * header order. Preserves any columns the caller didn't touch.
+ */
+const updateRowByHeader = async (
+  tab: SheetTab,
+  dataRowIndex: number,
+  fields: Record<string, string>
+): Promise<void> => {
+  const headers = await getSheetHeaders(tab);
+  if (headers.length === 0) {
+    throw new Error(`Tab "${tab}" has no header row — cannot update`);
+  }
+  const rows = await readSheet<Record<string, string>>(tab);
+  const existing = rows[dataRowIndex] ?? {};
+  const merged: Record<string, string> = { ...existing, ...fields };
+  const values = headers.map((h) => merged[h] ?? "");
+  await updateRow(tab, dataRowIndex, values);
+};
+
 export {
   readSheet,
   appendRow,
   updateRow,
+  appendRowByHeader,
+  updateRowByHeader,
   deleteRow,
   findRowIndex,
   getSheetHeaders,

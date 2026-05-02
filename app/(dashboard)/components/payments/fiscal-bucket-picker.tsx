@@ -132,5 +132,12 @@ export const FiscalBucketPicker = ({
   );
 };
 
-export const earmarkLabel = (e: CashEarmark): string =>
-  e === "" ? "—" : EARMARK_LABELS[e];
+/**
+ * Loose-typed label lookup. The API rollup uses "unspecified" as a key
+ * for empty earmarks, which isn't a CashEarmark value — we fall back to
+ * the raw key for any unknown bucket so the cell never renders blank.
+ */
+export const earmarkLabel = (e: string): string => {
+  if (!e) return "—";
+  return (EARMARK_LABELS as Record<string, string>)[e] ?? e;
+};

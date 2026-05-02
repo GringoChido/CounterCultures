@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import {
   readSheet,
-  appendRow,
-  updateRow,
+  appendRowByHeader,
+  updateRowByHeader,
   findRowIndex,
 } from "@/app/lib/dashboard-sheets";
 
@@ -20,6 +20,11 @@ type LeadRecord = {
   next_followup: string;
   last_contact_date: string;
   brand_slugs: string; // pipe-separated ("kohler|dornbracht")
+  /**
+   * R2-2: which rep owns this lead. Compared against currentUser.name in
+   * the Mine/All filter. Empty for unassigned leads.
+   */
+  assigned_rep: string;
 };
 
 const LEAD_COLUMNS: (keyof LeadRecord)[] = [
@@ -36,7 +41,24 @@ const LEAD_COLUMNS: (keyof LeadRecord)[] = [
   "next_followup",
   "last_contact_date",
   "brand_slugs",
+  "assigned_rep",
 ];
+
+// Sheets with valueInputOption=USER_ENTERED evaluates any cell starting
+// with + = - @ as a formula, so phones like "+52 415 …" become #ERROR!.
+// Leading apostrophe is the canonical escape — Sheets strips it on read.
+const escapeFormula = (v: string): string =>
+  typeof v === "string" && /^[+=\-@]/.test(v) ? `'${v}` : v;
+
+const recordToFields = (
+  body: Partial<LeadRecord>
+): Record<string, string> => {
+  const out: Record<string, string> = {};
+  for (const col of LEAD_COLUMNS) {
+    out[col] = escapeFormula(body[col] ?? "");
+  }
+  return out;
+};
 
 // GET — list all leads, optionally filter by status
 export const GET = async (request: NextRequest) => {
@@ -71,14 +93,7 @@ export const POST = async (request: NextRequest) => {
       body.created_at = new Date().toISOString();
     }
 
-    // Sheets with valueInputOption=USER_ENTERED evaluates any cell starting
-    // with + = - @ as a formula, so phones like "+52 415 …" become #ERROR!.
-    // Leading apostrophe is the canonical escape — Sheets strips it on read.
-    const escapeFormula = (v: string) =>
-      typeof v === "string" && /^[+=\-@]/.test(v) ? `'${v}` : v;
-
-    const values = LEAD_COLUMNS.map((col) => escapeFormula(body[col] ?? ""));
-    await appendRow("Leads", values);
+    await appendRowByHeader("Leads", recordToFields(body));
 
     return NextResponse.json({ success: true, id: body.id });
   } catch (err) {
@@ -110,13 +125,10 @@ export const PATCH = async (request: NextRequest) => {
       );
     }
 
-    // Read existing row, merge updates
-    const existing = await readSheet<LeadRecord>("Leads");
-    const current = existing[rowIdx];
-    const merged = { ...current, ...body };
-
-    const values = LEAD_COLUMNS.map((col) => merged[col] ?? "");
-    await updateRow("Leads", rowIdx, values);
+    // updateRowByHeader merges with existing row internally, so we don't
+    // need to readSheet+merge here — we only pass the fields we want to
+    // change. Unknown fields are preserved.
+    await updateRowByHeader("Leads", rowIdx, recordToFields(body));
 
     return NextResponse.json({ success: true });
   } catch (err) {

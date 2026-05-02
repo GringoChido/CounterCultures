@@ -1,10 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import {
   readSheet,
-  appendRow,
-  updateRow,
+  appendRowByHeader,
+  updateRowByHeader,
   findRowIndex,
 } from "@/app/lib/dashboard-sheets";
+import { ensureColumns } from "@/app/lib/sheet-migrations";
 
 type PurchaseOrderRecord = {
   PO_ID: string;
@@ -100,12 +101,22 @@ export const GET = async (request: NextRequest) => {
 // POST - create a new purchase order
 // ---------------------------------------------------------------------------
 
+const recordToFields = (body: PurchaseOrderRecord): Record<string, string> => {
+  const out: Record<string, string> = {};
+  for (const col of PO_COLUMNS) {
+    out[col] = body[col] ?? "";
+  }
+  return out;
+};
+
 export const POST = async (request: NextRequest) => {
   try {
     const body: PurchaseOrderRecord = await request.json();
 
-    const values = PO_COLUMNS.map((col) => body[col] ?? "");
-    await appendRow("Purchase_Orders", values);
+    // Self-heal R2-5 columns before write so the header-keyed insert finds
+    // them (no-op once the sheet is up to date).
+    await ensureColumns("Purchase_Orders", ["Vendor", "Vendor_Override_Reason"]);
+    await appendRowByHeader("Purchase_Orders", recordToFields(body));
 
     return NextResponse.json({ success: true, poId: body.PO_ID });
   } catch (err) {
@@ -141,8 +152,8 @@ export const PUT = async (request: NextRequest) => {
       );
     }
 
-    const values = PO_COLUMNS.map((col) => body[col] ?? "");
-    await updateRow("Purchase_Orders", rowIdx, values);
+    await ensureColumns("Purchase_Orders", ["Vendor", "Vendor_Override_Reason"]);
+    await updateRowByHeader("Purchase_Orders", rowIdx, recordToFields(body));
 
     return NextResponse.json({ success: true });
   } catch (err) {

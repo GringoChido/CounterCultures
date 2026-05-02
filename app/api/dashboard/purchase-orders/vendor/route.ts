@@ -77,6 +77,12 @@ export const PATCH = async (request: NextRequest): Promise<Response> => {
       return s;
     };
 
+    // Escape values that start with + - = @ — Sheets evaluates those as
+    // formulas under USER_ENTERED, which would corrupt a reason like
+    // "+ faster lead time" or a vendor key with a leading dash.
+    const escapeFormula = (v: string): string =>
+      typeof v === "string" && /^[+=\-@]/.test(v) ? `'${v}` : v;
+
     await sheets.spreadsheets.values.batchUpdate({
       spreadsheetId: SPREADSHEET_ID,
       requestBody: {
@@ -84,11 +90,11 @@ export const PATCH = async (request: NextRequest): Promise<Response> => {
         data: [
           {
             range: `Purchase_Orders!${colLetter(vendorCol)}${sheetRow}`,
-            values: [[body.Vendor]],
+            values: [[escapeFormula(body.Vendor)]],
           },
           {
             range: `Purchase_Orders!${colLetter(reasonCol)}${sheetRow}`,
-            values: [[body.Vendor_Override_Reason]],
+            values: [[escapeFormula(body.Vendor_Override_Reason)]],
           },
         ],
       },
