@@ -1701,10 +1701,32 @@
         <div class="stage-num mb-6">Stage Eight</div>
         <h2 class="display text-[44px] md:text-[60px]">Paying the vendor, <span class="display-italic">clearing the goods.</span></h2>
         <p class="body-text mt-8">
-          Each vendor has its own payment terms baked into the record — Ferguson runs on
-          <span class="ink">credit, net 30</span>; JCR is paid <span class="ink">in advance</span>;
-          others fall somewhere between. The portal queues the right vendor payment on the right day,
-          out of the right account, and posts it back to the deal's ledger.
+          "Net 30" doesn't capture how vendors actually bill. Roger's vendors
+          run on five distinct patterns, and the AP queue dispatches off
+          each one — the right payment lands on the right day, out of the
+          right account, and the PO send is gated when payment has to
+          clear first.
+        </p>
+        <ul class="body-text mt-4 space-y-1.5" style="font-size: 15px;">
+          <li>· <span class="ink">on-ship · net N</span>. Ferguson. Vendor invoices once
+            goods ship; due = ship date + terms.</li>
+          <li>· <span class="ink">on-order · net N</span>. Vendor invoices off the PO;
+            due = PO date + terms.</li>
+          <li>· <span class="ink">cash-upfront</span>. JCR. Vendor won't start the
+            order without payment cleared — send-PO is blocked until the
+            advance posts.</li>
+          <li>· <span class="ink">split 50 / 50</span>. 50% at PO + 50% net N off
+            ship date. Two queue rows, the first blocking.</li>
+          <li>· <span class="ink">never-invoices</span>. Sun Valley Bronze direct.
+            No confirmation, no invoice — pay-against-PO with manual AP
+            entry, surfaced in the queue with a clear badge.</li>
+        </ul>
+        <p class="body-text mt-4">
+          Vendors also split on whether they confirm — Ferguson sends
+          an email confirmation with estimated lead times before the
+          invoice; the artisan channel never does. The Vendors sheet at
+          <span class="mono ink">/dashboard/vendors</span> is the source
+          of truth for both billing trigger and confirmation pattern.
         </p>
         <p class="body-text mt-4">
           Then the import side: commercial invoice, packing list, pedimento, broker handoff.
@@ -1732,7 +1754,10 @@
               <div class="ink" style="font-weight: 500;">JCR</div>
               <div class="text-[11px]" style="color: var(--muted);">BLANCO authorised</div>
             </div>
-            <div><span class="pill pill-amber">Advance</span></div>
+            <div>
+              <span class="pill pill-amber">Cash-upfront</span>
+              <div class="text-[10px] mt-0.5" style="color: var(--muted);">blocks send-PO</div>
+            </div>
             <div><a class="mono ink" style="text-decoration: underline; text-decoration-color: var(--copper); text-underline-offset: 3px;">PO-2026-0218</a></div>
             <div class="mono ink">$32,800 MXN</div>
             <div><span class="pill pill-copper">today</span></div>
@@ -1742,10 +1767,26 @@
               <div class="ink" style="font-weight: 500;">Ferguson</div>
               <div class="text-[11px]" style="color: var(--muted);">Kohler · Brizo</div>
             </div>
-            <div><span class="pill pill-lime">Credit · net 30</span></div>
+            <div>
+              <span class="pill pill-lime">On-ship · net 30</span>
+              <div class="text-[10px] mt-0.5" style="color: var(--muted);">due = ship + 30d</div>
+            </div>
             <div><a class="mono ink" style="text-decoration: underline; text-decoration-color: var(--copper); text-underline-offset: 3px;">PO-2026-0219</a></div>
             <div class="mono ink">$24,400 USD</div>
             <div class="text-[12px] ink">Jun 02</div>
+          </div>
+          <div class="row" style="grid-template-columns: 1fr 1fr 1fr 0.8fr 0.7fr;">
+            <div>
+              <div class="ink" style="font-weight: 500;">Sun Valley Bronze</div>
+              <div class="text-[11px]" style="color: var(--muted);">direct · artisan</div>
+            </div>
+            <div>
+              <span class="pill" style="background: #FFF5E8; border-color: color-mix(in srgb, var(--amber) 35%, white); color: #8C6A22;">Never-invoices</span>
+              <div class="text-[10px] mt-0.5" style="color: var(--muted);">manual AP · pay-against-PO</div>
+            </div>
+            <div><a class="mono ink" style="text-decoration: underline; text-decoration-color: var(--copper); text-underline-offset: 3px;">PO-2026-0220</a></div>
+            <div class="mono ink">$8,600 USD</div>
+            <div class="text-[12px]" style="color: var(--muted);">manual</div>
           </div>
         </div>
 
