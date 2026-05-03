@@ -13,6 +13,9 @@ import {
   Minimize2,
   Maximize2,
   Trash2,
+  Paperclip,
+  FileText,
+  Image as ImageIcon,
 } from "lucide-react";
 import { ChatToolChip } from "./chat-tool-chip";
 import { useCurrentUser } from "@/app/lib/use-current-user";
@@ -25,13 +28,44 @@ interface ToolCall {
   status: "running" | "ok" | "error";
 }
 
+interface Attachment {
+  id: string;
+  name: string;
+  mediaType: string;
+  data: string; // base64 (no data: prefix)
+  size: number;
+}
+
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
   toolCalls?: ToolCall[];
+  attachments?: Pick<Attachment, "id" | "name" | "mediaType" | "size">[];
 }
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB per file
+const MAX_ATTACHMENTS = 5;
+const ACCEPTED_TYPES = "image/png,image/jpeg,image/gif,image/webp,application/pdf";
+
+const readAsBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      const idx = result.indexOf(",");
+      resolve(idx >= 0 ? result.slice(idx + 1) : result);
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+
+const formatBytes = (n: number): string => {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(0)} KB`;
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+};
 
 // 3 conversational starters (replaces v1's 7 hardcoded actions). Each
 // is a message-only prompt — no navigate-and-close shortcuts. The agent
@@ -117,10 +151,13 @@ export function AIChatWidget({ hideOwnFab = false }: { hideOwnFab?: boolean } = 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [attachError, setAttachError] = useState<string | null>(null);
   const { user } = useCurrentUser();
   const name = firstNameOf(user?.name);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
 
@@ -179,14 +216,22 @@ export function AIChatWidget({ hideOwnFab = false }: { hideOwnFab?: boolean } = 
   };
 
   const sendMessage = useCallback(
-    async (text: string) => {
-      if (!text.trim() || loading) return;
+    async (text: string, files: Attachment[] = []) => {
+      if ((!text.trim() && files.length === 0) || loading) return;
 
       const userMsg: Message = {
         id: `u-${Date.now()}`,
         role: "user",
         content: text.trim(),
         timestamp: new Date(),
+        attachments: files.length
+          ? files.map(({ id, name, mediaType, size }) => ({
+              id,
+              name,
+              mediaType,
+              size,
+            }))
+          : undefined,
       };
       const assistantId = `a-${Date.now()}`;
       const assistantMsg: Message = {
@@ -199,6 +244,8 @@ export function AIChatWidget({ hideOwnFab = false }: { hideOwnFab?: boolean } = 
 
       setMessages((prev) => [...prev, userMsg, assistantMsg]);
       setInput("");
+      setAttachments([]);
+      setAttachError(null);
       setLoading(true);
 
       const updateAssistant = (mut: (m: Message) => Message) => {
@@ -225,6 +272,13 @@ export function AIChatWidget({ hideOwnFab = false }: { hideOwnFab?: boolean } = 
           body: JSON.stringify({
             messages: apiMessages,
             pageContext: pageContext || undefined,
+            attachments: files.length
+              ? files.map((f) => ({
+                  name: f.name,
+                  mediaType: f.mediaType,
+                  data: f.data,
+                }))
+              : undefined,
           }),
         });
 
@@ -331,6 +385,54 @@ export function AIChatWidget({ hideOwnFab = false }: { hideOwnFab?: boolean } = 
     } catch {
       // ignore
     }
+  };
+
+  const handleFiles = useCallback(
+    async (fileList: FileList | null) => {
+      if (!fileList || fileList.length === 0) return;
+      setAttachError(null);
+      const files = Array.from(fileList);
+      const room = MAX_ATTACHMENTS - attachments.length;
+      if (room <= 0) {
+        setAttachError(`Max ${MAX_ATTACHMENTS} attachments per message.`);
+        return;
+      }
+      const accepted: Attachment[] = [];
+      for (const file of files.slice(0, room)) {
+        if (
+          !file.type.startsWith("image/") &&
+          file.type !== "application/pdf"
+        ) {
+          setAttachError(`Skipped ${file.name} — only images and PDFs.`);
+          continue;
+        }
+        if (file.size > MAX_FILE_SIZE) {
+          setAttachError(`${file.name} is over 5 MB.`);
+          continue;
+        }
+        try {
+          const data = await readAsBase64(file);
+          accepted.push({
+            id: `f-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            name: file.name,
+            mediaType: file.type,
+            data,
+            size: file.size,
+          });
+        } catch {
+          setAttachError(`Couldn't read ${file.name}.`);
+        }
+      }
+      if (accepted.length) {
+        setAttachments((prev) => [...prev, ...accepted]);
+      }
+    },
+    [attachments.length]
+  );
+
+  const removeAttachment = (id: string) => {
+    setAttachments((prev) => prev.filter((a) => a.id !== id));
+    setAttachError(null);
   };
 
   const widthClass = expanded ? "w-[500px] max-w-[calc(100vw-2rem)]" : "w-[380px] max-w-[calc(100vw-2rem)]";
@@ -452,9 +554,34 @@ export function AIChatWidget({ hideOwnFab = false }: { hideOwnFab?: boolean } = 
                       )}
                     </>
                   ) : (
-                    <p className="whitespace-pre-wrap leading-relaxed">
-                      {msg.content}
-                    </p>
+                    <>
+                      {msg.content && (
+                        <p className="whitespace-pre-wrap leading-relaxed">
+                          {msg.content}
+                        </p>
+                      )}
+                      {msg.attachments && msg.attachments.length > 0 && (
+                        <div className={`flex flex-wrap gap-1 ${msg.content ? "mt-2" : ""}`}>
+                          {msg.attachments.map((a) => {
+                            const isImg = a.mediaType.startsWith("image/");
+                            return (
+                              <span
+                                key={a.id}
+                                className="inline-flex items-center gap-1.5 bg-white/15 rounded-md px-2 py-1 text-[10px]"
+                                title={`${a.name} · ${formatBytes(a.size)}`}
+                              >
+                                {isImg ? (
+                                  <ImageIcon className="w-3 h-3" />
+                                ) : (
+                                  <FileText className="w-3 h-3" />
+                                )}
+                                <span className="max-w-[140px] truncate">{a.name}</span>
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </>
                   )}
                   <p
                     className={`text-[9px] mt-1.5 ${
@@ -487,8 +614,64 @@ export function AIChatWidget({ hideOwnFab = false }: { hideOwnFab?: boolean } = 
           </div>
 
           {/* Input */}
-          <div className="p-3 border-t border-dash-border">
+          <div className="p-3 border-t border-dash-border space-y-2">
+            {attachments.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {attachments.map((a) => {
+                  const isImg = a.mediaType.startsWith("image/");
+                  return (
+                    <span
+                      key={a.id}
+                      className="inline-flex items-center gap-1.5 bg-dash-bg border border-dash-border rounded-lg pl-2 pr-1 py-1 text-[11px] text-dash-text"
+                      title={`${a.name} · ${formatBytes(a.size)}`}
+                    >
+                      {isImg ? (
+                        <ImageIcon className="w-3 h-3 text-brand-copper" />
+                      ) : (
+                        <FileText className="w-3 h-3 text-brand-copper" />
+                      )}
+                      <span className="max-w-[140px] truncate">{a.name}</span>
+                      <span className="text-dash-text-secondary/60">
+                        {formatBytes(a.size)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeAttachment(a.id)}
+                        className="w-4 h-4 flex items-center justify-center rounded hover:bg-dash-sidebar-hover cursor-pointer"
+                        aria-label={`Remove ${a.name}`}
+                      >
+                        <X className="w-3 h-3 text-dash-text-secondary" />
+                      </button>
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+            {attachError && (
+              <p className="text-[11px] text-dash-warn">{attachError}</p>
+            )}
             <div className="flex items-center gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept={ACCEPTED_TYPES}
+                multiple
+                className="hidden"
+                onChange={(e) => {
+                  void handleFiles(e.target.files);
+                  e.target.value = "";
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={loading || attachments.length >= MAX_ATTACHMENTS}
+                title="Attach images or PDFs"
+                aria-label="Attach files"
+                className="w-10 h-10 flex items-center justify-center rounded-xl border border-dash-border text-dash-text-secondary hover:bg-dash-bg hover:text-brand-copper disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer shrink-0"
+              >
+                <Paperclip className="w-4 h-4" />
+              </button>
               <input
                 ref={inputRef}
                 type="text"
@@ -497,15 +680,15 @@ export function AIChatWidget({ hideOwnFab = false }: { hideOwnFab?: boolean } = 
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
-                    sendMessage(input);
+                    sendMessage(input, attachments);
                   }
                 }}
                 placeholder="Ask anything about the dashboard…"
                 className="flex-1 bg-dash-bg border border-dash-border rounded-xl px-3.5 py-2.5 text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30"
               />
               <button
-                onClick={() => sendMessage(input)}
-                disabled={!input.trim() || loading}
+                onClick={() => sendMessage(input, attachments)}
+                disabled={(!input.trim() && attachments.length === 0) || loading}
                 className="w-10 h-10 flex items-center justify-center rounded-xl bg-brand-copper text-white hover:bg-brand-copper/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer shrink-0"
               >
                 <Send className="w-4 h-4" />

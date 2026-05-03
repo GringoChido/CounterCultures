@@ -35,9 +35,10 @@ export const POST = async (request: Request) => {
     );
   }
 
-  const { messages, pageContext } = (await request.json()) as {
+  const { messages, pageContext, attachments } = (await request.json()) as {
     messages: { role: "user" | "assistant"; content: string }[];
-    pageContext?: string; // optional inline addendum from the widget
+    pageContext?: string;
+    attachments?: { name: string; mediaType: string; data: string }[];
   };
 
   if (!messages?.length) {
@@ -66,6 +67,53 @@ export const POST = async (request: Request) => {
     role: m.role,
     content: m.content,
   }));
+
+  // If the latest user turn includes attachments, rebuild it as a content
+  // array with image/document blocks so Claude can actually see them.
+  if (attachments && attachments.length > 0 && currentMessages.length > 0) {
+    const last = currentMessages[currentMessages.length - 1]!;
+    if (last.role === "user" && typeof last.content === "string") {
+      const blocks: Anthropic.Messages.ContentBlockParam[] = [];
+      for (const f of attachments) {
+        if (f.mediaType.startsWith("image/")) {
+          blocks.push({
+            type: "image",
+            source: {
+              type: "base64",
+              media_type: f.mediaType as
+                | "image/png"
+                | "image/jpeg"
+                | "image/gif"
+                | "image/webp",
+              data: f.data,
+            },
+          });
+        } else if (f.mediaType === "application/pdf") {
+          blocks.push({
+            type: "document",
+            source: {
+              type: "base64",
+              media_type: "application/pdf",
+              data: f.data,
+            },
+            title: f.name,
+          });
+        }
+      }
+      if (last.content.trim()) {
+        blocks.push({ type: "text", text: last.content });
+      } else {
+        blocks.push({
+          type: "text",
+          text: "Please review the attached file(s).",
+        });
+      }
+      currentMessages[currentMessages.length - 1] = {
+        role: "user",
+        content: blocks,
+      };
+    }
+  }
 
   const stream = new ReadableStream({
     async start(controller) {
