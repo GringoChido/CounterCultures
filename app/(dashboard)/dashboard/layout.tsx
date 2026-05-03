@@ -9,6 +9,7 @@ import { DashboardHeader } from "../components/dashboard-header";
 import { CommandPalette } from "../components/command-palette";
 import { AIChatWidgetLazy } from "../components/ai-chat-widget-lazy";
 import { ActionFab } from "../components/action-fab";
+import { NavProgress } from "../components/nav-progress";
 import { ProductInsertProvider, useProductInsert } from "../components/product-insert-context";
 import { ProductPreview } from "../components/product-preview";
 import { SkipToMain } from "@/app/components/ui/skip-to-main";
@@ -41,6 +42,7 @@ const DashboardInner = ({ children }: { children: ReactNode }) => {
 
   return (
     <div className="flex min-h-screen">
+      <NavProgress />
       <SkipToMain />
       <Sidebar
         mobileOpen={mobileSidebarOpen}
