@@ -34,6 +34,7 @@ import {
   Truck,
   Award,
   Building2,
+  ExternalLink,
 } from "lucide-react";
 
 interface NavItem {
@@ -61,6 +62,7 @@ const navItems: NavItem[] = [
   { label: "Inbox", href: "/dashboard/inbox", icon: Inbox, feature: "view_inbox" },
 
   { label: "Inventory", href: "/dashboard/inventory", icon: Package, section: "Operations", feature: "view_inventory" },
+  { label: "Products", href: "/dashboard/products", icon: Package, feature: "view_products" },
   { label: "Purchase Orders", href: "/dashboard/purchases", icon: Truck, feature: "view_purchases" },
   { label: "Vendors", href: "/dashboard/vendors", icon: Building2, feature: "view_vendors" },
   { label: "Shipments & Customs", href: "/dashboard/shipments", icon: Truck, feature: "view_shipments" },
@@ -81,7 +83,6 @@ const moreNavItems: NavItem[] = [
   { label: "WhatsApp", href: "/dashboard/whatsapp", icon: MessageCircle, comingSoon: true, feature: "view_inbox" },
 
   { label: "Brands", href: "/dashboard/brands", icon: Award, section: "Catalog Admin", feature: "view_brands" },
-  { label: "Products", href: "/dashboard/products", icon: Package, feature: "view_products" },
 
   { label: "Email Campaigns", href: "/dashboard/email-campaigns", icon: Mail, section: "Marketing", comingSoon: true, feature: "view_marketing" },
   { label: "Social Hub", href: "/dashboard/social", icon: Share2, comingSoon: true, feature: "view_social" },
@@ -280,7 +281,19 @@ const Sidebar = ({ mobileOpen = false, onMobileClose }: SidebarProps) => {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-dash-border p-3 shrink-0">
+      <div className="border-t border-dash-border p-3 shrink-0 space-y-1">
+        <a
+          href="/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-dash-text-secondary hover:bg-dash-sidebar-hover hover:text-dash-text transition-colors min-h-[44px] ${
+            collapsed ? "justify-center" : ""
+          }`}
+          title={collapsed ? "View Website" : undefined}
+        >
+          <ExternalLink className="w-4 h-4 shrink-0" />
+          {!collapsed && <span>View Website</span>}
+        </a>
         <button
           onClick={handleSignOut}
           className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-dash-text-secondary hover:bg-dash-sidebar-hover hover:text-dash-text transition-colors cursor-pointer min-h-[44px] ${
