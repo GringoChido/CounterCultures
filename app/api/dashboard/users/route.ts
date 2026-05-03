@@ -23,6 +23,29 @@ import {
   buildOverridesString,
   type Feature,
 } from "@/app/lib/features";
+import { appendRowByHeader } from "@/app/lib/dashboard-sheets";
+
+type UserAdminAction = "user_added" | "user_updated" | "user_deactivated";
+
+const logUserAdminEvent = (
+  actorEmail: string,
+  action: UserAdminAction,
+  targetEmail: string,
+  details: Record<string, unknown>
+): void => {
+  const id = `EA-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+  appendRowByHeader("Activity_Log", {
+    id,
+    timestamp: new Date().toISOString(),
+    actor_email: actorEmail,
+    action,
+    entity_type: "user",
+    entity_id: targetEmail,
+    details: JSON.stringify(details),
+  }).catch((err) =>
+    console.error(`[/api/dashboard/users] Activity_Log append failed (${action}):`, err)
+  );
+};
 
 const RoleSchema = z.enum(["owner", "finance", "sales"]);
 const FeatureSchema = z.enum(ALL_FEATURE_KEYS as [Feature, ...Feature[]]);
@@ -64,7 +87,7 @@ export const GET = handle(async () => {
 
 export const POST = async (req: NextRequest): Promise<Response> => {
   try {
-    await requireFeature("manage_users");
+    const actor = await requireFeature("manage_users");
     const body = UpsertSchema.parse(await req.json());
     const featureOverrides = buildOverridesString(
       body.role as UserRole,
@@ -76,6 +99,12 @@ export const POST = async (req: NextRequest): Promise<Response> => {
       role: body.role,
       active: body.active,
       featureOverrides,
+    });
+    logUserAdminEvent(actor.email, "user_added", user.email, {
+      name: user.name,
+      role: user.role,
+      active: user.active,
+      featureOverrides: user.featureOverrides,
     });
     return NextResponse.json({ user });
   } catch (err) {
@@ -100,7 +129,7 @@ export const POST = async (req: NextRequest): Promise<Response> => {
 
 export const PATCH = async (req: NextRequest): Promise<Response> => {
   try {
-    await requireFeature("manage_users");
+    const actor = await requireFeature("manage_users");
     const body = UpsertSchema.parse(await req.json());
     const featureOverrides = buildOverridesString(
       body.role as UserRole,
@@ -112,6 +141,12 @@ export const PATCH = async (req: NextRequest): Promise<Response> => {
       role: body.role,
       active: body.active,
       featureOverrides,
+    });
+    logUserAdminEvent(actor.email, "user_updated", user.email, {
+      name: user.name,
+      role: user.role,
+      active: user.active,
+      featureOverrides: user.featureOverrides,
     });
     return NextResponse.json({ user });
   } catch (err) {
@@ -136,12 +171,13 @@ export const PATCH = async (req: NextRequest): Promise<Response> => {
 
 export const DELETE = async (req: NextRequest): Promise<Response> => {
   try {
-    await requireFeature("manage_users");
+    const actor = await requireFeature("manage_users");
     const email = req.nextUrl.searchParams.get("email");
     if (!email) {
       return NextResponse.json({ error: "email required" }, { status: 400 });
     }
     await deactivateUser(email);
+    logUserAdminEvent(actor.email, "user_deactivated", email.trim().toLowerCase(), {});
     return NextResponse.json({ ok: true });
   } catch (err) {
     if (err instanceof FeatureDeniedError) {
