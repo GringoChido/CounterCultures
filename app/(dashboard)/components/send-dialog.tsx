@@ -20,20 +20,21 @@ interface SendDialogProps {
   docType: string;
   customerName: string;
   customerEmail: string;
+  customerPhone?: string;
   dealName?: string;
   /**
-   * Lead source carried forward from the deal. R2-3: routes the dialog's
-   * default channel — WhatsApp source opens to WhatsApp, everything else
-   * (incl. Walk-in, where the email is the artifact) opens to email.
+   * Lead source carried forward from the deal. R4 Note 3: email is the
+   * artifact and is always sent — the source only governs whether the
+   * "also send via WhatsApp" toggle defaults on.
    */
   source?: string;
   onSent?: () => void;
 }
 
-const initialChannelForSource = (source: string | undefined): "email" | "whatsapp" => {
-  const channels = defaultSendChannels(source ?? "");
-  return channels[0] === "whatsapp" ? "whatsapp" : "email";
-};
+const emailRegex = /.+@.+\..+/;
+
+const initialAlsoWhatsApp = (source: string | undefined): boolean =>
+  defaultSendChannels(source ?? "").includes("whatsapp");
 
 export const SendDialog = ({
   open,
@@ -42,19 +43,29 @@ export const SendDialog = ({
   docType,
   customerName,
   customerEmail,
+  customerPhone,
   dealName,
   source,
   onSent,
 }: SendDialogProps) => {
-  const [channel, setChannel] = useState<"email" | "whatsapp">(
-    initialChannelForSource(source)
+  const [alsoWhatsApp, setAlsoWhatsApp] = useState<boolean>(
+    initialAlsoWhatsApp(source)
   );
-  // When source changes (e.g. dialog reopened on a different deal), refresh
-  // the default. User can still flip after.
+  // When source changes (dialog reopened on a different deal), recompute
+  // the WhatsApp default. User can still flip after.
   useEffect(() => {
-    if (open) setChannel(initialChannelForSource(source));
+    if (open) setAlsoWhatsApp(initialAlsoWhatsApp(source));
   }, [open, source]);
-  const [to, setTo] = useState(customerEmail);
+
+  const [emailTo, setEmailTo] = useState(customerEmail);
+  const [phoneTo, setPhoneTo] = useState(customerPhone ?? "");
+  useEffect(() => {
+    if (open) {
+      setEmailTo(customerEmail);
+      setPhoneTo(customerPhone ?? "");
+    }
+  }, [open, customerEmail, customerPhone]);
+
   const [subject, setSubject] = useState(
     `Your ${docType} from Counter Cultures${dealName ? ` — ${dealName}` : ""}`
   );
@@ -63,33 +74,63 @@ export const SendDialog = ({
   );
   const [sending, setSending] = useState(false);
 
+  const emailValid = emailRegex.test(emailTo.trim());
+  const phoneValid = phoneTo.trim().length > 0;
+  const canSend = !sending && emailValid && (!alsoWhatsApp || phoneValid);
+
   const handleSend = async () => {
+    if (!emailValid) {
+      toast.error("Email is required — every quote ships by email.");
+      return;
+    }
+    if (alsoWhatsApp && !phoneValid) {
+      toast.error("Add a phone number or uncheck 'Also send via WhatsApp'.");
+      return;
+    }
+
     setSending(true);
     try {
-      const res = await fetch("/api/dashboard/documents/send", {
+      const emailRes = await fetch("/api/dashboard/documents/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: channel === "email" ? "send-email" : "send-whatsapp",
+          action: "send-email",
           docId,
-          to,
+          to: emailTo.trim(),
           subject,
           message,
         }),
       });
+      if (!emailRes.ok) throw new Error("Email send failed");
 
-      if (!res.ok) throw new Error("Send failed");
-
-      const data = await res.json();
-
-      if (channel === "whatsapp" && data.whatsappUrl) {
-        window.open(data.whatsappUrl, "_blank");
+      let waUrl: string | null = null;
+      if (alsoWhatsApp) {
+        const waRes = await fetch("/api/dashboard/documents/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "send-whatsapp",
+            docId,
+            to: phoneTo.trim(),
+            message,
+          }),
+        });
+        if (waRes.ok) {
+          const data = await waRes.json();
+          if (data.whatsappUrl) waUrl = data.whatsappUrl as string;
+        } else {
+          // Email already went through — surface the WhatsApp failure but don't
+          // block the success path. Roger can retry WhatsApp manually.
+          toast.error("Email sent, but WhatsApp send failed.");
+        }
       }
 
+      if (waUrl) window.open(waUrl, "_blank");
+
       toast.success(
-        channel === "email"
-          ? `${docType} sent to ${customerName || to}`
-          : "WhatsApp opened with share link"
+        alsoWhatsApp
+          ? `${docType} sent to ${customerName || emailTo} (email + WhatsApp)`
+          : `${docType} emailed to ${customerName || emailTo}`
       );
       onSent?.();
       onClose();
@@ -147,56 +188,29 @@ export const SendDialog = ({
                   </div>
                 </div>
 
-                {/* Channel toggle */}
-                <div>
-                  <label className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-dash-text-secondary mb-2 block">
-                    Send via
-                  </label>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setChannel("email")}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors cursor-pointer ${
-                        channel === "email"
-                          ? "bg-brand-copper/10 text-brand-copper border border-brand-copper/30"
-                          : "bg-dash-bg text-dash-text-secondary border border-dash-border hover:border-brand-copper/30"
-                      }`}
-                    >
-                      <Mail className="w-4 h-4" />
-                      Email
-                    </button>
-                    <button
-                      onClick={() => setChannel("whatsapp")}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors cursor-pointer ${
-                        channel === "whatsapp"
-                          ? "bg-dash-success/10 text-dash-success border border-dash-success/30"
-                          : "bg-dash-bg text-dash-text-secondary border border-dash-border hover:border-dash-success/30"
-                      }`}
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                      WhatsApp
-                    </button>
+                {/* Email — always on. R4 Note 3: every quote ships by email. */}
+                <div className="rounded-lg border border-brand-copper/30 bg-brand-copper/5 p-3 space-y-3">
+                  <div className="flex items-center gap-2 text-brand-copper">
+                    <Mail className="w-4 h-4" />
+                    <span className="text-sm font-medium">Email</span>
+                    <span className="text-[10px] uppercase tracking-wider text-brand-copper/80 ml-auto">
+                      Always sent
+                    </span>
                   </div>
-                </div>
 
-                {/* To */}
-                <div>
-                  <label className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-dash-text-secondary mb-1 block">
-                    To
-                  </label>
-                  <input
-                    className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper transition-colors"
-                    value={to}
-                    onChange={(e) => setTo(e.target.value)}
-                    placeholder={
-                      channel === "email"
-                        ? "email@example.com"
-                        : "+52 415 123 4567"
-                    }
-                  />
-                </div>
+                  <div>
+                    <label className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-dash-text-secondary mb-1 block">
+                      To <span className="text-dash-danger">*</span>
+                    </label>
+                    <input
+                      className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper transition-colors"
+                      type="email"
+                      value={emailTo}
+                      onChange={(e) => setEmailTo(e.target.value)}
+                      placeholder="email@example.com"
+                    />
+                  </div>
 
-                {/* Subject (email only) */}
-                {channel === "email" && (
                   <div>
                     <label className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-dash-text-secondary mb-1 block">
                       Subject
@@ -207,19 +221,49 @@ export const SendDialog = ({
                       onChange={(e) => setSubject(e.target.value)}
                     />
                   </div>
-                )}
 
-                {/* Message */}
-                <div>
-                  <label className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-dash-text-secondary mb-1 block">
-                    Message
+                  <div>
+                    <label className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-dash-text-secondary mb-1 block">
+                      Message
+                    </label>
+                    <textarea
+                      className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper transition-colors resize-none"
+                      rows={5}
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {/* Optional WhatsApp companion */}
+                <div className="rounded-lg border border-dash-border p-3 space-y-3">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={alsoWhatsApp}
+                      onChange={(e) => setAlsoWhatsApp(e.target.checked)}
+                      className="cursor-pointer"
+                    />
+                    <MessageCircle className="w-4 h-4 text-dash-success" />
+                    <span className="text-sm text-dash-text">
+                      Also send via WhatsApp
+                    </span>
                   </label>
-                  <textarea
-                    className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper transition-colors resize-none"
-                    rows={5}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                  />
+
+                  {alsoWhatsApp && (
+                    <div>
+                      <label className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-dash-text-secondary mb-1 block">
+                        Phone <span className="text-dash-danger">*</span>
+                      </label>
+                      <input
+                        className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper transition-colors"
+                        type="tel"
+                        value={phoneTo}
+                        onChange={(e) => setPhoneTo(e.target.value)}
+                        placeholder="+52 415 123 4567"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -233,7 +277,7 @@ export const SendDialog = ({
                 </button>
                 <button
                   onClick={handleSend}
-                  disabled={sending || !to}
+                  disabled={!canSend}
                   className="flex items-center gap-2 px-4 py-2 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   {sending ? (
@@ -241,7 +285,7 @@ export const SendDialog = ({
                   ) : (
                     <Send className="w-4 h-4" />
                   )}
-                  {channel === "email" ? "Send Email" : "Open WhatsApp"}
+                  {alsoWhatsApp ? "Send Email + WhatsApp" : "Send Email"}
                 </button>
               </div>
             </motion.div>
