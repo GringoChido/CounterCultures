@@ -21,6 +21,7 @@ import { TRAFICO_STATUS_CONFIG, getDocumentChecklist, type Trafico } from "@/app
 import type { HydratedTrafico } from "@/app/lib/trafico-hydrator";
 import type { TraficoEvent } from "@/app/lib/trafico-events";
 import { ManualesEditor } from "@/app/(dashboard)/components/customs/manuales-editor";
+import { SendToBrokerButton } from "@/app/(dashboard)/components/customs/send-to-broker-button";
 
 const formatMxn = (n: number | undefined) =>
   n === undefined ? "—" : `$${n.toLocaleString("en-US", { maximumFractionDigits: 2 })} MXN`;
@@ -179,6 +180,12 @@ const ShipmentDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
             >
               Open in Customs list →
             </Link>
+            <SendToBrokerButton
+              traficoId={trafico.id}
+              currentStatus={trafico.status}
+              brokerEmail={trafico.brokerEmail}
+              onSent={load}
+            />
           </div>
         </div>
 
