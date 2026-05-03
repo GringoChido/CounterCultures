@@ -47,7 +47,14 @@ function loadSettings(): SettingsState {
   if (typeof window === "undefined") return defaultSettings;
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) return JSON.parse(stored) as SettingsState;
+    if (!stored) return defaultSettings;
+    const parsed = JSON.parse(stored) as Partial<SettingsState>;
+    // Merge over defaults so removed top-level keys (fullName/email pre-R3-1)
+    // don't pollute the shape, and any new keys added later get a fallback.
+    return {
+      notifications: parsed.notifications ?? defaultSettings.notifications,
+      integrations: parsed.integrations ?? defaultSettings.integrations,
+    };
   } catch {
     // ignore
   }
