@@ -14,7 +14,13 @@ import {
 } from "lucide-react";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
-import { useFeatures } from "@/app/lib/use-features";
+import { useCurrentUser } from "@/app/lib/use-current-user";
+import {
+  MineAllToggle,
+  matchesUser,
+  readPersistedMode,
+  type MineAllMode,
+} from "@/app/(dashboard)/components/mine-all-toggle";
 
 type OrderStateFilter = "all" | "quote" | "draft" | "sent" | "sale" | "done" | "cancel";
 type InvoiceStatusFilter = "all" | "no" | "to invoice" | "invoiced" | "upselling";
@@ -260,21 +266,19 @@ const OrdersPage = () => {
   const [state, setState] = useState<OrderStateFilter>("all");
   const [invoiceStatus, setInvoiceStatus] = useState<InvoiceStatusFilter>("all");
   const [staleOnly, setStaleOnly] = useState(false);
-  const [mineOnly, setMineOnly] = useState(false);
   const [sortBy, setSortBy] = useState<SortBy>("date_desc");
   const [rows, setRows] = useState<OrderRow[]>([]);
   const [total, setTotal] = useState(0);
   const [pipeline, setPipeline] = useState<Pipeline | null>(null);
   const [loading, setLoading] = useState(true);
-  const features = useFeatures();
-  // Default to "mine only" for sales reps so they don't see everyone's
-  // pipeline by default; owners see all because that's their job.
-  const [mineDefaultApplied, setMineDefaultApplied] = useState(false);
+  const { user: currentUser } = useCurrentUser();
+  const [repMode, setRepMode] = useState<MineAllMode>("all");
+  // Hydrate Mine/All from localStorage once the user resolves; falls back to
+  // the role default (sales=mine, owner/finance=all). Same scope/key pattern
+  // as leads + pipeline so the choice persists per user.
   useEffect(() => {
-    if (mineDefaultApplied || !features.ready) return;
-    if (features.role === "sales") setMineOnly(true);
-    setMineDefaultApplied(true);
-  }, [features.ready, features.role, mineDefaultApplied]);
+    if (currentUser) setRepMode(readPersistedMode(currentUser, "orders"));
+  }, [currentUser]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -325,26 +329,28 @@ const OrdersPage = () => {
     if (state !== "all") out.push(state);
     if (invoiceStatus !== "all") out.push(`invoice:${invoiceStatus}`);
     if (staleOnly) out.push("stale only");
-    if (mineOnly && features.name) out.push(`mine (${features.name})`);
+    if (repMode === "mine" && currentUser?.name) out.push(`mine (${currentUser.name})`);
     return out;
-  }, [state, invoiceStatus, staleOnly, mineOnly, features.name]);
+  }, [state, invoiceStatus, staleOnly, repMode, currentUser?.name]);
 
-  // Apply "mine only" client-side over the already-fetched rows. We do an
-  // exact-then-substring match against salesperson because Odoo display names
-  // can drift slightly from the portal user's display name (e.g. "Roger F
-  // Williams" vs "Roger Williams").
+  // Apply Mine filter client-side. matchesUser handles the canonical email
+  // and accent-normalized name match (consistent with leads + pipeline).
+  // Word-overlap fallback stays in for orders specifically because the
+  // salesperson string comes from Odoo and can drift from the portal user's
+  // display name (e.g. "Roger F Williams" vs "Roger Williams").
   const visibleRows = useMemo(() => {
-    if (!mineOnly || !features.name) return rows;
-    const me = features.name.toLowerCase();
-    const meParts = me.split(/\s+/).filter(Boolean);
+    if (repMode !== "mine" || !currentUser) return rows;
+    const meName = (currentUser.name ?? "").toLowerCase();
+    const meParts = meName.split(/\s+/).filter(Boolean);
     return rows.filter((r) => {
-      const sp = (r.salesperson ?? "").toLowerCase();
-      if (!sp) return false;
-      if (sp === me) return true;
-      // First+last name overlap — handles "Roger F Williams" vs "Roger Williams"
-      return meParts.every((part) => sp.includes(part));
+      const sp = r.salesperson ?? "";
+      if (matchesUser(sp, currentUser)) return true;
+      if (!meName) return false;
+      const spLower = sp.toLowerCase();
+      if (!spLower) return false;
+      return meParts.length > 0 && meParts.every((part) => spLower.includes(part));
     });
-  }, [rows, mineOnly, features.name]);
+  }, [rows, repMode, currentUser]);
 
   return (
     <div className="p-6 max-w-[1500px] mx-auto">
@@ -408,20 +414,12 @@ const OrdersPage = () => {
           />
           Stale only
         </label>
-        {features.ready && features.name && (
-          <label
-            className="inline-flex items-center gap-2 text-xs text-dash-text-secondary px-3 py-2 border border-dash-border bg-dash-surface rounded cursor-pointer"
-            title={`Filter to orders where salesperson matches "${features.name}"`}
-          >
-            <input
-              type="checkbox"
-              checked={mineOnly}
-              onChange={(e) => setMineOnly(e.target.checked)}
-              className="cursor-pointer"
-            />
-            Mine only
-          </label>
-        )}
+        <MineAllToggle
+          user={currentUser}
+          scope="orders"
+          mode={repMode}
+          onChange={setRepMode}
+        />
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortBy)}
