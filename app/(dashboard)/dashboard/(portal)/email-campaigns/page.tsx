@@ -21,6 +21,15 @@ import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
 import { SAMPLE_CAMPAIGNS, type Campaign } from "@/app/lib/sample-dashboard-data";
 import { useProductInsert } from "@/app/(dashboard)/components/product-insert-context";
+import {
+  CUSTOMER_SEGMENT_META,
+  type CustomerSegment,
+} from "@/app/lib/customer-segments";
+import {
+  pickSequence,
+  sequenceMeta,
+  type CampaignType,
+} from "@/app/lib/marketing-templates";
 
 const statusVariants: Record<string, { bg: string; text: string }> = {
   draft: { bg: "bg-dash-text-muted/10", text: "text-dash-text-muted" },
@@ -64,6 +73,12 @@ interface CampaignBuilderForm {
   type: "cold-outreach" | "warm-nurture" | "one-off";
   audienceType: string;
   recipients: number;
+  /**
+   * R4 Note 8 — sub-gap 8e. When set to one of the three R4 marketing
+   * buckets, the sequence preview pulls segment-specific copy from
+   * marketing-templates.ts instead of the generic sequence.
+   */
+  segment: CustomerSegment | "default";
 }
 
 const EmailCampaignsPage = () => {
@@ -114,6 +129,7 @@ const EmailCampaignsPage = () => {
     type: "cold-outreach",
     audienceType: "Architects",
     recipients: 0,
+    segment: "default",
   });
 
   const sentCampaigns = campaigns.filter((c) => c.status === "sent" || c.status === "active");
@@ -126,7 +142,16 @@ const EmailCampaignsPage = () => {
   const totalRecipients = campaigns.reduce((sum, c) => sum + c.recipients, 0);
   const totalLeadsGenerated = campaigns.reduce((sum, c) => sum + (c.leadsGenerated || 0), 0);
 
-  const sequenceSteps = form.type === "cold-outreach" ? coldOutreachSequence : warmNurtureSequence;
+  // R4 Note 8 — sub-gap 8e: pull segment-aware copy from marketing-templates
+  // when the user has chosen one of the three buckets, otherwise fall back
+  // to the generic sequences this page used to ship with.
+  const segmentVariant = sequenceMeta(form.type as CampaignType, form.segment);
+  const sequenceSteps = (() => {
+    if (form.segment !== "default") {
+      return pickSequence(form.type as CampaignType, form.segment);
+    }
+    return form.type === "cold-outreach" ? coldOutreachSequence : warmNurtureSequence;
+  })();
 
   return (
     <div className="space-y-6">
@@ -313,6 +338,33 @@ const EmailCampaignsPage = () => {
             </div>
           </div>
 
+          {/* R4 Note 8 — segment-aware variant picker */}
+          <div>
+            <label className="block text-sm font-medium text-dash-text mb-1.5">
+              Marketing bucket
+              <span className="text-dash-text-secondary/70 font-normal ml-1">
+                (drives the sequence copy)
+              </span>
+            </label>
+            <select
+              value={form.segment}
+              onChange={(e) =>
+                setForm({ ...form, segment: e.target.value as CustomerSegment | "default" })
+              }
+              className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper/50"
+            >
+              <option value="default">Generic — same copy for everyone</option>
+              <option value="builder">{CUSTOMER_SEGMENT_META.builder.label} — repeat-buyer framing</option>
+              <option value="designer">{CUSTOMER_SEGMENT_META.designer.label} — spec + first-look</option>
+              <option value="end-user">{CUSTOMER_SEGMENT_META["end-user"].label} — service-led</option>
+            </select>
+            {segmentVariant && form.segment !== "default" && (
+              <p className="mt-1.5 text-[11px] text-dash-text-secondary leading-snug">
+                {segmentVariant.description}
+              </p>
+            )}
+          </div>
+
           {/* Sequence Preview */}
           {form.type !== "one-off" && (
             <div>
@@ -420,7 +472,13 @@ const EmailCampaignsPage = () => {
                   }
                   setBuilderOpen(false);
                   setSequencePreview(null);
-                  setForm({ name: "", type: "cold-outreach", audienceType: "Architects", recipients: 0 });
+                  setForm({
+                    name: "",
+                    type: "cold-outreach",
+                    audienceType: "Architects",
+                    recipients: 0,
+                    segment: "default",
+                  });
                 } catch {
                   toast.error("Error creating campaign");
                 } finally {
