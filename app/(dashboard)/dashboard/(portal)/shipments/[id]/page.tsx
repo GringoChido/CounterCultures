@@ -23,6 +23,7 @@ import type { TraficoEvent } from "@/app/lib/trafico-events";
 import { ManualesEditor } from "@/app/(dashboard)/components/customs/manuales-editor";
 import { SendToBrokerButton } from "@/app/(dashboard)/components/customs/send-to-broker-button";
 import { ReconciliationPanel } from "@/app/(dashboard)/components/customs/reconciliation-panel";
+import { LandedCostAllocationPanel } from "@/app/(dashboard)/components/customs/landed-cost-allocation-panel";
 
 const formatMxn = (n: number | undefined) =>
   n === undefined ? "—" : `$${n.toLocaleString("en-US", { maximumFractionDigits: 2 })} MXN`;
@@ -276,6 +277,9 @@ const ShipmentDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
 
           {/* Reconciliation: vendor invoices → cálculo → factura */}
           <ReconciliationPanel trafico={trafico} onSaved={load} />
+
+          {/* Per-item + per-deal landed cost allocation */}
+          <LandedCostAllocationPanel trafico={trafico} />
 
           {/* Documents checklist */}
           <Section title="Document Checklist" count={checklist.filter(c => c.status === "uploaded").length} subCount={checklist.length}>
