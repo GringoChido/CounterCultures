@@ -15,6 +15,7 @@ import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/sta
 import { CreditPanel } from "@/app/(dashboard)/components/partner/credit-panel";
 import { PartnerHierarchy } from "@/app/(dashboard)/components/partner/partner-hierarchy";
 import { AgingBuckets } from "@/app/(dashboard)/components/partner/aging-buckets";
+import { VendorTermsPanel } from "@/app/(dashboard)/components/vendor/vendor-terms-panel";
 
 interface PartnerRow {
   id: string;
@@ -268,6 +269,11 @@ const VendorDetailPage = ({
           <PartnerHierarchy mode="vendor" parent={parent} children={children} />
         </div>
       )}
+
+      {/* Credit terms — looked up from Vendors sheet (vendor-terms.ts) */}
+      <div className="mb-6">
+        <VendorTermsPanel partnerName={partner.name} />
+      </div>
 
       {/* AP aging — only renders when there's any open balance */}
       <div className="mb-6">
