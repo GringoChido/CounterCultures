@@ -20,6 +20,7 @@ import {
 import { TRAFICO_STATUS_CONFIG, getDocumentChecklist, type Trafico } from "@/app/lib/customs-data";
 import type { HydratedTrafico } from "@/app/lib/trafico-hydrator";
 import type { TraficoEvent } from "@/app/lib/trafico-events";
+import { ManualesEditor } from "@/app/(dashboard)/components/customs/manuales-editor";
 
 const formatMxn = (n: number | undefined) =>
   n === undefined ? "—" : `$${n.toLocaleString("en-US", { maximumFractionDigits: 2 })} MXN`;
@@ -237,12 +238,6 @@ const ShipmentDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
                           tone={item.usmcaStatus === "on-file" ? "good" : "warn"}
                         />
                       )}
-                      {item.spanishManualsRequired && (
-                        <Badge
-                          label={`Manual: ${item.spanishManualsStatus}`}
-                          tone={item.spanishManualsStatus === "on-file" ? "good" : "warn"}
-                        />
-                      )}
                     </div>
                     {item.products.length > 0 && (
                       <div className="text-[11px] text-dash-text-secondary space-y-0.5 mt-1.5">
@@ -254,6 +249,17 @@ const ShipmentDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
                         ))}
                       </div>
                     )}
+
+                    <div className="mt-3">
+                      <ManualesEditor
+                        traficoId={id}
+                        itemId={item.id}
+                        initialRequired={item.spanishManualsRequired}
+                        initialStatus={item.spanishManualsStatus}
+                        initialDriveFileIds={item.spanishManualDocIds ?? []}
+                        onSaved={load}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
