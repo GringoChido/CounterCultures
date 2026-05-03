@@ -13,6 +13,7 @@ const PER_USER_LOCAL_KEYS = [
   "cc_chat_history_v2",
   "cc_palette_recent",
   "cc-portal-settings",
+  "cc-weekly-focus",
 ];
 
 const PER_USER_SESSION_KEYS = ["cc_chat_dismissed_session"];
