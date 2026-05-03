@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 
 const ERROR_MESSAGES: Record<string, string> = {
   AccessDenied:
-    "Your account isn't authorized for the Counter Portal. Ask Roger to add you to the Users sheet.",
+    "Your account isn't authorized for the Counter Portal. Ask an admin to add you to the Users sheet.",
   OAuthSignin: "Couldn't start the Google sign-in flow. Try again.",
   OAuthCallback: "Google sign-in failed. Try again.",
   OAuthAccountNotLinked: "This email is already linked to a different account.",
@@ -82,7 +82,7 @@ const LoginInner = () => {
 
           <p className="text-xs text-dash-text-secondary text-center mt-6">
             Restricted to <span className="font-medium">@countercultures.com.mx</span>{" "}
-            accounts. Contact Roger if you need access.
+            accounts. Contact an admin if you need access.
           </p>
         </div>
 

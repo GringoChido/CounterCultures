@@ -2,13 +2,25 @@
 
 import { Search, Menu } from "lucide-react";
 import { NotificationBell } from "./notification-bell";
+import { useCurrentUser } from "@/app/lib/use-current-user";
 
 interface DashboardHeaderProps {
   onMenuClick?: () => void;
   onSearchClick?: () => void;
 }
 
+const initialsOf = (name: string | null | undefined): string => {
+  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0]!.charAt(0).toUpperCase();
+  return (parts[0]!.charAt(0) + parts[parts.length - 1]!.charAt(0)).toUpperCase();
+};
+
 const DashboardHeader = ({ onMenuClick, onSearchClick }: DashboardHeaderProps) => {
+  const { user } = useCurrentUser();
+  const displayName = user?.name?.trim() || user?.email || "";
+  const initials = initialsOf(user?.name || user?.email);
+
   const triggerSearch = () => {
     if (onSearchClick) {
       onSearchClick();
@@ -50,10 +62,15 @@ const DashboardHeader = ({ onMenuClick, onSearchClick }: DashboardHeaderProps) =
         <NotificationBell />
 
         <div className="flex items-center gap-2 pl-1">
-          <div className="w-8 h-8 rounded-full bg-brand-copper flex items-center justify-center text-white text-sm font-semibold shrink-0">
-            R
+          <div
+            className="w-8 h-8 rounded-full bg-brand-copper flex items-center justify-center text-white text-sm font-semibold shrink-0"
+            aria-label={displayName ? `Signed in as ${displayName}` : "Signed in"}
+          >
+            {initials}
           </div>
-          <span className="hidden md:inline text-sm font-medium text-dash-text">Roger Williams</span>
+          <span className="hidden md:inline text-sm font-medium text-dash-text">
+            {displayName}
+          </span>
         </div>
       </div>
     </header>

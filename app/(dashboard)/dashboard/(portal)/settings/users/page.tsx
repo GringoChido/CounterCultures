@@ -236,7 +236,7 @@ const UsersAdminPage = () => {
           <Lock className="w-8 h-8 mx-auto text-dash-text-muted mb-3" />
           <h1 className="text-lg font-semibold text-dash-text">Restricted</h1>
           <p className="text-sm text-dash-text-secondary mt-2">
-            Only owners can manage portal users. Ask Roger if you need access.
+            Only owners can manage portal users. Ask an admin if you need access.
           </p>
         </div>
       </div>

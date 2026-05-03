@@ -67,7 +67,7 @@ const DesignDemoPage = () => {
             variant="trafico"
             id="TRF-00104"
             title="Trafico container CC-042 → SMA showroom"
-            contact={{ name: "Roger F Williams" }}
+            contact={{ name: "Mateo Vargas" }}
             status={{ label: "On the road", tone: "in-progress" }}
             href="/dashboard/shipments"
           />

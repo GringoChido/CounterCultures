@@ -341,7 +341,7 @@ const BrandsPage = () => {
             <strong className="text-dash-text">
               No stock state tagged yet.
             </strong>{" "}
-            Roger tags each brand as{" "}
+            Tag each brand as{" "}
             <span className="text-dash-text">stocked</span> /{" "}
             <span className="text-dash-text">request</span> /{" "}
             <span className="text-dash-text">external</span> directly in the{" "}

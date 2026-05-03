@@ -105,9 +105,9 @@ const SpecSheetsSection = ({ sku, brand }: { sku: string; brand: string }) => {
           description: `Spec sheet requested for ${brand} SKU ${sku}`,
         }),
       });
-      toast.success("Request sent to Roger — he'll track it down");
+      toast.success("Request logged — we'll track it down");
     } catch {
-      toast.error("Request failed — try again or email Roger directly");
+      toast.error("Request failed — try again in a moment");
     }
   };
 
