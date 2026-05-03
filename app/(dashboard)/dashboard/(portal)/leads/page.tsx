@@ -193,11 +193,20 @@ const LeadForm = ({ open, onClose, onSaved, editLead, initialSource }: LeadFormP
       setError("Name is required.");
       return;
     }
-    // R2-3: walk-ins almost never leave with a printed quote — Roger emails
-    // it later. The email captured at the desk is the artifact that makes
-    // that possible, so it's required.
-    if (form.source === "Walk-in" && !form.email.trim()) {
-      setError("Email is required for walk-ins — we email the quote later.");
+    // R4 Note 3: every quote ships by email and we capture the email for
+    // future marketing. So every lead needs a usable email address. The
+    // walk-in copy below explains the rationale to whoever's filling the
+    // form, but the rule is the same for all sources.
+    if (!form.email.trim()) {
+      setError("Email is required — every quote ships by email.");
+      return;
+    }
+    // Phone is required for sources where we already have it (the customer
+    // gave it to us). For Website / Email / Meta DM, phone is encouraged
+    // but not enforced — sometimes the lead arrives without one.
+    const phoneRequiredSources = ["WhatsApp", "Phone", "Walk-in"];
+    if (phoneRequiredSources.includes(form.source) && !form.phone.trim()) {
+      setError(`Phone is required for ${form.source} leads.`);
       return;
     }
 
@@ -262,10 +271,7 @@ const LeadForm = ({ open, onClose, onSaved, editLead, initialSource }: LeadFormP
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={labelClass}>
-              Email
-              {form.source === "Walk-in" && (
-                <span className="text-dash-danger"> *</span>
-              )}
+              Email <span className="text-dash-danger">*</span>
             </label>
             <input
               type="email"
@@ -274,14 +280,19 @@ const LeadForm = ({ open, onClose, onSaved, editLead, initialSource }: LeadFormP
               placeholder="email@example.com"
               className={inputClass}
             />
-            {form.source === "Walk-in" && (
-              <p className="mt-1 text-[10.5px] text-dash-text-secondary/80">
-                Required — walk-ins almost never leave with a printed quote, we email it the next day.
-              </p>
-            )}
+            <p className="mt-1 text-[10.5px] text-dash-text-secondary/80">
+              {form.source === "Walk-in"
+                ? "Required — walk-ins almost never leave with a printed quote, we email it the next day."
+                : "Required — every quote ships by email and we capture the email for future marketing."}
+            </p>
           </div>
           <div>
-            <label className={labelClass}>Phone</label>
+            <label className={labelClass}>
+              Phone
+              {["WhatsApp", "Phone", "Walk-in"].includes(form.source) && (
+                <span className="text-dash-danger"> *</span>
+              )}
+            </label>
             <input
               type="tel"
               value={form.phone}
