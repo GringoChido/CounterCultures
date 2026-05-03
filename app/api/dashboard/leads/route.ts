@@ -5,6 +5,7 @@ import {
   updateRowByHeader,
   findRowIndex,
 } from "@/app/lib/dashboard-sheets";
+import { ensureColumns } from "@/app/lib/sheet-migrations";
 
 type LeadRecord = {
   id: string;
@@ -25,6 +26,12 @@ type LeadRecord = {
    * the Mine/All filter. Empty for unassigned leads.
    */
   assigned_rep: string;
+  /**
+   * R4 Note 8: explicit marketing-bucket override. Empty → derive from
+   * contact_type via app/lib/customer-segments.ts.
+   * Values: "builder" | "designer" | "end-user" | "" (unset).
+   */
+  marketing_segment: string;
 };
 
 const LEAD_COLUMNS: (keyof LeadRecord)[] = [
@@ -42,7 +49,10 @@ const LEAD_COLUMNS: (keyof LeadRecord)[] = [
   "last_contact_date",
   "brand_slugs",
   "assigned_rep",
+  "marketing_segment",
 ];
+
+const R4_NOTE_8_COLUMNS = ["marketing_segment"];
 
 // Sheets with valueInputOption=USER_ENTERED evaluates any cell starting
 // with + = - @ as a formula, so phones like "+52 415 …" become #ERROR!.
@@ -93,6 +103,7 @@ export const POST = async (request: NextRequest) => {
       body.created_at = new Date().toISOString();
     }
 
+    await ensureColumns("Leads", R4_NOTE_8_COLUMNS);
     await appendRowByHeader("Leads", recordToFields(body));
 
     return NextResponse.json({ success: true, id: body.id });
@@ -128,6 +139,7 @@ export const PATCH = async (request: NextRequest) => {
     // updateRowByHeader merges with existing row internally, so we don't
     // need to readSheet+merge here — we only pass the fields we want to
     // change. Unknown fields are preserved.
+    await ensureColumns("Leads", R4_NOTE_8_COLUMNS);
     await updateRowByHeader("Leads", rowIdx, recordToFields(body));
 
     return NextResponse.json({ success: true });

@@ -714,6 +714,55 @@ Counter Cultures`,
     },
   },
 
+  // R4 Note 8: customer-service + marketing follow-up. Asks "how was
+  // everything?", reminds them their installer can reach out, and
+  // softly opens the door to ongoing contact. Fires alongside C-10 on
+  // T-13 (project complete). Marketing-bucket segmentation happens
+  // server-side off the Lead's contact_type / marketing_segment — not
+  // visible to the customer.
+  "C-11-feedback": {
+    id: "C-11-feedback",
+    audience: "customer",
+    locales: {
+      en: {
+        subject: "How was {project_name}?",
+        body: `Hi {customer_first_name},
+
+Now that {project_name} is in and installed, I wanted to check in honestly: how was everything? Did the {brand_list} pieces meet expectations day-to-day?
+
+If anything came up — a finish that wasn't quite right, a piece that needs tightening, a question about cleaning or maintenance — your installer can reach out to us directly. We'll get them what they need.
+
+If everything's perfect, even better. We'd love a couple of lines for the project portfolio: {testimonial_link}
+
+And whenever the next project starts, we're a message away.
+
+Warmly,
+Roger
+Counter Cultures`,
+      },
+      es: {
+        subject: "¿Cómo quedó {project_name}?",
+        body: `Hola {customer_first_name},
+
+Ahora que {project_name} ya está instalado, quería preguntarte honestamente: ¿cómo quedó todo? ¿Las piezas de {brand_list} están cumpliendo en el día a día?
+
+Si surgió algo — un acabado que no quedó bien, una pieza que necesita ajuste, una duda sobre limpieza o mantenimiento — tu instalador puede contactarnos directamente. Le damos lo que necesite.
+
+Si todo está perfecto, mejor aún. Nos encantaría unas líneas para el portafolio: {testimonial_link}
+
+Y cuando arranque el próximo proyecto, estamos a un mensaje.
+
+Cordialmente,
+Roger
+Counter Cultures`,
+      },
+    },
+    whatsapp: {
+      en: "Hi {customer_first_name} — how is {project_name} going? Any questions, your installer can reach us directly. If everything's perfect, a couple lines for our portfolio would mean a lot: {testimonial_link}",
+      es: "Hola {customer_first_name} — ¿cómo va {project_name}? Si surge algo, tu instalador puede contactarnos directo. Si todo está perfecto, unas líneas para nuestro portafolio significarían mucho: {testimonial_link}",
+    },
+  },
+
   // =========================================================================
   // ROGER — R-01..R-14 (dashboard-first; WA free-text when WHATSAPP_ENABLED)
   // =========================================================================

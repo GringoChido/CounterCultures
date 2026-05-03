@@ -219,9 +219,13 @@ export const ALERT_ROUTES: Record<string, AlertRoute> = {
     finance: { templateId: "F-07-balance-cfdi-request", channels: ["email"] },
   },
   // T-13 balance-pending → complete
+  // R4 Note 8: customer template was C-10 (thank-you only). C-11-feedback
+  // folds the thank-you, the satisfaction ask, and the installer-reach-out
+  // line into a single message. C-10 stays in the registry for backwards
+  // compat / manual sends but is no longer triggered automatically.
   "T-13-final-payment": {
     ruleId: "T-13-final-payment",
-    customer: { templateId: "C-10-complete", channels: ["email", "whatsapp"] },
+    customer: { templateId: "C-11-feedback", channels: ["email", "whatsapp"] },
     roger: { templateId: "R-13-complete", channels: ["dashboard"] },
   },
   // T-14 any → issue

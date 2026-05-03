@@ -17,6 +17,10 @@ import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { NotesPanel } from "@/app/(dashboard)/components/notes-panel";
 import { ShareButton } from "@/app/(dashboard)/components/share-button";
 import { LEAD_SOURCE_OPTIONS, LEAD_SOURCE_PILL, normalizeLeadSource, isLeadSource } from "@/app/lib/lead-sources";
+import {
+  effectiveSegment,
+  CUSTOMER_SEGMENT_META,
+} from "@/app/lib/customer-segments";
 import { useCurrentUser } from "@/app/lib/use-current-user";
 import {
   MineAllToggle,
@@ -43,6 +47,7 @@ interface SheetLead {
   last_contact_date: string;
   brand_slugs: string;
   assigned_rep: string;
+  marketing_segment: string;
 }
 
 // UI-friendly lead derived from sheet data
@@ -61,6 +66,7 @@ interface Lead {
   lastContactDate: string;
   brandSlugs: string[];
   assignedRep: string;
+  marketingSegment: string;
 }
 
 const mapSheetLead = (s: SheetLead): Lead => ({
@@ -81,6 +87,7 @@ const mapSheetLead = (s: SheetLead): Lead => ({
     .map((x) => x.trim())
     .filter(Boolean),
   assignedRep: s.assigned_rep ?? "",
+  marketingSegment: s.marketing_segment ?? "",
 });
 
 const statusVariants: Record<string, BadgeVariant> = {
@@ -117,6 +124,7 @@ const emptyForm = {
   next_followup: "",
   last_contact_date: "",
   brand_slugs: "",
+  marketing_segment: "",
 };
 
 interface BrandOption {
@@ -159,6 +167,7 @@ const LeadForm = ({ open, onClose, onSaved, editLead, initialSource }: LeadFormP
         next_followup: editLead.nextFollowUp,
         last_contact_date: editLead.lastContactDate,
         brand_slugs: editLead.brandSlugs.join("|"),
+        marketing_segment: editLead.marketingSegment,
       });
     } else {
       setForm({ ...emptyForm, source: initialSource || emptyForm.source });
@@ -333,19 +342,42 @@ const LeadForm = ({ open, onClose, onSaved, editLead, initialSource }: LeadFormP
           </div>
         </div>
 
-        {/* Contact Type */}
-        <div>
-          <label className={labelClass}>Contact Type</label>
-          <select
-            value={form.contact_type}
-            onChange={(e) => handleChange("contact_type", e.target.value)}
-            className={inputClass}
-          >
-            <option value="">Select type...</option>
-            {contactTypeOptions.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </select>
+        {/* Contact Type + Marketing segment */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelClass}>Contact Type</label>
+            <select
+              value={form.contact_type}
+              onChange={(e) => handleChange("contact_type", e.target.value)}
+              className={inputClass}
+            >
+              <option value="">Select type...</option>
+              {contactTypeOptions.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className={labelClass}>
+              Marketing bucket{" "}
+              <span className="text-dash-text-secondary/70 font-normal">
+                (auto if blank)
+              </span>
+            </label>
+            <select
+              value={form.marketing_segment}
+              onChange={(e) => handleChange("marketing_segment", e.target.value)}
+              className={inputClass}
+            >
+              <option value="">Auto from contact type</option>
+              <option value="builder">Builder</option>
+              <option value="designer">Designer</option>
+              <option value="end-user">End user</option>
+            </select>
+            <p className="mt-1 text-[10.5px] text-dash-text-secondary/80">
+              Drives the post-delivery marketing track. Override only when the contact type doesn&apos;t map cleanly.
+            </p>
+          </div>
         </div>
 
         {/* Interest */}
@@ -1128,6 +1160,24 @@ const LeadsPageInner = () => {
                     {selectedLead.contactType}
                   </p>
                 )}
+                {(() => {
+                  const seg = effectiveSegment({
+                    marketingSegment: selectedLead.marketingSegment,
+                    contactType: selectedLead.contactType,
+                  });
+                  if (seg === "unclassified") return null;
+                  const isOverride = !!selectedLead.marketingSegment;
+                  return (
+                    <p>
+                      <span className="text-dash-text-secondary">Marketing bucket:</span>{" "}
+                      <span className="text-dash-text">{CUSTOMER_SEGMENT_META[seg].label}</span>
+                      <span className="text-dash-text-secondary/70">
+                        {" "}
+                        · {isOverride ? "manual" : "auto from contact type"}
+                      </span>
+                    </p>
+                  );
+                })()}
               </div>
             </div>
 
