@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useId, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
+import { signOutAndCleanup } from "@/app/lib/sign-out";
 import { useFeatures } from "@/app/lib/use-features";
 import type { Feature } from "@/app/lib/features";
 import { useFocusTrap } from "@/app/components/ui/use-focus-trap";
@@ -206,16 +206,7 @@ const Sidebar = ({ mobileOpen = false, onMobileClose }: SidebarProps) => {
     moreNavItems.some((it) => pathname === it.href)
   );
 
-  const handleSignOut = async () => {
-    // Clear per-session local state so the next user doesn't see prior data
-    try {
-      localStorage.removeItem("cc_chat_history_v2");
-      localStorage.removeItem("cc_palette_recent");
-    } catch {
-      // ignore
-    }
-    await signOut({ callbackUrl: "/dashboard/login" });
-  };
+  const handleSignOut = () => signOutAndCleanup();
 
   const navContent = (
     <>
