@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { User, Bell, Link2, Users, Check, X, ExternalLink, CheckCircle2, Mail, Loader2, AlertCircle } from "lucide-react";
+import { User, Bell, Link2, Users, Check, X, ExternalLink, CheckCircle2, Mail, Loader2, AlertCircle, ArrowRight } from "lucide-react";
 import { IntegrationHealthPanel } from "@/app/(dashboard)/components/integration-health-panel";
+import { useCurrentUser } from "@/app/lib/use-current-user";
 
 interface NotificationSetting {
   id: string;
@@ -21,25 +23,14 @@ interface Integration {
   icon: string;
 }
 
-interface TeamMember {
-  name: string;
-  email: string;
-  role: string;
-  avatar: string;
-}
-
 const STORAGE_KEY = "cc-portal-settings";
 
 interface SettingsState {
-  fullName: string;
-  email: string;
   notifications: NotificationSetting[];
   integrations: Integration[];
 }
 
 const defaultSettings: SettingsState = {
-  fullName: "Roger Williams",
-  email: "roger@countercultures.com",
   notifications: [
     { id: "email", label: "Email Notifications", description: "Receive updates about leads, deals, and reports via email", enabled: true },
     { id: "whatsapp", label: "WhatsApp Notifications", description: "Get notified about new messages and customer inquiries on WhatsApp", enabled: true },
@@ -56,7 +47,14 @@ function loadSettings(): SettingsState {
   if (typeof window === "undefined") return defaultSettings;
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) return JSON.parse(stored) as SettingsState;
+    if (!stored) return defaultSettings;
+    const parsed = JSON.parse(stored) as Partial<SettingsState>;
+    // Merge over defaults so removed top-level keys (fullName/email pre-R3-1)
+    // don't pollute the shape, and any new keys added later get a fallback.
+    return {
+      notifications: parsed.notifications ?? defaultSettings.notifications,
+      integrations: parsed.integrations ?? defaultSettings.integrations,
+    };
   } catch {
     // ignore
   }
@@ -74,18 +72,12 @@ function saveSettings(state: SettingsState) {
 const SettingsPageInner = () => {
   const [settings, setSettings] = useState<SettingsState>(defaultSettings);
   const [loaded, setLoaded] = useState(false);
-  const [saveToast, setSaveToast] = useState(false);
+  const { user, loading: userLoading } = useCurrentUser();
 
   useEffect(() => {
     setSettings(loadSettings());
     setLoaded(true);
   }, []);
-
-  const handleSaveAccount = () => {
-    saveSettings(settings);
-    setSaveToast(true);
-    setTimeout(() => setSaveToast(false), 2500);
-  };
 
   const toggleNotification = (id: string) => {
     setSettings((prev) => {
@@ -113,30 +105,16 @@ const SettingsPageInner = () => {
     });
   };
 
-  const teamMembers: TeamMember[] = [
-    { name: "Roger Williams", email: "roger@countercultures.com", role: "Owner", avatar: "RW" },
-    { name: "Elena Martinez", email: "elena@countercultures.com", role: "Sales Manager", avatar: "EM" },
-    { name: "Carlos Mendoza", email: "carlos@countercultures.com", role: "Marketing", avatar: "CM" },
-  ];
-
   if (!loaded) return null;
 
   return (
     <div className="space-y-6 max-w-3xl">
-      {/* Save toast */}
-      {saveToast && (
-        <div className="fixed top-20 right-6 z-50 flex items-center gap-2 px-4 py-3 bg-dash-success-soft border border-dash-success text-dash-success rounded-xl shadow-lg animate-in slide-in-from-right">
-          <CheckCircle2 className="w-4 h-4" />
-          <span className="text-sm font-medium">Settings saved</span>
-        </div>
-      )}
-
       <div>
         <h2 className="text-2xl font-bold text-dash-text">Settings</h2>
         <p className="text-sm text-dash-text-secondary mt-1">Manage your account and preferences</p>
       </div>
 
-      {/* Account */}
+      {/* Account — read-only; name + email come from the Users sheet */}
       <div className="bg-dash-surface rounded-xl border border-dash-border p-5">
         <div className="flex items-center gap-3 mb-5">
           <div className="w-9 h-9 rounded-lg bg-brand-copper flex items-center justify-center">
@@ -147,28 +125,23 @@ const SettingsPageInner = () => {
         <div className="space-y-4">
           <div>
             <label className="block text-xs font-medium text-dash-text-secondary mb-1.5">Full Name</label>
-            <input
-              type="text"
-              value={settings.fullName}
-              onChange={(e) => setSettings((s) => ({ ...s, fullName: e.target.value }))}
-              className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
-            />
+            <div className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text">
+              {userLoading ? "—" : user?.name || "—"}
+            </div>
           </div>
           <div>
             <label className="block text-xs font-medium text-dash-text-secondary mb-1.5">Email Address</label>
-            <input
-              type="email"
-              value={settings.email}
-              onChange={(e) => setSettings((s) => ({ ...s, email: e.target.value }))}
-              className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
-            />
+            <div className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text">
+              {userLoading ? "—" : user?.email || "—"}
+            </div>
           </div>
-          <button
-            onClick={handleSaveAccount}
-            className="px-4 py-2 bg-brand-copper text-white rounded-lg text-sm font-medium hover:bg-brand-copper/90 transition-colors cursor-pointer"
-          >
-            Save Changes
-          </button>
+          <p className="text-xs text-dash-text-secondary">
+            Your name and email come from your row in the Users sheet. An owner can update them in{" "}
+            <Link href="/dashboard/settings/users" className="text-brand-copper hover:underline">
+              Portal users
+            </Link>
+            .
+          </p>
         </div>
       </div>
 
@@ -257,47 +230,26 @@ const SettingsPageInner = () => {
         </div>
       </div>
 
-      {/* Team Members */}
-      <div className="bg-dash-surface rounded-xl border border-dash-border p-5">
-        <div className="flex items-center justify-between mb-5">
+      {/* Team Members — owner-managed via the dedicated admin page */}
+      <Link
+        href="/dashboard/settings/users"
+        className="block bg-dash-surface rounded-xl border border-dash-border p-5 hover:border-brand-copper/40 transition-colors group"
+      >
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-status-new flex items-center justify-center">
               <Users className="w-4.5 h-4.5 text-white" />
             </div>
-            <h3 className="text-sm font-semibold text-dash-text">Team Members</h3>
+            <div>
+              <h3 className="text-sm font-semibold text-dash-text">Team Members</h3>
+              <p className="text-xs text-dash-text-secondary mt-0.5">
+                Add, edit, or deactivate accounts and per-user feature access.
+              </p>
+            </div>
           </div>
-          <button className="px-3 py-1.5 border border-dash-border text-dash-text rounded-lg text-xs font-medium hover:bg-dash-bg transition-colors cursor-pointer">
-            Invite Member
-          </button>
+          <ArrowRight className="w-4 h-4 text-dash-text-secondary group-hover:text-brand-copper transition-colors" />
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-dash-border">
-                <th className="text-left py-2 text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">Member</th>
-                <th className="text-left py-2 text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">Email</th>
-                <th className="text-left py-2 text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">Role</th>
-              </tr>
-            </thead>
-            <tbody>
-              {teamMembers.map((member) => (
-                <tr key={member.email} className="border-b border-dash-border last:border-0">
-                  <td className="py-3">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-brand-copper/10 flex items-center justify-center">
-                        <span className="text-xs font-semibold text-brand-copper">{member.avatar}</span>
-                      </div>
-                      <span className="font-medium text-dash-text">{member.name}</span>
-                    </div>
-                  </td>
-                  <td className="py-3 text-dash-text-secondary">{member.email}</td>
-                  <td className="py-3 text-dash-text">{member.role}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      </Link>
     </div>
   );
 };

@@ -9,6 +9,7 @@ import { MorningSalesHealth } from "@/app/(dashboard)/components/morning-sales-h
 import { TodayKpiRail } from "@/app/(dashboard)/components/today-kpi-rail";
 import { ActivityFeed } from "@/app/(dashboard)/components/activity-feed";
 import { CommandCenter } from "@/app/(dashboard)/components/command-center";
+import { useCurrentUser } from "@/app/lib/use-current-user";
 
 const greetingFor = (date: Date): string => {
   const h = date.getHours();
@@ -16,6 +17,9 @@ const greetingFor = (date: Date): string => {
   if (h < 19) return "Buenas tardes";
   return "Buenas noches";
 };
+
+const firstNameOf = (name: string | null | undefined): string =>
+  (name ?? "").trim().split(/\s+/)[0] ?? "";
 
 const OverviewPage = () => {
   // Render after mount so SSR HTML matches client (no hydration mismatch
@@ -25,16 +29,22 @@ const OverviewPage = () => {
     setNow(new Date());
   }, []);
 
+  const { user } = useCurrentUser();
+  const firstName = firstNameOf(user?.name);
+
   const day = now ? format(now, "EEEE, MMMM d") : "";
   const greeting = now ? greetingFor(now) : "";
+  const greetingLine = greeting
+    ? firstName
+      ? `· ${greeting} ${firstName}`
+      : `· ${greeting}`
+    : "";
 
   return (
     <div className="space-y-6">
       <div className="flex items-baseline gap-3 flex-wrap">
         <h1 className="font-display text-3xl text-dash-text">{day}</h1>
-        <p className="text-sm text-dash-text-secondary">
-          · {greeting} Roger
-        </p>
+        <p className="text-sm text-dash-text-secondary">{greetingLine}</p>
       </div>
 
       <CommandCenter />

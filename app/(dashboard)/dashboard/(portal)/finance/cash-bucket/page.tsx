@@ -98,7 +98,7 @@ export default function CashBucketPage(): React.ReactElement {
         </div>
         <h1 className="text-xl text-dash-text">Restricted view</h1>
         <p className="text-sm text-dash-text-secondary max-w-md mx-auto">
-          The cash bucket is owner-gated. If you need access, ask Roger to add{" "}
+          The cash bucket is owner-gated. If you need access, ask an admin to add{" "}
           <code className="text-[12px] bg-dash-bg rounded px-1.5 py-0.5">+view_cash_bucket</code>{" "}
           to your row in the Users sheet.
         </p>

@@ -1148,7 +1148,7 @@ const AttachCFDIModal = ({
             </label>
           ) : (
             <p className="text-dash-warn/80">
-              Only owners can override. Ask Roger to attach this one, or go
+              Only owners can override. Ask an owner to attach this one, or go
               back and "Mark approved" first.
             </p>
           )}

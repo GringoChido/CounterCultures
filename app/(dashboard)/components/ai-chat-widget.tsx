@@ -15,6 +15,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { ChatToolChip } from "./chat-tool-chip";
+import { useCurrentUser } from "@/app/lib/use-current-user";
 
 interface ToolCall {
   id: string;
@@ -41,11 +42,12 @@ const STARTER_PROMPTS = [
   "Show this week's numbers",
 ] as const;
 
-const DEFAULT_NAME = "Roger";
-const IDENTITY_KEY = "cc_portal_identity_name";
 const DISMISSED_KEY = "cc_chat_dismissed_session";
 const HISTORY_KEY = "cc_chat_history_v2";
 const HISTORY_CAP = 50;
+
+const firstNameOf = (name: string | null | undefined): string =>
+  (name ?? "").trim().split(/\s+/)[0] ?? "";
 
 // Minimal markdown renderer for assistant messages
 function RichText({ text }: { text: string }) {
@@ -115,9 +117,8 @@ export function AIChatWidget({ hideOwnFab = false }: { hideOwnFab?: boolean } = 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [name, setName] = useState<string>(DEFAULT_NAME);
-  const [editingName, setEditingName] = useState(false);
-  const [nameDraft, setNameDraft] = useState("");
+  const { user } = useCurrentUser();
+  const name = firstNameOf(user?.name);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesRef = useRef(messages);
@@ -133,11 +134,9 @@ export function AIChatWidget({ hideOwnFab = false }: { hideOwnFab?: boolean } = 
     }
   }, [open]);
 
-  // Load saved identity + conversation history. Closed-by-default (per redesign §9 — chat is a tool, not a popup).
+  // Load saved conversation history. Closed-by-default (per redesign §9 — chat is a tool, not a popup).
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(IDENTITY_KEY);
-      if (saved && saved.trim()) setName(saved.trim());
       const raw = localStorage.getItem(HISTORY_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as Message[];
@@ -169,17 +168,6 @@ export function AIChatWidget({ hideOwnFab = false }: { hideOwnFab?: boolean } = 
       // ignore
     }
   }, [messages]);
-
-  const persistName = (next: string) => {
-    const clean = next.trim() || DEFAULT_NAME;
-    setName(clean);
-    try {
-      localStorage.setItem(IDENTITY_KEY, clean);
-    } catch {
-      // ignore
-    }
-    setEditingName(false);
-  };
 
   const closeWidget = () => {
     setOpen(false);
@@ -403,40 +391,9 @@ export function AIChatWidget({ hideOwnFab = false }: { hideOwnFab?: boolean } = 
             {messages.length === 0 && (
               <div className="space-y-4">
                 <div className="pt-1 pb-2">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="text-base font-semibold text-dash-text">
-                      Hello {name},
-                    </p>
-                    {!editingName ? (
-                      <button
-                        onClick={() => {
-                          setNameDraft(name);
-                          setEditingName(true);
-                        }}
-                        title="Not you? Sign in as someone else"
-                        className="text-[10px] text-dash-text-secondary/70 hover:text-brand-copper transition-colors cursor-pointer"
-                      >
-                        (not you?)
-                      </button>
-                    ) : (
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          persistName(nameDraft);
-                        }}
-                        className="flex items-center gap-1"
-                      >
-                        <input
-                          autoFocus
-                          value={nameDraft}
-                          onChange={(e) => setNameDraft(e.target.value)}
-                          onBlur={() => persistName(nameDraft)}
-                          className="w-20 px-1.5 py-0.5 text-xs bg-dash-bg border border-dash-border rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-1 focus:ring-brand-copper"
-                          placeholder="Name"
-                        />
-                      </form>
-                    )}
-                  </div>
+                  <p className="text-base font-semibold text-dash-text mb-1">
+                    {name ? `Hello ${name},` : "Hello,"}
+                  </p>
                   <p className="text-sm text-dash-text-secondary">
                     what can I help you with today?
                   </p>
