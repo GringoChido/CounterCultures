@@ -234,6 +234,16 @@ export interface DealShipment {
   legs?: import("./customs-data").ShipmentLeg[];
   traficoId?: string;         // Links to parent Tráfico
   pedimentoItemId?: string;   // Links to specific item in crossing
+  // R4 Note 7: which delivery shape this shipment follows. Empty / unset
+  // is equivalent to "standard" (the historical default).
+  deliveryMethod?: import("./delivery-methods").DeliveryMethod;
+  /** Used when deliveryMethod = "dropship": the supplier doing the direct ship. */
+  dropshipSupplier?: string;
+  /**
+   * Free text — the final landing point when CC isn't the destination
+   * (e.g. "Manzanillo · cliente directo", "Monterrey · obra Linda Vista").
+   */
+  finalDestination?: string;
 }
 
 export interface Lead {

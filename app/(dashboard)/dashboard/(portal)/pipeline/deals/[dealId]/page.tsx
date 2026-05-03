@@ -30,6 +30,21 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
+import { DeliveryMethodBadge } from "@/app/(dashboard)/components/shipment/delivery-method-badge";
+import { normalizeDeliveryMethod } from "@/app/lib/delivery-methods";
+
+type DirectShipment = {
+  Shipment_ID: string;
+  Deal_ID: string;
+  PO_ID: string;
+  Brand: string;
+  Status: string;
+  Delivery_Method: string;
+  Dropship_Supplier: string;
+  Final_Destination: string;
+  Carrier: string;
+  Tracking: string;
+};
 
 type Deal = {
   id: string;
@@ -85,6 +100,7 @@ const DealDetailPage = ({
   const { dealId } = use(params);
   const [deal, setDeal] = useState<Deal | null>(null);
   const [shipments, setShipments] = useState<Trafico[]>([]);
+  const [directShipments, setDirectShipments] = useState<DirectShipment[]>([]);
   const [events, setEvents] = useState<DealEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -95,10 +111,14 @@ const DealDetailPage = ({
       setLoading(true);
       setError(null);
       try {
-        const [dealsRes, itemsRes, tRes, eventsRes] = await Promise.all([
+        const [dealsRes, itemsRes, tRes, shipsRes, eventsRes] = await Promise.all([
           fetch("/api/dashboard/pipeline", { cache: "no-store" }),
           fetch("/api/dashboard/trafico-items", { cache: "no-store" }),
           fetch("/api/dashboard/traficos", { cache: "no-store" }),
+          fetch(
+            `/api/dashboard/shipments?dealId=${encodeURIComponent(dealId)}`,
+            { cache: "no-store" }
+          ),
           fetch(`/api/dashboard/deals/${encodeURIComponent(dealId)}/events`, {
             cache: "no-store",
           }),
@@ -125,6 +145,16 @@ const DealDetailPage = ({
           if (!aborted) {
             setShipments(traficos.filter((t) => linkedIds.has(t.TRF_ID)));
           }
+        }
+
+        // R4 Note 7: surface non-customs deliveries (drop-ship + Mexican
+        // supplier) that don't appear in the tráficos list.
+        if (shipsRes.ok) {
+          const data = (await shipsRes.json()) as { shipments?: DirectShipment[] };
+          const direct = (data.shipments ?? []).filter(
+            (s) => normalizeDeliveryMethod(s.Delivery_Method) !== "standard"
+          );
+          if (!aborted) setDirectShipments(direct);
         }
 
         if (eventsRes.ok) {
@@ -294,33 +324,71 @@ const DealDetailPage = ({
               {shipments.length}
             </span>
           </div>
-          {shipments.length === 0 ? (
+          {shipments.length === 0 && directShipments.length === 0 ? (
             <p className="text-sm text-dash-text-muted py-4 text-center">
               No shipments linked to this deal yet.
             </p>
           ) : (
-            <ul className="divide-y divide-dash-border -my-2">
-              {shipments.map((s) => (
-                <li
-                  key={s.TRF_ID}
-                  className="py-2 flex items-center justify-between gap-3"
-                >
-                  <Link
-                    href={`/dashboard/shipments/${encodeURIComponent(s.TRF_ID)}`}
-                    className="flex-1 min-w-0 hover:text-brand-copper transition-colors"
-                  >
-                    <p className="text-xs font-mono font-medium text-dash-text truncate">
-                      {s.Trafico_Number || s.TRF_ID}
-                    </p>
-                    <p className="text-[11px] text-dash-text-secondary truncate">
-                      {s.Status || "—"}
-                      {s.Pedimento_Number ? ` · Ped. ${s.Pedimento_Number}` : ""}
-                    </p>
-                  </Link>
-                  <Package className="w-3.5 h-3.5 text-dash-text-secondary shrink-0" />
-                </li>
-              ))}
-            </ul>
+            <div className="space-y-3 -my-2">
+              {shipments.length > 0 && (
+                <ul className="divide-y divide-dash-border">
+                  {shipments.map((s) => (
+                    <li
+                      key={s.TRF_ID}
+                      className="py-2 flex items-center justify-between gap-3"
+                    >
+                      <Link
+                        href={`/dashboard/shipments/${encodeURIComponent(s.TRF_ID)}`}
+                        className="flex-1 min-w-0 hover:text-brand-copper transition-colors"
+                      >
+                        <p className="text-xs font-mono font-medium text-dash-text truncate">
+                          {s.Trafico_Number || s.TRF_ID}
+                        </p>
+                        <p className="text-[11px] text-dash-text-secondary truncate">
+                          {s.Status || "—"}
+                          {s.Pedimento_Number ? ` · Ped. ${s.Pedimento_Number}` : ""}
+                        </p>
+                      </Link>
+                      <Package className="w-3.5 h-3.5 text-dash-text-secondary shrink-0" />
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {directShipments.length > 0 && (
+                <div className={shipments.length > 0 ? "pt-3 border-t border-dash-border" : ""}>
+                  <p className="text-[10px] uppercase tracking-wider text-dash-text-secondary mb-2">
+                    Direct deliveries (no customs)
+                  </p>
+                  <ul className="divide-y divide-dash-border">
+                    {directShipments.map((s) => (
+                      <li
+                        key={s.Shipment_ID}
+                        className="py-2 flex items-center justify-between gap-3"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs font-mono font-medium text-dash-text truncate">
+                              {s.Shipment_ID}
+                            </p>
+                            <DeliveryMethodBadge
+                              method={s.Delivery_Method}
+                              compact
+                              subtitle={s.Final_Destination || s.Dropship_Supplier || undefined}
+                            />
+                          </div>
+                          <p className="text-[11px] text-dash-text-secondary truncate mt-0.5">
+                            {s.Status || "—"}
+                            {s.Carrier ? ` · ${s.Carrier}` : ""}
+                            {s.Tracking ? ` · ${s.Tracking}` : ""}
+                          </p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           )}
         </section>
       </div>

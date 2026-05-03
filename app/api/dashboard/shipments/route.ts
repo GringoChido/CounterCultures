@@ -1,10 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import {
   readSheet,
-  appendRow,
-  updateRow,
+  appendRowByHeader,
+  updateRowByHeader,
   findRowIndex,
 } from "@/app/lib/dashboard-sheets";
+import { ensureColumns } from "@/app/lib/sheet-migrations";
 
 type ShipmentRecord = {
   Shipment_ID: string;
@@ -22,6 +23,18 @@ type ShipmentRecord = {
   Inspection_Status: string;
   Inspection_Notes: string;
   Photo_IDs: string;
+  /**
+   * R4 Note 7: which delivery shape this shipment follows. Empty / unknown
+   * collapses to "standard" downstream. See app/lib/delivery-methods.ts.
+   */
+  Delivery_Method: string;
+  /** Used when Delivery_Method = "dropship": the supplier doing the direct ship. */
+  Dropship_Supplier: string;
+  /**
+   * Free text — the final landing point when CC isn't the destination
+   * (e.g. "Manzanillo · cliente directo", "Monterrey · obra Linda Vista").
+   */
+  Final_Destination: string;
 };
 
 const SHIPMENT_COLUMNS: (keyof ShipmentRecord)[] = [
@@ -40,7 +53,24 @@ const SHIPMENT_COLUMNS: (keyof ShipmentRecord)[] = [
   "Inspection_Status",
   "Inspection_Notes",
   "Photo_IDs",
+  "Delivery_Method",
+  "Dropship_Supplier",
+  "Final_Destination",
 ];
+
+const R4_NOTE_7_COLUMNS = [
+  "Delivery_Method",
+  "Dropship_Supplier",
+  "Final_Destination",
+];
+
+const recordToFields = (body: Partial<ShipmentRecord>): Record<string, string> => {
+  const out: Record<string, string> = {};
+  for (const col of SHIPMENT_COLUMNS) {
+    out[col] = body[col] ?? "";
+  }
+  return out;
+};
 
 // ---------------------------------------------------------------------------
 // GET - list / filter shipments
@@ -79,8 +109,10 @@ export const POST = async (request: NextRequest) => {
   try {
     const body: ShipmentRecord = await request.json();
 
-    const values = SHIPMENT_COLUMNS.map((col) => body[col] ?? "");
-    await appendRow("Shipments", values);
+    // Self-heal R4 Note 7 columns before write so legacy sheets pick up
+    // delivery method without a manual migration.
+    await ensureColumns("Shipments", R4_NOTE_7_COLUMNS);
+    await appendRowByHeader("Shipments", recordToFields(body));
 
     return NextResponse.json({ success: true, shipmentId: body.Shipment_ID });
   } catch (err) {
@@ -116,8 +148,8 @@ export const PUT = async (request: NextRequest) => {
       );
     }
 
-    const values = SHIPMENT_COLUMNS.map((col) => body[col] ?? "");
-    await updateRow("Shipments", rowIdx, values);
+    await ensureColumns("Shipments", R4_NOTE_7_COLUMNS);
+    await updateRowByHeader("Shipments", rowIdx, recordToFields(body));
 
     return NextResponse.json({ success: true });
   } catch (err) {
