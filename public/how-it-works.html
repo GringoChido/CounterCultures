@@ -388,6 +388,137 @@
     </div>
   </section>
 
+  <!-- ============== R4 ADDITIONS — what landed in this round ============== -->
+  <section id="r4-additions" class="stage bg-paper" data-stage="0">
+    <div class="max-w-[1320px] mx-auto px-6 md:px-12">
+      <div class="grid md:grid-cols-12 gap-12 items-start mb-10">
+        <div class="md:col-span-5 col-copy">
+          <div class="eyebrow mb-4">Recently — Round Four</div>
+          <h2 class="display text-[40px] md:text-[52px]">
+            Roger sent corrections.<br />
+            <span class="display-italic">The portal caught up.</span>
+          </h2>
+          <p class="body-text mt-6">
+            Roger walked the eleven stages and flagged eight places where the portal didn't quite match
+            how Counter Cultures actually runs. R4 closed those gaps. Below: what shipped, mapped to
+            the stage where it lives. Anything Roger flagged that didn't ship is in the punch list
+            (separate doc, sent in chat).
+          </p>
+        </div>
+        <div class="md:col-span-7">
+          <div class="mockup-frame overflow-hidden">
+            <div class="mockup-bar px-4 py-3 text-[11px]" style="color: var(--muted);">
+              <span class="mono">R4 changelog · what shipped</span>
+            </div>
+            <div class="p-6 space-y-3 text-[13px]">
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 1</span>
+                <span><span class="ink">WhatsApp inbound webhook</span> — customer messages auto-create leads with dedup + Roger notification.</span>
+              </div>
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 1</span>
+                <span><span class="ink">Lead form requires email + phone for hot sources</span> — every contact has both, or the form blocks.</span>
+              </div>
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 2</span>
+                <span><span class="ink">Mine/All toggle on Orders</span> — same segmented control as Leads + Pipeline, persists per-user.</span>
+              </div>
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 4</span>
+                <span><span class="ink">Email-always on Send dialog</span> — XOR channel toggle replaced with email-required + optional WhatsApp companion.</span>
+              </div>
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 7</span>
+                <span><span class="ink">Vendor credit terms on detail page</span> — billing trigger, lead time, confirmation pattern visible at a glance.</span>
+              </div>
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 8</span>
+                <span><span class="ink">Spanish manuales editor</span> — required toggle, status, Drive file IDs, all per-PedimentoItem.</span>
+              </div>
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 8</span>
+                <span><span class="ink">Send to broker</span> — drafts now actually send via Resend, advance status, log to Activity_Log.</span>
+              </div>
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 8</span>
+                <span><span class="ink">3-way reconciliation</span> — vendor invoices → cálculo → factura with variance level (pass/warn/error).</span>
+              </div>
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 8</span>
+                <span><span class="ink">Landed cost per item + per deal</span> — invoice-weighted allocation, per-unit landed cost.</span>
+              </div>
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 9</span>
+                <span><span class="ink">Delivery method variants</span> — drop-ship, broker-direct, Mexican supplier, all distinct from "standard import."</span>
+              </div>
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 11</span>
+                <span><span class="ink">C-11 follow-up + marketing buckets</span> — "how was it?" email, plus builder/designer/end-user segmentation.</span>
+              </div>
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 11</span>
+                <span><span class="ink">Segment-aware campaign templates</span> — three flavors per outreach type, no more generic copy.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Per-user identity (R3, surfaced here per the spec) -->
+      <div class="grid md:grid-cols-12 gap-12 items-start pt-6 border-t hairline">
+        <div class="md:col-span-5 col-copy">
+          <div class="eyebrow mb-4">Foundation · Round Three</div>
+          <h2 class="display text-[32px] md:text-[40px]">
+            Per-user sign-in.<br />
+            <span class="display-italic">Roger isn't the only one inside.</span>
+          </h2>
+          <p class="body-text mt-6">
+            Earlier the portal had a single shared identity. R3 introduced real per-user
+            authentication so the right person is attributed on every write, and so the surfaces
+            people see match what they're allowed to do.
+          </p>
+        </div>
+        <div class="md:col-span-7">
+          <div class="mockup-frame overflow-hidden">
+            <div class="mockup-bar px-4 py-3 text-[11px]" style="color: var(--muted);">
+              <span class="mono">/dashboard · who's signed in</span>
+            </div>
+            <div class="p-6 space-y-3 text-[13px]">
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Auth</span>
+                <span>Google sign-in restricted to <span class="mono ink">@countercultures.com.mx</span>.</span>
+              </div>
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Identity</span>
+                <span>Name / email / role read from the <span class="ink">Users</span> sheet tab.</span>
+              </div>
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Onboarding</span>
+                <span>Roger adds new users via <span class="mono ink">/dashboard/settings/users</span> — no auto-create.</span>
+              </div>
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Access</span>
+                <span>Per-user feature gates (<span class="mono ink">app/lib/features.ts</span>) + per-user overrides in the Users sheet.</span>
+              </div>
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Sign-out</span>
+                <span>From the header chip — clears NextAuth session + per-user local state.</span>
+              </div>
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Audit</span>
+                <span>User-admin actions write to <span class="mono ink">Activity_Log</span> with the actor's email.</span>
+              </div>
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Drive</span>
+                <span>Drive access uses Google's own permissioning — sharing the folder with each user.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ============== MORNING BRIEF — sits before Stage 1 ============== -->
   <section id="morning-brief" class="stage bg-paper" data-stage="0">
     <div class="max-w-[1320px] mx-auto px-6 md:px-12 grid md:grid-cols-12 gap-12 items-start">
