@@ -81,8 +81,42 @@ type SheetTab =
   | "Invoice_Approvals"
   | "Vendors";
 
-// Read all rows from a sheet tab (returns array of objects using header row as keys)
-const readSheet = async <T extends Record<string, string>>(
+// In-memory TTL cache. Keyed by tab. Reference tables get a longer TTL
+// because they almost never change; active tables use the short TTL so a
+// stage change made by one user surfaces to the next within ~60s in the
+// worst case (writes invalidate immediately for the same process). All
+// writes go through appendRow / updateRow / deleteRow, which invalidate
+// the cache for the touched tab — see invalidateSheet below.
+const SHORT_TTL_MS = 60 * 1000;
+const LONG_TTL_MS = 5 * 60 * 1000;
+const REFERENCE_TABS = new Set<SheetTab>([
+  "Brand_NOM_Status",
+  "Brand_Lead_Times",
+  "FX_Rates",
+  "HS_Code_Lookup",
+  "FTA_Rates",
+  "Vendors",
+  "Reps",
+  "Settings",
+  "Users",
+  "Manufacturers",
+]);
+
+type CacheEntry = { data: unknown[]; expiresAt: number };
+const sheetCache = new Map<SheetTab, CacheEntry>();
+// Coalesce concurrent fetches: if N requests arrive within the same TTL
+// window before the first fetch completes, all N share the same Promise
+// instead of triggering N parallel Sheets API calls.
+const inflight = new Map<SheetTab, Promise<unknown[]>>();
+
+const ttlFor = (tab: SheetTab): number =>
+  REFERENCE_TABS.has(tab) ? LONG_TTL_MS : SHORT_TTL_MS;
+
+const invalidateSheet = (tab: SheetTab): void => {
+  sheetCache.delete(tab);
+};
+
+const fetchSheet = async <T extends Record<string, string>>(
   tab: SheetTab
 ): Promise<T[]> => {
   const sheets = getSheets();
@@ -104,6 +138,35 @@ const readSheet = async <T extends Record<string, string>>(
   });
 };
 
+// Read all rows from a sheet tab (returns array of objects using header row as keys)
+const readSheet = async <T extends Record<string, string>>(
+  tab: SheetTab
+): Promise<T[]> => {
+  const now = Date.now();
+  const cached = sheetCache.get(tab);
+  if (cached && cached.expiresAt > now) {
+    return cached.data as T[];
+  }
+
+  const existing = inflight.get(tab);
+  if (existing) return existing as Promise<T[]>;
+
+  const promise = (async () => {
+    try {
+      const data = await fetchSheet<T>(tab);
+      sheetCache.set(tab, {
+        data: data as unknown[],
+        expiresAt: Date.now() + ttlFor(tab),
+      });
+      return data;
+    } finally {
+      inflight.delete(tab);
+    }
+  })();
+  inflight.set(tab, promise as Promise<unknown[]>);
+  return promise;
+};
+
 // Append a new row to a sheet tab
 const appendRow = async (tab: SheetTab, values: string[]): Promise<void> => {
   const sheets = getSheets();
@@ -113,6 +176,7 @@ const appendRow = async (tab: SheetTab, values: string[]): Promise<void> => {
     valueInputOption: "USER_ENTERED",
     requestBody: { values: [values] },
   });
+  invalidateSheet(tab);
 };
 
 // Update a specific row (0-indexed data row, row 0 = first data row after header)
@@ -129,6 +193,7 @@ const updateRow = async (
     valueInputOption: "USER_ENTERED",
     requestBody: { values: [values] },
   });
+  invalidateSheet(tab);
 };
 
 // Delete a row by data index (0-indexed)
@@ -164,6 +229,7 @@ const deleteRow = async (tab: SheetTab, dataRowIndex: number): Promise<void> => 
       ],
     },
   });
+  invalidateSheet(tab);
 };
 
 // Find row index by column value
@@ -297,5 +363,6 @@ export {
   findRowIndex,
   getSheetHeaders,
   upsertRowByField,
+  invalidateSheet,
 };
 export type { SheetTab };
