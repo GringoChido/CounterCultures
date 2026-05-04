@@ -2563,97 +2563,177 @@
     </div>
   </section>
 
-  <!-- ============== PUNCH LIST — open decisions only Roger can make ============== -->
+  <!-- ============== PUNCH LIST — what we set up, what we need from Roger ============== -->
   <section id="punch-list" class="stage bg-linen" data-stage="11">
     <div class="max-w-[1320px] mx-auto px-6 md:px-12">
       <div class="grid md:grid-cols-12 gap-12 items-start">
         <div class="md:col-span-5 col-copy">
-          <div class="eyebrow mb-6">Open · For Roger</div>
-          <h2 class="display text-[44px] md:text-[60px]">A handful of last calls. <span class="display-italic">Yours to make.</span></h2>
+          <div class="eyebrow mb-6">For Roger</div>
+          <h2 class="display text-[44px] md:text-[60px]">A few things from you. <span class="display-italic">That's it.</span></h2>
           <p class="body-text mt-8">
-            Every row below is a place where the portal has a working default and a sensible
-            answer — but the answer is yours, not ours. Each one is shipped and stable. If the
-            default is right, do nothing. If it's wrong, twenty minutes of your time changes it
-            for everyone using the portal.
+            We had fourteen open questions for you. We took our best guess on ten of them so you
+            wouldn't have to write a wall of email. Those are listed first — read them, tell us
+            if anything's wrong, and that's done.
           </p>
           <p class="body-text mt-4">
-            Reply however you like — voice notes in the WhatsApp thread, edits straight onto
-            this page, or just point at the rows in our next call. Anything that needs a longer
-            conversation, we put on the agenda.
+            The other five are things only you can answer. We made each one as small as we could —
+            a number, a name, an email, a quick yes or no. Total time: maybe twenty minutes.
+          </p>
+          <p class="body-text mt-4">
+            Easiest way to reply is a voice note in our WhatsApp thread. Print it and write on it
+            if that's faster. Whatever works for you.
           </p>
           <a href="#for-roger" class="next-link mt-10">Then — take it for a spin <span aria-hidden="true">→</span></a>
         </div>
 
-        <div class="md:col-span-7">
+        <div class="md:col-span-7 space-y-8">
+
+          <!-- WHAT WE SET UP -->
           <div class="mockup-frame overflow-hidden">
             <div class="mockup-bar px-4 py-3 flex items-center justify-between text-[11px]" style="color: var(--muted);">
-              <span class="mono">/punch-list · awaiting Roger</span>
-              <span class="label" style="font-size: 9.5px;">14 open</span>
+              <span class="mono">What we set up · tell us if any of this is wrong</span>
+              <span class="label" style="font-size: 9.5px; color: #5A6E2F;">10</span>
             </div>
-            <div class="p-6 space-y-3 text-[13px]">
+            <div class="p-6 space-y-4 text-[13px]">
+
               <div class="flex gap-3">
                 <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 1</span>
-                <div><span class="ink">WhatsApp number on record.</span> Confirm the +52 line we should attach to the inbound webhook (Meta Business or Twilio) so customer messages start auto-creating leads in production.</div>
+                <div>
+                  <div><span class="ink">Instagram and Facebook DMs both come in as leads.</span></div>
+                  <div class="text-[12px] mt-1" style="color: var(--muted);">Each one tagged so you can see which platform it came from. If Facebook gets noisy, we can mute it later — easier than turning it on after the fact.</div>
+                </div>
               </div>
+
               <div class="flex gap-3">
                 <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 1</span>
-                <div><span class="ink">Meta DM scope.</span> Instagram and Facebook both auto-create leads — or only Instagram?</div>
+                <div>
+                  <div><span class="ink">WhatsApp will run through Meta directly, not Twilio.</span></div>
+                  <div class="text-[12px] mt-1" style="color: var(--muted);">Cheaper, faster, and you already have a Meta business account. (We still need you to send us the actual number — it's in the next box.)</div>
+                </div>
               </div>
+
               <div class="flex gap-3">
                 <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 2</span>
-                <div><span class="ink">Source on conversion.</span> When a lead becomes a deal, keep the original Source — or re-tag it if the conversation moved channels?</div>
+                <div>
+                  <div><span class="ink">"Where the lead came from" never changes.</span></div>
+                  <div class="text-[12px] mt-1" style="color: var(--muted);">If a customer first messages you on Instagram and then moves to email, the lead still says Instagram. We track the move separately so you can see both.</div>
+                </div>
               </div>
-              <div class="flex gap-3">
-                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 3</span>
-                <div><span class="ink">Lead times by brand.</span> Brizo, Kohler, TOTO, BLANCO — confirm the current factory windows so the portal stops asking each time.</div>
-              </div>
+
               <div class="flex gap-3">
                 <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 5</span>
-                <div><span class="ink">CFDI workflow.</span> Stay manual (portal collects fiscal data, you stamp), or move toward portal-stamped CFDI this quarter?</div>
+                <div>
+                  <div><span class="ink">CFDI stays exactly the way you do it now.</span></div>
+                  <div class="text-[12px] mt-1" style="color: var(--muted);">Portal collects the fiscal info, emails you the package, you stamp it like always. The only thing we add is a timestamp so you can see how fast you're turning them around.</div>
+                </div>
               </div>
+
               <div class="flex gap-3">
                 <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 6</span>
-                <div><span class="ink">Payment methods.</span> Eleven listed today. Anything missing? Anything to retire?</div>
+                <div>
+                  <div><span class="ink">Six payment methods. Cutting the rest.</span></div>
+                  <div class="text-[12px] mt-1" style="color: var(--muted);">Keeping: <span class="ink">SPEI, USD wire, Stripe MXN card, Stripe USD card, Zelle, cash at the showroom.</span> Cutting: CoDi, OXXO Pay, PayPal, generic bank deposit, Stripe Link. Tell us if you actually still use any of those and we'll keep it.</div>
+                </div>
               </div>
+
               <div class="flex gap-3">
                 <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 7</span>
-                <div><span class="ink">Deposit floor.</span> Is 70% the universal minimum, or are there brands where it's 90% / 100% / paid-in-full?</div>
+                <div>
+                  <div><span class="ink">Deposit: 70% normal, 90% special order, 100% on the brands that don't take returns.</span></div>
+                  <div class="text-[12px] mt-1" style="color: var(--muted);">You can still bump it on any single deal. This is just the default the portal uses if you don't say otherwise.</div>
+                </div>
               </div>
-              <div class="flex gap-3">
-                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 7</span>
-                <div><span class="ink">Vendor billing triggers.</span> Any vendor whose billing pattern you remember differently than what's currently in the Vendors sheet?</div>
-              </div>
-              <div class="flex gap-3">
-                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 8</span>
-                <div><span class="ink">Brokers per port.</span> Confirm the primary broker for Manzanillo, Lázaro Cárdenas, Veracruz, Laredo so the Send action picks the right contact.</div>
-              </div>
+
               <div class="flex gap-3">
                 <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 8</span>
-                <div><span class="ink">Manuales en español.</span> Required for every imported item — or are there product categories that skip the requirement?</div>
+                <div>
+                  <div><span class="ink">Manuals in Spanish: required for finished pieces, skipped for spare parts.</span></div>
+                  <div class="text-[12px] mt-1" style="color: var(--muted);">So toilets, faucets, vanities, showers — yes. Replacement valves, cartridges, hardware spares — no. Same for showroom-display-only items.</div>
+                </div>
               </div>
+
               <div class="flex gap-3">
                 <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 9</span>
-                <div><span class="ink">White-glove threshold.</span> Define the trigger ($, fragility, brand) where the default flips from standard delivery to white-glove.</div>
+                <div>
+                  <div><span class="ink">White-glove kicks in for big, heavy, or expensive pieces.</span></div>
+                  <div class="text-[12px] mt-1" style="color: var(--muted);">Anything over $20K MXN, anything over 50 kg, or anything in the bathtub / toilet / large vanity / chandelier category. Standard delivery for everything else.</div>
+                </div>
               </div>
+
               <div class="flex gap-3">
                 <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 10</span>
-                <div><span class="ink">Balance reminders.</span> How many days of silence before the portal nudges automatically — and through which channel (email, WhatsApp, both)?</div>
+                <div>
+                  <div><span class="ink">Balance reminders go out on a schedule.</span></div>
+                  <div class="text-[12px] mt-1" style="color: var(--muted);">Day 3: gentle email. Day 7: email + WhatsApp. Day 14: shows up on your morning brief. Day 21: full alert. You can pause any client's reminders from their deal page.</div>
+                </div>
               </div>
+
               <div class="flex gap-3">
                 <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Stage 11</span>
-                <div><span class="ink">Marketing buckets.</span> Builder, designer, end-user — does that cover the field, or is there a fourth segment you want tracked separately?</div>
+                <div>
+                  <div><span class="ink">Marketing splits clients three ways: builder, designer, end-user.</span></div>
+                  <div class="text-[12px] mt-1" style="color: var(--muted);">Designers get a small extra tag — architect or interior designer — because they shop differently. Same three buckets, just smarter inside the designer one.</div>
+                </div>
               </div>
-              <div class="flex gap-3">
-                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">Users</span>
-                <div><span class="ink">Next sign-ins.</span> Who joins the portal after you? Finance director email, sales rep emails — and which surfaces should each see on day one?</div>
-              </div>
+
             </div>
           </div>
 
-          <div class="mt-5 flex items-start gap-4 max-w-md">
+          <!-- WHAT WE NEED FROM YOU -->
+          <div class="mockup-frame overflow-hidden" style="border-color: color-mix(in srgb, var(--copper) 45%, white);">
+            <div class="mockup-bar px-4 py-3 flex items-center justify-between text-[11px]" style="color: var(--copper); background: color-mix(in srgb, var(--copper) 6%, white);">
+              <span class="mono">What we need from you · five quick ones</span>
+              <span class="label" style="font-size: 9.5px;">5</span>
+            </div>
+            <div class="p-6 space-y-4 text-[13px]">
+
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">01</span>
+                <div>
+                  <div><span class="ink">Send us the WhatsApp number you want to use for customers.</span></div>
+                  <div class="text-[12px] mt-1" style="color: var(--muted);">The +52 line you'd give a new client today. That becomes the official one wired into the portal. Until then, the inbound webhook is on a test number.</div>
+                </div>
+              </div>
+
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">02</span>
+                <div>
+                  <div><span class="ink">Tell us if these lead times are right.</span></div>
+                  <div class="text-[12px] mt-1" style="color: var(--muted);">We loaded conservative numbers: <span class="ink">Brizo 10–12 weeks · Kohler 8–10 · TOTO 12–14 · BLANCO 6–8.</span> If reality is different right now, just give us the corrected number — we'd rather quote a little long than apologize later.</div>
+                </div>
+              </div>
+
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">03</span>
+                <div>
+                  <div><span class="ink">Look at our list of your 8 biggest vendors and say if we got their billing right.</span></div>
+                  <div class="text-[12px] mt-1" style="color: var(--muted);">We pulled them from the Vendors sheet with what we think their billing pattern is (deposit-on-PO, net-30, on-shipment, etc). Eight rows, takes five minutes — tick "right" or write the correction. You're the only one who actually knows these.</div>
+                </div>
+              </div>
+
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">04</span>
+                <div>
+                  <div><span class="ink">Send us your broker contacts for Manzanillo and Laredo.</span></div>
+                  <div class="text-[12px] mt-1" style="color: var(--muted);">Just those two — they cover most of your volume. Lázaro and Veracruz can fall back to the Manzanillo broker for now. Name and email for each is all we need.</div>
+                </div>
+              </div>
+
+              <div class="flex gap-3">
+                <span class="mono text-[10px] shrink-0 mt-0.5" style="color: var(--copper); width: 70px;">05</span>
+                <div>
+                  <div><span class="ink">When you're ready to add people, send us their emails.</span></div>
+                  <div class="text-[12px] mt-1" style="color: var(--muted);">Not a blocker — only if and when you bring on a finance person, a sales rep, or someone for the showroom. We've already set up what each one would see on day one. Just need their email when the time comes.</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="mt-2 flex items-start gap-4 max-w-md">
             <div class="w-8 h-px mt-3" style="background: var(--copper);"></div>
             <p class="ink" style="font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18px; line-height: 1.4;">
-              Defaults run the portal today. Your answers make the defaults yours.
+              Five short replies. The portal does the rest.
             </p>
           </div>
         </div>
