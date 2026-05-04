@@ -17,8 +17,8 @@ const ProductsPage = async () => {
         <h2 className="text-2xl font-bold text-dash-text">Products</h2>
         <p className="text-sm text-dash-text-secondary mt-1">
           {stats.total.toLocaleString()} products across{" "}
-          {stats.brandCount.toLocaleString()} brands &middot; search by SKU,
-          name, or brand &middot; 30-min cache from Odoo
+          {stats.brandCount.toLocaleString()} brands &middot; browse, filter,
+          or group by brand, category, or stock &middot; 30-min cache from Odoo
         </p>
       </div>
       <CatalogSearch
