@@ -15,8 +15,7 @@ import { Testimonial } from "@/app/components/sections/testimonial";
 import { ContactCTA } from "@/app/components/sections/contact-cta";
 import { NewsletterStrip } from "@/app/components/sections/newsletter-strip";
 import { getFeaturedBrands } from "@/app/lib/featured-brands";
-import { getBrandCounts, getCatalogStats } from "@/app/lib/products-full";
-import { getBrands } from "@/app/lib/brand-kit-sheets";
+import { getCatalogStats } from "@/app/lib/products-full";
 
 const BASE_URL = "https://countercultures.mx";
 
@@ -81,12 +80,10 @@ const HomePage = async ({ params }: HomePageProps) => {
   const lang = locale as "en" | "es";
   const isEs = lang === "es";
 
-  // Data fetches for the new featured-brands + catalog-depth bands.
+  // Data fetches for the featured-brands + catalog-depth bands.
   // Each is fault-tolerant — bands render nothing if data is unavailable.
-  const [featuredBrands, brandCounts, allBrands, catalogStats] = await Promise.all([
+  const [featuredBrands, catalogStats] = await Promise.all([
     getFeaturedBrands().catch(() => []),
-    getBrandCounts().catch(() => []),
-    getBrands().catch(() => []),
     getCatalogStats().catch(() => ({ total: 0, brandCount: 0 })),
   ]);
 
@@ -214,12 +211,8 @@ const HomePage = async ({ params }: HomePageProps) => {
         <Hero locale={lang} />
         <ShopByRoom locale={lang} />
         <FeaturedBrandsBand locale={lang} brands={featuredBrands} />
-        <CatalogDepthBand
-          locale={lang}
-          brandCounts={brandCounts}
-          allBrands={allBrands}
-          totalCatalog={catalogStats.total}
-        />
+        <ProjectGallery locale={lang} />
+        <CatalogDepthBand locale={lang} totalCatalog={catalogStats.total} />
         <HowItWorksBand
           locale={lang}
           eyebrow={{ en: "From inquiry to install", es: "De la consulta a la instalación" }}
@@ -230,7 +223,6 @@ const HomePage = async ({ params }: HomePageProps) => {
         />
         <FounderStory locale={lang} />
         <Testimonial locale={lang} />
-        <ProjectGallery locale={lang} />
         <TwoPathsBand locale={lang} />
         <TradeTeaser locale={lang} />
         <ContactCTA locale={lang} />
