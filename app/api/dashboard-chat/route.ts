@@ -4,12 +4,17 @@
  * Tool defs + executor live in app/lib/chat-tools.ts.
  *
  * v2 (2026-04-18): streaming via SSE + Anthropic prompt caching.
+ * v3 (2026-05-03): file attachments (images + PDFs) inlined into the
+ * latest user turn AND uploaded to Drive in parallel under
+ * "<root>/Chat Uploads/YYYY-MM/" so the user can find them later.
+ *
  * Wire format (text/event-stream):
- *   event: text          data: {"text": "<delta>"}
- *   event: tool_use      data: {"id":"<id>","name":"<name>","input":{...}}
- *   event: tool_result   data: {"id":"<id>","name":"<name>","preview":"<≤120 chars>"}
- *   event: done          data: {}
- *   event: error         data: {"message":"<err>"}
+ *   event: text                data: {"text": "<delta>"}
+ *   event: tool_use            data: {"id":"<id>","name":"<name>","input":{...}}
+ *   event: tool_result         data: {"id":"<id>","name":"<name>","preview":"<≤120 chars>"}
+ *   event: attachment_stored   data: {"id":"<client-id>","url":"<webViewLink>","fileId":"<driveId>"}
+ *   event: done                data: {}
+ *   event: error               data: {"message":"<err>"}
  *
  * The browser parses with a small SSE-frame reader (EventSource doesn't
  * support POST). See app/(dashboard)/components/ai-chat-widget.tsx.
@@ -17,6 +22,12 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { TOOLS, executeTool, SYSTEM_PROMPT } from "@/app/lib/chat-tools";
+import {
+  isConfigured as driveConfigured,
+  findOrCreateFolder,
+  uploadFile,
+  setSharePermission,
+} from "@/app/lib/google-drive";
 
 const enc = new TextEncoder();
 
@@ -38,7 +49,7 @@ export const POST = async (request: Request) => {
   const { messages, pageContext, attachments } = (await request.json()) as {
     messages: { role: "user" | "assistant"; content: string }[];
     pageContext?: string;
-    attachments?: { name: string; mediaType: string; data: string }[];
+    attachments?: { id: string; name: string; mediaType: string; data: string }[];
   };
 
   if (!messages?.length) {
@@ -119,6 +130,47 @@ export const POST = async (request: Request) => {
     async start(controller) {
       const send = (event: string, data: unknown) =>
         controller.enqueue(sseEvent(event, data));
+
+      // Kick off Drive uploads in parallel — don't block Claude streaming.
+      // Each one emits attachment_stored as soon as it's done.
+      if (attachments && attachments.length > 0 && driveConfigured()) {
+        const ym = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+        void (async () => {
+          try {
+            const root = await findOrCreateFolder("Chat Uploads");
+            const monthFolder = await findOrCreateFolder(ym, root.id);
+            await Promise.all(
+              attachments.map(async (f) => {
+                try {
+                  const buf = Buffer.from(f.data, "base64");
+                  const uploaded = await uploadFile(
+                    f.name,
+                    f.mediaType,
+                    buf,
+                    monthFolder.id
+                  );
+                  let url = uploaded.webViewLink;
+                  try {
+                    const shared = await setSharePermission(uploaded.id);
+                    if (shared) url = shared;
+                  } catch {
+                    // sharing failed — link still works for users with access
+                  }
+                  send("attachment_stored", {
+                    id: f.id,
+                    url,
+                    fileId: uploaded.id,
+                  });
+                } catch (err) {
+                  console.error("[Chat upload]", f.name, err);
+                }
+              })
+            );
+          } catch (err) {
+            console.error("[Chat upload] folder setup failed", err);
+          }
+        })();
+      }
 
       try {
         const MAX_ITERATIONS = 6;

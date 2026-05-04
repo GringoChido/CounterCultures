@@ -36,13 +36,21 @@ interface Attachment {
   size: number;
 }
 
+interface MessageAttachment {
+  id: string;
+  name: string;
+  mediaType: string;
+  size: number;
+  url?: string; // populated once Drive upload completes
+}
+
 interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
   toolCalls?: ToolCall[];
-  attachments?: Pick<Attachment, "id" | "name" | "mediaType" | "size">[];
+  attachments?: MessageAttachment[];
 }
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB per file
@@ -274,6 +282,7 @@ export function AIChatWidget({ hideOwnFab = false }: { hideOwnFab?: boolean } = 
             pageContext: pageContext || undefined,
             attachments: files.length
               ? files.map((f) => ({
+                  id: f.id,
                   name: f.name,
                   mediaType: f.mediaType,
                   data: f.data,
@@ -345,6 +354,21 @@ export function AIChatWidget({ hideOwnFab = false }: { hideOwnFab?: boolean } = 
                   c.id === id ? { ...c, preview, status: "ok" } : c
                 ),
               }));
+            } else if (event === "attachment_stored") {
+              const attId = payload.id as string;
+              const url = payload.url as string;
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.attachments && m.attachments.some((a) => a.id === attId)
+                    ? {
+                        ...m,
+                        attachments: m.attachments.map((a) =>
+                          a.id === attId ? { ...a, url } : a
+                        ),
+                      }
+                    : m
+                )
+              );
             } else if (event === "error") {
               const errMsg = (payload.message as string) || "Stream error";
               updateAssistant((m) => ({
@@ -564,18 +588,36 @@ export function AIChatWidget({ hideOwnFab = false }: { hideOwnFab?: boolean } = 
                         <div className={`flex flex-wrap gap-1 ${msg.content ? "mt-2" : ""}`}>
                           {msg.attachments.map((a) => {
                             const isImg = a.mediaType.startsWith("image/");
-                            return (
+                            const Icon = isImg ? ImageIcon : FileText;
+                            const label = (
+                              <>
+                                <Icon className="w-3 h-3" />
+                                <span className="max-w-[140px] truncate">{a.name}</span>
+                                {a.url && (
+                                  <span className="text-white/60 text-[9px] uppercase tracking-wide">
+                                    Drive
+                                  </span>
+                                )}
+                              </>
+                            );
+                            return a.url ? (
+                              <a
+                                key={a.id}
+                                href={a.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 bg-white/15 hover:bg-white/25 rounded-md px-2 py-1 text-[10px] transition-colors"
+                                title={`${a.name} · ${formatBytes(a.size)} · Open in Drive`}
+                              >
+                                {label}
+                              </a>
+                            ) : (
                               <span
                                 key={a.id}
                                 className="inline-flex items-center gap-1.5 bg-white/15 rounded-md px-2 py-1 text-[10px]"
                                 title={`${a.name} · ${formatBytes(a.size)}`}
                               >
-                                {isImg ? (
-                                  <ImageIcon className="w-3 h-3" />
-                                ) : (
-                                  <FileText className="w-3 h-3" />
-                                )}
-                                <span className="max-w-[140px] truncate">{a.name}</span>
+                                {label}
                               </span>
                             );
                           })}
