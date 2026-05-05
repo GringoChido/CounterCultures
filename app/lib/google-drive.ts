@@ -10,14 +10,15 @@
  *   GOOGLE_DRIVE_FOLDER_ID  – root CRM folder ID
  */
 
-import { google, type drive_v3 } from "googleapis";
+import { GoogleAuth } from "google-auth-library";
+import { drive as driveApi, type drive_v3 } from "@googleapis/drive";
 import { getGooglePrivateKey } from "./google-private-key";
 import { Readable } from "stream";
 
 // ── Auth ──────────────────────────────────────────────────────────────
 
 const getAuth = () =>
-  new google.auth.GoogleAuth({
+  new GoogleAuth({
     credentials: {
       client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
       private_key: getGooglePrivateKey(),
@@ -28,7 +29,7 @@ const getAuth = () =>
     ],
   });
 
-const getDrive = () => google.drive({ version: "v3", auth: getAuth() });
+const getDrive = () => driveApi({ version: "v3", auth: getAuth() });
 
 // ── Helpers ───────────────────────────────────────────────────────────
 

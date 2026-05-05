@@ -9,7 +9,7 @@
  * is read-only.
  */
 
-import { google, drive_v3 } from "googleapis";
+import { drive as driveApi, drive_v3 } from "@googleapis/drive";
 import { getTokenForUser, markError } from "./gmail-tokens";
 import { getOAuth2Client } from "./gmail";
 import { getCurrentUserEmail } from "./auth";
@@ -81,7 +81,7 @@ export const getDriveClient = async (): Promise<{
     return null;
   }
 
-  const drive = google.drive({ version: "v3", auth: oauth });
+  const drive = driveApi({ version: "v3", auth: oauth });
   return { drive, gmailAddress: token.gmailAddress };
 };
 

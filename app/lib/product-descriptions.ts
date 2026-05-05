@@ -16,7 +16,8 @@
  */
 import Anthropic from "@anthropic-ai/sdk";
 import { getGooglePrivateKey } from "./google-private-key";
-import { google } from "googleapis";
+import { GoogleAuth } from "google-auth-library";
+import { sheets as sheetsApi } from "@googleapis/sheets";
 import {
   readSheet,
   appendRow,
@@ -103,9 +104,9 @@ const toRow = (r: DescriptionRecord): DescriptionRow => ({
 // ── Sheet bootstrap ─────────────────────────────────────────────────────
 
 const getSheetsClient = () =>
-  google.sheets({
+  sheetsApi({
     version: "v4",
-    auth: new google.auth.GoogleAuth({
+    auth: new GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
         private_key: getGooglePrivateKey(),

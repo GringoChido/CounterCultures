@@ -1,10 +1,11 @@
-import { google } from "googleapis";
+import { GoogleAuth } from "google-auth-library";
+import { sheets as sheetsApi } from "@googleapis/sheets";
 import { getGooglePrivateKey } from "./google-private-key";
 
 const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_ID ?? "";
 
 const getAuth = () => {
-  return new google.auth.GoogleAuth({
+  return new GoogleAuth({
     credentials: {
       client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
       private_key: getGooglePrivateKey(),
@@ -15,7 +16,7 @@ const getAuth = () => {
 
 const getSheets = () => {
   const auth = getAuth();
-  return google.sheets({ version: "v4", auth });
+  return sheetsApi({ version: "v4", auth });
 };
 
 // Tab names matching the dashboard spec

@@ -4,7 +4,8 @@
  * data. No caching yet — Week 4 adds a 5-min TTL + history.list sync.
  */
 
-import { google, gmail_v1 } from "googleapis";
+import { OAuth2Client } from "google-auth-library";
+import { gmail as gmailApi, gmail_v1 } from "@googleapis/gmail";
 import { getTokenForUser, markError } from "./gmail-tokens";
 import { getCurrentUserEmail } from "./auth";
 
@@ -32,7 +33,7 @@ export const getOAuth2Client = () => {
       "Gmail OAuth not configured. Set GOOGLE_OAUTH_CLIENT_ID and GOOGLE_OAUTH_CLIENT_SECRET."
     );
   }
-  return new google.auth.OAuth2(clientId, clientSecret, getRedirectUri());
+  return new OAuth2Client(clientId, clientSecret, getRedirectUri());
 };
 
 export const buildAuthUrl = (state: string): string => {
@@ -56,7 +57,7 @@ export const exchangeCodeForTokens = async (code: string) => {
   }
   // Fetch the connected Gmail address
   oauth.setCredentials(tokens);
-  const gmail = google.gmail({ version: "v1", auth: oauth });
+  const gmail = gmailApi({ version: "v1", auth: oauth });
   const profile = await gmail.users.getProfile({ userId: "me" });
   return {
     refreshToken: tokens.refresh_token,
@@ -92,7 +93,7 @@ export const getGmailClient = async (): Promise<{
     return null;
   }
 
-  const gmail = google.gmail({ version: "v1", auth: oauth });
+  const gmail = gmailApi({ version: "v1", auth: oauth });
   return { gmail, gmailAddress: token.gmailAddress };
 };
 

@@ -9,20 +9,21 @@
  * when the sheet is already in the right shape.
  */
 
-import { google } from "googleapis";
+import { GoogleAuth } from "google-auth-library";
+import { sheets as sheetsApi } from "@googleapis/sheets";
 import { getGooglePrivateKey } from "./google-private-key";
 
 const SPREADSHEET_ID = process.env.GOOGLE_SHEETS_ID ?? "";
 
 const getSheets = () => {
-  const auth = new google.auth.GoogleAuth({
+  const auth = new GoogleAuth({
     credentials: {
       client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
       private_key: getGooglePrivateKey(),
     },
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
-  return google.sheets({ version: "v4", auth });
+  return sheetsApi({ version: "v4", auth });
 };
 
 const colLetter = (i: number): string => {

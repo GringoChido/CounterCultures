@@ -15,7 +15,8 @@
  */
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
-import { google } from "googleapis";
+import { GoogleAuth } from "google-auth-library";
+import { sheets as sheetsApi } from "@googleapis/sheets";
 import { getGooglePrivateKey } from "./google-private-key";
 import {
   getOdooStockQuants,
@@ -153,14 +154,14 @@ const load = async (): Promise<Cache> => {
   // SHEET_ID presence is guarded by getCache; this is a second belt.
   if (!SHEET_ID) return EMPTY_CACHE;
 
-  const auth = new google.auth.GoogleAuth({
+  const auth = new GoogleAuth({
     credentials: {
       client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
       private_key: getGooglePrivateKey(),
     },
     scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
   });
-  const sheets = google.sheets({ version: "v4", auth });
+  const sheets = sheetsApi({ version: "v4", auth });
 
   // Single call — 354k rows × 10 cols comes back in ~10-20s.
   const res = await sheets.spreadsheets.values.get({

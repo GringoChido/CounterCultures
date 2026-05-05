@@ -15,7 +15,8 @@
  *   GOOGLE_SHEETS_ID
  */
 
-import { google } from "googleapis";
+import { GoogleAuth } from "google-auth-library";
+import { sheets as sheetsApi } from "@googleapis/sheets";
 import { getGooglePrivateKey } from "./google-private-key";
 import type { Product, ProductFilter } from "./types";
 import { SAMPLE_PRODUCTS, PRODUCT_CATEGORIES } from "./constants";
@@ -35,7 +36,7 @@ const isConfigured = () =>
 // ── Auth (shared with dashboard-sheets.ts) ────────────────────────────
 
 const getAuth = () =>
-  new google.auth.GoogleAuth({
+  new GoogleAuth({
     credentials: {
       client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
       private_key: getGooglePrivateKey(),
@@ -43,7 +44,7 @@ const getAuth = () =>
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
 
-const getSheets = () => google.sheets({ version: "v4", auth: getAuth() });
+const getSheets = () => sheetsApi({ version: "v4", auth: getAuth() });
 
 // ── Read Operations ───────────────────────────────────────────────────
 

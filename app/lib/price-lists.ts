@@ -11,7 +11,9 @@
  *   GOOGLE_PRICE_LIST_DRIVE_ID  – Shared Drive ID for the price list folder
  */
 
-import { google } from "googleapis";
+import { GoogleAuth } from "google-auth-library";
+import { sheets as sheetsApi } from "@googleapis/sheets";
+import { drive as driveApi } from "@googleapis/drive";
 import { getGooglePrivateKey } from "./google-private-key";
 import * as XLSX from "xlsx";
 
@@ -47,7 +49,7 @@ export interface PriceListSummary {
 // ── Auth ─────────────────────────────────────────────────────────────
 
 const getAuth = () =>
-  new google.auth.GoogleAuth({
+  new GoogleAuth({
     credentials: {
       client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
       private_key: getGooglePrivateKey(),
@@ -58,8 +60,8 @@ const getAuth = () =>
     ],
   });
 
-const getDrive = () => google.drive({ version: "v3", auth: getAuth() });
-const getSheets = () => google.sheets({ version: "v4", auth: getAuth() });
+const getDrive = () => driveApi({ version: "v3", auth: getAuth() });
+const getSheets = () => sheetsApi({ version: "v4", auth: getAuth() });
 
 const PRICE_LIST_DRIVE_ID = process.env.GOOGLE_PRICE_LIST_DRIVE_ID ?? "";
 const MASTER_SHEET_ID = process.env.GOOGLE_MASTER_PRICE_LIST_ID ?? "";
