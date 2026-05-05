@@ -80,7 +80,8 @@ type SheetTab =
   | "Users"
   | "FX_Rates"
   | "Invoice_Approvals"
-  | "Vendors";
+  | "Vendors"
+  | "WhatsApp_Messages";
 
 // In-memory TTL cache. Keyed by tab. Reference tables get a longer TTL
 // because they almost never change; active tables use the short TTL so a
