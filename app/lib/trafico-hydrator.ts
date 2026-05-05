@@ -89,10 +89,11 @@ const buildDocuments = (row: TraficoRow, items: PedimentoItem[]): Trafico["docum
     vendorInvoiceIds,
     coveIds: [],
     acuseIds: [],
+    pedimentoId: row.Pedimento_Drive_ID || undefined,
+    pedimentoProformaId: row.Pedimento_Proforma_Drive_ID || undefined,
     brokerFacturaId: row.Factura_Drive_ID || undefined,
-    // The remaining 8 doc keys (ficha, carta318, pedimento, facturaCruce,
-    // tgrInvoice, comprobantePago, manifestacionValor, etc.) have no flat
-    // column today. Left undefined; full coverage needs a schema add.
+    // Remaining 6 doc keys (ficha, carta318, facturaCruce, tgrInvoice,
+    // comprobantePago, manifestacionValor) still need a schema add.
   };
 };
 

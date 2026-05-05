@@ -30,6 +30,7 @@ import { EmailTemplatePicker } from "@/app/(dashboard)/components/email-template
 import { ThreadLabelChips } from "@/app/(dashboard)/components/thread-label-chips";
 import { EmailBody } from "@/app/(dashboard)/components/email-body";
 import { AttachmentGrid } from "@/app/(dashboard)/components/attachment-grid";
+import { VendorConfirmationChip } from "@/app/(dashboard)/components/vendor/vendor-confirmation-chip";
 
 interface ThreadSummary {
   threadId: string;
@@ -875,6 +876,7 @@ const InboxPage = () => {
                           {t.hasAttachments && (
                             <Paperclip className="w-3 h-3 text-dash-text-secondary/70" />
                           )}
+                          <VendorConfirmationChip from={t.from} fromEmail={t.fromEmail} />
                           {t.unread && (
                             <span className="w-1.5 h-1.5 rounded-full bg-brand-copper" />
                           )}

@@ -1,15 +1,26 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { findOrCreateFolder, uploadFile } from "@/app/lib/google-drive";
 import { readSheet, findRowIndex, updateRow } from "@/app/lib/dashboard-sheets";
+import { ensureColumns } from "@/app/lib/sheet-migrations";
 import { appendTraficoEvent } from "@/app/lib/trafico-events";
 
-// Doc keys that map to a flat Trafico column today (W6). Other keys
-// (ficha, carta318, COVE, pedimento, facturaCruce, tgrInvoice, etc.)
-// have no flat storage column — return 400 until schema add lands.
+// Doc keys that map to a flat Trafico column. Pedimento + proforma added
+// alongside the auto-file-into-Pedimentos/-subfolder routing below; their
+// columns are added via ensureColumns when missing.
 const DOC_KEY_TO_COLUMN: Record<string, string> = {
   calculo: "Calculo_Drive_ID",
   brokerFactura: "Factura_Drive_ID",
   expediente: "Expediente_Drive_ID",
+  pedimento: "Pedimento_Drive_ID",
+  pedimentoProforma: "Pedimento_Proforma_Drive_ID",
+};
+
+// Doc keys that auto-file into a named subfolder under the trafico folder
+// instead of the trafico folder root. Pedimento PDFs go to Pedimentos/ so
+// the SAT auditor (or Roger two years from now) finds them in one place.
+const DOC_KEY_TO_SUBFOLDER: Record<string, string> = {
+  pedimento: "Pedimentos",
+  pedimentoProforma: "Pedimentos",
 };
 
 export const POST = async (
@@ -28,11 +39,15 @@ export const POST = async (
     if (!docKey || !DOC_KEY_TO_COLUMN[docKey]) {
       return NextResponse.json(
         {
-          error: `docKey "${docKey}" has no flat storage column yet. Supported in W6: ${Object.keys(DOC_KEY_TO_COLUMN).join(", ")}.`,
+          error: `docKey "${docKey}" not supported. Supported: ${Object.keys(DOC_KEY_TO_COLUMN).join(", ")}.`,
         },
         { status: 400 }
       );
     }
+
+    // Self-heal: ensure the column for this doc key exists before we try to
+    // write into it. Idempotent — a no-op when already present.
+    await ensureColumns("Traficos", [DOC_KEY_TO_COLUMN[docKey]]);
 
     const trafico = (await readSheet<Record<string, string>>("Traficos")).find(
       (t) => t.TRF_ID === trfId
@@ -41,9 +56,13 @@ export const POST = async (
       return NextResponse.json({ error: "Trafico not found" }, { status: 404 });
     }
 
-    const folder = await findOrCreateFolder(trfId);
+    const trfFolder = await findOrCreateFolder(trfId);
+    const subfolderName = DOC_KEY_TO_SUBFOLDER[docKey];
+    const targetFolder = subfolderName
+      ? await findOrCreateFolder(subfolderName, trfFolder.id)
+      : trfFolder;
     const buffer = Buffer.from(await file.arrayBuffer());
-    const uploaded = await uploadFile(file.name, file.type || "application/octet-stream", buffer, folder.id);
+    const uploaded = await uploadFile(file.name, file.type || "application/octet-stream", buffer, targetFolder.id);
 
     const colName = DOC_KEY_TO_COLUMN[docKey];
     const rowIdx = await findRowIndex("Traficos", "TRF_ID", trfId);
@@ -51,7 +70,9 @@ export const POST = async (
       return NextResponse.json({ error: "Trafico row index not found" }, { status: 500 });
     }
 
-    const headers = Object.keys(trafico);
+    // ensureColumns may have added the column after our trafico row read, so
+    // make sure the merge writes to it even when the read didn't carry it.
+    const headers = Array.from(new Set([...Object.keys(trafico), colName]));
     const merged = { ...trafico, [colName]: uploaded.id };
     await updateRow("Traficos", rowIdx, headers.map((h) => merged[h] ?? ""));
 

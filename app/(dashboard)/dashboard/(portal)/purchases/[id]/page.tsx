@@ -10,6 +10,7 @@ import {
   ExternalLink,
   FileText,
   AlertTriangle,
+  ShieldAlert,
 } from "lucide-react";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { AttachmentsPanel } from "@/app/(dashboard)/components/attachments-panel";
@@ -119,6 +120,55 @@ const stateLabel = (s: string) => {
   if (s === "done") return "Done";
   if (s === "cancel") return "Cancelled";
   return s;
+};
+
+interface APQueueRow {
+  label: string;
+  dueDate: string;
+  fraction: number;
+  blocksSend: boolean;
+  source: "auto" | "manual";
+  poId: string;
+  poName: string;
+  vendorName: string;
+  vendorKey: string;
+  poAmount: number;
+  currency: string;
+}
+
+const POBlocksSendBanner = ({ poId }: { poId: string }) => {
+  const [blocking, setBlocking] = useState<APQueueRow[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/dashboard/ap-queue")
+      .then((r) => (r.ok ? r.json() : { queue: [] }))
+      .then((data: { queue?: APQueueRow[] }) => {
+        const rows = (data.queue ?? []).filter(
+          (r) => r.poId === poId && r.blocksSend
+        );
+        setBlocking(rows);
+      })
+      .catch(() => setBlocking([]))
+      .finally(() => setLoaded(true));
+  }, [poId]);
+
+  if (!loaded || blocking.length === 0) return null;
+
+  return (
+    <div className="mb-6 bg-brand-terracotta/10 border border-brand-terracotta/30 rounded p-4 flex items-start gap-3">
+      <ShieldAlert className="w-5 h-5 text-brand-terracotta shrink-0 mt-0.5" />
+      <div>
+        <div className="text-sm font-medium text-brand-terracotta">
+          PO send blocked — payment must clear first
+        </div>
+        <div className="text-xs text-dash-text-secondary mt-1">
+          {blocking.map((r) => r.label).join("; ")}. This vendor&apos;s billing
+          trigger requires payment before the PO can be sent.
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
@@ -245,6 +295,10 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
           </div>
         </div>
       </header>
+
+      {(order.rawState === "draft" || order.rawState === "sent") && (
+        <POBlocksSendBanner poId={order.id} />
+      )}
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">

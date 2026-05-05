@@ -1862,9 +1862,10 @@
         </p>
         <p class="body-text mt-4">
           Then the import side: commercial invoice, packing list, pedimento, broker handoff.
-          The customs tracker runs through twelve stages — origin pickup, freight, port, SAT release,
-          trucking — and every document lands in <span class="mono ink">Pedimentos &amp; Importación/</span>
-          as it's produced. Roger sees one row that says where the goods actually are.
+          The customs tracker runs through sixteen states — collecting, sent-to-broker, at-warehouse,
+          cálculo, payment, crossing, transit, delivery, factura, expediente — and every document
+          lands in <span class="mono ink">Pedimentos &amp; Importación/</span> as it's produced.
+          Roger sees one row that says where the goods actually are.
         </p>
         <a href="#stage-9" class="next-link mt-10">Next — delivery <span aria-hidden="true">→</span></a>
       </div>
@@ -1929,8 +1930,8 @@
           </div>
           <div class="p-5">
             <div class="flex items-baseline justify-between mb-4">
-              <div class="display text-[20px] ink">Customs · 12 stages</div>
-              <div class="text-[11px]" style="color: var(--muted);">Stage 9 · <span class="ink">Liberación SAT</span></div>
+              <div class="display text-[20px] ink">Customs · 16 states</div>
+              <div class="text-[11px]" style="color: var(--muted);">State 10 · <span class="ink">Crossing Approved</span></div>
             </div>
             <div class="flex gap-1">
               <div class="customs-step"><div class="customs-bar done"></div><div class="customs-num">01</div></div>
@@ -1941,20 +1942,23 @@
               <div class="customs-step"><div class="customs-bar done"></div><div class="customs-num">06</div></div>
               <div class="customs-step"><div class="customs-bar done"></div><div class="customs-num">07</div></div>
               <div class="customs-step"><div class="customs-bar done"></div><div class="customs-num">08</div></div>
-              <div class="customs-step"><div class="customs-bar active"></div><div class="customs-num active">09</div></div>
-              <div class="customs-step"><div class="customs-bar"></div><div class="customs-num">10</div></div>
+              <div class="customs-step"><div class="customs-bar done"></div><div class="customs-num">09</div></div>
+              <div class="customs-step"><div class="customs-bar active"></div><div class="customs-num active">10</div></div>
               <div class="customs-step"><div class="customs-bar"></div><div class="customs-num">11</div></div>
               <div class="customs-step"><div class="customs-bar"></div><div class="customs-num">12</div></div>
+              <div class="customs-step"><div class="customs-bar"></div><div class="customs-num">13</div></div>
+              <div class="customs-step"><div class="customs-bar"></div><div class="customs-num">14</div></div>
+              <div class="customs-step"><div class="customs-bar"></div><div class="customs-num">15</div></div>
             </div>
             <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-2 text-[11px]">
-              <div class="flex gap-2"><span class="mono" style="color: var(--muted);">01</span><span style="color: var(--body);">Pickup</span></div>
-              <div class="flex gap-2"><span class="mono" style="color: var(--muted);">03</span><span style="color: var(--body);">Origin port</span></div>
-              <div class="flex gap-2"><span class="mono" style="color: var(--muted);">06</span><span style="color: var(--body);">Manzanillo</span></div>
-              <div class="flex gap-2"><span class="mono" style="color: var(--muted);">07</span><span style="color: var(--body);">Pedimento</span></div>
-              <div class="flex gap-2"><span class="mono copper">09</span><span class="ink" style="font-weight: 500;">Liberación SAT · now</span></div>
-              <div class="flex gap-2"><span class="mono" style="color: var(--muted);">10</span><span style="color: var(--body);">Trucking</span></div>
-              <div class="flex gap-2"><span class="mono" style="color: var(--muted);">11</span><span style="color: var(--body);">Warehouse</span></div>
-              <div class="flex gap-2"><span class="mono" style="color: var(--muted);">12</span><span style="color: var(--body);">Released</span></div>
+              <div class="flex gap-2"><span class="mono" style="color: var(--muted);">01</span><span style="color: var(--body);">Collecting</span></div>
+              <div class="flex gap-2"><span class="mono" style="color: var(--muted);">02</span><span style="color: var(--body);">Sent to Broker</span></div>
+              <div class="flex gap-2"><span class="mono" style="color: var(--muted);">05</span><span style="color: var(--body);">Awaiting Documents</span></div>
+              <div class="flex gap-2"><span class="mono" style="color: var(--muted);">07</span><span style="color: var(--body);">Cálculo Received</span></div>
+              <div class="flex gap-2"><span class="mono copper">10</span><span class="ink" style="font-weight: 500;">Crossing Approved · now</span></div>
+              <div class="flex gap-2"><span class="mono" style="color: var(--muted);">11</span><span style="color: var(--body);">In Transit (MX)</span></div>
+              <div class="flex gap-2"><span class="mono" style="color: var(--muted);">13</span><span style="color: var(--body);">Factura Received</span></div>
+              <div class="flex gap-2"><span class="mono" style="color: var(--muted);">15</span><span style="color: var(--body);">Complete</span></div>
             </div>
 
             <!-- Import docs row -->
