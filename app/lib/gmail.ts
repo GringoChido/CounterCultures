@@ -8,11 +8,12 @@ import { google, gmail_v1 } from "googleapis";
 import { getTokenForUser, markError } from "./gmail-tokens";
 import { getCurrentUserEmail } from "./auth";
 
+// gmail.modify is the umbrella scope — covers read (incl. Sent + all labels),
+// send, label apply/remove, modify. Replaces readonly/send/labels (those would
+// just stack the consent screen). drive.readonly is separate — needed by the
+// Drive Home feature in google-drive-user.ts.
 const GMAIL_SCOPES = [
-  "https://www.googleapis.com/auth/gmail.readonly",
-  "https://www.googleapis.com/auth/gmail.send",
   "https://www.googleapis.com/auth/gmail.modify",
-  "https://www.googleapis.com/auth/gmail.labels",
   "https://www.googleapis.com/auth/drive.readonly",
 ];
 
