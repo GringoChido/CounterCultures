@@ -16,6 +16,11 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createHmac, timingSafeEqual } from "crypto";
 import { createLeadFromWhatsApp } from "@/app/lib/whatsapp-create-lead";
 import { notifyRoger, notifyWhatsApp } from "@/app/lib/email";
+import {
+  appendRowByHeader,
+  findRowIndex,
+  updateRowByHeader,
+} from "@/app/lib/dashboard-sheets";
 
 interface MetaContact {
   wa_id: string;
@@ -28,10 +33,25 @@ interface MetaTextMessage {
   timestamp: string;
   type: string;
   text?: { body?: string };
-  image?: { caption?: string };
-  document?: { caption?: string; filename?: string };
+  image?: { id?: string; caption?: string };
+  document?: { id?: string; caption?: string; filename?: string };
   audio?: { id?: string };
-  video?: { caption?: string };
+  video?: { id?: string; caption?: string };
+}
+
+interface MetaStatusError {
+  code?: number;
+  title?: string;
+  message?: string;
+  error_data?: { details?: string };
+}
+
+interface MetaStatus {
+  id: string;
+  status: string;
+  timestamp?: string;
+  recipient_id?: string;
+  errors?: MetaStatusError[];
 }
 
 interface MetaWebhookPayload {
@@ -45,11 +65,76 @@ interface MetaWebhookPayload {
         metadata?: { phone_number_id?: string; display_phone_number?: string };
         contacts?: MetaContact[];
         messages?: MetaTextMessage[];
-        statuses?: unknown[];
+        statuses?: MetaStatus[];
       };
     }>;
   }>;
 }
+
+const getMediaId = (m: MetaTextMessage): string => {
+  if (m.type === "image") return m.image?.id ?? "";
+  if (m.type === "document") return m.document?.id ?? "";
+  if (m.type === "audio") return m.audio?.id ?? "";
+  if (m.type === "video") return m.video?.id ?? "";
+  return "";
+};
+
+interface PersistInboundInput {
+  m: MetaTextMessage;
+  contactName: string;
+  body: string;
+  phoneNumberId: string;
+  linkedLeadId: string;
+}
+
+const persistInboundMessage = async (input: PersistInboundInput): Promise<void> => {
+  const { m, contactName, body, phoneNumberId, linkedLeadId } = input;
+  try {
+    const existing = await findRowIndex("WhatsApp_Messages", "message_id", m.id);
+    if (existing !== null) return;
+    const nowIso = new Date().toISOString();
+    await appendRowByHeader("WhatsApp_Messages", {
+      message_id: m.id,
+      wa_id: m.from,
+      contact_name: contactName,
+      direction: "inbound",
+      type: m.type,
+      body,
+      media_id: getMediaId(m),
+      status: "received",
+      template_name: "",
+      phone_number_id: phoneNumberId,
+      created_at: isoFromMetaTimestamp(m.timestamp),
+      updated_at: nowIso,
+      linked_lead_id: linkedLeadId,
+      error: "",
+    });
+  } catch (err) {
+    console.error(
+      `[whatsapp-webhook] persist inbound failed wa_msg=${m.id}:`,
+      err instanceof Error ? err.message : err
+    );
+  }
+};
+
+const processStatusUpdate = async (s: MetaStatus): Promise<void> => {
+  try {
+    const idx = await findRowIndex("WhatsApp_Messages", "message_id", s.id);
+    if (idx === null) return;
+    const errMessage = s.errors?.[0]?.message ?? s.errors?.[0]?.error_data?.details ?? "";
+    await updateRowByHeader("WhatsApp_Messages", idx, {
+      status: s.status,
+      updated_at: new Date().toISOString(),
+      error: s.status === "failed" ? errMessage : "",
+    });
+  } catch (err) {
+    console.error(
+      `[whatsapp-webhook] status update failed wa_msg=${s.id}:`,
+      err instanceof Error ? err.message : err
+    );
+  }
+};
+
 
 const summarizeMessage = (m: MetaTextMessage): string => {
   if (m.type === "text" && m.text?.body) return m.text.body;
@@ -159,8 +244,10 @@ export const POST = async (request: NextRequest): Promise<Response> => {
       const value = change.value;
       if (!value) continue;
 
+      const phoneNumberId = value.metadata?.phone_number_id ?? "";
       const messages = value.messages ?? [];
       const contacts = value.contacts ?? [];
+      const statuses = value.statuses ?? [];
       const nameByWaId = new Map<string, string>();
       for (const c of contacts) {
         if (c.wa_id && c.profile?.name) {
@@ -169,38 +256,25 @@ export const POST = async (request: NextRequest): Promise<Response> => {
       }
 
       for (const m of messages) {
+        const contactName = nameByWaId.get(m.from) ?? "";
+        const summary = summarizeMessage(m);
+        let leadId = "";
+        let leadCreated = false;
         try {
-          const summary = summarizeMessage(m);
           const result = await createLeadFromWhatsApp({
             waMessageId: m.id,
             from: m.from,
-            name: nameByWaId.get(m.from) ?? "",
+            name: contactName,
             body: summary,
             timestamp: isoFromMetaTimestamp(m.timestamp),
           });
+          leadId = result.leadId;
+          leadCreated = result.created;
           results.push({
             waMessageId: m.id,
             leadId: result.leadId,
             created: result.created,
           });
-
-          // Roger gets a heads-up on the first message from a new lead.
-          // Subsequent messages for the same lead just append to notes,
-          // no extra alert — avoids spamming Roger's phone for a chat.
-          if (result.created) {
-            const phone = m.from.startsWith("+") ? m.from : `+${m.from}`;
-            const name = nameByWaId.get(m.from) ?? phone;
-            const heading = `New WhatsApp lead — ${name}`;
-            const body = `${name} (${phone}) just messaged on WhatsApp:\n\n"${summary.slice(0, 400)}"\n\nLead ${result.leadId} · /dashboard/leads`;
-            await Promise.all([
-              notifyRoger(heading, body).catch((err) =>
-                console.error("[whatsapp-webhook] notifyRoger failed:", err)
-              ),
-              notifyWhatsApp(`📩 ${heading}\n${summary.slice(0, 200)}`).catch((err) =>
-                console.error("[whatsapp-webhook] notifyWhatsApp failed:", err)
-              ),
-            ]);
-          }
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           console.error(
@@ -209,6 +283,42 @@ export const POST = async (request: NextRequest): Promise<Response> => {
           );
           results.push({ waMessageId: m.id, error: msg });
         }
+
+        // Persistence is additive: log the message regardless of whether
+        // lead creation succeeded so /dashboard/whatsapp always reflects
+        // reality. Errors are swallowed inside the helper.
+        await persistInboundMessage({
+          m,
+          contactName,
+          body: summary,
+          phoneNumberId,
+          linkedLeadId: leadId,
+        });
+
+        // Roger gets a heads-up on the first message from a new lead.
+        // Subsequent messages for the same lead just append to notes,
+        // no extra alert — avoids spamming Roger's phone for a chat.
+        if (leadCreated) {
+          const phone = m.from.startsWith("+") ? m.from : `+${m.from}`;
+          const name = contactName || phone;
+          const heading = `New WhatsApp lead — ${name}`;
+          const body = `${name} (${phone}) just messaged on WhatsApp:\n\n"${summary.slice(0, 400)}"\n\nLead ${leadId} · /dashboard/leads`;
+          await Promise.all([
+            notifyRoger(heading, body).catch((err) =>
+              console.error("[whatsapp-webhook] notifyRoger failed:", err)
+            ),
+            notifyWhatsApp(`📩 ${heading}\n${summary.slice(0, 200)}`).catch((err) =>
+              console.error("[whatsapp-webhook] notifyWhatsApp failed:", err)
+            ),
+          ]);
+        }
+      }
+
+      // Outbound delivery + read receipts. Each status entry references
+      // a wamid we already wrote on send; we look up by message_id and
+      // bump status + updated_at. Per-status errors stay in the helper.
+      for (const s of statuses) {
+        await processStatusUpdate(s);
       }
     }
   }
