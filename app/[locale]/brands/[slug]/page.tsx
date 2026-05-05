@@ -297,6 +297,19 @@ const BrandPage = async ({ params }: BrandPageProps) => {
             ctaLabel={primaryCta.label}
             ctaHref={primaryCta.href}
             imageSrc={heroImage}
+            locale={locale as "en" | "es"}
+            catalogHref={
+              catalogSummary.count > 0
+                ? `/${locale}/shop/catalog?brand=${encodeURIComponent(brand.name)}`
+                : undefined
+            }
+            catalogLabel={
+              catalogSummary.count > 0
+                ? isEs
+                  ? `${catalogSummary.count.toLocaleString("es-MX")} en el catálogo completo`
+                  : `${catalogSummary.count.toLocaleString("en-US")} in the full catalog`
+                : undefined
+            }
           />
         ) : (
           // Typography-led hero for brands without pre-staged imagery —
@@ -432,13 +445,21 @@ const BrandPage = async ({ params }: BrandPageProps) => {
               </p>
               <h2 className="mt-3 font-display text-3xl md:text-5xl font-light tracking-wide text-brand-charcoal leading-[1.05]">
                 {isEs
-                  ? `${products.length.toLocaleString("es-MX")} piezas de ${brand.name} con ficha completa.`
-                  : `${products.length.toLocaleString("en-US")} ${brand.name} pieces with full detail.`}
+                  ? `${products.length.toLocaleString("es-MX")} piezas curadas con ficha completa.`
+                  : `${products.length.toLocaleString("en-US")} curated pieces with full detail.`}
               </h2>
               <p className="mt-3 font-body text-sm md:text-base text-dash-text-secondary max-w-2xl">
                 {isEs
-                  ? "Con páginas de detalle, opciones de acabado y fotografía propia. La selección que respaldamos."
-                  : "With detail pages, finish options, and our own photography. The selection we stand behind."}
+                  ? `Con páginas de detalle, opciones de acabado y fotografía propia. La selección que respaldamos${
+                      catalogSummary.count > 0
+                        ? ` — un subconjunto de las ${catalogSummary.count.toLocaleString("es-MX")} piezas de ${brand.name} en el catálogo completo.`
+                        : "."
+                    }`
+                  : `With detail pages, finish options, and our own photography. The selection we stand behind${
+                      catalogSummary.count > 0
+                        ? ` — a subset of the ${catalogSummary.count.toLocaleString("en-US")} ${brand.name} pieces in the full catalog.`
+                        : "."
+                    }`}
               </p>
             </div>
             <ShopCatalog initialProducts={products} />

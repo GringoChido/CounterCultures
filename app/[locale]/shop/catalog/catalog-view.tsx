@@ -188,6 +188,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
     searchParams.get("inStock") === "true"
   );
   const [result, setResult] = useState<SearchResponse | null>(null);
+  const [needsAccess, setNeedsAccess] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [selected, setSelected] = useState<ProductFull | null>(null);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -215,17 +216,9 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
     setOffset(0);
   }, [query, brand, category, sortKey]);
 
-  // Fetch
+  // Fetch — always loads, even with no filters (defaults to most-specified
+  // products so the page never renders as a confusing empty state).
   useEffect(() => {
-    const needsSearch =
-      query.trim().length >= MIN_QUERY ||
-      brand ||
-      category !== "all" ||
-      inStockOnly;
-    if (!needsSearch) {
-      setResult(null);
-      return;
-    }
     const id = setTimeout(() => {
       startTransition(async () => {
         const p = new URLSearchParams();
@@ -237,7 +230,13 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
         p.set("limit", String(PAGE_SIZE));
         p.set("offset", String(offset));
         const res = await fetch(`/api/dashboard/products/search?${p}`);
+        if (res.status === 401) {
+          setNeedsAccess(true);
+          setResult(null);
+          return;
+        }
         if (!res.ok) return;
+        setNeedsAccess(false);
         setResult(await res.json());
       });
     }, 180);
@@ -359,10 +358,54 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
     </div>
   );
 
+  // Editorial section header that adapts based on what filters are active.
+  const sectionEyebrow =
+    query.trim().length >= MIN_QUERY
+      ? locale === "es" ? "Resultados" : "Results"
+      : brand
+        ? locale === "es" ? "Marca" : "Brand"
+        : category !== "all"
+          ? locale === "es" ? "Categoría" : "Category"
+          : sortKey === "most_specified"
+            ? locale === "es" ? "Más especificados" : "Most Specified"
+            : locale === "es" ? "Catálogo" : "Catalog";
+
+  const sectionHeadline =
+    query.trim().length >= MIN_QUERY
+      ? `"${query.trim()}"`
+      : brand
+        ? brand
+        : category === "bathroom"
+          ? locale === "es" ? "Baño" : "Bathroom"
+          : category === "kitchen"
+            ? locale === "es" ? "Cocina" : "Kitchen"
+            : category === "hardware"
+              ? locale === "es" ? "Chapas y Herrajes" : "Door Hardware"
+              : locale === "es"
+                ? "Lo que arquitectos están pidiendo"
+                : "What architects are specifying";
+
   return (
-    <section className="py-8 md:py-12">
+    <section className="py-12 md:py-16 bg-brand-linen">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-8">
+        {/* Editorial section header */}
+        <div className="mb-8 md:mb-10 pb-6 border-b border-brand-stone/15">
+          <span className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-copper uppercase">
+            {sectionEyebrow}
+          </span>
+          <div className="mt-3 flex flex-wrap items-baseline justify-between gap-4">
+            <h2 className="font-display text-3xl md:text-4xl font-light text-brand-charcoal tracking-wide">
+              {sectionHeadline}
+            </h2>
+            {result && (
+              <span className="font-body text-sm text-dash-text-secondary tabular-nums">
+                {t.resultsFound(result.total)}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-8 lg:gap-10">
           <aside className="hidden lg:block">{sidebar}</aside>
 
           <div className="space-y-5">
@@ -452,23 +495,11 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
             </div>
 
             {/* Active filters + status */}
-            <div className="flex items-center gap-3 flex-wrap text-xs font-body">
-              {result ? (
-                <>
-                  <span className="font-medium text-brand-charcoal">
-                    {t.resultsFound(result.total)}
-                  </span>
-                  {totalPages > 1 && (
-                    <>
-                      <span className="text-dash-text-secondary">·</span>
-                      <span className="text-dash-text-secondary">
-                        {t.page(currentPage, totalPages)}
-                      </span>
-                    </>
-                  )}
-                </>
-              ) : (
-                <span className="text-dash-text-secondary">{t.typeHint(MIN_QUERY)}</span>
+            <div className="flex items-center gap-2 flex-wrap text-xs font-body">
+              {result && totalPages > 1 && (
+                <span className="text-dash-text-secondary mr-2">
+                  {t.page(currentPage, totalPages)}
+                </span>
               )}
               {brand && (
                 <button
@@ -553,6 +584,40 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
               <div className="py-24 text-center">
                 <Package className="w-10 h-10 text-dash-text-secondary/40 mx-auto mb-3" />
                 <p className="font-body text-dash-text-secondary">{t.noResults}</p>
+              </div>
+            ) : needsAccess ? (
+              <div className="py-16 md:py-20 px-6 bg-dash-surface border border-brand-stone/15 text-center">
+                <span className="font-body font-semibold text-[10px] tracking-[0.25em] text-brand-copper uppercase">
+                  {locale === "es" ? "Acceso al catálogo" : "Catalog Access"}
+                </span>
+                <h3 className="mt-3 font-display text-2xl md:text-3xl font-light text-brand-charcoal tracking-wide max-w-xl mx-auto">
+                  {locale === "es"
+                    ? "Solicita acceso al catálogo completo con precios."
+                    : "Request access to the full catalog with pricing."}
+                </h3>
+                <p className="mt-3 font-body text-sm text-dash-text-secondary max-w-md mx-auto leading-relaxed">
+                  {locale === "es"
+                    ? "Para arquitectos, diseñadores y constructores. Cotización en 24 horas."
+                    : "For architects, designers, and builders. 24-hour quotes."}
+                </p>
+                <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+                  <a
+                    href={`/${locale}/contact`}
+                    className="inline-flex items-center justify-center px-6 py-3 text-sm font-body font-medium bg-brand-copper text-white rounded-md hover:bg-brand-copper-dark transition-colors"
+                  >
+                    {locale === "es" ? "Contactar al equipo" : "Contact the team"}
+                  </a>
+                  <a
+                    href="/dashboard/login"
+                    className="inline-flex items-center justify-center px-6 py-3 text-sm font-body font-medium border-2 border-brand-charcoal text-brand-charcoal rounded-md hover:bg-brand-charcoal hover:text-white transition-colors"
+                  >
+                    {locale === "es" ? "Iniciar sesión" : "Sign in"}
+                  </a>
+                </div>
+              </div>
+            ) : !result && !isPending ? (
+              <div className="py-24 text-center">
+                <Loader2 className="w-6 h-6 text-brand-stone/60 mx-auto animate-spin" />
               </div>
             ) : null}
 

@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     template: "%s | Counter Cultures",
   },
   description:
-    "Premium kitchen, bath, and architectural hardware showroom in San Miguel de Allende, Mexico. Authorized dealer for Kohler, TOTO, Brizo, BLANCO, California Faucets, and 14 more brands. International brands and Mexican artisans — search 354,000+ SKUs in the full catalog or browse our curated selection. Factory-direct pricing, 24-hour quotes, delivered nationwide.",
+    "Premium kitchen, bath, and architectural hardware showroom in San Miguel de Allende, Mexico. Authorized dealer for Kohler, TOTO, Brizo, BLANCO, California Faucets, and 70+ more brands. International brands and Mexican artisans — search the full catalog of 350,000+ SKUs or browse our curated selection. Factory-direct pricing, 24-hour quotes, delivered nationwide.",
   keywords: [
     "luxury bath fixtures San Miguel de Allende",
     "kitchen fixtures Mexico",
@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     url: BASE_URL,
     title: "Counter Cultures | Premium Kitchen, Bath & Hardware | San Miguel de Allende",
     description:
-      "Premium kitchen, bath & architectural hardware showroom in San Miguel de Allende. Authorized dealer for Kohler, TOTO, Brizo, BLANCO, and 15 more brands. 354,000+ SKUs available. Factory-direct pricing, delivered nationwide.",
+      "Premium kitchen, bath & architectural hardware showroom in San Miguel de Allende. Authorized dealer for Kohler, TOTO, Brizo, BLANCO, and 70+ more brands. 350,000+ SKUs available. Factory-direct pricing, delivered nationwide.",
     images: [
       {
         url: `${BASE_URL}/og-image.jpg`,
