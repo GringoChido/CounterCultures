@@ -70,6 +70,16 @@ const PRE_STAGED_HEROES: Record<string, string> = {
   robern: "/Assets/BRANDS/robern-hero.webp",
   "perrin-and-rowe": "/Assets/BRANDS/perrin-and-rowe-hero.webp",
   graff: "/Assets/BRANDS/graff-hero.webp",
+  // ─── Batch 4 (2026-05) — Playwright extraction pass 3:
+  anzzi: "/Assets/BRANDS/anzzi-hero.webp",
+  "swiss-madison": "/Assets/BRANDS/swiss-madison-hero.webp",
+  ruvati: "/Assets/BRANDS/ruvati-hero.webp",
+  dreamline: "/Assets/BRANDS/dreamline-hero.webp",
+  linkasink: "/Assets/BRANDS/linkasink-hero.webp",
+  "infinity-drain": "/Assets/BRANDS/infinity-drain-hero.webp",
+  "ove-decors": "/Assets/BRANDS/ove-decors-hero.webp",
+  // dxv: skipped — section_1.png was a UI gradient, not a photo; Roger source from dxv.com/collections/bath
+  // speakman: skipped — ExactDN CDN blocks all automated access; Roger right-click save from speakman.com
   // ─── Batch 3 (2026-05) — Playwright extraction pass 2:
   "american-standard": "/Assets/BRANDS/american-standard-hero.webp",
   kraus: "/Assets/BRANDS/kraus-hero.webp",
