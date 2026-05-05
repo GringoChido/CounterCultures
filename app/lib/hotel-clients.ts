@@ -61,6 +61,15 @@ export const HOTEL_CLIENTS: HotelClient[] = [
     heroImage: "/images/projects/hotels/rosewood-sma.jpg",
   },
   {
+    slug: "clevia-sma",
+    name: "Cleviá, Autograph Collection",
+    location: { en: "San Miguel de Allende", es: "San Miguel de Allende" },
+    region: "san-miguel",
+    website:
+      "https://www.marriott.com/en-us/hotels/bjxak-clevia-san-miguel-de-allende-autograph-collection/overview/",
+    heroImage: "/images/projects/hotels/clevia-sma.webp",
+  },
+  {
     slug: "cabo-azul",
     name: "Hilton Vacation Club Cabo Azul",
     location: { en: "Los Cabos", es: "Los Cabos" },
