@@ -25,8 +25,8 @@ import {
 } from "lucide-react";
 import { EmailTemplatePicker } from "@/app/(dashboard)/components/email-template-picker";
 import { ThreadLabelChips } from "@/app/(dashboard)/components/thread-label-chips";
-import { AttachmentChip } from "@/app/(dashboard)/components/attachment-chip";
 import { EmailBody } from "@/app/(dashboard)/components/email-body";
+import { AttachmentGrid } from "@/app/(dashboard)/components/attachment-grid";
 
 interface ThreadSummary {
   threadId: string;
@@ -878,21 +878,10 @@ const InboxPage = () => {
                       bodyText={m.body}
                       fallbackSnippet={m.snippet}
                     />
-                    {m.attachments.length > 0 && (
-                      <div className="flex items-center gap-2 flex-wrap mt-3 pt-3 border-t border-dash-border/60">
-                        <Paperclip className="w-3.5 h-3.5 text-dash-text-secondary" />
-                        {m.attachments.map((a) => (
-                          <AttachmentChip
-                            key={a.attachmentId}
-                            messageId={m.messageId}
-                            attachmentId={a.attachmentId}
-                            filename={a.filename}
-                            mimeType={a.mimeType}
-                            size={a.size}
-                          />
-                        ))}
-                      </div>
-                    )}
+                    <AttachmentGrid
+                      messageId={m.messageId}
+                      attachments={m.attachments}
+                    />
                     {m.labelIds.some((l) => !["UNREAD", "INBOX", "IMPORTANT", "CATEGORY_PERSONAL", "CATEGORY_UPDATES", "CATEGORY_PROMOTIONS", "SENT"].includes(l)) && (
                       <div className="flex items-center gap-1.5 flex-wrap mt-3">
                         <Tag className="w-3 h-3 text-dash-text-secondary/60" />
