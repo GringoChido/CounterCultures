@@ -155,25 +155,42 @@ const rowToArticle = (
 
 // ── Cache ────────────────────────────────────────────────────────
 
-let cachedPosts:
-  | (Article & { status: string; driveFileId: string; isSpanishOnly: boolean })[]
-  | null = null;
+type CachedPost = Article & {
+  status: string;
+  driveFileId: string;
+  isSpanishOnly: boolean;
+};
+
+let cachedPosts: CachedPost[] | null = null;
 let cacheTimestamp = 0;
+let postsLoading: Promise<CachedPost[]> | null = null;
 const CACHE_TTL = 5 * 60 * 1000;
 
-export const getSheetPosts = async (): Promise<
-  (Article & { status: string; driveFileId: string; isSpanishOnly: boolean })[]
-> => {
-  const now = Date.now();
-  if (cachedPosts && now - cacheTimestamp < CACHE_TTL) return cachedPosts;
-  try {
-    const rows = await readSheet<PostRow>("Posts");
-    cachedPosts = rows.filter((r) => r.slug).map(rowToArticle);
-  } catch {
-    cachedPosts = [];
+const refreshPosts = (): Promise<CachedPost[]> => {
+  if (postsLoading) return postsLoading;
+  postsLoading = (async () => {
+    try {
+      const rows = await readSheet<PostRow>("Posts");
+      cachedPosts = rows.filter((r) => r.slug).map(rowToArticle);
+    } catch {
+      cachedPosts = cachedPosts ?? [];
+    }
+    cacheTimestamp = Date.now();
+    postsLoading = null;
+    return cachedPosts!;
+  })();
+  return postsLoading;
+};
+
+// Stale-while-revalidate. /en/insights blocks on this on every cache miss
+// otherwise; SWR keeps the page snappy and absorbs the Sheets latency in
+// the background.
+export const getSheetPosts = async (): Promise<CachedPost[]> => {
+  if (cachedPosts) {
+    if (Date.now() - cacheTimestamp >= CACHE_TTL) void refreshPosts();
+    return cachedPosts;
   }
-  cacheTimestamp = now;
-  return cachedPosts;
+  return refreshPosts();
 };
 
 // ── Merge with hardcoded articles ────────────────────────────────

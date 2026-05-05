@@ -40,12 +40,24 @@ export const generateMetadata = async ({
   };
 };
 
+// Hardcoded fallback for the hero numbers when the 354k-row Sheets cache is
+// truly cold (Lambda boot + no warm cache). Matches the `description` meta
+// copy below so page never renders with `0 pieces`. SWR keeps these stale
+// for ≤30 min after first warm load.
+const STATS_FALLBACK = { total: 350000, brandCount: 73 };
+
 const CatalogPage = async ({ params }: CatalogPageProps) => {
   const { locale } = await params;
   const isEs = locale === "es";
+  const statsPromise = Promise.race([
+    getCatalogStats().catch(() => STATS_FALLBACK),
+    new Promise<typeof STATS_FALLBACK>((resolve) =>
+      setTimeout(() => resolve(STATS_FALLBACK), 1000)
+    ),
+  ]);
   const [brandCounts, stats] = await Promise.all([
     getQuoteCatalogBrands(),
-    getCatalogStats(),
+    statsPromise,
   ]);
 
   return (

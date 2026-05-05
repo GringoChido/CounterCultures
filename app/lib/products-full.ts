@@ -13,6 +13,8 @@
  * substring scoring (sku-prefix > sku-contains > name-prefix > name-contains
  * > brand-contains) is both faster and more correct.
  */
+import { readdirSync } from "node:fs";
+import { join } from "node:path";
 import { google } from "googleapis";
 import { getGooglePrivateKey } from "./google-private-key";
 import {
@@ -23,6 +25,25 @@ import {
 const SHEET_ID = process.env.GOOGLE_SHEETS_ID_PRODUCTS_FULL ?? "";
 const TAB = "Products";
 const TTL_MS = 30 * 60 * 1000;
+
+// Local product image inventory. ~4.2k JPGs in public/products/odoo/<id>.jpg
+// where <id> matches the Odoo product id used as ProductFull.id. We scan the
+// directory once at module init and gate imageSrc on membership so the
+// catalog never emits <img> tags pointing at 404s. Empty set = no images
+// served (e.g. fresh checkout where the bundle hasn't been fetched yet).
+const PRODUCT_IMAGE_DIR = join(process.cwd(), "public", "products", "odoo");
+const productImageIds: Set<string> = (() => {
+  try {
+    const files = readdirSync(PRODUCT_IMAGE_DIR);
+    const ids = new Set<string>();
+    for (const f of files) {
+      if (f.endsWith(".jpg")) ids.add(f.slice(0, -4));
+    }
+    return ids;
+  } catch {
+    return new Set<string>();
+  }
+})();
 
 /**
  * Builds a Map<product_id, totalQty> by summing stock quants across all
@@ -87,6 +108,10 @@ export interface ProductFull {
   stockQty?: number;
   /** Convenience flag — `stockQty > 0`. Optional same as above. */
   inStock?: boolean;
+  /** Public path to the product thumbnail when one exists locally
+   *  (`/products/odoo/<id>.jpg`). Undefined when no image is bundled
+   *  so the UI can fall back to typography without trying a 404. */
+  imageSrc?: string;
 }
 
 interface IndexedProduct extends ProductFull {
@@ -179,6 +204,9 @@ const load = async (): Promise<Cache> => {
     const category = normalizeCategory((row[iCat] ?? "").toString());
     const id = (row[iId] ?? "").toString();
     const stockQty = stockMap.get(id) ?? 0;
+    const imageSrc = productImageIds.has(id)
+      ? `/products/odoo/${id}.jpg`
+      : undefined;
     const p: IndexedProduct = {
       id,
       name,
@@ -192,6 +220,7 @@ const load = async (): Promise<Cache> => {
       saleOk: (row[iSaleOk] ?? "").toString() === "true",
       stockQty,
       inStock: stockQty > 0,
+      imageSrc,
       _sku: sku.toLowerCase(),
       _name: name.toLowerCase(),
       _brand: brand.toLowerCase(),
@@ -222,13 +251,11 @@ const load = async (): Promise<Cache> => {
   };
 };
 
-const getCache = async (): Promise<Cache> => {
-  if (cache && Date.now() - cache.ts < TTL_MS) return cache;
+// Kicks off a refresh if one isn't already in flight. The returned promise
+// is the same one stored in `loading`, so concurrent callers coalesce on a
+// single Sheet fetch instead of stampeding.
+const beginLoad = (): Promise<Cache> => {
   if (loading) return loading;
-  // If env isn't configured (e.g. at build time on Netlify before the secret
-  // is set), return an empty cache instead of throwing — lets static export
-  // succeed and the real data hydrates on the first real request after deploy.
-  if (!SHEET_ID) return EMPTY_CACHE;
   loading = load()
     .then((c) => {
       cache = c;
@@ -238,9 +265,29 @@ const getCache = async (): Promise<Cache> => {
     .catch((err) => {
       loading = null;
       console.error("[products-full] load failed:", err);
-      return EMPTY_CACHE;
+      return cache ?? EMPTY_CACHE;
     });
   return loading;
+};
+
+// Stale-while-revalidate. The 354k-row sheet load takes 10-20s; blocking on
+// it every 30 minutes per Lambda instance is what makes the public site feel
+// slow. Behavior:
+//   - Fresh cache → return immediately.
+//   - Stale cache → return stale data immediately, refresh in background.
+//   - No cache + sheet configured → block on first load (cold-start cost
+//     paid once per Lambda).
+//   - No cache + no SHEET_ID (e.g. build) → return empty cache.
+const getCache = async (): Promise<Cache> => {
+  if (cache) {
+    if (Date.now() - cache.ts >= TTL_MS && SHEET_ID) {
+      // Fire-and-forget; result is captured into `cache` by beginLoad's then.
+      void beginLoad();
+    }
+    return cache;
+  }
+  if (!SHEET_ID) return EMPTY_CACHE;
+  return beginLoad();
 };
 
 export type SearchSort =
@@ -294,6 +341,7 @@ const stripIndex = (p: IndexedProduct): ProductFull => ({
   saleOk: p.saleOk,
   stockQty: p.stockQty,
   inStock: p.inStock,
+  imageSrc: p.imageSrc,
 });
 
 // Scored substring match. Higher score = better match.

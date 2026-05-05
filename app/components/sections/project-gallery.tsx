@@ -43,7 +43,6 @@ const ProjectGallery = ({ locale = "en" }: { locale?: string }) => {
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 100vw, 66vw"
                     className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
-                    priority
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-transparent" />
                   <div className="absolute top-5 left-5">

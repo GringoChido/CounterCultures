@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useTransition, useRef } from "react";
+import Image from "next/image";
 import {
   Search,
   Loader2,
@@ -110,6 +111,8 @@ const ProductCard = ({
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase())
     .join("");
+  const [imgFailed, setImgFailed] = useState(false);
+  const showImage = !!product.imageSrc && !imgFailed;
 
   return (
     <button
@@ -118,18 +121,28 @@ const ProductCard = ({
       className="group flex flex-col text-left bg-dash-surface border border-dash-border rounded-xl overflow-hidden hover:border-brand-copper/40 hover:shadow-md transition-all cursor-pointer"
     >
       <div
-        className="relative aspect-[4/3] flex items-center justify-center"
+        className="relative aspect-[4/3] flex items-center justify-center overflow-hidden"
         style={{ backgroundColor: brandColor(product.brand) }}
       >
         <span className="font-display text-3xl font-light text-white/95 tracking-wide drop-shadow-sm">
           {initials || "·"}
         </span>
+        {showImage && (
+          <Image
+            src={product.imageSrc!}
+            alt={product.name || product.sku || "Product"}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            className="absolute inset-0 object-cover z-10 bg-white"
+            onError={() => setImgFailed(true)}
+          />
+        )}
         {product.brand && (
-          <span className="absolute bottom-2 left-2 right-2 truncate font-mono text-[10px] uppercase tracking-[0.15em] text-white/85">
+          <span className="absolute bottom-2 left-2 right-2 z-20 truncate font-mono text-[10px] uppercase tracking-[0.15em] text-white drop-shadow-md">
             {product.brand}
           </span>
         )}
-        <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
+        <div className="absolute top-2 right-2 z-20 flex flex-col items-end gap-1">
           {inStock && (
             <span className="inline-flex items-center gap-1 bg-white/95 text-emerald-700 text-[10px] font-semibold px-1.5 py-0.5 rounded">
               <Check className="w-2.5 h-2.5" />

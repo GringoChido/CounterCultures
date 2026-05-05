@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import ReactDOM from "react-dom";
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { Header } from "@/app/components/layout/header";
@@ -6,7 +8,7 @@ import { Hero } from "@/app/components/sections/hero";
 import { ShopByRoom } from "@/app/components/sections/shop-by-room";
 import { FeaturedBrandsBand } from "@/app/components/sections/featured-brands-band";
 import { HowItWorksBand } from "@/app/components/sections/how-it-works-band";
-import { CatalogDepthBand } from "@/app/components/sections/catalog-depth-band";
+import { CatalogDepthBandAsync } from "@/app/components/sections/catalog-depth-band-async";
 import { TwoPathsBand } from "@/app/components/sections/two-paths-band";
 import { FounderStory } from "@/app/components/sections/founder-story";
 import { ProjectGallery } from "@/app/components/sections/project-gallery";
@@ -15,9 +17,13 @@ import { Testimonial } from "@/app/components/sections/testimonial";
 import { ContactCTA } from "@/app/components/sections/contact-cta";
 import { NewsletterStrip } from "@/app/components/sections/newsletter-strip";
 import { getFeaturedBrands } from "@/app/lib/featured-brands";
-import { getCatalogStats } from "@/app/lib/products-full";
 
 const BASE_URL = "https://countercultures.mx";
+
+// ISR — homepage content (brands, copy, sections) doesn't change per-request.
+// 5-min revalidate lets Netlify's CDN serve cached HTML to ~all visitors and
+// only a single background render absorbs the Sheets-cache cold-start cost.
+export const revalidate = 300;
 
 interface HomePageProps {
   params: Promise<{ locale: string }>;
@@ -80,12 +86,20 @@ const HomePage = async ({ params }: HomePageProps) => {
   const lang = locale as "en" | "es";
   const isEs = lang === "es";
 
-  // Data fetches for the featured-brands + catalog-depth bands.
-  // Each is fault-tolerant — bands render nothing if data is unavailable.
-  const [featuredBrands, catalogStats] = await Promise.all([
-    getFeaturedBrands().catch(() => []),
-    getCatalogStats().catch(() => ({ total: 0, brandCount: 0 })),
-  ]);
+  // LCP preload — the Hero component is "use client", so the browser can't
+  // discover the first slide's image until the React bundle parses. Emit a
+  // server-side <link rel="preload"> so the fetch starts in parallel with
+  // the HTML stream.
+  ReactDOM.preload("/Assets/home-hero/storefront.webp", {
+    as: "image",
+    fetchPriority: "high",
+  });
+
+  // featuredBrands comes from the small Brand Kit sheet (~73 rows) so it's
+  // cheap to await on the critical path. The catalog-depth band reads the
+  // 354k-row product sheet for a single number, so we stream it via
+  // <Suspense> below — the rest of the page renders without waiting.
+  const featuredBrands = await getFeaturedBrands().catch(() => []);
 
   // AEO: FAQ structured data — answers common questions AI assistants surface
   const faqJsonLd = {
@@ -212,7 +226,9 @@ const HomePage = async ({ params }: HomePageProps) => {
         <ShopByRoom locale={lang} />
         <FeaturedBrandsBand locale={lang} brands={featuredBrands} />
         <ProjectGallery locale={lang} />
-        <CatalogDepthBand locale={lang} totalCatalog={catalogStats.total} />
+        <Suspense fallback={null}>
+          <CatalogDepthBandAsync locale={lang} />
+        </Suspense>
         <HowItWorksBand
           locale={lang}
           eyebrow={{ en: "From inquiry to install", es: "De la consulta a la instalación" }}

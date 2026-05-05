@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { getBrands } from "@/app/lib/brand-kit-sheets";
-import { getBrandCounts } from "@/app/lib/products-full";
+import { getBrandCounts, type BrandCount } from "@/app/lib/products-full";
 import type { CategorySlug } from "@/app/lib/brand-kit-types";
 import { BrandsGrid } from "./brands-grid";
 
@@ -250,9 +250,19 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
   const isEs = locale === "es";
   const localeKey = (locale === "es" ? "es" : "en") as "en" | "es";
 
+  // getBrands() reads the small Brand Kit sheet (~73 rows) — fast.
+  // getBrandCounts() reads the 354k-row product cache. SWR returns instantly
+  // whenever there's any data in cache, but on a truly-cold Lambda boot it
+  // blocks 10-20s on a Sheets fetch. Cap that with a 1s race so the brands
+  // index doesn't stall — counts populate on subsequent requests once the
+  // background load completes.
+  const countsPromise = Promise.race([
+    getBrandCounts().catch(() => []),
+    new Promise<BrandCount[]>((resolve) => setTimeout(() => resolve([]), 1000)),
+  ]);
   const [sheetBrands, catalogBrandCounts] = await Promise.all([
     getBrands(),
-    getBrandCounts().catch(() => []),
+    countsPromise,
   ]);
 
   // Fallback path: when the Brand Kit Sheet load returns empty (env var
