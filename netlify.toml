@@ -4,6 +4,26 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+# Externalize heavy server-only deps from the Next.js Lambda handler so the
+# function upload stays under Netlify's size limit. Netlify's plugin uses
+# esbuild under the hood; external_node_modules tells it to require() these
+# at runtime instead of inlining them.
+[functions]
+  external_node_modules = [
+    "@googleapis/sheets",
+    "@googleapis/drive",
+    "@googleapis/gmail",
+    "google-auth-library",
+    "googleapis-common",
+    "gaxios",
+    "gtoken",
+    "@sentry/nextjs",
+    "@sentry/node",
+    "@opentelemetry/api",
+    "@opentelemetry/instrumentation",
+    "xlsx",
+  ]
+
 # W7: nightly stale-deal sweep — 8am Mexico City (UTC-6) = 14:00 UTC
 # Schedule also declared in netlify/functions/stale-deal-sweep.ts; this
 # block is the canonical source for Netlify's scheduler.
