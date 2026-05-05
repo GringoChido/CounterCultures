@@ -61,3 +61,4 @@ CC-*.md
 
 # Raw image sources awaiting migration to public/images/ — kept local only
 /public/Assets/home-page/
+public/Assets/BRANDS/staging/

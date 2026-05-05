@@ -12,11 +12,17 @@ import { BrandsGrid } from "./brands-grid";
 const BASE_URL = "https://countercultures.mx";
 
 /**
- * Pre-staged hero images — the 19 hand-picked editorial photos at
+ * Pre-staged hero images — hand-picked editorial photos at
  * /public/Assets/ and /public/Assets/BRANDS/. Protected across Brand Kit
  * Sheet churn. Slug → path.
+ *
+ * Batch 1 (original 17): kohler … baldwin
+ * Batch 2 (2026-05, 11 verified via Chrome MCP DOM extraction): hansgrohe …
+ *   native-trails. See BRAND-IMAGES-BATCH2-MANIFEST.md for confidence + sources.
+ *   Add the 7 NEEDS_MANUAL slugs here as Roger drops images into staging.
  */
 const PRE_STAGED_HEROES: Record<string, string> = {
+  // Batch 1 — flagship + early editorial
   kohler: "/Assets/BRANDS/kohler-hero.webp",
   toto: "/Assets/BRANDS/toto-hero.webp",
   brizo: "/Assets/BRANDS/brizo-hero.webp",
@@ -34,6 +40,47 @@ const PRE_STAGED_HEROES: Record<string, string> = {
   smeg: "/Assets/BRANDS/smeg-hero.webp",
   bluestar: "/Assets/BRANDS/bluestar-hero.webp",
   baldwin: "/Assets/BRANDS/baldwin-hero.webp",
+  // ─── Batch 2 (2026-05) — keep COMMENTED until the corresponding file exists at
+  // /public/Assets/BRANDS/<slug>-hero.webp. Activating a slug whose file is
+  // missing makes next/image throw 404s on the brand grid.
+  //
+  // Workflow:
+  //   1. ./scripts/download-brand-heroes-batch2.sh
+  //   2. npx tsx scripts/process-brand-heroes-batch2.ts
+  //   3. Uncomment each slug below whose file landed in /public/Assets/BRANDS/.
+  //
+  // Phase A — verified URLs (auto-downloaded by script):
+  hansgrohe: "/Assets/BRANDS/hansgrohe-hero.webp",
+  dornbracht: "/Assets/BRANDS/dornbracht-hero.webp",
+  axor: "/Assets/BRANDS/axor-hero.webp",
+  grohe: "/Assets/BRANDS/grohe-hero.webp",
+  "thompson-traders": "/Assets/BRANDS/thompson-traders-hero.webp",
+  "mti-baths": "/Assets/BRANDS/mti-baths-hero.webp",
+  "stone-forest": "/Assets/BRANDS/stone-forest-hero.webp",
+  gessi: "/Assets/BRANDS/gessi-hero.webp",
+  "newport-brass": "/Assets/BRANDS/newport-brass-hero.webp",
+  "rocky-mountain-hardware": "/Assets/BRANDS/rocky-mountain-hardware-hero.webp",
+  "top-knobs": "/Assets/BRANDS/top-knobs-hero.webp",
+  "native-trails": "/Assets/BRANDS/native-trails-hero.webp",
+  //
+  // Phase B — extracted via Playwright headless Chromium:
+  duravit: "/Assets/BRANDS/duravit-hero.webp",
+  // "victoria-and-albert": "/Assets/BRANDS/victoria-and-albert-hero.webp", // vandabaths.com blocks all headless access (HTTP/2 protocol error) — Roger manual; save as victoria-and-albert-hero.jpg
+  kallista: "/Assets/BRANDS/kallista-hero.webp",
+  robern: "/Assets/BRANDS/robern-hero.webp",
+  "perrin-and-rowe": "/Assets/BRANDS/perrin-and-rowe-hero.webp",
+  graff: "/Assets/BRANDS/graff-hero.webp",
+  // ─── Batch 3 (2026-05) — Playwright extraction pass 2:
+  "american-standard": "/Assets/BRANDS/american-standard-hero.webp",
+  kraus: "/Assets/BRANDS/kraus-hero.webp",
+  "atlas-homewares": "/Assets/BRANDS/atlas-homewares-hero.webp",
+  "fisher-and-paykel": "/Assets/BRANDS/fisher-and-paykel-hero.webp",
+  "wyndham-collection": "/Assets/BRANDS/wyndham-collection-hero.webp",
+  bosch: "/Assets/BRANDS/bosch-hero.webp",
+  jacuzzi: "/Assets/BRANDS/jacuzzi-hero.webp",
+  cheviot: "/Assets/BRANDS/cheviot-hero.webp",
+  "buster-punch": "/Assets/BRANDS/buster-punch-hero.webp",
+  "nostalgic-warehouse": "/Assets/BRANDS/nostalgic-warehouse-hero.webp",
 };
 
 /**
