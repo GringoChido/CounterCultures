@@ -124,6 +124,10 @@ const PRE_STAGED_HEROES: Record<string, string> = {
   eago: "/Assets/BRANDS/eago-hero.webp",
   kasaware: "/Assets/BRANDS/kasaware-hero.webp",
   "t-and-s-brass": "/Assets/BRANDS/t-and-s-brass-hero.webp",
+  // ─── Batch 10 (2026-05) — Playwright extraction pass 7:
+  "blaze-products": "/Assets/BRANDS/blaze-products-hero.webp",
+  peerless: "/Assets/BRANDS/peerless-hero.webp",
+  sloan: "/Assets/BRANDS/sloan-hero.webp",
   // moen: blocked (40s timeout on all attempts) — Roger manual
   // maax: only serves glass_404.jpg — Roger manual from maax.com/en-us/products
   // ashley-norton: JS-heavy SPA — Roger manual
