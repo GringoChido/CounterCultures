@@ -102,6 +102,11 @@ const PRE_STAGED_HEROES: Record<string, string> = {
   "karran-usa": "/Assets/BRANDS/karran-usa-hero.webp",
   whitehaus: "/Assets/BRANDS/whitehaus-hero.webp",
   shaw: "/Assets/BRANDS/shaw-hero.webp",
+  keeler: "/Assets/BRANDS/keeler-hero.webp",
+  thermasol: "/Assets/BRANDS/thermasol-hero.webp",
+  "hardware-resources": "/Assets/BRANDS/hardware-resources-hero.webp",
+  deltana: "/Assets/BRANDS/deltana-hero.webp",
+  "ico-bath": "/Assets/BRANDS/ico-bath-hero.webp",
   // moen: blocked (40s timeout on all attempts) — Roger manual
   // maax: only serves glass_404.jpg — Roger manual from maax.com/en-us/products
   // ashley-norton: JS-heavy SPA — Roger manual
