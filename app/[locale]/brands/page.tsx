@@ -134,6 +134,9 @@ const PRE_STAGED_HEROES: Record<string, string> = {
   bereson: "/Assets/BRANDS/bereson-hero.webp",
   ginger: "/Assets/BRANDS/ginger-hero.webp",
   samsung: "/Assets/BRANDS/samsung-hero.webp",
+  // ─── Batch 12–13 (2026-05) — deeper page strategies:
+  dxv: "/Assets/BRANDS/dxv-hero.webp",
+  "original-mission-tile": "/Assets/BRANDS/original-mission-tile-hero.webp",
   // moen: blocked (40s timeout on all attempts) — Roger manual
   // maax: only serves glass_404.jpg — Roger manual from maax.com/en-us/products
   // ashley-norton: JS-heavy SPA — Roger manual
