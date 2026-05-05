@@ -39,6 +39,170 @@ export const pillarLabels: Record<ArticlePillar, { en: string; es: string }> = {
 
 export const articles: Article[] = [
   {
+    slug: "front-door-hardware-first-impression",
+    title: {
+      en: "Your Front Door Is Your House's Handshake",
+      es: "La Puerta Principal Es el Saludo de Tu Casa",
+    },
+    excerpt: {
+      en: "Front door hardware is the first thing a guest touches and the last thing they remember. A short field guide to handlesets, materials that age honestly, and the brands we specify for homes in San Miguel and Los Cabos.",
+      es: "El herraje de la puerta principal es lo primero que toca un invitado y lo último que recuerda. Una guía breve sobre manijas, materiales que envejecen con honestidad y las marcas que especificamos para casas en San Miguel y Los Cabos.",
+    },
+    pillar: "Craft",
+    date: "2026-05-04",
+    readTime: "7 min",
+    image: "/images/hero/door-hardware.webp",
+    author: "Roger Williams",
+    featured: true,
+    editorsPick: true,
+    body: {
+      en: `## When the House Speaks First
+
+Your front door is more than just an entrance — it's the first impression of your home. Before a guest sees the courtyard, the kitchen, the art on the walls, they touch a piece of metal you chose. The weight of it, the temperature, the way the latch retracts when they press the lever. All of that registers in the first second, and most of it never makes it to conscious thought. It just becomes the answer to the question, "what kind of place is this?"
+
+In two decades of specifying hardware for homes from San Miguel de Allende to the Riviera Maya, I have learned that nothing else in a build delivers more identity per square inch than the front door's handleset. Spend a thousand dollars more on the front door and the entire house feels different.
+
+## What Hardware Actually Does
+
+A front-door handleset is doing five things at once.
+
+It carries the weight of the door each time it swings — and a 2.5-meter solid-wood door in San Miguel is not a light thing. It locks the house. It signals to a visitor whether to push, pull, twist, or wait. It exposes the user to a small surface of cool metal that, in a Mexican summer, registers as a moment of relief. And it ages — either gracefully, or badly, in plain view.
+
+The hardware that does all five well is rarely the cheapest option, but the gap between "cheap" and "good" front-door hardware is smaller than most people think. The gap between "good" and "great" is much larger, and it shows up over years.
+
+## Reading a Doorknob: Levers, Knobs, and Cylinders
+
+Three pieces of vocabulary make hardware conversations faster.
+
+**Lever vs. knob.** A lever is the horizontal handle you push down. A knob is the round one you twist. Levers are easier on arthritic hands, faster to use, and code-required for accessibility in many jurisdictions. Knobs are tighter visually and read as more traditional. For front doors, both work; for interior doors, levers usually win.
+
+**Cylinder vs. mortise.** A cylinder lock is the small round keyway, set into a tubular bore in the door. A mortise lock is a large rectangular box mortised into the edge of the door, with the latch and deadbolt operated by a single mechanism. Mortise hardware is more secure, more expensive, and feels noticeably more substantial in the hand. For a 2-meter solid front door, mortise is almost always the right call.
+
+**Multi-point.** A multi-point lock throws three or more bolts simultaneously when the lever is lifted — top, middle, bottom — drawing the door tight against its frame. Originally a European convention, now standard on most high-end Mexican entry doors. If the door is taller than 2.4 m, multi-point hardware is what keeps the door from warping over the seasons.
+
+## Materials That Age vs. Materials That Tarnish
+
+The decisive choice is not finish color. It is whether the underlying metal is solid brass or bronze, or whether it is a zinc casting with a thin plated coat.
+
+Solid brass and bronze develop a patina. The lacquer eventually wears through where the hand grips it; the bare metal underneath darkens with skin oil and air; the lacquered areas stay lighter. The result is a hardware piece that records the history of the home — the brightest spot on the lever, eight years in, is exactly where every guest has placed their thumb.
+
+Plated zinc tarnishes. The plating chips at the edges first, then the contact points, then the bare metal underneath corrodes — usually as a green-white film that no amount of polishing brings back. There is no graceful version of this aging. The hardware just gets ugly.
+
+For a coastal home in Los Cabos or Riviera Maya, this distinction is not aesthetic — it's structural. Salt air destroys plated finishes within two years. We have replaced builder-grade hardware on three different oceanfront projects where the plating failed before the warranty paperwork was filed.
+
+## Forged in Idaho, Specified in San Miguel
+
+Some of the most extraordinary front-door hardware in the world is made by a small foundry in Bellevue, Idaho. Sun Valley Bronze pours each piece in solid silicon bronze using the lost-wax casting process. The bronze rod going into the furnace is over 99% pure; the finished knob comes out of the sand 6–8 weeks later, hand-finished, with hardware-grade weight that you can feel the moment you pick it up.
+
+We specify Sun Valley for clients who want a piece that becomes a family heirloom. It is direct-from-foundry — no distributor, no plating, no shortcuts — and the lead time reflects that. A pair of front-door levers and a deadbolt cylinder, custom finish, runs about 60 days from order to your project site. Worth it.
+
+For projects on tighter timelines or budgets, the next tier is also excellent. **Rocky Mountain Hardware** (Hailey, Idaho) does sand-cast white bronze with similar ethics. **Emtek** (City of Industry, California) builds modular customizable handlesets with cylinder, lever, and rosette options that let architects assemble exactly the look they want. **Baldwin** (still made in Reading, PA) is the long-time American standard — heavier than European brands, conservative styling, and a forged brass core that holds up.
+
+For minimalist builds or contemporary architecture, **Buster + Punch** (London) machines knurled solid brass and bronze pieces in a tight industrial palette — the closest thing to Apple-product hardware in the door category. **Linnea** (Italy) and **Manzoni** (Italy) deliver Italian precision in stainless and brass for clients who want the European silhouette.
+
+## Specifying Front-Door Hardware in Mexico
+
+Three practical notes for anyone building or renovating in Mexico.
+
+**NOM does not currently regulate residential door hardware.** No certification is required to import or sell handlesets. That is also why the market is full of low-quality plated zinc — buyer beware on price-led shopping. Counter Cultures' brand selection is filtered for material quality, not certification, because the relevant filter doesn't exist locally.
+
+**Door thickness matters.** Mexican solid-wood doors run thicker than the American standard 1-3/4". Many are 2" or even 2-1/4". Confirm door thickness before ordering hardware — most premium brands offer extended-spindle kits for thicker doors, but they are not the default SKU.
+
+**Lead times are real.** Anything custom from Sun Valley Bronze, Rocky Mountain Hardware, or the Italian brands is 6–12 weeks. Plan accordingly. We routinely place hardware orders the day a client signs the cabinetry contract; the hardware arrives roughly when the millwork is ready to receive it.
+
+## What This Costs
+
+For honest material pricing on a single front-door handleset (lever + cylinder + strike, finished both sides):
+
+- **Emtek customizable handleset:** USD $400–700
+- **Baldwin Estate series:** USD $600–1,100
+- **Rocky Mountain Hardware:** USD $1,200–2,400
+- **Sun Valley Bronze:** USD $1,800–3,500
+- **Buster + Punch:** USD $700–1,400
+
+Add roughly 30–40% for landed cost in Mexico after duties, freight, and broker fees. We handle that math for clients on every quote — the storefront shows MSRP; the trade quote shows your real out-the-door number.
+
+## Why It Matters
+
+A front door is not a place to economize. The hardware on it gets touched more times in a year than any other object in the house, and it is the one piece of the house every guest physically encounters before they step inside. Choose a piece that ages honestly, made by people who care about the metal they pour, and the door becomes a record of every person who has come through it.
+
+That is a feature, not a flaw. That is the point.`,
+      es: `## Cuando la Casa Habla Primero
+
+La puerta principal es más que una entrada — es la primera impresión de tu casa. Antes de que un invitado vea el patio, la cocina, el arte en las paredes, toca una pieza de metal que tú elegiste. El peso, la temperatura, la forma en que el pestillo se retrae cuando presiona la manija. Todo eso se registra en el primer segundo, y la mayor parte nunca llega al pensamiento consciente. Simplemente se vuelve la respuesta a la pregunta: "¿qué tipo de lugar es este?"
+
+En dos décadas especificando herrajes para casas desde San Miguel de Allende hasta la Riviera Maya, he aprendido que nada en una obra entrega más identidad por centímetro cuadrado que el conjunto de manija de la puerta principal. Gastar mil dólares más en la puerta principal y toda la casa se siente diferente.
+
+## Lo Que Realmente Hace el Herraje
+
+Un conjunto de manija de puerta principal hace cinco cosas a la vez.
+
+Carga el peso de la puerta cada vez que se abre — y una puerta de madera maciza de 2.5 metros en San Miguel no es ligera. Cierra la casa. Le indica al visitante si debe empujar, jalar, girar o esperar. Expone al usuario a una pequeña superficie de metal frío que, en un verano mexicano, registra como un momento de alivio. Y envejece — con elegancia, o mal, a la vista de todos.
+
+El herraje que hace los cinco bien rara vez es la opción más barata, pero la diferencia entre "barato" y "bueno" es menor de lo que la mayoría piensa. La diferencia entre "bueno" y "excelente" es mucho más grande, y se nota con los años.
+
+## Leyendo una Manija: Levas, Pomos y Cilindros
+
+Tres palabras hacen las conversaciones de herrajes más rápidas.
+
+**Leva vs. pomo.** Una leva es la manija horizontal que se baja. Un pomo es el redondo que se gira. Las levas son más fáciles para manos con artritis, más rápidas de usar, y requeridas por código de accesibilidad en muchas jurisdicciones. Los pomos son visualmente más limpios y se leen como más tradicionales. Para puertas principales, ambos funcionan; para puertas interiores, las levas usualmente ganan.
+
+**Cilindro vs. mortajada.** Una cerradura de cilindro es la pequeña entrada de llave redonda, montada en una perforación tubular en la puerta. Una cerradura mortajada es una caja rectangular grande mortajada en el canto de la puerta, con el pestillo y el pasador operados por un solo mecanismo. El herraje mortajado es más seguro, más caro, y se siente notablemente más sustancial en la mano. Para una puerta principal sólida de 2 metros, lo correcto es casi siempre mortajado.
+
+**Multipunto.** Un cierre multipunto lanza tres o más pasadores simultáneamente cuando se levanta la leva — superior, medio, inferior — apretando la puerta contra su marco. Originalmente una convención europea, ahora estándar en la mayoría de las puertas de entrada de gama alta en México. Si la puerta es más alta de 2.4 m, el herraje multipunto es lo que evita que la puerta se deforme con las estaciones.
+
+## Materiales Que Envejecen vs. Materiales Que Se Manchan
+
+La decisión decisiva no es el color del acabado. Es si el metal subyacente es latón o bronce sólido, o si es una fundición de zinc con una capa delgada chapada.
+
+El latón y el bronce sólidos desarrollan una pátina. El barniz eventualmente se desgasta donde la mano sostiene; el metal desnudo debajo se oscurece con el aceite de la piel y el aire; las áreas barnizadas permanecen más claras. El resultado es una pieza que registra la historia de la casa — el punto más brillante de la leva, ocho años después, es exactamente donde cada invitado ha puesto el pulgar.
+
+El zinc chapado se mancha. El chapado se descascara primero en los bordes, luego en los puntos de contacto, luego el metal desnudo debajo se corroe — usualmente como una película verde-blanca que ningún pulido recupera. No hay versión elegante de este envejecimiento. El herraje simplemente se pone feo.
+
+Para una casa costera en Los Cabos o Riviera Maya, esta distinción no es estética — es estructural. El aire salino destruye los acabados chapados en dos años. Hemos reemplazado herrajes de calidad de constructor en tres proyectos frente al mar donde el chapado falló antes de que el papeleo de garantía siquiera fuera presentado.
+
+## Forjado en Idaho, Especificado en San Miguel
+
+Algunos de los herrajes de puerta principal más extraordinarios del mundo se hacen en una pequeña fundición en Bellevue, Idaho. Sun Valley Bronze vacía cada pieza en bronce de silicio sólido usando el proceso de cera perdida. La barra de bronce que entra en el horno es más del 99% pura; el pomo terminado sale de la arena 6–8 semanas después, terminado a mano, con un peso de calidad de herraje que puedes sentir en el momento que lo levantas.
+
+Especificamos Sun Valley para clientes que quieren una pieza que se convierta en herencia familiar. Es directo de la fundición — sin distribuidor, sin chapado, sin atajos — y el tiempo de entrega lo refleja. Un par de levas de puerta principal y un cilindro de pasador, acabado personalizado, toma alrededor de 60 días desde el pedido hasta el sitio de obra. Vale la pena.
+
+Para proyectos con plazos o presupuestos más ajustados, el siguiente nivel también es excelente. **Rocky Mountain Hardware** (Hailey, Idaho) hace bronce blanco vaciado en arena con una ética similar. **Emtek** (City of Industry, California) construye conjuntos modulares y personalizables con opciones de cilindro, leva y roseta que permiten al arquitecto ensamblar exactamente la apariencia que quiere. **Baldwin** (todavía hecho en Reading, PA) es el estándar americano de larga data — más pesado que las marcas europeas, estilo conservador, y un núcleo de latón forjado que aguanta.
+
+Para obras minimalistas o de arquitectura contemporánea, **Buster + Punch** (Londres) maquina piezas de latón y bronce sólidos texturizados en una paleta industrial estrecha — lo más parecido a un herraje de producto Apple en la categoría de puerta. **Linnea** (Italia) y **Manzoni** (Italia) entregan precisión italiana en acero inoxidable y latón para clientes que quieren la silueta europea.
+
+## Especificar Herrajes de Puerta Principal en México
+
+Tres notas prácticas para quien esté construyendo o renovando en México.
+
+**La NOM actualmente no regula los herrajes residenciales de puerta.** No se requiere certificación para importar o vender conjuntos de manija. Por eso también el mercado está lleno de zinc chapado de baja calidad — cuidado al comprar guiándose solo por el precio. La selección de marcas de Counter Cultures está filtrada por calidad de material, no por certificación, porque el filtro relevante no existe localmente.
+
+**El espesor de la puerta importa.** Las puertas mexicanas de madera maciza son más gruesas que el estándar americano de 1-3/4". Muchas son de 2" o incluso 2-1/4". Confirma el espesor de la puerta antes de pedir herraje — la mayoría de las marcas premium ofrecen kits de eje extendido para puertas más gruesas, pero no son el SKU por defecto.
+
+**Los tiempos de entrega son reales.** Cualquier cosa personalizada de Sun Valley Bronze, Rocky Mountain Hardware, o las marcas italianas es de 6–12 semanas. Planea en consecuencia. Rutinariamente colocamos pedidos de herrajes el día que un cliente firma el contrato de carpintería; los herrajes llegan aproximadamente cuando la ebanistería está lista para recibirlos.
+
+## Lo Que Cuesta
+
+Precios honestos de material para un solo conjunto de manija de puerta principal (leva + cilindro + cerradero, terminado en ambos lados):
+
+- **Conjunto personalizable Emtek:** USD $400–700
+- **Baldwin serie Estate:** USD $600–1,100
+- **Rocky Mountain Hardware:** USD $1,200–2,400
+- **Sun Valley Bronze:** USD $1,800–3,500
+- **Buster + Punch:** USD $700–1,400
+
+Suma aproximadamente 30–40% para el costo aterrizado en México después de aranceles, flete y honorarios del agente aduanal. Manejamos esa cuenta para los clientes en cada cotización — el sitio público muestra el MSRP; la cotización profesional muestra tu número real de salida.
+
+## Por Qué Importa
+
+Una puerta principal no es lugar para economizar. El herraje sobre ella se toca más veces en un año que cualquier otro objeto de la casa, y es la única pieza de la casa que cada invitado encuentra físicamente antes de entrar. Elige una pieza que envejezca honestamente, hecha por personas que se preocupan por el metal que vacían, y la puerta se vuelve un registro de cada persona que ha pasado por ella.
+
+Eso no es un defecto. Ese es el punto.`,
+    },
+    relatedSlugs: ["sun-valley-bronze-foundry", "specifying-fixtures-hospitality-mexico"],
+    brandSlugs: ["sun-valley-bronze", "rocky-mountain-hardware", "emtek", "baldwin-hardware", "buster-punch", "linnea", "manzoni"],
+  },
+  {
     slug: "hand-hammered-copper-basin-guide",
     title: {
       en: "The Complete Guide to Hand-Hammered Copper Basins",
