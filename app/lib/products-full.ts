@@ -13,11 +13,10 @@
  * substring scoring (sku-prefix > sku-contains > name-prefix > name-contains
  * > brand-contains) is both faster and more correct.
  */
-import { readdirSync } from "node:fs";
-import { join } from "node:path";
 import { GoogleAuth } from "google-auth-library";
 import { sheets as sheetsApi } from "@googleapis/sheets";
 import { getGooglePrivateKey } from "./google-private-key";
+import productImageManifest from "./product-image-manifest.json";
 import {
   getOdooStockQuants,
   getOdooStockLocations,
@@ -28,23 +27,12 @@ const TAB = "Products";
 const TTL_MS = 30 * 60 * 1000;
 
 // Local product image inventory. ~4.2k JPGs in public/products/odoo/<id>.jpg
-// where <id> matches the Odoo product id used as ProductFull.id. We scan the
-// directory once at module init and gate imageSrc on membership so the
-// catalog never emits <img> tags pointing at 404s. Empty set = no images
-// served (e.g. fresh checkout where the bundle hasn't been fetched yet).
-const PRODUCT_IMAGE_DIR = join(process.cwd(), "public", "products", "odoo");
-const productImageIds: Set<string> = (() => {
-  try {
-    const files = readdirSync(PRODUCT_IMAGE_DIR);
-    const ids = new Set<string>();
-    for (const f of files) {
-      if (f.endsWith(".jpg")) ids.add(f.slice(0, -4));
-    }
-    return ids;
-  } catch {
-    return new Set<string>();
-  }
-})();
+// where <id> matches the Odoo product id used as ProductFull.id. We import a
+// pre-generated JSON manifest instead of readdirSync'ing the directory — that
+// caused Next.js outputFileTracing to bundle the entire 388 MB image folder
+// into the Lambda handler, busting Netlify's function upload limit. Regenerate
+// with: ls public/products/odoo | sed 's/\\.jpg$//' | jq -R . | jq -s . > app/lib/product-image-manifest.json
+const productImageIds: Set<string> = new Set(productImageManifest as string[]);
 
 /**
  * Builds a Map<product_id, totalQty> by summing stock quants across all
