@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import {
   Inbox as InboxIcon,
@@ -22,6 +22,9 @@ import {
   Archive,
   CheckSquare,
   Square,
+  FileEdit,
+  Star,
+  Layers,
 } from "lucide-react";
 import { EmailTemplatePicker } from "@/app/(dashboard)/components/email-template-picker";
 import { ThreadLabelChips } from "@/app/(dashboard)/components/thread-label-chips";
@@ -105,10 +108,55 @@ interface DealLite {
   stage: string;
 }
 
+interface GmailLabel {
+  id: string;
+  name: string;
+  type: "system" | "user";
+  messagesUnread?: number;
+  messagesTotal?: number;
+}
+
+// `selectedLabel` is one of the system folder pseudo-IDs ("INBOX", "SENT",
+// "DRAFT", "STARRED", "ALL") or a Gmail label ID like "Label_123".
+// "ALL" → no labelIds + q="in:anywhere"; everything else → labelIds=[id].
+type FolderId = "INBOX" | "SENT" | "DRAFT" | "STARRED" | "ALL" | string;
+
+const SYSTEM_FOLDERS: { id: FolderId; label: string; icon: typeof InboxIcon }[] = [
+  { id: "INBOX", label: "Inbox", icon: InboxIcon },
+  { id: "SENT", label: "Sent", icon: Send },
+  { id: "DRAFT", label: "Drafts", icon: FileEdit },
+  { id: "STARRED", label: "Starred", icon: Star },
+  { id: "ALL", label: "All Mail", icon: Layers },
+];
+
+// Gmail returns user labels with system-prefixed IDs sometimes; the bits
+// we don't want to surface as user-pickable labels.
+const SYSTEM_LABEL_IDS_TO_HIDE = new Set([
+  "INBOX",
+  "SENT",
+  "DRAFT",
+  "STARRED",
+  "TRASH",
+  "SPAM",
+  "UNREAD",
+  "IMPORTANT",
+  "CHAT",
+  "CATEGORY_PERSONAL",
+  "CATEGORY_SOCIAL",
+  "CATEGORY_PROMOTIONS",
+  "CATEGORY_UPDATES",
+  "CATEGORY_FORUMS",
+]);
+
 const InboxPage = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [status, setStatus] = useState<StatusResponse | null>(null);
   const [threads, setThreads] = useState<ThreadSummary[]>([]);
+  const [labels, setLabels] = useState<GmailLabel[]>([]);
+  const initialLabel = (searchParams.get("label") as FolderId) || "INBOX";
+  const [selectedLabel, setSelectedLabel] = useState<FolderId>(initialLabel);
+  const [scopeError, setScopeError] = useState(false);
   const [loadingThreads, setLoadingThreads] = useState(false);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   const [threadDetail, setThreadDetail] = useState<ThreadDetail | null>(null);
@@ -154,20 +202,45 @@ const InboxPage = () => {
   }, []);
 
   const fetchThreads = useCallback(
-    async (q?: string, opts: { noCache?: boolean } = {}) => {
+    async (
+      q?: string,
+      opts: { noCache?: boolean; label?: FolderId } = {}
+    ) => {
       setLoadingThreads(true);
       setError(null);
+      const label = opts.label ?? selectedLabel;
       try {
         const params = new URLSearchParams();
-        if (q) params.set("q", q);
+        // "ALL" pseudo-folder = no label filter + Gmail's `in:anywhere`
+        // operator so archived/non-inbox mail surfaces. Everything else
+        // is a single labelIds entry — Gmail accepts both system label
+        // names ("SENT", "DRAFT") and user label IDs ("Label_123").
+        if (label === "ALL") {
+          const merged = q ? `${q} in:anywhere` : "in:anywhere";
+          params.set("q", merged);
+        } else {
+          if (q) params.set("q", q);
+          params.set("labels", label);
+        }
         if (opts.noCache) params.set("noCache", "1");
         const r = await fetch(`/api/gmail/inbox?${params.toString()}`);
         const data = await r.json();
         if (!r.ok) {
-          setError(data.error || "Couldn't load inbox");
+          // Token doesn't have the wider scope — surface a clean reconnect
+          // CTA. 401/403 from Gmail manifests as 500 here with a message
+          // containing "insufficient" or the literal scope name.
+          const msg = String(data.error || "");
+          if (
+            r.status === 403 ||
+            /insufficient|invalid_scope|scope/i.test(msg)
+          ) {
+            setScopeError(true);
+          }
+          setError(msg || "Couldn't load inbox");
           setThreads([]);
           return;
         }
+        setScopeError(false);
         setThreads(data.threads as ThreadSummary[]);
       } catch (err) {
         console.error("[Inbox] list failed", err);
@@ -176,7 +249,38 @@ const InboxPage = () => {
         setLoadingThreads(false);
       }
     },
-    []
+    [selectedLabel]
+  );
+
+  const fetchLabels = useCallback(async () => {
+    try {
+      const r = await fetch("/api/gmail/labels");
+      const data = await r.json();
+      if (!r.ok) {
+        // Same scope-detection as threads — 403 here usually means the
+        // refresh token predates the gmail.modify scope widening.
+        if (r.status === 403) setScopeError(true);
+        return;
+      }
+      setLabels((data.labels ?? []) as GmailLabel[]);
+    } catch (err) {
+      console.error("[Inbox] labels failed", err);
+    }
+  }, []);
+
+  // Folder/label selection — pushes to URL so deep links and back-button work
+  // as expected, then triggers a thread refetch via the effect below.
+  const selectFolder = useCallback(
+    (id: FolderId) => {
+      setSelectedThreadId(null);
+      clearSelection();
+      setSelectedLabel(id);
+      const next = new URLSearchParams(searchParams.toString());
+      if (id === "INBOX") next.delete("label");
+      else next.set("label", id);
+      router.replace(`/dashboard/inbox${next.size ? `?${next}` : ""}`);
+    },
+    [searchParams, router, clearSelection]
   );
 
   const fetchThread = useCallback(async (threadId: string) => {
@@ -207,9 +311,27 @@ const InboxPage = () => {
 
   useEffect(() => {
     fetchStatus().then((s) => {
-      if (s?.connected) fetchThreads();
+      if (s?.connected) {
+        fetchThreads();
+        fetchLabels();
+      }
     });
-  }, [fetchStatus, fetchThreads]);
+    // Run once on mount; fetchThreads + fetchLabels are stable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Refetch when the selected folder/label changes — but skip the initial
+  // mount to avoid a duplicate fetch (the on-mount effect above already
+  // calls fetchThreads).
+  const [didMount, setDidMount] = useState(false);
+  useEffect(() => {
+    if (!didMount) {
+      setDidMount(true);
+      return;
+    }
+    if (status?.connected) fetchThreads(query || undefined);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedLabel]);
 
   useEffect(() => {
     if (selectedThreadId) fetchThread(selectedThreadId);
@@ -533,8 +655,92 @@ const InboxPage = () => {
         </div>
       </div>
 
-      {/* Three-column layout */}
-      <div className="flex-1 grid grid-cols-[360px_1fr] gap-0 border border-dash-border rounded-xl overflow-hidden bg-dash-surface min-h-0">
+      {/* Reconnect-Gmail nudge — shows when an API call returns 403/scope */}
+      {scopeError && (
+        <div className="mb-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-900 flex items-center justify-between">
+          <span>
+            Your Gmail connection is missing the new permissions (Sent / Labels). Reconnect to grant the wider scope.
+          </span>
+          <a
+            href="/api/gmail/connect"
+            className="ml-3 px-3 py-1.5 text-sm font-medium bg-amber-600 text-white rounded hover:bg-amber-700 transition-colors"
+          >
+            Reconnect Gmail
+          </a>
+        </div>
+      )}
+
+      {/* Three-column layout: folders/labels sidebar · thread list · detail */}
+      <div className="flex-1 grid grid-cols-[200px_360px_1fr] gap-0 border border-dash-border rounded-xl overflow-hidden bg-dash-surface min-h-0">
+        {/* Folders + Labels sidebar */}
+        <aside className="border-r border-dash-border overflow-y-auto bg-dash-bg/30">
+          <div className="px-3 py-2 border-b border-dash-border text-[11px] uppercase tracking-wider font-semibold text-dash-text-secondary">
+            Folders
+          </div>
+          <ul className="py-1">
+            {SYSTEM_FOLDERS.map((f) => {
+              const Icon = f.icon;
+              const active = selectedLabel === f.id;
+              return (
+                <li key={f.id}>
+                  <button
+                    type="button"
+                    onClick={() => selectFolder(f.id)}
+                    className={`w-full flex items-center gap-2 px-3 py-1.5 text-sm transition-colors cursor-pointer ${
+                      active
+                        ? "bg-brand-copper/15 text-brand-copper font-medium"
+                        : "text-dash-text hover:bg-dash-bg"
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate">{f.label}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          {labels.filter((l) => l.type === "user" || !SYSTEM_LABEL_IDS_TO_HIDE.has(l.id)).length > 0 && (
+            <>
+              <div className="px-3 py-2 mt-2 border-t border-b border-dash-border text-[11px] uppercase tracking-wider font-semibold text-dash-text-secondary">
+                Labels
+              </div>
+              <ul className="py-1">
+                {labels
+                  .filter(
+                    (l) => l.type === "user" || !SYSTEM_LABEL_IDS_TO_HIDE.has(l.id)
+                  )
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .map((l) => {
+                    const active = selectedLabel === l.id;
+                    return (
+                      <li key={l.id}>
+                        <button
+                          type="button"
+                          onClick={() => selectFolder(l.id)}
+                          className={`w-full flex items-center justify-between gap-2 px-3 py-1.5 text-sm transition-colors cursor-pointer ${
+                            active
+                              ? "bg-brand-copper/15 text-brand-copper font-medium"
+                              : "text-dash-text hover:bg-dash-bg"
+                          }`}
+                        >
+                          <span className="flex items-center gap-2 min-w-0">
+                            <Tag className="w-3.5 h-3.5 shrink-0" />
+                            <span className="truncate">{l.name}</span>
+                          </span>
+                          {(l.messagesUnread ?? 0) > 0 && (
+                            <span className="text-[10px] font-mono text-dash-text-secondary shrink-0">
+                              {l.messagesUnread}
+                            </span>
+                          )}
+                        </button>
+                      </li>
+                    );
+                  })}
+              </ul>
+            </>
+          )}
+        </aside>
+
         {/* Thread list */}
         <div className="border-r border-dash-border overflow-y-auto">
           {selectedIds.size > 0 ? (
@@ -582,7 +788,11 @@ const InboxPage = () => {
             </div>
           ) : (
             <div className="px-3 py-2 border-b border-dash-border flex items-center justify-between text-[11px] uppercase tracking-wider font-semibold text-dash-text-secondary">
-              <span>Inbox</span>
+              <span>
+                {SYSTEM_FOLDERS.find((f) => f.id === selectedLabel)?.label ??
+                  labels.find((l) => l.id === selectedLabel)?.name ??
+                  "Inbox"}
+              </span>
               <span>
                 {unreadCount} unread · {threads.length}
               </span>
