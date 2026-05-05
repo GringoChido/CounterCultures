@@ -126,7 +126,15 @@ export interface ThreadMessage {
   bodyHtml: string | null;
   snippet: string;
   labelIds: string[];
-  attachments: { attachmentId: string; filename: string; mimeType: string; size: number }[];
+  // `inline: true` means this attachment is referenced by a cid: in the
+  // HTML body. UIs typically hide it from the bottom attachment grid.
+  attachments: {
+    attachmentId: string;
+    filename: string;
+    mimeType: string;
+    size: number;
+    inline: boolean;
+  }[];
 }
 
 export interface ThreadDetail {
@@ -161,27 +169,55 @@ const decodeBody = (data: string | null | undefined): string => {
   }
 };
 
+// Strip surrounding angle brackets from a Content-ID value: <abc@host> → abc@host.
+const stripAngles = (s: string): string => s.replace(/^<|>$/g, "").trim();
+
 const walkParts = (
   part: gmail_v1.Schema$MessagePart | undefined
 ): {
   plain: string;
   html: string | null;
   attachments: ThreadMessage["attachments"];
+  // Map of Content-ID (without angle brackets) → attachmentId. Used by
+  // messageToShaped to rewrite cid:xyz src refs in the HTML body.
+  inlineByContentId: Map<string, { attachmentId: string; mimeType: string }>;
 } => {
-  if (!part) return { plain: "", html: null, attachments: [] };
+  if (!part) {
+    return { plain: "", html: null, attachments: [], inlineByContentId: new Map() };
+  }
 
   const attachments: ThreadMessage["attachments"] = [];
+  const inlineByContentId = new Map<
+    string,
+    { attachmentId: string; mimeType: string }
+  >();
   let plain = "";
   let html: string | null = null;
 
   const walk = (p: gmail_v1.Schema$MessagePart) => {
     const mime = p.mimeType || "";
-    if (p.filename && p.body?.attachmentId) {
+    const partHeaders = headerMap(p.headers);
+    const cidRaw = partHeaders["content-id"] || "";
+    const disposition = (partHeaders["content-disposition"] || "").toLowerCase();
+    const isInline = disposition.startsWith("inline") || Boolean(cidRaw);
+
+    if (p.body?.attachmentId) {
+      const cid = stripAngles(cidRaw);
+      if (cid) {
+        inlineByContentId.set(cid, {
+          attachmentId: p.body.attachmentId,
+          mimeType: mime,
+        });
+      }
+      // Surface every attachment with an attachmentId — even ones with
+      // empty filenames (some clients omit it for inline images). The UI
+      // will use mimeType + inline flag to decide how to render.
       attachments.push({
         attachmentId: p.body.attachmentId,
-        filename: p.filename,
+        filename: p.filename || (cid ? `inline-${cid.slice(0, 8)}` : "attachment"),
         mimeType: mime,
         size: p.body.size ?? 0,
+        inline: isInline,
       });
     }
     if (mime === "text/plain" && p.body?.data) {
@@ -194,16 +230,38 @@ const walkParts = (
   };
 
   walk(part);
-  return { plain, html, attachments };
+  return { plain, html, attachments, inlineByContentId };
+};
+
+// Replace cid:xyz src/href references in HTML body with portal URLs that
+// stream the attachment inline. Caller passes the message id since the
+// route is /api/gmail/attachment/<messageId>/<attachmentId>.
+const resolveCidRefs = (
+  html: string,
+  messageId: string,
+  inlineByContentId: Map<string, { attachmentId: string; mimeType: string }>
+): string => {
+  if (!html || inlineByContentId.size === 0) return html;
+  return html.replace(
+    /(src|href)\s*=\s*(["'])\s*cid:([^"'\s>]+)\s*\2/gi,
+    (full, attr, quote, rawCid) => {
+      const cid = decodeURIComponent(rawCid);
+      const hit = inlineByContentId.get(cid);
+      if (!hit) return full;
+      const url = `/api/gmail/attachment/${encodeURIComponent(messageId)}/${encodeURIComponent(hit.attachmentId)}?inline=1`;
+      return `${attr}=${quote}${url}${quote}`;
+    }
+  );
 };
 
 const messageToShaped = (msg: gmail_v1.Schema$Message): ThreadMessage => {
   const h = headerMap(msg.payload?.headers);
-  const { plain, html, attachments } = walkParts(msg.payload);
+  const { plain, html, attachments, inlineByContentId } = walkParts(msg.payload);
   const { name, email } = parseFromAddress(h.from || "");
   const dateMs = Number(msg.internalDate ?? 0);
+  const messageId = msg.id ?? "";
   return {
-    messageId: msg.id ?? "",
+    messageId,
     threadId: msg.threadId ?? "",
     from: name || email,
     fromEmail: email,
@@ -213,7 +271,7 @@ const messageToShaped = (msg: gmail_v1.Schema$Message): ThreadMessage => {
     date: dateMs ? new Date(dateMs).toISOString() : new Date().toISOString(),
     unread: (msg.labelIds ?? []).includes("UNREAD"),
     body: plain,
-    bodyHtml: html,
+    bodyHtml: html ? resolveCidRefs(html, messageId, inlineByContentId) : null,
     snippet: msg.snippet ?? "",
     labelIds: msg.labelIds ?? [],
     attachments,

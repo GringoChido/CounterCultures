@@ -26,6 +26,7 @@ import {
 import { EmailTemplatePicker } from "@/app/(dashboard)/components/email-template-picker";
 import { ThreadLabelChips } from "@/app/(dashboard)/components/thread-label-chips";
 import { AttachmentChip } from "@/app/(dashboard)/components/attachment-chip";
+import { EmailBody } from "@/app/(dashboard)/components/email-body";
 
 interface ThreadSummary {
   threadId: string;
@@ -55,7 +56,13 @@ interface ThreadMessage {
   bodyHtml: string | null;
   snippet: string;
   labelIds: string[];
-  attachments: { attachmentId: string; filename: string; mimeType: string; size: number }[];
+  attachments: {
+    attachmentId: string;
+    filename: string;
+    mimeType: string;
+    size: number;
+    inline: boolean;
+  }[];
 }
 
 interface ThreadDetail {
@@ -866,9 +873,11 @@ const InboxPage = () => {
                         {formatDate(m.date)}
                       </span>
                     </header>
-                    <div className="text-sm text-dash-text leading-relaxed whitespace-pre-wrap">
-                      {m.body || m.snippet || "(no body)"}
-                    </div>
+                    <EmailBody
+                      bodyHtml={m.bodyHtml}
+                      bodyText={m.body}
+                      fallbackSnippet={m.snippet}
+                    />
                     {m.attachments.length > 0 && (
                       <div className="flex items-center gap-2 flex-wrap mt-3 pt-3 border-t border-dash-border/60">
                         <Paperclip className="w-3.5 h-3.5 text-dash-text-secondary" />
