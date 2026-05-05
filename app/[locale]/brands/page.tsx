@@ -80,6 +80,24 @@ const PRE_STAGED_HEROES: Record<string, string> = {
   "ove-decors": "/Assets/BRANDS/ove-decors-hero.webp",
   // dxv: skipped — section_1.png was a UI gradient, not a photo; Roger source from dxv.com/collections/bath
   // speakman: skipped — ExactDN CDN blocks all automated access; Roger right-click save from speakman.com
+  // ─── Batch 5 (2026-05) — Playwright extraction pass 4:
+  pfister: "/Assets/BRANDS/pfister-hero.webp",
+  watermark: "/Assets/BRANDS/watermark-hero.webp",
+  waterstone: "/Assets/BRANDS/waterstone-hero.webp",
+  lacava: "/Assets/BRANDS/lacava-hero.webp",
+  "ws-bath-collections": "/Assets/BRANDS/ws-bath-collections-hero.webp",
+  amerock: "/Assets/BRANDS/amerock-hero.webp",
+  "liberty-hardware": "/Assets/BRANDS/liberty-hardware-hero.webp",
+  hafele: "/Assets/BRANDS/hafele-hero.webp",
+  "jeffrey-alexander": "/Assets/BRANDS/jeffrey-alexander-hero.webp",
+  rusticware: "/Assets/BRANDS/rusticware-hero.webp",
+  "emser-tile": "/Assets/BRANDS/emser-tile-hero.webp",
+  // moen: blocked (40s timeout on all attempts) — Roger manual
+  // whitehaus: DNS error on whitehausonline.com — verify domain
+  // maax: only serves glass_404.jpg — Roger manual from maax.com/en-us/products
+  // ashley-norton: JS-heavy SPA, all attempts return empty — Roger manual
+  // marazzi: cert error on marazzitile.com — verify domain
+  // bedrosians: JS-heavy, nothing renders — Roger manual
   // ─── Batch 3 (2026-05) — Playwright extraction pass 2:
   "american-standard": "/Assets/BRANDS/american-standard-hero.webp",
   kraus: "/Assets/BRANDS/kraus-hero.webp",
