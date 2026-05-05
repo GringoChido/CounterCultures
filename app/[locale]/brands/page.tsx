@@ -107,6 +107,16 @@ const PRE_STAGED_HEROES: Record<string, string> = {
   "hardware-resources": "/Assets/BRANDS/hardware-resources-hero.webp",
   deltana: "/Assets/BRANDS/deltana-hero.webp",
   "ico-bath": "/Assets/BRANDS/ico-bath-hero.webp",
+  // ─── Batch 8 (2026-05) — Playwright extraction pass 5:
+  sietto: "/Assets/BRANDS/sietto-hero.webp",
+  zurn: "/Assets/BRANDS/zurn-hero.webp",
+  "cruz-bay-studio": "/Assets/BRANDS/cruz-bay-studio-hero.webp",
+  transolid: "/Assets/BRANDS/transolid-hero.webp",
+  "amba-products": "/Assets/BRANDS/amba-products-hero.webp",
+  "belwith-products": "/Assets/BRANDS/belwith-products-hero.webp",
+  mansfield: "/Assets/BRANDS/mansfield-hero.webp",
+  "classic-brass": "/Assets/BRANDS/classic-brass-hero.webp",
+  "r-christensen": "/Assets/BRANDS/r-christensen-hero.webp",
   // moen: blocked (40s timeout on all attempts) — Roger manual
   // maax: only serves glass_404.jpg — Roger manual from maax.com/en-us/products
   // ashley-norton: JS-heavy SPA — Roger manual
