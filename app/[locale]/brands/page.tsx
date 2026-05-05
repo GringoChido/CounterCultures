@@ -92,11 +92,20 @@ const PRE_STAGED_HEROES: Record<string, string> = {
   "jeffrey-alexander": "/Assets/BRANDS/jeffrey-alexander-hero.webp",
   rusticware: "/Assets/BRANDS/rusticware-hero.webp",
   "emser-tile": "/Assets/BRANDS/emser-tile-hero.webp",
+  "hickory-hardware": "/Assets/BRANDS/hickory-hardware-hero.webp",
+  "acorn-manufacturing": "/Assets/BRANDS/acorn-manufacturing-hero.webp",
+  symmons: "/Assets/BRANDS/symmons-hero.webp",
+  "schaub-and-company": "/Assets/BRANDS/schaub-and-company-hero.webp",
+  "vesta-fine-hardware": "/Assets/BRANDS/vesta-fine-hardware-hero.webp",
+  "hapny-home": "/Assets/BRANDS/hapny-home-hero.webp",
+  santec: "/Assets/BRANDS/santec-hero.webp",
+  "karran-usa": "/Assets/BRANDS/karran-usa-hero.webp",
+  whitehaus: "/Assets/BRANDS/whitehaus-hero.webp",
+  shaw: "/Assets/BRANDS/shaw-hero.webp",
   // moen: blocked (40s timeout on all attempts) — Roger manual
-  // whitehaus: DNS error on whitehausonline.com — verify domain
   // maax: only serves glass_404.jpg — Roger manual from maax.com/en-us/products
-  // ashley-norton: JS-heavy SPA, all attempts return empty — Roger manual
-  // marazzi: cert error on marazzitile.com — verify domain
+  // ashley-norton: JS-heavy SPA — Roger manual
+  // marazzi: timeout on all domains — Roger manual
   // bedrosians: JS-heavy, nothing renders — Roger manual
   // ─── Batch 3 (2026-05) — Playwright extraction pass 2:
   "american-standard": "/Assets/BRANDS/american-standard-hero.webp",
