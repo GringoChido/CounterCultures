@@ -13,6 +13,21 @@ const nextConfig: NextConfig = {
         ? { exclude: ["error", "warn"] }
         : false,
   },
+  // Server-only deps that should NOT be inlined into the Lambda handler.
+  // Netlify's @netlify/plugin-nextjs traces these from node_modules at
+  // runtime instead. Without this, googleapis chain gets inlined and
+  // pushes the upload past Netlify's function-size limit (deploy step
+  // returns "request body too large").
+  serverExternalPackages: [
+    "@googleapis/sheets",
+    "@googleapis/drive",
+    "@googleapis/gmail",
+    "google-auth-library",
+    "googleapis-common",
+    "gaxios",
+    "gtoken",
+    "xlsx",
+  ],
   async rewrites() {
     return [
       // Clean URL for the client-pitch walkthrough served from public/.
