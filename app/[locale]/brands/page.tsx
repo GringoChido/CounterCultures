@@ -128,6 +128,12 @@ const PRE_STAGED_HEROES: Record<string, string> = {
   "blaze-products": "/Assets/BRANDS/blaze-products-hero.webp",
   peerless: "/Assets/BRANDS/peerless-hero.webp",
   sloan: "/Assets/BRANDS/sloan-hero.webp",
+  // ─── Batch 11 (2026-05) — second-attempt pass:
+  sterling: "/Assets/BRANDS/sterling-hero.webp",
+  "chicago-faucets": "/Assets/BRANDS/chicago-faucets-hero.webp",
+  bereson: "/Assets/BRANDS/bereson-hero.webp",
+  ginger: "/Assets/BRANDS/ginger-hero.webp",
+  samsung: "/Assets/BRANDS/samsung-hero.webp",
   // moen: blocked (40s timeout on all attempts) — Roger manual
   // maax: only serves glass_404.jpg — Roger manual from maax.com/en-us/products
   // ashley-norton: JS-heavy SPA — Roger manual
