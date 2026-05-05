@@ -113,6 +113,8 @@ const WhatsAppPage = () => {
   const [dealsLoading, setDealsLoading] = useState(false);
   const [creatingLead, setCreatingLead] = useState(false);
   const [attaching, setAttaching] = useState(false);
+  const [sending, setSending] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const attachMenuRef = useRef<HTMLDivElement>(null);
   const { consumeInsert, pendingInsert, openCommandPalette } = useProductInsert();
 
@@ -207,6 +209,24 @@ const WhatsAppPage = () => {
       void markRead(selectedWaId);
     }
   }, [selectedWaId, conversations, loadThread, markRead]);
+
+  // Poll the active thread + conversation list every 30s while the page
+  // is visible. No sockets at this stage; Roger's volume is well under
+  // the API rate ceiling.
+  useEffect(() => {
+    const tick = () => {
+      if (document.visibilityState !== "visible") return;
+      void loadConversations();
+      if (selectedWaId) void loadThread(selectedWaId);
+    };
+    const id = window.setInterval(tick, 30_000);
+    return () => window.clearInterval(id);
+  }, [selectedWaId, loadConversations, loadThread]);
+
+  // Auto-scroll to the latest message whenever the thread changes.
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages.length]);
 
   const handleSendProduct = () => {
     openCommandPalette();
@@ -306,6 +326,67 @@ const WhatsAppPage = () => {
       toast.error(err instanceof Error ? err.message : "Failed to attach");
     } finally {
       setAttaching(false);
+    }
+  };
+
+  const handleSend = async () => {
+    const trimmed = messageInput.trim();
+    if (!activeConversation || !trimmed || sending || !outboundEnabled) return;
+    setSending(true);
+
+    // Optimistic append: render the message immediately with a pending
+    // status so it can't be re-typed. The server response replaces the
+    // optimistic row with the real one (carrying Meta's wamid).
+    const optimisticId = `optimistic-${Date.now()}`;
+    const nowIso = new Date().toISOString();
+    const optimistic: Message = {
+      message_id: optimisticId,
+      wa_id: activeConversation.waId,
+      contact_name: "",
+      direction: "outbound",
+      type: "text",
+      body: trimmed,
+      media_id: "",
+      status: "pending",
+      template_name: "",
+      phone_number_id: "",
+      created_at: nowIso,
+      updated_at: nowIso,
+      linked_lead_id: "",
+      error: "",
+    };
+    setMessages((prev) => [...prev, optimistic]);
+    setMessageInput("");
+
+    try {
+      const res = await fetch("/api/dashboard/whatsapp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ toWaId: activeConversation.waId, body: trimmed }),
+      });
+      if (!res.ok) {
+        const err = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(err.error ?? `HTTP ${res.status}`);
+      }
+      const data = (await res.json()) as { message: Message };
+      setMessages((prev) =>
+        prev.map((m) => (m.message_id === optimisticId ? data.message : m))
+      );
+    } catch (err) {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.message_id === optimisticId
+            ? {
+                ...m,
+                status: "failed",
+                error: err instanceof Error ? err.message : String(err),
+              }
+            : m
+        )
+      );
+      toast.error(err instanceof Error ? err.message : "Failed to send");
+    } finally {
+      setSending(false);
     }
   };
 
@@ -501,12 +582,14 @@ const WhatsAppPage = () => {
                 ) : messages.length === 0 ? (
                   <p className="text-xs text-dash-text-muted">No messages in this conversation yet.</p>
                 ) : (
-                  messages.map((msg) => {
+                  <>
+                  {messages.map((msg) => {
                     const isOutbound = msg.direction === "outbound";
                     const showRead = isOutbound && msg.status === "read";
                     const showDelivered =
                       isOutbound && (msg.status === "delivered" || msg.status === "read");
                     const showFailed = isOutbound && msg.status === "failed";
+                    const isPending = isOutbound && msg.status === "pending";
                     return (
                       <div
                         key={msg.message_id}
@@ -517,13 +600,15 @@ const WhatsAppPage = () => {
                             isOutbound
                               ? "bg-brand-copper text-white rounded-br-sm"
                               : "bg-dash-surface border border-dash-border text-dash-text rounded-bl-sm"
-                          }`}
+                          } ${isPending ? "opacity-60" : ""}`}
                         >
                           <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.body}</p>
                           <div className={`flex items-center justify-end gap-1 mt-1 ${isOutbound ? "text-white/60" : "text-dash-text-secondary"}`}>
                             <span className="text-[10px]">{format(safeDate(msg.created_at), "h:mm a")}</span>
                             {isOutbound && (
-                              showFailed ? (
+                              isPending ? (
+                                <span className="text-[10px]">Sending...</span>
+                              ) : showFailed ? (
                                 <span title={msg.error || "send failed"} className="text-[10px] font-semibold">!</span>
                               ) : showRead || showDelivered ? (
                                 <CheckCheck className={`w-3 h-3 ${showRead ? "text-white" : ""}`} />
@@ -535,7 +620,9 @@ const WhatsAppPage = () => {
                         </div>
                       </div>
                     );
-                  })
+                  })}
+                  <div ref={messagesEndRef} />
+                  </>
                 )}
               </div>
 
@@ -566,6 +653,12 @@ const WhatsAppPage = () => {
               </div>
 
               <div className="px-4 pt-2 pb-4">
+                {messageInput.length > 4000 && (
+                  <p className="text-[11px] text-dash-warn mb-1.5 inline-flex items-center gap-1.5">
+                    <AlertTriangle className="w-3 h-3" />
+                    {messageInput.length} / 4096 characters. Long messages may need a template.
+                  </p>
+                )}
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
@@ -578,16 +671,24 @@ const WhatsAppPage = () => {
                   </button>
                   <input
                     type="text"
-                    placeholder="Type a message..."
+                    placeholder={outboundEnabled ? "Type a message..." : "Outbound disabled"}
                     value={messageInput}
                     onChange={(e) => setMessageInput(e.target.value)}
-                    className="flex-1 px-4 py-2.5 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        void handleSend();
+                      }
+                    }}
+                    disabled={!outboundEnabled}
+                    className="flex-1 px-4 py-2.5 text-sm bg-dash-bg border border-dash-border rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper disabled:opacity-50"
                   />
                   <button
                     type="button"
                     aria-label="Send message"
-                    className="p-2.5 bg-brand-copper rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer disabled:opacity-50"
-                    disabled
+                    onClick={handleSend}
+                    disabled={!outboundEnabled || sending || messageInput.trim().length === 0}
+                    className="p-2.5 bg-brand-copper rounded-lg hover:bg-brand-copper/90 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Send className="w-4 h-4 text-white" />
                   </button>
