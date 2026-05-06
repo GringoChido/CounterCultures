@@ -1,20 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { ExternalLink } from "lucide-react";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { Button } from "@/app/components/ui/button";
-import { PROJECTS, PROJECT_LOOKS, type ProjectLook } from "@/app/lib/projects";
-import { INSPIRATION_DETAILS } from "@/app/lib/inspiration-details";
-import { INSPIRATION_PEOPLE } from "@/app/lib/inspiration-people";
 import { HOTEL_CLIENTS, HOTEL_REGIONS } from "@/app/lib/hotel-clients";
-
-type LookFilter = "all" | ProjectLook;
+import { NOTABLE_INSTALLATIONS } from "@/app/lib/notable-installations";
 
 const HERO_IMAGE =
   "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=2400&q=80&auto=format";
@@ -23,21 +17,6 @@ export const InspirationContent = () => {
   const locale = useLocale() as "en" | "es";
   const isEs = locale === "es";
   const t = (en: string, es: string) => (isEs ? es : en);
-
-  const [look, setLook] = useState<LookFilter>("all");
-
-  const visibleProjects = useMemo(() => {
-    if (look === "all") return PROJECTS;
-    return PROJECTS.filter((p) => p.look === look);
-  }, [look]);
-
-  const lookOptions: { key: LookFilter; label: { en: string; es: string } }[] = [
-    { key: "all", label: { en: "All", es: "Todo" } },
-    ...(Object.keys(PROJECT_LOOKS) as ProjectLook[]).map((k) => ({
-      key: k as LookFilter,
-      label: PROJECT_LOOKS[k],
-    })),
-  ];
 
   return (
     <>
@@ -70,183 +49,27 @@ export const InspirationContent = () => {
               </h1>
               <p className="mt-6 font-body text-base md:text-lg text-white/75 max-w-2xl leading-relaxed">
                 {t(
-                  "Homes, hotels, and restaurants across Mexico — pull what speaks to you. Specifications included.",
-                  "Casas, hoteles y restaurantes en todo México — toma lo que te hable. Especificaciones incluidas."
+                  "Hotels, residences, and landmark properties across Mexico that have specified Counter Cultures.",
+                  "Hoteles, residencias y propiedades emblemáticas en todo México que han especificado Counter Cultures."
                 )}
               </p>
             </AnimatedSection>
           </div>
         </section>
 
-        {/* FEATURED PROJECTS — with Browse by Look filter */}
-        <section className="py-14 md:py-28 bg-brand-linen">
+        {/* HOSPITALITY ROLL CALL — promoted to lead */}
+        <section className="py-14 md:py-28 bg-brand-linen overflow-hidden">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection>
-              <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 mb-10 md:mb-14">
-                <div>
-                  <span className="font-body font-semibold text-xs tracking-[0.25em] text-brand-terracotta uppercase">
-                    {t("Featured Work", "Trabajo Destacado")}
-                  </span>
-                  <h2 className="mt-3 font-display text-3xl md:text-5xl font-light tracking-wide text-brand-charcoal leading-[1.1]">
-                    {t("Six projects, told in detail.", "Seis proyectos, contados a detalle.")}
-                  </h2>
-                </div>
-                <p className="font-body text-sm text-dash-text-secondary max-w-md leading-relaxed">
-                  {t(
-                    "Each one a collaboration between authorized brands, Mexican artisans, and the architects who specified them.",
-                    "Cada uno una colaboración entre marcas autorizadas, artesanos mexicanos y los arquitectos que los especificaron."
-                  )}
-                </p>
-              </div>
-            </AnimatedSection>
-
-            {/* Browse by Look filter */}
-            <AnimatedSection delay={0.1}>
-              <div className="flex items-center gap-2 mb-10 md:mb-14 overflow-x-auto pb-1 scrollbar-hide">
-                <span className="hidden md:inline font-mono text-[10px] tracking-[0.22em] uppercase text-brand-charcoal/55 mr-3 shrink-0">
-                  {t("Browse by Look", "Explorar por Estética")}
-                </span>
-                {lookOptions.map((opt) => (
-                  <button
-                    key={opt.key}
-                    onClick={() => setLook(opt.key)}
-                    className={`shrink-0 px-4 py-2 min-h-[40px] text-sm font-body border rounded-full transition-colors cursor-pointer whitespace-nowrap ${
-                      look === opt.key
-                        ? "border-brand-charcoal bg-brand-charcoal text-white"
-                        : "border-brand-stone/30 text-brand-charcoal hover:border-brand-charcoal"
-                    }`}
-                  >
-                    {opt.label[locale]}
-                  </button>
-                ))}
-              </div>
-            </AnimatedSection>
-
-            {/* Project grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-              {visibleProjects.map((project, i) => (
-                <AnimatedSection key={project.slug} delay={i * 0.05}>
-                  <Link
-                    href={`/${locale}/inspiration/${project.slug}`}
-                    className="group block"
-                  >
-                    <div className="relative aspect-[4/5] rounded-lg overflow-hidden bg-brand-stone/10">
-                      <Image
-                        src={project.heroImage}
-                        alt={project.title}
-                        fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                      <div className="absolute top-4 left-4">
-                        <span className="font-mono text-[10px] tracking-[0.22em] uppercase text-white/95 bg-brand-charcoal/40 backdrop-blur-sm px-2.5 py-1 rounded-sm">
-                          {PROJECT_LOOKS[project.look][locale]}
-                        </span>
-                      </div>
-                      <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
-                        <h3 className="font-display text-xl md:text-2xl leading-tight">
-                          {project.title}
-                        </h3>
-                        <p className="mt-1 font-body text-xs text-white/75">
-                          {project.location[locale]} · {project.year}
-                        </p>
-                        <p className="mt-3 font-body text-sm text-white/90 leading-relaxed line-clamp-2 opacity-0 max-h-0 group-hover:opacity-100 group-hover:max-h-20 transition-all duration-500">
-                          {project.description[locale]}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-3 flex items-center justify-between">
-                      <p className="font-body font-semibold text-xs tracking-wider text-brand-terracotta uppercase">
-                        {project.architect}
-                      </p>
-                      <span className="font-mono text-[10px] tracking-[0.18em] uppercase text-dash-text-secondary">
-                        {project.type[locale]}
-                      </span>
-                    </div>
-                  </Link>
-                </AnimatedSection>
-              ))}
-            </div>
-
-            {visibleProjects.length === 0 && (
-              <p className="text-center font-body text-sm text-dash-text-secondary py-12">
-                {t("No projects match this look yet.", "Aún no hay proyectos con esta estética.")}
-              </p>
-            )}
-          </div>
-        </section>
-
-        {/* DETAIL LIBRARY — handpicked specifier moments */}
-        <section className="py-14 md:py-28 bg-dash-surface">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <AnimatedSection>
-              <div className="max-w-2xl">
-                <span className="font-body font-semibold text-xs tracking-[0.25em] text-brand-terracotta uppercase">
-                  {t("Specifier's Detail", "El Detalle del Especificador")}
-                </span>
-                <h2 className="mt-3 font-display text-3xl md:text-5xl font-light tracking-wide text-brand-charcoal leading-[1.1]">
-                  {t(
-                    "This faucet, this finish, in this light.",
-                    "Este grifo, este acabado, esta luz."
-                  )}
-                </h2>
-                <p className="mt-5 font-body text-base text-dash-text-secondary leading-relaxed">
-                  {t(
-                    "Close-up moments from real projects — the combinations we'd specify again. Click through to the full project.",
-                    "Momentos cercanos de proyectos reales — las combinaciones que volveríamos a especificar. Haz clic para ver el proyecto completo."
-                  )}
-                </p>
-              </div>
-            </AnimatedSection>
-
-            <div className="mt-12 md:mt-16 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-              {INSPIRATION_DETAILS.map((detail, i) => (
-                <AnimatedSection key={`${detail.projectSlug}-${i}`} delay={i * 0.04}>
-                  <Link
-                    href={`/${locale}/inspiration/${detail.projectSlug}`}
-                    className="group block relative aspect-square rounded-md overflow-hidden bg-brand-stone/10"
-                    aria-label={`${detail.alt[locale]} — ${detail.projectTitle}`}
-                  >
-                    <Image
-                      src={detail.src}
-                      alt={detail.alt[locale]}
-                      fill
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent opacity-90 group-hover:opacity-100 transition-opacity" />
-                    <div className="absolute bottom-0 left-0 right-0 p-3 md:p-4 text-white">
-                      <p className="font-mono text-[9px] md:text-[10px] tracking-[0.2em] uppercase text-brand-copper">
-                        {detail.brand}
-                      </p>
-                      <p className="mt-1 font-body text-xs md:text-sm leading-snug">
-                        {detail.caption[locale]}
-                      </p>
-                      <p className="mt-2 font-body text-[10px] md:text-xs text-white/70 italic">
-                        {detail.projectTitle}
-                      </p>
-                    </div>
-                  </Link>
-                </AnimatedSection>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* HOSPITALITY ROLL CALL — the marquee */}
-        <section className="py-14 md:py-24 bg-brand-linen overflow-hidden border-t border-brand-stone/10">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <AnimatedSection>
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-end mb-12">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-end mb-12 md:mb-16">
                 <div className="lg:col-span-7">
                   <span className="font-body font-semibold text-xs tracking-[0.25em] text-brand-terracotta uppercase">
-                    {t("Where You've Stayed", "Donde Has Hospedado")}
+                    {t("Trusted By", "Elegidos Por")}
                   </span>
-                  <h2 className="mt-4 font-display text-3xl md:text-5xl font-light tracking-wide text-brand-charcoal leading-[1.05]">
+                  <h2 className="mt-4 font-display text-3xl md:text-5xl lg:text-[3.25rem] font-light tracking-wide text-brand-charcoal leading-[1.05]">
                     {t(
-                      "Mexico's most considered properties.",
-                      "Las propiedades más consideradas de México."
+                      "Mexico's hospitality leaders.",
+                      "Líderes de hospitalidad en México."
                     )}
                   </h2>
                   <p className="mt-5 font-body text-base text-dash-text-secondary max-w-xl leading-relaxed">
@@ -262,7 +85,7 @@ export const InspirationContent = () => {
                       <dt className="font-mono text-[10px] tracking-[0.22em] text-brand-charcoal/55 uppercase">
                         {t("Properties", "Propiedades")}
                       </dt>
-                      <dd className="mt-2 font-display text-3xl md:text-5xl font-light text-brand-copper tabular-nums leading-none">
+                      <dd className="mt-2 font-display text-3xl md:text-4xl lg:text-5xl font-light text-brand-copper tabular-nums leading-none">
                         {HOTEL_CLIENTS.length}
                       </dd>
                     </div>
@@ -270,7 +93,7 @@ export const InspirationContent = () => {
                       <dt className="font-mono text-[10px] tracking-[0.22em] text-brand-charcoal/55 uppercase">
                         {t("Regions", "Regiones")}
                       </dt>
-                      <dd className="mt-2 font-display text-3xl md:text-5xl font-light text-brand-copper tabular-nums leading-none">
+                      <dd className="mt-2 font-display text-3xl md:text-4xl lg:text-5xl font-light text-brand-copper tabular-nums leading-none">
                         {new Set(HOTEL_CLIENTS.map((h) => h.region)).size}
                       </dd>
                     </div>
@@ -278,7 +101,7 @@ export const InspirationContent = () => {
                       <dt className="font-mono text-[10px] tracking-[0.22em] text-brand-charcoal/55 uppercase">
                         {t("Since", "Desde")}
                       </dt>
-                      <dd className="mt-2 font-display text-3xl md:text-5xl font-light text-brand-copper tabular-nums leading-none">
+                      <dd className="mt-2 font-display text-3xl md:text-4xl lg:text-5xl font-light text-brand-copper tabular-nums leading-none">
                         2004
                       </dd>
                     </div>
@@ -350,76 +173,63 @@ export const InspirationContent = () => {
           </div>
         </section>
 
-        {/* THE PEOPLE — architects + artisans */}
-        <section className="py-14 md:py-28 bg-brand-sand/40">
+        {/* NOTABLE INSTALLATIONS — three real projects */}
+        <section className="py-14 md:py-28 bg-dash-surface">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection>
-              <div className="max-w-2xl">
+              <div className="max-w-2xl mb-12 md:mb-16">
                 <span className="font-body font-semibold text-xs tracking-[0.25em] text-brand-terracotta uppercase">
-                  {t("The People", "Las Personas")}
+                  {t("Notable Installations", "Instalaciones Destacadas")}
                 </span>
                 <h2 className="mt-3 font-display text-3xl md:text-5xl font-light tracking-wide text-brand-charcoal leading-[1.1]">
                   {t(
-                    "Behind every project, the right hands.",
-                    "Detrás de cada proyecto, las manos correctas."
+                    "From the Pacific coast to a private island.",
+                    "De la costa del Pacífico a una isla privada."
                   )}
                 </h2>
                 <p className="mt-5 font-body text-base text-dash-text-secondary leading-relaxed">
                   {t(
-                    "The architects who specify with us, and the Mexican artisans whose work we source. We're a curatorial bridge — not a vendor.",
-                    "Los arquitectos que especifican con nosotros, y los artesanos mexicanos cuyo trabajo obtenemos. Somos un puente curatorial — no un proveedor."
+                    "A few of the landmark properties we've supplied beyond the showroom.",
+                    "Algunas de las propiedades emblemáticas que hemos abastecido más allá del showroom."
                   )}
                 </p>
               </div>
             </AnimatedSection>
 
-            <div className="mt-12 md:mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-              {INSPIRATION_PEOPLE.map((person, i) => (
-                <AnimatedSection key={person.name} delay={i * 0.05}>
-                  <article className="h-full bg-dash-surface rounded-lg p-7 md:p-8 border border-brand-stone/10 flex flex-col">
-                    <span className="font-mono text-[10px] tracking-[0.22em] uppercase text-brand-copper">
-                      {person.role === "architect"
-                        ? t("Architect", "Arquitecto")
-                        : t("Artisan", "Artesano")}
-                    </span>
-                    <h3 className="mt-3 font-display text-2xl text-brand-charcoal leading-tight">
-                      {person.name}
-                    </h3>
-                    {person.firm && (
-                      <p className="mt-1 font-body text-sm text-dash-text-secondary italic">
-                        {person.firm}
-                      </p>
-                    )}
-                    <p className="mt-2 font-body text-xs tracking-wider text-dash-text-secondary uppercase">
-                      {person.location[locale]}
-                    </p>
-                    <p className="mt-5 font-body text-sm text-dash-text-secondary leading-relaxed flex-1">
-                      {person.bio[locale]}
-                    </p>
-                    {person.projectSlugs.length > 0 && (
-                      <div className="mt-6 pt-5 border-t border-brand-stone/10">
-                        <p className="font-mono text-[10px] tracking-[0.2em] uppercase text-brand-charcoal/55 mb-2">
-                          {t("Projects", "Proyectos")}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+              {NOTABLE_INSTALLATIONS.map((project, i) => (
+                <AnimatedSection key={project.slug} delay={i * 0.08}>
+                  <a
+                    href={project.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-copper rounded-lg"
+                    aria-label={`${project.name[locale]} (opens in new tab)`}
+                  >
+                    <div className="relative aspect-[4/5] rounded-lg overflow-hidden bg-brand-stone/10">
+                      <Image
+                        src={project.image}
+                        alt={project.name[locale]}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                        style={{ objectPosition: project.imagePosition }}
+                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+                        <h3 className="font-display text-xl md:text-2xl leading-tight">
+                          {project.name[locale]}
+                        </h3>
+                        <p className="mt-2 font-body text-sm text-white/85 leading-relaxed line-clamp-3">
+                          {project.description[locale]}
                         </p>
-                        <ul className="space-y-1">
-                          {person.projectSlugs.map((slug) => {
-                            const proj = PROJECTS.find((p) => p.slug === slug);
-                            if (!proj) return null;
-                            return (
-                              <li key={slug}>
-                                <Link
-                                  href={`/${locale}/inspiration/${slug}`}
-                                  className="font-body text-sm text-brand-charcoal hover:text-brand-terracotta transition-colors"
-                                >
-                                  {proj.title} →
-                                </Link>
-                              </li>
-                            );
-                          })}
-                        </ul>
+                        <p className="mt-3 font-mono text-[10px] tracking-[0.2em] uppercase text-brand-copper inline-flex items-center gap-1.5 opacity-0 -translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                          {t("Visit", "Visitar")}
+                          <ExternalLink className="w-3 h-3" />
+                        </p>
                       </div>
-                    )}
-                  </article>
+                    </div>
+                  </a>
                 </AnimatedSection>
               ))}
             </div>

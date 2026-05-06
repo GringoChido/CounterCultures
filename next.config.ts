@@ -36,12 +36,16 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      // /projects rebranded to /inspiration (Apr 2026). Permanent so search
-      // and external links roll over cleanly.
+      // /projects rebranded to /inspiration (May 2026). Detail pages were
+      // retired (the case-study catalog was sample content, no real
+      // photography to back it). Slug-level URLs collapse to /inspiration.
       { source: "/:locale(en|es)/projects", destination: "/:locale/inspiration", permanent: true },
-      { source: "/:locale(en|es)/projects/:slug", destination: "/:locale/inspiration/:slug", permanent: true },
+      { source: "/:locale(en|es)/projects/:slug", destination: "/:locale/inspiration", permanent: true },
       { source: "/projects", destination: "/en/inspiration", permanent: true },
-      { source: "/projects/:slug", destination: "/en/inspiration/:slug", permanent: true },
+      { source: "/projects/:slug", destination: "/en/inspiration", permanent: true },
+      // Stranded inspiration detail URLs (the case-study slug pages were
+      // retired with sample content). Bounce to the index instead of 404.
+      { source: "/:locale(en|es)/inspiration/:slug", destination: "/:locale/inspiration", permanent: true },
     ];
   },
   async headers() {

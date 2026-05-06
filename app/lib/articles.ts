@@ -120,7 +120,7 @@ For honest material pricing on a single front-door handleset (lever + cylinder +
 - **Sun Valley Bronze:** USD $1,800–3,500
 - **Buster + Punch:** USD $700–1,400
 
-Add roughly 30–40% for landed cost in Mexico after duties, freight, and broker fees. We handle that math for clients on every quote — the storefront shows MSRP; the trade quote shows your real out-the-door number.
+Pricing in Mexico includes import duties, freight, and broker fees on top of these US MSRPs. We give every client a complete delivered-cost quote — one number, no surprises at the border.
 
 ## Why It Matters
 
@@ -191,7 +191,7 @@ Precios honestos de material para un solo conjunto de manija de puerta principal
 - **Sun Valley Bronze:** USD $1,800–3,500
 - **Buster + Punch:** USD $700–1,400
 
-Suma aproximadamente 30–40% para el costo aterrizado en México después de aranceles, flete y honorarios del agente aduanal. Manejamos esa cuenta para los clientes en cada cotización — el sitio público muestra el MSRP; la cotización profesional muestra tu número real de salida.
+El precio en México incluye aranceles de importación, flete y honorarios del agente aduanal sobre estos MSRPs en USD. Le damos a cada cliente una cotización completa con costo entregado — un solo número, sin sorpresas en la aduana.
 
 ## Por Qué Importa
 
@@ -566,13 +566,11 @@ This is where architects get caught. Most manufacturer warranties have a residen
 
 ## Quantity Pricing
 
-Counter Cultures Trade Program pricing for hospitality quantities:
+For hospitality projects, we issue project-specific pricing based on total scope, the manufacturer's tier structure, and timeline. One negotiated rate per project, applied across the full specification.
 
-- **10–24 units of same SKU:** 8% below retail
-- **25–49 units:** 12% below retail
-- **50+ units:** Project-specific pricing (contact us directly)
+We don't publish a tier table — manufacturer programs differ by brand and shift season to season. Contact us with the project scope and we'll quote.
 
-These discounts apply to all brands except artisanal pieces, which are priced individually based on scope.
+Artisanal pieces are priced individually based on commission complexity and lead time.
 
 ## The Specification Package
 
@@ -621,11 +619,11 @@ Aquí es donde los arquitectos se confunden. La mayoría de las garantías de fa
 
 ## Precios por Cantidad
 
-Precios del Programa Trade de Counter Cultures para cantidades de hospitalidad:
+Para proyectos de hospitalidad, emitimos precios específicos según el alcance total, la estructura de niveles del fabricante y el cronograma. Una tarifa negociada por proyecto, aplicada en toda la especificación.
 
-- **10–24 unidades del mismo SKU:** 8% debajo de retail
-- **25–49 unidades:** 12% debajo de retail
-- **50+ unidades:** Precios específicos por proyecto
+No publicamos una tabla de niveles — los programas de los fabricantes varían por marca y cambian de temporada a temporada. Contáctanos con el alcance del proyecto y cotizamos.
+
+Las piezas artesanales se cotizan individualmente según la complejidad de la comisión y el tiempo de entrega.
 
 ## El Paquete de Especificación
 
@@ -738,17 +736,11 @@ Counter Cultures' Trade Program was designed specifically for design professiona
 
 ## 1. Trade Pricing
 
-Trade members receive 15–25% below retail pricing across all brands. The exact discount varies by manufacturer and product line:
+Trade members receive dedicated pricing — the exact rate varies by manufacturer, product line, and project scope. Manufacturer programs differ and brand-direct margins shift season to season, so we don't publish a discount table. Specific quotes are built per project.
 
-- **Kohler, TOTO, Brizo:** 15% below retail
-- **BLANCO, California Faucets:** 20% below retail
-- **Sun Valley Bronze, Emtek:** 20% below retail
-- **Badeloft, Villeroy & Boch:** 25% below retail
-- **Artisanal collection:** 10% below retail
+Quotes are issued directly to the designer, never to the end client. Pricing is confidential — this protects your margin and your client relationship.
 
-For hospitality projects with quantity orders, additional volume pricing applies.
-
-Pricing is confidential — trade quotes are issued directly to the designer, not to the end client. This protects your margin and your client relationship.
+For hospitality projects with quantity orders, additional project-specific pricing applies.
 
 ## 2. Specification Support
 
@@ -807,15 +799,11 @@ El Programa Trade de Counter Cultures fue diseñado específicamente para profes
 
 ## 1. Precios Trade
 
-Los miembros Trade reciben 15–25% por debajo del precio de retail en todas las marcas:
+Los miembros Trade reciben precios dedicados — la tarifa exacta varía por fabricante, línea de producto y alcance del proyecto. Los programas de los fabricantes son distintos y los márgenes directos cambian de temporada a temporada, por lo que no publicamos una tabla de descuentos. Cada cotización se construye por proyecto.
 
-- **Kohler, TOTO, Brizo:** 15% debajo de retail
-- **BLANCO, California Faucets:** 20% debajo de retail
-- **Sun Valley Bronze, Emtek:** 20% debajo de retail
-- **Badeloft, Villeroy & Boch:** 25% debajo de retail
-- **Colección artesanal:** 10% debajo de retail
+Las cotizaciones se emiten directamente al diseñador, nunca al cliente final. Los precios son confidenciales — esto protege tu margen y tu relación con el cliente.
 
-Los precios son confidenciales — las cotizaciones trade se emiten directamente al diseñador, no al cliente final.
+Para proyectos de hospitalidad con pedidos por volumen, se aplican precios específicos según el proyecto.
 
 ## 2. Soporte de Especificación
 

@@ -88,7 +88,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     localizedEntry(`/insights/${slug}`, "monthly", 0.65)
   );
 
-  // Project detail pages
+  // Project detail pages — empty until real case studies land. PROJECTS
+  // is intentionally [] right now; this still flatMaps cleanly to nothing.
   const projectRoutes: MetadataRoute.Sitemap = PROJECTS.flatMap(({ slug }) =>
     localizedEntry(`/inspiration/${slug}`, "monthly", 0.7)
   );

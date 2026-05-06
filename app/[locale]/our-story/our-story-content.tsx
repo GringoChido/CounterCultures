@@ -6,6 +6,7 @@ import { Button } from "@/app/components/ui/button";
 import { MessageCircle } from "lucide-react";
 import { useLocale } from "next-intl";
 import { SITE_CONFIG } from "@/app/lib/constants";
+import { NOTABLE_INSTALLATIONS } from "@/app/lib/notable-installations";
 
 type Locale = "en" | "es";
 
@@ -114,48 +115,6 @@ const timeline: TimelineItem[] = [
       en: "Counter Cultures launches a comprehensive digital platform — bringing the full showroom experience online for architects, designers, and homeowners worldwide.",
       es: "Counter Cultures lanza una plataforma digital integral — llevando la experiencia completa del showroom al mundo digital para arquitectos, diseñadores y propietarios de todo el mundo.",
     },
-  },
-];
-
-interface NotableProject {
-  name: { en: string; es: string };
-  description: { en: string; es: string };
-  href: string;
-  image: string;
-  imagePosition?: string;
-}
-
-const notableProjects: NotableProject[] = [
-  {
-    name: { en: "Punta Mita", es: "Punta Mita" },
-    description: {
-      en: "Luxury resort community on Mexico's Pacific coast — home to Four Seasons and St. Regis properties.",
-      es: "Comunidad turística de lujo en la costa del Pacífico de México — sede de Four Seasons y St. Regis.",
-    },
-    href: "https://www.puntamita.com/es/",
-    image: "/Assets/projects/punta-mita.jpg",
-  },
-  {
-    name: {
-      en: "Four Seasons Caye Chapel",
-      es: "Four Seasons Caye Chapel",
-    },
-    description: {
-      en: "Private island residences in Belize — bespoke fixtures for a world-class development.",
-      es: "Residencias en isla privada en Belice — accesorios a medida para un desarrollo de clase mundial.",
-    },
-    href: "https://www.fourseasons.com/residences/private_residences/belize/",
-    image: "/Assets/projects/caye-chapel.jpeg",
-    imagePosition: "center 30%",
-  },
-  {
-    name: { en: "Tequila Express", es: "Tequila Express" },
-    description: {
-      en: "Mexico's iconic scenic railway through Jalisco's tequila country.",
-      es: "El icónico tren escénico de México a través de la región tequilera de Jalisco.",
-    },
-    href: "https://www.tequilaexpress.mx/",
-    image: "/Assets/projects/tequila-express.jpg",
   },
 ];
 
@@ -374,7 +333,7 @@ export const OurStoryContent = () => {
             </AnimatedSection>
 
             <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-              {notableProjects.map((project) => (
+              {NOTABLE_INSTALLATIONS.map((project) => (
                 <AnimatedSection key={project.name.en}>
                   <a
                     href={project.href}

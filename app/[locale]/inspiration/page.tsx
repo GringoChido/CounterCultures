@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { InspirationContent } from "./inspiration-content";
-import { PROJECTS } from "@/app/lib/projects";
+import { HOTEL_CLIENTS } from "@/app/lib/hotel-clients";
 
 const BASE_URL = "https://countercultures.mx";
 
@@ -15,11 +15,11 @@ export const generateMetadata = async ({
   const isEs = locale === "es";
 
   const title = isEs
-    ? "Inspiración — Casas, Hoteles y Restaurantes que Hemos Especificado"
-    : "Inspiration — Homes, Hotels & Restaurants We've Specified";
+    ? "Inspiración — Hoteles y Propiedades que Hemos Especificado"
+    : "Inspiration — Hotels & Properties We've Specified";
   const description = isEs
-    ? "Veintidós años de habitaciones moldeadas, hoteles abastecidos y oficios celebrados. Explora proyectos, busca por estética, y encuentra el detalle exacto que estás imaginando."
-    : "Twenty-two years of rooms shaped, hotels supplied, and craft celebrated. Browse projects, filter by look, and find the exact detail you're picturing.";
+    ? "Veintidós años abasteciendo hoteles boutique, residencias y propiedades emblemáticas en todo México."
+    : "Twenty-two years supplying boutique hotels, residences, and landmark properties across Mexico.";
 
   return {
     title,
@@ -45,8 +45,8 @@ export const generateMetadata = async ({
           width: 1200,
           height: 630,
           alt: isEs
-            ? "Inspiración — proyectos especificados por Counter Cultures"
-            : "Inspiration — projects specified by Counter Cultures",
+            ? "Inspiración — propiedades abastecidas por Counter Cultures"
+            : "Inspiration — properties supplied by Counter Cultures",
         },
       ],
     },
@@ -60,14 +60,16 @@ const InspirationPage = async ({ params }: InspirationPageProps) => {
   const itemListJsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: isEs ? "Inspiración — Counter Cultures" : "Inspiration — Counter Cultures",
+    name: isEs
+      ? "Hoteles que han especificado Counter Cultures"
+      : "Hotels that have specified Counter Cultures",
     url: `${BASE_URL}/${locale}/inspiration`,
-    numberOfItems: PROJECTS.length,
-    itemListElement: PROJECTS.map((project, index) => ({
+    numberOfItems: HOTEL_CLIENTS.length,
+    itemListElement: HOTEL_CLIENTS.map((hotel, index) => ({
       "@type": "ListItem",
       position: index + 1,
-      url: `${BASE_URL}/${locale}/inspiration/${project.slug}`,
-      name: project.title,
+      url: hotel.website,
+      name: hotel.name,
     })),
   };
 

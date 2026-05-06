@@ -2,20 +2,21 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
-import { PROJECTS } from "@/app/lib/projects";
+import { HOTEL_CLIENTS, HOTEL_REGIONS } from "@/app/lib/hotel-clients";
 
 const InspirationTeaser = ({ locale = "en" }: { locale?: string }) => {
   const lang = locale as "en" | "es";
   const isEs = lang === "es";
   const t = (en: string, es: string) => (isEs ? es : en);
 
-  // Curated four-project collage — picked for visual range
+  // Curated four-hotel collage — picked for visual range across regions.
+  // All real properties; same source as the inspiration page marquee.
   const featured = [
-    PROJECTS.find((p) => p.slug === "casa-atelier"),
-    PROJECTS.find((p) => p.slug === "boutique-hotel-cantera"),
-    PROJECTS.find((p) => p.slug === "residencia-el-charco"),
-    PROJECTS.find((p) => p.slug === "restaurante-lumbre"),
-  ].filter((p): p is NonNullable<typeof p> => Boolean(p));
+    HOTEL_CLIENTS[0],
+    HOTEL_CLIENTS[1],
+    HOTEL_CLIENTS[2],
+    HOTEL_CLIENTS[3],
+  ].filter((h): h is NonNullable<typeof h> => Boolean(h));
 
   return (
     <section className="py-16 md:py-32 bg-brand-linen overflow-hidden">
@@ -61,7 +62,7 @@ const InspirationTeaser = ({ locale = "en" }: { locale?: string }) => {
                 <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-brand-stone/10">
                   <Image
                     src={featured[0].heroImage}
-                    alt={featured[0].title}
+                    alt={featured[0].name}
                     fill
                     sizes="(max-width: 1024px) 50vw, 30vw"
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -69,10 +70,10 @@ const InspirationTeaser = ({ locale = "en" }: { locale?: string }) => {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                   <div className="absolute bottom-3 left-3 right-3 text-white">
                     <p className="font-mono text-[9px] tracking-[0.2em] uppercase opacity-80">
-                      {featured[0].location[lang]}
+                      {HOTEL_REGIONS[featured[0].region][lang]}
                     </p>
                     <p className="font-display text-base md:text-lg leading-tight">
-                      {featured[0].title}
+                      {featured[0].name}
                     </p>
                   </div>
                 </div>
@@ -82,7 +83,7 @@ const InspirationTeaser = ({ locale = "en" }: { locale?: string }) => {
                   <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-brand-stone/10">
                     <Image
                       src={featured[1].heroImage}
-                      alt={featured[1].title}
+                      alt={featured[1].name}
                       fill
                       sizes="(max-width: 1024px) 50vw, 30vw"
                       className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -90,17 +91,17 @@ const InspirationTeaser = ({ locale = "en" }: { locale?: string }) => {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                     <div className="absolute bottom-3 left-3 right-3 text-white">
                       <p className="font-mono text-[9px] tracking-[0.2em] uppercase opacity-80">
-                        {featured[1].location[lang]}
+                        {HOTEL_REGIONS[featured[1].region][lang]}
                       </p>
                       <p className="font-display text-base md:text-lg leading-tight">
-                        {featured[1].title}
+                        {featured[1].name}
                       </p>
                     </div>
                   </div>
                   <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-brand-stone/10">
                     <Image
                       src={featured[2].heroImage}
-                      alt={featured[2].title}
+                      alt={featured[2].name}
                       fill
                       sizes="(max-width: 1024px) 50vw, 30vw"
                       className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -108,10 +109,10 @@ const InspirationTeaser = ({ locale = "en" }: { locale?: string }) => {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                     <div className="absolute bottom-3 left-3 right-3 text-white">
                       <p className="font-mono text-[9px] tracking-[0.2em] uppercase opacity-80">
-                        {featured[2].location[lang]}
+                        {HOTEL_REGIONS[featured[2].region][lang]}
                       </p>
                       <p className="font-display text-base md:text-lg leading-tight">
-                        {featured[2].title}
+                        {featured[2].name}
                       </p>
                     </div>
                   </div>
@@ -122,7 +123,7 @@ const InspirationTeaser = ({ locale = "en" }: { locale?: string }) => {
               <div className="mt-3 md:mt-4 relative aspect-[16/7] rounded-lg overflow-hidden bg-brand-stone/10">
                 <Image
                   src={featured[3].heroImage}
-                  alt={featured[3].title}
+                  alt={featured[3].name}
                   fill
                   sizes="(max-width: 1024px) 100vw, 60vw"
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -130,10 +131,10 @@ const InspirationTeaser = ({ locale = "en" }: { locale?: string }) => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4 text-white">
                   <p className="font-mono text-[9px] tracking-[0.2em] uppercase opacity-80">
-                    {featured[3].location[lang]}
+                    {HOTEL_REGIONS[featured[3].region][lang]}
                   </p>
                   <p className="font-display text-lg md:text-2xl leading-tight">
-                    {featured[3].title}
+                    {featured[3].name}
                   </p>
                 </div>
               </div>
