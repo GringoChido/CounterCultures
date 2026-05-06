@@ -83,8 +83,8 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
                 {t("Home", "Inicio")}
               </Link>
               <span>/</span>
-              <Link href={`/${locale}/projects`} className="hover:text-brand-terracotta transition-colors">
-                {t("Projects", "Proyectos")}
+              <Link href={`/${locale}/inspiration`} className="hover:text-brand-terracotta transition-colors">
+                {t("Inspiration", "Inspiración")}
               </Link>
               <span>/</span>
               <span className="text-brand-charcoal">{project.title}</span>
@@ -459,11 +459,11 @@ export const ProjectDetail = ({ project, locale }: ProjectDetailProps) => {
         <section className="py-8 bg-brand-linen border-t border-brand-stone/10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <Link
-              href={`/${locale}/projects`}
+              href={`/${locale}/inspiration`}
               className="inline-flex items-center gap-2 font-body text-sm text-dash-text-secondary hover:text-brand-terracotta transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              {t("Back to All Projects", "Volver a Todos los Proyectos")}
+              {t("Back to Inspiration", "Volver a Inspiración")}
             </Link>
           </div>
         </section>

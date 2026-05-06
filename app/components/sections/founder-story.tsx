@@ -33,7 +33,7 @@ const FounderStory = ({ locale = "en" }: { locale?: string }) => {
             <div className="relative aspect-[3/4] overflow-hidden rounded-lg">
               <Image
                 src="/images/home/twenty-years.webp"
-                alt="Roger Williams in the Counter Cultures showroom — twenty years of curating luxury fixtures in San Miguel de Allende"
+                alt="Counter Cultures showroom — premium kitchen and bath fixtures curated in San Miguel de Allende"
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover"

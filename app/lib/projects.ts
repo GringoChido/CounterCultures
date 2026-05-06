@@ -13,6 +13,19 @@ export interface ProjectFixture {
   slug?: string;
 }
 
+export type ProjectLook =
+  | "contemporary"
+  | "hacienda"
+  | "boutique-hotel"
+  | "restaurant";
+
+export const PROJECT_LOOKS: Record<ProjectLook, BilingualText> = {
+  contemporary: { en: "Contemporary", es: "Contemporáneo" },
+  hacienda: { en: "Hacienda", es: "Hacienda" },
+  "boutique-hotel": { en: "Boutique Hotel", es: "Hotel Boutique" },
+  restaurant: { en: "Restaurant", es: "Restaurante" },
+};
+
 export interface Project {
   slug: string;
   title: string;
@@ -20,6 +33,7 @@ export interface Project {
   architect: string;
   architectFirm?: string;
   type: { en: string; es: string };
+  look: ProjectLook;
   year: number;
   description: BilingualText;
   longDescription: BilingualText;
@@ -46,6 +60,7 @@ export const PROJECTS: Project[] = [
     architect: "Arq. Carolina Mendoza",
     architectFirm: "Studio Arquitectura MX",
     type: { en: "Residential", es: "Residencial" },
+    look: "contemporary",
     year: 2023,
     description: {
       en: "A contemporary home where Brizo Litze faucets meet hand-hammered copper basins. Every fixture tells a story of precision and craft.",
@@ -113,6 +128,7 @@ export const PROJECTS: Project[] = [
     architect: "Arq. Sofía Villanueva",
     architectFirm: "Studio Arquitectura MX",
     type: { en: "Hospitality", es: "Hotelería" },
+    look: "boutique-hotel",
     year: 2022,
     description: {
       en: "48 rooms, each specified with TOTO Washlets and Kohler rain showers. The lobby features a custom artisanal copper vessel by Don Miguel.",
@@ -173,6 +189,7 @@ export const PROJECTS: Project[] = [
     location: { en: "San Miguel de Allende", es: "San Miguel de Allende" },
     architect: "Arq. David Torres Robles",
     type: { en: "Residential", es: "Residencial" },
+    look: "hacienda",
     year: 2024,
     description: {
       en: "A hacienda-style estate with Sun Valley Bronze entry hardware, BLANCO kitchen sinks, and Badeloft freestanding tubs throughout.",
@@ -226,6 +243,7 @@ export const PROJECTS: Project[] = [
     location: { en: "San Miguel de Allende", es: "San Miguel de Allende" },
     architect: "TAC Arquitectos",
     type: { en: "Commercial", es: "Comercial" },
+    look: "restaurant",
     year: 2023,
     description: {
       en: "An open-kitchen concept restaurant with Brizo commercial-grade faucets and BLANCO Silgranit prep sinks designed for high-volume use.",
@@ -273,6 +291,7 @@ export const PROJECTS: Project[] = [
     location: { en: "Querétaro", es: "Querétaro" },
     architect: "Arq. Sofía Villanueva",
     type: { en: "Hospitality", es: "Hotelería" },
+    look: "boutique-hotel",
     year: 2023,
     description: {
       en: "Cantera stone vessel sinks from Taller Piedra Viva paired with California Faucets' Descanso series in an antique brass finish.",
@@ -319,6 +338,7 @@ export const PROJECTS: Project[] = [
     location: { en: "San Miguel de Allende", es: "San Miguel de Allende" },
     architect: "Arq. Martín Ramírez",
     type: { en: "Residential", es: "Residencial" },
+    look: "contemporary",
     year: 2024,
     description: {
       en: "A modern residence featuring Emtek door hardware throughout, Kohler Strive kitchen sinks, and Mistoa artisanal basins in the powder rooms.",

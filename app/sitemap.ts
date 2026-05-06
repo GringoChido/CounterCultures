@@ -45,7 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...localizedEntry("/shop/hardware", "weekly", 0.85),
     ...localizedEntry("/brands", "monthly", 0.75),
     ...localizedEntry("/our-story", "yearly", 0.6),
-    ...localizedEntry("/projects", "monthly", 0.75),
+    ...localizedEntry("/inspiration", "monthly", 0.75),
     ...localizedEntry("/showroom", "monthly", 0.7),
     ...localizedEntry("/contact", "yearly", 0.65),
     ...localizedEntry("/trade", "monthly", 0.75),
@@ -90,7 +90,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Project detail pages
   const projectRoutes: MetadataRoute.Sitemap = PROJECTS.flatMap(({ slug }) =>
-    localizedEntry(`/projects/${slug}`, "monthly", 0.7)
+    localizedEntry(`/inspiration/${slug}`, "monthly", 0.7)
   );
 
   // Product detail pages

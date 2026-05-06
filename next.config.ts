@@ -34,6 +34,16 @@ const nextConfig: NextConfig = {
       { source: "/how-it-works", destination: "/how-it-works.html" },
     ];
   },
+  async redirects() {
+    return [
+      // /projects rebranded to /inspiration (Apr 2026). Permanent so search
+      // and external links roll over cleanly.
+      { source: "/:locale(en|es)/projects", destination: "/:locale/inspiration", permanent: true },
+      { source: "/:locale(en|es)/projects/:slug", destination: "/:locale/inspiration/:slug", permanent: true },
+      { source: "/projects", destination: "/en/inspiration", permanent: true },
+      { source: "/projects/:slug", destination: "/en/inspiration/:slug", permanent: true },
+    ];
+  },
   async headers() {
     return [
       {

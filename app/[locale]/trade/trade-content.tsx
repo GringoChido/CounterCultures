@@ -264,15 +264,11 @@ export const TradeContent = () => {
             </h3>
             <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
               {[
-                "Kohler",
-                "TOTO",
-                "Brizo",
-                "BLANCO",
                 "California Faucets",
                 "Sun Valley Bronze",
-                "Emtek",
-                "Badeloft",
-                "Villeroy & Boch",
+                "Ebbe Drains",
+                "WarmlyYours",
+                "Counter Copper & Brass",
               ].map((brand) => (
                 <span
                   key={brand}

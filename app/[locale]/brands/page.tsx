@@ -714,7 +714,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
                   {isEs ? "Distribuidor Autorizado" : "Authorized Dealer"}
                 </span>
                 <h2 className="mt-3 font-display text-4xl md:text-5xl font-light tracking-wide text-brand-charcoal">
-                  {isEs ? "Nuestros Socios" : "Our Import Partners"}
+                  {isEs ? "Marcas Asociadas" : "Brand Partners"}
                 </h2>
               </div>
               <p className="font-body text-sm text-dash-text-secondary max-w-md leading-relaxed">

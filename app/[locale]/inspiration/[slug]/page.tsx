@@ -32,17 +32,17 @@ export const generateMetadata = async ({
     title,
     description,
     alternates: {
-      canonical: `${BASE_URL}/${locale}/projects/${slug}`,
+      canonical: `${BASE_URL}/${locale}/inspiration/${slug}`,
       languages: {
-        en: `${BASE_URL}/en/projects/${slug}`,
-        es: `${BASE_URL}/es/projects/${slug}`,
-        "x-default": `${BASE_URL}/en/projects/${slug}`,
+        en: `${BASE_URL}/en/inspiration/${slug}`,
+        es: `${BASE_URL}/es/inspiration/${slug}`,
+        "x-default": `${BASE_URL}/en/inspiration/${slug}`,
       },
     },
     openGraph: {
       title,
       description,
-      url: `${BASE_URL}/${locale}/projects/${slug}`,
+      url: `${BASE_URL}/${locale}/inspiration/${slug}`,
       locale: isEs ? "es_MX" : "en_US",
       alternateLocale: isEs ? "en_US" : "es_MX",
       type: "article",
@@ -76,7 +76,7 @@ const ProjectPage = async ({ params }: ProjectPageProps) => {
   const projectJsonLd = {
     "@context": "https://schema.org",
     "@type": "CreativeWork",
-    "@id": `${BASE_URL}/${lang}/projects/${slug}#project`,
+    "@id": `${BASE_URL}/${lang}/inspiration/${slug}#project`,
     name: project.title,
     description: project.description[lang],
     image: project.gallery.map((img) => ({
@@ -135,14 +135,14 @@ const ProjectPage = async ({ params }: ProjectPageProps) => {
       {
         "@type": "ListItem",
         position: 2,
-        name: isEs ? "Proyectos" : "Projects",
-        item: `${BASE_URL}/${lang}/projects`,
+        name: isEs ? "Inspiración" : "Inspiration",
+        item: `${BASE_URL}/${lang}/inspiration`,
       },
       {
         "@type": "ListItem",
         position: 3,
         name: project.title,
-        item: `${BASE_URL}/${lang}/projects/${slug}`,
+        item: `${BASE_URL}/${lang}/inspiration/${slug}`,
       },
     ],
   };
