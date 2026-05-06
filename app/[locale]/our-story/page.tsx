@@ -17,8 +17,8 @@ export const generateMetadata = async ({
     ? "Nuestra Historia — Counter Cultures desde 2004"
     : "Our Story — Counter Cultures Since 2004";
   const description = isEs
-    ? "Fundada en 2004 por Roger Williams en San Miguel de Allende. Distribuidor autorizado de Kohler, TOTO, Brizo, BLANCO y socio de los artesanos mexicanos del cobre, la cerámica y la piedra desde hace 20 años."
-    : "Founded in 2004 by Roger Williams in San Miguel de Allende. Authorized dealer for Kohler, TOTO, Brizo, BLANCO and partner to Mexican artisans of copper, ceramic, and stone for 20 years.";
+    ? "Fundada en 2004 por Roger Williams en San Miguel de Allende. Distribuidor autorizado de Kohler, TOTO, Brizo, BLANCO y socio de los artesanos mexicanos del cobre, la cerámica y la piedra desde hace 22 años."
+    : "Founded in 2004 by Roger Williams in San Miguel de Allende. Authorized dealer for Kohler, TOTO, Brizo, BLANCO and partner to Mexican artisans of copper, ceramic, and stone for 22 years.";
 
   return {
     title,
@@ -91,7 +91,7 @@ const OurStoryPage = async ({ params }: OurStoryPageProps) => {
           "@id": `${BASE_URL}/#organization`,
         },
       },
-      numberOfYearsInBusiness: 20,
+      numberOfYearsInBusiness: 22,
       slogan: isEs
         ? "Donde el diseño de clase mundial se encuentra con el arte de México"
         : "Where world-class design meets the soul of Mexican craft",

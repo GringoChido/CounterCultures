@@ -212,3 +212,30 @@ html {
   overflow-wrap: break-word;
   word-break: break-word;
 }
+
+/* Marquee animation — used by the project gallery on the home page.
+   Cards are duplicated in the DOM so a -50% translate creates a seamless loop. */
+@keyframes cc-marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.cc-marquee-track {
+  animation: cc-marquee 80s linear infinite;
+  will-change: transform;
+}
+
+.cc-marquee-track:hover,
+.cc-marquee-track:focus-within {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-marquee-track {
+    animation: none;
+  }
+}

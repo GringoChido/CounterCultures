@@ -21,7 +21,24 @@ import type { ProductFull, ProductFullWithSignals, BrandCount } from "@/app/lib/
 import { useProjectListStore } from "@/app/lib/stores/project-list-store";
 import { ProductVisual } from "@/app/components/product-visual";
 import { VisualSearchModal } from "@/app/components/visual-search-modal";
+import { brandTheme } from "@/app/lib/product-visuals";
 import { ProductDrawer } from "./product-drawer";
+
+// Color-coded finish swatches — architects scan finish codes (MB/PC/BG/etc.)
+// at a glance on SKU sheets. This turns code-scanning into color-scanning
+// and adds chromatic life to an otherwise monochrome utility page.
+// Click sets the search query to the finish code, leveraging the existing
+// full-text search to filter products with that finish.
+const FINISH_SWATCHES = [
+  { code: "MB", label: { en: "Matte Black", es: "Negro Mate" }, bg: "#1A1A1A" },
+  { code: "PC", label: { en: "Chrome", es: "Cromado" }, bg: "#CACED2" },
+  { code: "BN", label: { en: "Nickel", es: "Níquel" }, bg: "#B6B7B0" },
+  { code: "GL", label: { en: "Gold", es: "Oro" }, bg: "#B8904A" },
+  { code: "PB", label: { en: "Brass", es: "Latón" }, bg: "#B09058" },
+  { code: "ORB", label: { en: "Bronze", es: "Bronce" }, bg: "#3B2817" },
+  { code: "CP", label: { en: "Copper", es: "Cobre" }, bg: "#B87333" },
+  { code: "WH", label: { en: "White", es: "Blanco" }, bg: "#F4EFE7" },
+] as const;
 
 interface SearchResponse {
   items: ProductFullWithSignals[];
@@ -336,23 +353,47 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
               {totalProducts.toLocaleString()}
             </span>
           </button>
-          {filteredBrands.map((b) => (
-            <button
-              key={b.brand}
-              type="button"
-              onClick={() => setBrand(b.brand)}
-              className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between border-b border-brand-stone/10 last:border-b-0 hover:bg-brand-linen transition-colors cursor-pointer ${
-                brand === b.brand
-                  ? "bg-brand-linen font-medium text-brand-copper"
-                  : "text-brand-charcoal"
-              }`}
-            >
-              <span className="truncate pr-2">{b.brand || "(blank)"}</span>
-              <span className="font-mono text-[10px] text-dash-text-secondary shrink-0">
-                {b.count.toLocaleString()}
-              </span>
-            </button>
-          ))}
+          {filteredBrands.map((b) => {
+            const maxCount = brandCounts[0]?.count || 1;
+            const pct = Math.max(4, (b.count / maxCount) * 100);
+            const theme = brandTheme(b.brand);
+            const isActive = brand === b.brand;
+            return (
+              <button
+                key={b.brand}
+                type="button"
+                onClick={() => setBrand(b.brand)}
+                className={`group relative w-full text-left px-3 py-2.5 text-xs flex items-center justify-between border-b border-brand-stone/10 last:border-b-0 transition-all cursor-pointer overflow-hidden ${
+                  isActive
+                    ? "font-medium text-brand-charcoal"
+                    : "text-brand-charcoal hover:text-brand-copper"
+                }`}
+              >
+                {/* Proportional bar tinted by brand color — turns the list
+                    into a chromatic ranking. Light brands (Emtek, Blanco)
+                    show as faint warm tints; dark brands (Brizo, Kohler)
+                    show as deep smokes. */}
+                <div
+                  className="absolute inset-y-0 left-0 transition-all duration-300"
+                  style={{
+                    width: `${pct}%`,
+                    backgroundColor: theme.bg + (isActive ? "73" : "26"),
+                  }}
+                />
+                <span className="relative truncate pr-2 inline-flex items-center gap-2 min-w-0">
+                  <span
+                    aria-hidden
+                    className="w-1.5 h-1.5 rounded-full shrink-0 ring-1 ring-black/10"
+                    style={{ background: theme.bg }}
+                  />
+                  <span className="truncate">{b.brand || "(blank)"}</span>
+                </span>
+                <span className="relative font-mono text-[10px] text-dash-text-secondary shrink-0 tabular-nums">
+                  {b.count.toLocaleString()}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -494,6 +535,46 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
               </div>
             </div>
 
+            {/* Finish swatch quick-filter — chromatic accent + utility.
+                Sets the search query to the finish code; click again to clear. */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5 -mt-1">
+              <span className="font-body text-[10px] tracking-[0.2em] uppercase text-dash-text-secondary">
+                {locale === "es" ? "Acabado" : "Finish"}
+              </span>
+              {FINISH_SWATCHES.map((f) => {
+                const isActive = query.trim().toUpperCase() === f.code;
+                return (
+                  <button
+                    key={f.code}
+                    type="button"
+                    onClick={() => setQuery(isActive ? "" : f.code)}
+                    title={f.label[locale]}
+                    aria-pressed={isActive}
+                    className="group inline-flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <span
+                      aria-hidden
+                      className={`w-5 h-5 rounded-full ring-1 transition-all ${
+                        isActive
+                          ? "ring-brand-copper ring-offset-2 ring-offset-brand-linen scale-110"
+                          : "ring-black/15 group-hover:scale-110 group-hover:ring-black/30"
+                      }`}
+                      style={{ background: f.bg }}
+                    />
+                    <span
+                      className={`font-body text-[10px] tracking-wider transition-colors ${
+                        isActive
+                          ? "text-brand-charcoal font-medium"
+                          : "text-dash-text-secondary group-hover:text-brand-charcoal"
+                      }`}
+                    >
+                      {f.label[locale]}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
             {/* Active filters + status */}
             <div className="flex items-center gap-2 flex-wrap text-xs font-body">
               {result && totalPages > 1 && (
@@ -586,33 +667,118 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
                 <p className="font-body text-dash-text-secondary">{t.noResults}</p>
               </div>
             ) : needsAccess ? (
-              <div className="py-16 md:py-20 px-6 bg-dash-surface border border-brand-stone/15 text-center">
-                <span className="font-body font-semibold text-[10px] tracking-[0.25em] text-brand-copper uppercase">
-                  {locale === "es" ? "Acceso al catálogo" : "Catalog Access"}
-                </span>
-                <h3 className="mt-3 font-display text-2xl md:text-3xl font-light text-brand-charcoal tracking-wide max-w-xl mx-auto">
-                  {locale === "es"
-                    ? "Solicita acceso al catálogo completo con precios."
-                    : "Request access to the full catalog with pricing."}
-                </h3>
-                <p className="mt-3 font-body text-sm text-dash-text-secondary max-w-md mx-auto leading-relaxed">
-                  {locale === "es"
-                    ? "Para arquitectos, diseñadores y constructores. Cotización en 24 horas."
-                    : "For architects, designers, and builders. 24-hour quotes."}
-                </p>
-                <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-                  <a
-                    href={`/${locale}/contact`}
-                    className="inline-flex items-center justify-center px-6 py-3 text-sm font-body font-medium bg-brand-copper text-white rounded-md hover:bg-brand-copper-dark transition-colors"
-                  >
-                    {locale === "es" ? "Contactar al equipo" : "Contact the team"}
-                  </a>
-                  <a
-                    href="/dashboard/login"
-                    className="inline-flex items-center justify-center px-6 py-3 text-sm font-body font-medium border-2 border-brand-charcoal text-brand-charcoal rounded-md hover:bg-brand-charcoal hover:text-white transition-colors"
-                  >
-                    {locale === "es" ? "Iniciar sesión" : "Sign in"}
-                  </a>
+              <div className="space-y-5">
+                {/* CTA band on top — the gate is explicit, not visual.
+                    Pricing/specs are gated; brand exploration isn't. */}
+                <div className="relative bg-brand-charcoal overflow-hidden">
+                  <div
+                    className="absolute inset-0 opacity-[0.04]"
+                    style={{
+                      backgroundImage: `repeating-linear-gradient(90deg, transparent 0, transparent 40px, rgba(255,255,255,0.5) 40px, rgba(255,255,255,0.5) 41px)`,
+                    }}
+                  />
+                  <div className="relative px-6 py-8 md:py-10">
+                    <div className="max-w-2xl mx-auto text-center">
+                      <span className="font-body font-semibold text-[10px] tracking-[0.3em] text-brand-copper uppercase">
+                        {locale === "es" ? "Acceso al catálogo" : "Catalog Access"}
+                      </span>
+                      <h3 className="mt-3 font-display text-xl md:text-2xl font-light text-white tracking-wide">
+                        {locale === "es"
+                          ? "Pricing y especificaciones detrás del muro."
+                          : "Pricing and specs sit behind the wall."}
+                      </h3>
+                      <p className="mt-3 font-body text-sm text-white/55">
+                        {locale === "es"
+                          ? "Explora las marcas abajo. Solicita acceso para ver detalles y cotizar."
+                          : "Browse brands below. Request access to see details and quote."}
+                      </p>
+                      <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                        <a
+                          href={`/${locale}/contact`}
+                          className="inline-flex items-center justify-center px-6 py-2.5 text-sm font-body font-medium bg-brand-copper text-white hover:bg-brand-copper/90 transition-colors"
+                        >
+                          {locale === "es" ? "Contactar al equipo" : "Contact the team"}
+                        </a>
+                        <a
+                          href="/dashboard/login"
+                          className="inline-flex items-center justify-center px-6 py-2.5 text-sm font-body font-medium border border-white/30 text-white hover:bg-white/10 transition-colors"
+                        >
+                          {locale === "es" ? "Iniciar sesión" : "Sign in"}
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Brand showcase — crisp, clickable, no blur. These ARE
+                    the product visuals architects see in the real catalog
+                    (98.8% of SKUs use brand-themed typographic panels via
+                    ProductVisual). Click filters to that brand. */}
+                <div>
+                  <div className="flex items-baseline justify-between mb-4">
+                    <span className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-copper uppercase">
+                      {locale === "es"
+                        ? `${brandCounts.length} marcas en el catálogo`
+                        : `${brandCounts.length} brands in the catalog`}
+                    </span>
+                    <span className="font-body text-xs text-dash-text-secondary tabular-nums hidden sm:inline">
+                      {totalProducts.toLocaleString()} {locale === "es" ? "piezas" : "pieces"}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {brandCounts.slice(0, 12).map((b) => {
+                      const theme = brandTheme(b.brand);
+                      return (
+                        <button
+                          key={b.brand}
+                          type="button"
+                          onClick={() => setBrand(b.brand)}
+                          className="group relative aspect-[4/5] overflow-hidden cursor-pointer transition-transform hover:-translate-y-0.5"
+                          style={{ background: theme.bg, color: theme.fg }}
+                          title={b.brand}
+                        >
+                          <div className="absolute inset-0 ring-1 ring-inset ring-black/10 pointer-events-none" />
+
+                          {/* Centered brand wordmark — same visual language
+                              as the real ProductVisual typographic panel */}
+                          <div className="absolute inset-0 flex items-center justify-center px-4">
+                            <h4
+                              className="font-display font-light tracking-wide text-xl md:text-2xl lg:text-3xl text-center truncate max-w-full opacity-90"
+                              style={{ color: theme.fg }}
+                            >
+                              {b.brand}
+                            </h4>
+                          </div>
+
+                          {/* Bottom info strip — brand · count · view */}
+                          <div
+                            className="absolute inset-x-0 bottom-0 px-3 py-2.5 flex items-center justify-between text-[10px] tracking-wider uppercase"
+                            style={{
+                              background: "rgba(0,0,0,0.18)",
+                              color: theme.fg,
+                            }}
+                          >
+                            <span className="font-mono tabular-nums opacity-80">
+                              {b.count.toLocaleString()}
+                            </span>
+                            <span className="font-body opacity-0 group-hover:opacity-90 transition-opacity">
+                              {locale === "es" ? "Ver →" : "View →"}
+                            </span>
+                          </div>
+
+                          {/* Top corner accent */}
+                          <div
+                            className="absolute top-0 left-0 w-8 h-[2px]"
+                            style={{ background: theme.fg, opacity: 0.4 }}
+                          />
+                          <div
+                            className="absolute top-0 left-0 w-[2px] h-8"
+                            style={{ background: theme.fg, opacity: 0.4 }}
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             ) : !result && !isPending ? (

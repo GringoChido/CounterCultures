@@ -1,6 +1,12 @@
 import type { BilingualText } from "./types";
 
-export type HotelRegion = "san-miguel" | "los-cabos" | "quintana-roo";
+export type HotelRegion =
+  | "san-miguel"
+  | "los-cabos"
+  | "quintana-roo"
+  | "riviera-nayarit"
+  | "belize"
+  | "jalisco";
 
 export interface HotelClient {
   slug: string;
@@ -15,6 +21,9 @@ export const HOTEL_REGIONS: Record<HotelRegion, BilingualText> = {
   "san-miguel": { en: "San Miguel de Allende", es: "San Miguel de Allende" },
   "los-cabos": { en: "Los Cabos", es: "Los Cabos" },
   "quintana-roo": { en: "Quintana Roo", es: "Quintana Roo" },
+  "riviera-nayarit": { en: "Riviera Nayarit", es: "Riviera Nayarit" },
+  belize: { en: "Belize", es: "Belice" },
+  jalisco: { en: "Jalisco", es: "Jalisco" },
 };
 
 export const HOTEL_CLIENTS: HotelClient[] = [
@@ -110,5 +119,30 @@ export const HOTEL_CLIENTS: HotelClient[] = [
     website:
       "https://www.belmond.com/hotels/north-america/mexico/riviera-maya/belmond-maroma-resort-and-spa/",
     heroImage: "/images/projects/hotels/maroma-belmond.jpg",
+  },
+  {
+    slug: "punta-mita",
+    name: "Punta Mita",
+    location: { en: "Riviera Nayarit", es: "Riviera Nayarit" },
+    region: "riviera-nayarit",
+    website: "https://www.puntamita.com/es/",
+    heroImage: "/Assets/projects/punta-mita.jpg",
+  },
+  {
+    slug: "four-seasons-caye-chapel",
+    name: "Four Seasons Caye Chapel",
+    location: { en: "Belize", es: "Belice" },
+    region: "belize",
+    website:
+      "https://www.fourseasons.com/residences/private_residences/belize/",
+    heroImage: "/Assets/projects/caye-chapel.jpeg",
+  },
+  {
+    slug: "tequila-express",
+    name: "Tequila Express",
+    location: { en: "Jalisco", es: "Jalisco" },
+    region: "jalisco",
+    website: "https://www.tequilaexpress.mx/viajar-en-tren/",
+    heroImage: "/Assets/projects/tequila-express.jpg",
   },
 ];
