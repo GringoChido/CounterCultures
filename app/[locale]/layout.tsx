@@ -166,9 +166,9 @@ const organizationJsonLd = {
     "Emtek",
   ],
   sameAs: [
-    "https://www.instagram.com/countercultures",
-    "https://www.facebook.com/countercultures",
-    "https://www.pinterest.com/countercultures",
+    "https://www.instagram.com/counter_cultures/",
+    "https://www.facebook.com/counterculturesmx/",
+    "https://mx.pinterest.com/pin/358106607856301782/",
     "https://countercultures.mx",
   ],
   hasOfferCatalog: {

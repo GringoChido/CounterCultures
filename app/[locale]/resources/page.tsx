@@ -89,7 +89,7 @@ const ResourcesPage = async ({ params }: ResourcesPageProps) => {
             name: "¿Cuál es su política de devoluciones?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Artículos sin abrir en empaque original pueden devolverse en 30 días para reembolso completo o cambio. Artículos abiertos son elegibles solo para cambio, dentro de 15 días. Piezas de pedido especial y artesanales no son retornables.",
+              text: "Los intercambios físicos solo se aceptan si se reportan dentro de las 72 horas posteriores a la recepción. Se aplica un cargo operativo del 30% a todas las devoluciones, cambios o cancelaciones. Los acabados Living Finishes, pedidos personalizados y productos descontinuados no son retornables. Los productos enviados hace más de 8 meses no son elegibles para devolución.",
             },
           },
           {
@@ -131,7 +131,7 @@ const ResourcesPage = async ({ params }: ResourcesPageProps) => {
             name: "What is your return and exchange policy?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Unopened items in original packaging can be returned within 30 days for a full refund or exchange. Opened items are eligible for exchange only, within 15 days. Custom-order and artisanal pieces are non-returnable.",
+              text: "Physical exchanges are only accepted if reported within 72 hours of receipt. A 30% operational fee applies to all returns, exchanges, or cancellations. All items must be returned in original packaging with all accessories. Living Finishes, custom orders, and discontinued products are non-returnable. Products shipped more than 8 months ago are not eligible for return.",
             },
           },
           {

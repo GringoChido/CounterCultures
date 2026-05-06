@@ -63,8 +63,8 @@ const ReturnsWarrantyPage = async ({ params }: PageProps) => {
           </p>
           <p className="font-body text-base text-brand-charcoal/80 leading-relaxed mb-4">
             {isEs ? "Contacto: " : "Contact: "}
-            <a href={`mailto:${SITE_CONFIG.showroom.email}`} className="text-brand-terracotta hover:underline">
-              {SITE_CONFIG.showroom.email}
+            <a href="mailto:equipo@countercultures.com.mx" className="text-brand-terracotta hover:underline">
+              equipo@countercultures.com.mx
             </a>
             {" o "}
             <a href="tel:4151548375" className="text-brand-terracotta hover:underline">
@@ -102,18 +102,28 @@ const ReturnsWarrantyPage = async ({ params }: PageProps) => {
           </h2>
           <p className="font-body text-base text-brand-charcoal/80 leading-relaxed mb-4">
             {isEs
-              ? "Si el producto no está disponible, se ofrece intercambio por un artículo equivalente o un reembolso del 75% al método de pago original."
-              : "If the product is unavailable, an exchange for an equivalent item or a 75% refund to the original payment method will be offered."}
+              ? "Si el producto no está disponible, se ofrece intercambio por un artículo equivalente o un reembolso del 70% al método de pago original."
+              : "If the product is unavailable, an exchange for an equivalent item or a 70% refund to the original payment method will be offered."}
           </p>
 
           <h2 className="font-display text-xl font-medium text-brand-charcoal mt-10 mb-4">
-            {isEs ? "Cargo Operativo del 25%" : "25% Operational Fee"}
+            {isEs ? "Cargo Operativo del 30%" : "30% Operational Fee"}
           </h2>
           <p className="font-body text-base text-brand-charcoal/80 leading-relaxed mb-4">
             {isEs
-              ? "Se aplica un cargo operativo del 25% a todas las devoluciones, cambios o cancelaciones."
-              : "A 25% operational fee is applied to all returns, exchanges, or cancellations."}
+              ? "Se aplica un cargo operativo del 30% a todas las devoluciones, cambios o cancelaciones."
+              : "A 30% operational fee is applied to all returns, exchanges, or cancellations."}
           </p>
+
+          <h2 className="font-display text-xl font-medium text-brand-charcoal mt-10 mb-4">
+            {isEs ? "Artículos No Retornables" : "Non-Returnable Items"}
+          </h2>
+          <ul className="font-body text-base text-brand-charcoal/80 list-disc pl-6 space-y-2 mb-4">
+            <li>{isEs ? "Los acabados Living Finishes y pedidos personalizados no pueden ser devueltos ni cancelados" : "Living Finishes and custom orders cannot be returned or canceled"}</li>
+            <li>{isEs ? "Los productos descontinuados no pueden ser devueltos" : "Discontinued products cannot be returned"}</li>
+            <li>{isEs ? "Los productos enviados hace más de 8 meses no son elegibles para devolución" : "Products shipped more than 8 months ago are not eligible for return"}</li>
+            <li>{isEs ? "Créditos: Cualquier crédito por productos devueltos será determinado y aplicado únicamente después de nuestra inspección de los artículos" : "Credits: Any credits for returned products will be determined and applied only after our inspection of the items"}</li>
+          </ul>
 
           <h2 className="font-display text-xl font-medium text-brand-charcoal mt-10 mb-4">
             {isEs ? "Exclusiones de Garantía" : "Warranty Exclusions"}

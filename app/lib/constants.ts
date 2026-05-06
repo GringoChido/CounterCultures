@@ -12,9 +12,9 @@ export const SITE_CONFIG = {
     hours: "Lunes a Viernes, 10:00 – 18:00",
   },
   social: {
-    instagram: "https://instagram.com/countercultures",
-    facebook: "https://facebook.com/countercultures",
-    pinterest: "https://pinterest.com/countercultures",
+    instagram: "https://www.instagram.com/counter_cultures/",
+    facebook: "https://www.facebook.com/counterculturesmx/",
+    pinterest: "https://mx.pinterest.com/pin/358106607856301782/",
   },
 } as const;
 

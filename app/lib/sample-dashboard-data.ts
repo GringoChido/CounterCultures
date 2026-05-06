@@ -760,7 +760,7 @@ export const SAMPLE_PIPELINE: PipelineDeal[] = [
     ],
     purchaseOrders: [
       {
-        id: "CC-PO-2026-001", dealId: "DEAL-009", brand: "Brizo", manufacturerName: "Brizo / Delta Faucet", manufacturerContact: "rep@brizo.com",
+        id: "CC-PO-2026-001", dealId: "DEAL-009", brand: "Brizo", manufacturerName: "Ferguson", manufacturerContact: "rep@brizo.com",
         items: [
           { sku: "63054LF-GL", productName: "Litze Pull-Down Faucet", finish: "Luxe Gold", quantity: 1, dealerCost: 22000 },
           { sku: "62174LF-GL", productName: "Litze Pot Filler", finish: "Luxe Gold", quantity: 1, dealerCost: 16000 },
@@ -770,7 +770,7 @@ export const SAMPLE_PIPELINE: PipelineDeal[] = [
         shipTo: "cc-showroom", estimatedShipDate: "2026-04-15", trackingCarrier: "FedEx", trackingNumber: "789123456700",
       },
       {
-        id: "CC-PO-2026-002", dealId: "DEAL-009", brand: "TOTO", manufacturerName: "TOTO USA",
+        id: "CC-PO-2026-002", dealId: "DEAL-009", brand: "TOTO", manufacturerName: "JELP",
         items: [
           { sku: "SW3084#01", productName: "Washlet C5", quantity: 1, dealerCost: 12000 },
           { sku: "CST776CEG#01", productName: "Drake Elongated Toilet", quantity: 1, dealerCost: 10000 },
@@ -849,13 +849,13 @@ export const SAMPLE_PIPELINE: PipelineDeal[] = [
     ],
     purchaseOrders: [
       {
-        id: "CC-PO-2026-010", dealId: "DEAL-010", brand: "TOTO", manufacturerName: "TOTO USA",
+        id: "CC-PO-2026-010", dealId: "DEAL-010", brand: "TOTO", manufacturerName: "JELP",
         items: [{ sku: "MS903CUMFG#01", productName: "Neorest NX2 Intelligent Toilet", quantity: 12, dealerCost: 18000 }],
         totalAmount: 216000, currency: "MXN", status: "confirmed", sentDate: "2026-03-25", confirmedDate: "2026-03-26",
         shipTo: "cc-showroom", estimatedShipDate: "2026-04-25",
       },
       {
-        id: "CC-PO-2026-011", dealId: "DEAL-010", brand: "Brizo", manufacturerName: "Brizo / Delta Faucet",
+        id: "CC-PO-2026-011", dealId: "DEAL-010", brand: "Brizo", manufacturerName: "Ferguson",
         items: [{ sku: "63075LF-PC", productName: "Odin Pull-Down Faucet", finish: "Polished Chrome", quantity: 12, dealerCost: 8500 }],
         totalAmount: 102000, currency: "MXN", status: "sent", sentDate: "2026-04-01",
         shipTo: "cc-showroom",
@@ -867,7 +867,7 @@ export const SAMPLE_PIPELINE: PipelineDeal[] = [
         shipTo: "cc-showroom",
       },
       {
-        id: "CC-PO-2026-013", dealId: "DEAL-010", brand: "Kohler", manufacturerName: "Kohler Co.",
+        id: "CC-PO-2026-013", dealId: "DEAL-010", brand: "Kohler", manufacturerName: "Ferguson",
         items: [{ sku: "K-14406-4-CP", productName: "Purist Widespread Faucet", finish: "Polished Chrome", quantity: 12, dealerCost: 6000 }],
         totalAmount: 72000, currency: "MXN", status: "draft",
         shipTo: "cc-showroom",
@@ -911,7 +911,7 @@ export const SAMPLE_PIPELINE: PipelineDeal[] = [
     ],
     purchaseOrders: [
       {
-        id: "CC-PO-2026-020", dealId: "DEAL-011", brand: "Kohler", manufacturerName: "Kohler Co.",
+        id: "CC-PO-2026-020", dealId: "DEAL-011", brand: "Kohler", manufacturerName: "Ferguson",
         items: [
           { sku: "K-6669-0", productName: "Memoirs Stately Toilet", quantity: 1, dealerCost: 14000 },
           { sku: "K-2258-8-0", productName: "Memoirs Pedestal Sink", quantity: 1, dealerCost: 12000 },
@@ -973,14 +973,14 @@ export const SAMPLE_PIPELINE: PipelineDeal[] = [
     ],
     purchaseOrders: [
       {
-        id: "CC-PO-2026-030", dealId: "DEAL-012", brand: "Brizo", manufacturerName: "Brizo / Delta Faucet",
+        id: "CC-PO-2026-030", dealId: "DEAL-012", brand: "Brizo", manufacturerName: "Ferguson",
         items: [{ sku: "65035LF-NK", productName: "Litze Single Handle Faucet", finish: "Brilliance Luxe Nickel", quantity: 1, dealerCost: 12000 }],
         totalAmount: 12000, currency: "MXN", status: "received", sentDate: "2026-03-07", confirmedDate: "2026-03-08",
         paymentToMfr: { date: "2026-03-08", amount: 12000, method: "wire", reference: "TRF-2026-0308" },
         shipTo: "cc-showroom", receivedDate: "2026-03-22", receivedCondition: "good",
       },
       {
-        id: "CC-PO-2026-031", dealId: "DEAL-012", brand: "TOTO", manufacturerName: "TOTO USA",
+        id: "CC-PO-2026-031", dealId: "DEAL-012", brand: "TOTO", manufacturerName: "JELP",
         items: [{ sku: "CST776CEG#01", productName: "Drake Elongated Toilet", quantity: 1, dealerCost: 10000 }],
         totalAmount: 10000, currency: "MXN", status: "issue", sentDate: "2026-03-07", confirmedDate: "2026-03-07",
         paymentToMfr: { date: "2026-03-08", amount: 10000, method: "credit-card", reference: "CC-9102" },

@@ -477,7 +477,7 @@ const TRAFICO_E52: Trafico = {
       traficoId: "CC-TRF-2026-003",
       dealId: "DEAL-010",
       poId: "CC-PO-2026-010",
-      vendorName: "TOTO USA",
+      vendorName: "JELP",
       vendorInvoiceNumber: "TOTO-INV-2026-0401",
       vendorInvoiceDate: "2026-03-28",
       products: [
@@ -498,7 +498,7 @@ const TRAFICO_E52: Trafico = {
       traficoId: "CC-TRF-2026-003",
       dealId: "DEAL-010",
       poId: "CC-PO-2026-011",
-      vendorName: "Brizo / Delta Faucet",
+      vendorName: "Ferguson",
       vendorInvoiceNumber: "BRIZO-INV-2026-0330",
       vendorInvoiceDate: "2026-03-30",
       products: [
@@ -596,7 +596,7 @@ const TRAFICO_E55: Trafico = {
       traficoId: "CC-TRF-2026-004",
       dealId: "DEAL-010",
       poId: "CC-PO-2026-013",
-      vendorName: "Kohler Co.",
+      vendorName: "Ferguson",
       vendorInvoiceNumber: "KOH-INV-2026-0405",
       vendorInvoiceDate: "2026-04-05",
       products: [

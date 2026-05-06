@@ -47,13 +47,15 @@ export interface BrandVendorMap {
  */
 export const BRAND_VENDORS: Record<string, BrandVendorMap> = {
   Kohler: {
-    default: { key: "ferguson", name: "Ferguson", leadTimeDays: 18, importEase: 5, note: "Net 30 · clean broker" },
-    alternatives: [
-      { key: "jcr", name: "JCR", leadTimeDays: 22, importEase: 4, note: "Sometimes faster on US-East stock" },
-    ],
+    default: { key: "ferguson", name: "Ferguson", leadTimeDays: 18, importEase: 5, note: "Cash up front · clean broker" },
+    alternatives: [],
   },
   Brizo: {
-    default: { key: "ferguson", name: "Ferguson", leadTimeDays: 14, importEase: 5 },
+    default: { key: "ferguson", name: "Ferguson", leadTimeDays: 14, importEase: 5, note: "Brizo sourced via Ferguson" },
+    alternatives: [],
+  },
+  Delta: {
+    default: { key: "ferguson", name: "Ferguson", leadTimeDays: 14, importEase: 5, note: "Delta sourced via Ferguson" },
     alternatives: [],
   },
   BLANCO: {
@@ -61,17 +63,25 @@ export const BRAND_VENDORS: Record<string, BrandVendorMap> = {
     alternatives: [],
   },
   TOTO: {
-    default: { key: "ferguson", name: "Ferguson", leadTimeDays: 28, importEase: 4 },
+    default: { key: "jelp", name: "JELP", leadTimeDays: 25, importEase: 4, note: "Stock/price dependent" },
     alternatives: [
-      { key: "jcr", name: "JCR", leadTimeDays: 32, importEase: 3, note: "Long-lead Neorest sometimes" },
+      { key: "jcr", name: "JCR", leadTimeDays: 22, importEase: 4, note: "Also carries TOTO — check stock/price" },
     ],
   },
   "Sun Valley Bronze": {
-    default: { key: "svb_direct", name: "Sun Valley Bronze (direct)", leadTimeDays: 60, importEase: 2, note: "Artisan — pay against PO" },
+    default: { key: "svb_direct", name: "Sun Valley Bronze (direct)", leadTimeDays: 60, importEase: 2, note: "50% deposit on orders over $2,500" },
+    alternatives: [],
+  },
+  "California Faucets": {
+    default: { key: "california_faucets", name: "California Faucets", leadTimeDays: 28, importEase: 5, note: "NET 30 · $10K credit limit · vendor and brand" },
     alternatives: [],
   },
   Dornbracht: {
     default: { key: "ferguson", name: "Ferguson", leadTimeDays: 35, importEase: 4 },
+    alternatives: [],
+  },
+  Badeloft: {
+    default: { key: "badeloft", name: "Badeloft", leadTimeDays: 45, importEase: 3, note: "50% if not in stock, 100% before shipment" },
     alternatives: [],
   },
 };
