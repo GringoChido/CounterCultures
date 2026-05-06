@@ -122,10 +122,10 @@ const organizationJsonLd = {
   },
   address: {
     "@type": "PostalAddress",
-    streetAddress: "Providencia",
+    streetAddress: "Calle San Juan #11-A, Col. Providencia",
     addressLocality: "San Miguel de Allende",
     addressRegion: "Guanajuato",
-    postalCode: "37700",
+    postalCode: "37737",
     addressCountry: "MX",
   },
   geo: {

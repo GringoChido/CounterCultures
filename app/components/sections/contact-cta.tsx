@@ -98,11 +98,16 @@ const ContactCTA = ({ locale = "en" }: { locale?: string }) => {
               <div className="flex items-start gap-4">
                 <MapPin className="w-5 h-5 text-brand-terracotta mt-0.5 shrink-0" />
                 <div>
-                  <p className="font-body text-base text-brand-charcoal font-medium">
-                    {SITE_CONFIG.showroom.address}
-                  </p>
                   <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(SITE_CONFIG.showroom.address)}`}
+                    href={SITE_CONFIG.showroom.mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-body text-base text-brand-charcoal font-medium hover:text-brand-terracotta transition-colors block"
+                  >
+                    {SITE_CONFIG.showroom.address}
+                  </a>
+                  <a
+                    href={SITE_CONFIG.showroom.mapsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-body text-sm text-brand-terracotta hover:text-brand-copper transition-colors mt-1 inline-block"

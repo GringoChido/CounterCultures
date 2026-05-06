@@ -141,9 +141,14 @@ export const ShowroomContent = () => {
                 <div className="flex items-start gap-4">
                   <MapPin className="w-5 h-5 text-brand-terracotta mt-0.5 shrink-0" />
                   <div>
-                    <p className="font-body text-base text-brand-charcoal font-medium">
+                    <a
+                      href={SITE_CONFIG.showroom.mapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-body text-base text-brand-charcoal font-medium hover:text-brand-terracotta transition-colors block"
+                    >
                       {SITE_CONFIG.showroom.address}
-                    </p>
+                    </a>
                     <p className="font-body text-sm text-dash-text-secondary mt-1">
                       {t.designDistrict[locale]}
                     </p>
@@ -284,14 +289,14 @@ export const ShowroomContent = () => {
       <section id="location" className="bg-brand-charcoal">
         <div className="aspect-[4/3] sm:aspect-[16/7] md:aspect-[3/1] relative">
           <iframe
-            src={`https://www.google.com/maps?q=${encodeURIComponent(SITE_CONFIG.showroom.address)}&output=embed`}
+            src={`https://www.google.com/maps?q=${encodeURIComponent("Counter Cultures, " + SITE_CONFIG.showroom.address)}&output=embed`}
             title={t.mapTitle[locale]}
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
             className="absolute inset-0 w-full h-full border-0"
           />
           <a
-            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(SITE_CONFIG.showroom.address)}`}
+            href={SITE_CONFIG.showroom.mapsUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="absolute bottom-4 right-4 px-4 py-2 bg-brand-copper text-white font-body text-sm tracking-wide hover:bg-brand-copper/90 transition-colors"

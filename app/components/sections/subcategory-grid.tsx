@@ -113,6 +113,26 @@ const DESCRIPTIONS: Record<string, Record<string, { en: string; es: string }>> =
   },
 };
 
+const HEADLINES: Record<string, { en: string; es: string }> = {
+  bathroom: {
+    en: "The whole bathroom, sourced in full.",
+    es: "El baño completo, abastecido en su totalidad.",
+  },
+  kitchen: {
+    en: "The whole kitchen, sourced in full.",
+    es: "La cocina completa, abastecida en su totalidad.",
+  },
+  hardware: {
+    en: "Every handle and lock, sourced in full.",
+    es: "Cada jaladera y cerradura, abastecidas en su totalidad.",
+  },
+};
+
+const FALLBACK_HEADLINE = {
+  en: "Vetted, photographed, ready to spec.",
+  es: "Vetadas, fotografiadas, listas para especificar.",
+};
+
 const cardVariants = {
   hidden: { opacity: 0, y: 30, scale: 0.97 },
   visible: (i: number) => ({
@@ -145,7 +165,7 @@ const SubcategoryGrid = ({
             {locale === "en" ? "Our Selection" : "Nuestra Selección"}
           </p>
           <h2 className="font-display text-3xl md:text-5xl font-light text-brand-charcoal">
-            {locale === "en" ? "Vetted, photographed, ready to spec." : "Vetadas, fotografiadas, listas para especificar."}
+            {(HEADLINES[category] ?? FALLBACK_HEADLINE)[locale]}
           </h2>
           <p className="mt-4 font-body text-sm md:text-base text-dash-text-secondary max-w-2xl leading-relaxed">
             {locale === "en"

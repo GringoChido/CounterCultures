@@ -207,11 +207,17 @@ export const ContactContent = () => {
                   <div className="flex items-start gap-3">
                     <MapPin className="w-5 h-5 text-brand-terracotta mt-0.5 shrink-0" />
                     <div>
-                      <p className="font-body text-base text-brand-charcoal font-medium">
-                        {SITE_CONFIG.showroom.address}
-                      </p>
                       <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(SITE_CONFIG.showroom.address)}`}
+                        href={SITE_CONFIG.showroom.mapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-body text-base text-brand-charcoal font-medium hover:text-brand-terracotta transition-colors block"
+                        aria-label={`${SITE_CONFIG.showroom.address} — ${t.getDirections[locale].replace(/\s*→\s*$/, "")}`}
+                      >
+                        {SITE_CONFIG.showroom.address}
+                      </a>
+                      <a
+                        href={SITE_CONFIG.showroom.mapsUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="font-body text-sm text-brand-terracotta hover:text-brand-copper transition-colors mt-1 inline-block"

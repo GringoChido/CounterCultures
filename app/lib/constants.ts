@@ -5,11 +5,17 @@ export const SITE_CONFIG = {
     "San Miguel de Allende's destination for premium kitchen, bath, and architectural hardware. Authorized dealer for Kohler, TOTO, Brizo, BLANCO, and 15 more brands — plus Mexican artisan pieces. Search 354,000+ authorized SKUs or browse our curated selection. Factory-direct pricing, 24-hour quotes, delivered nationwide.",
   url: "https://countercultures.mx",
   showroom: {
-    address: "Providencia, San Miguel de Allende, Guanajuato, Mexico",
+    address: "Calle San Juan #11-A, Col. Providencia, 37737 San Miguel de Allende, Gto.",
     phone: "415.154.8375",
     email: "info@countercultures.com.mx",
     whatsapp: "415.154.8375",
     hours: "Lunes a Viernes, 10:00 – 18:00",
+    // Maps deep link — prefixes the business name so Google Maps surfaces
+    // the Counter Cultures place card (photos, hours, reviews) instead of
+    // a plain street pin. Works on desktop and hands off to the native
+    // Maps app on iOS / Android.
+    mapsUrl:
+      "https://www.google.com/maps/search/?api=1&query=Counter+Cultures+San+Juan+11A+Providencia+San+Miguel+de+Allende",
   },
   social: {
     instagram: "https://www.instagram.com/counter_cultures/",

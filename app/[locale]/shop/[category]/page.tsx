@@ -7,6 +7,8 @@ import { SubcategoryGrid } from "@/app/components/sections/subcategory-grid";
 import { HowItWorksBand } from "@/app/components/sections/how-it-works-band";
 import { CategoryCinematicHero } from "./category-hero-client";
 import { BrandRibbon } from "./brand-ribbon-client";
+import { CategoryBrandWall } from "@/app/components/sections/category-brand-wall";
+import { CATEGORY_BRAND_INDEX } from "@/app/lib/category-brand-index";
 import { getProducts } from "@/app/lib/sheets";
 import { getCategoryCounts } from "@/app/lib/products-full";
 import { PRODUCT_CATEGORIES, SUBCATEGORY_META, BRANDS } from "@/app/lib/constants";
@@ -232,16 +234,25 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
           catalogCount={fullCatalogCount}
         />
 
-        {/* SECTION 3: How it works trust band */}
-        <HowItWorksBand locale={lang} variant="light" />
+        {/* SECTION 3: Brand Wall — comprehensive index, tabbed by type.
+            Categories with no index data fall back to the legacy ribbon. */}
+        {CATEGORY_BRAND_INDEX[category] ? (
+          <CategoryBrandWall
+            category={category}
+            sections={CATEGORY_BRAND_INDEX[category]}
+            locale={lang}
+          />
+        ) : (
+          <BrandRibbon
+            brands={categoryBrands.map((b) => ({ name: b.name, slug: b.slug }))}
+            locale={lang}
+            category={category}
+            categoryLabel={catConfig.label[lang]}
+          />
+        )}
 
-        {/* SECTION 4: Brand Ribbon */}
-        <BrandRibbon
-          brands={categoryBrands.map((b) => ({ name: b.name, slug: b.slug }))}
-          locale={lang}
-          category={category}
-          categoryLabel={catConfig.label[lang]}
-        />
+        {/* SECTION 4: How it works trust band */}
+        <HowItWorksBand locale={lang} variant="light" />
       </main>
       <Footer locale={lang} />
     </>
