@@ -11,7 +11,6 @@ import { HowItWorksBand } from "@/app/components/sections/how-it-works-band";
 import { CatalogDepthBandAsync } from "@/app/components/sections/catalog-depth-band-async";
 import { TwoPathsBand } from "@/app/components/sections/two-paths-band";
 import { FounderStory } from "@/app/components/sections/founder-story";
-import { InspirationTeaser } from "@/app/components/sections/inspiration-teaser";
 import { TradeTeaser } from "@/app/components/sections/trade-teaser";
 import { Testimonial } from "@/app/components/sections/testimonial";
 import { ContactCTA } from "@/app/components/sections/contact-cta";
@@ -225,7 +224,6 @@ const HomePage = async ({ params }: HomePageProps) => {
         <Hero locale={lang} />
         <ShopByRoom locale={lang} />
         <FeaturedBrandsBand locale={lang} brands={featuredBrands} />
-        <InspirationTeaser locale={lang} />
         <Suspense fallback={null}>
           <CatalogDepthBandAsync locale={lang} />
         </Suspense>

@@ -28,7 +28,6 @@ const footerNav = {
   ],
   company: [
     { label: { en: "Our Story", es: "Nuestra Historia" }, href: "/our-story" },
-    { label: { en: "Inspiration", es: "Inspiración" }, href: "/inspiration" },
     { label: { en: "Insights", es: "Perspectivas" }, href: "/insights" },
     { label: { en: "Resources", es: "Recursos" }, href: "/resources" },
     { label: { en: "Trade Program", es: "Programa Trade" }, href: "/trade" },

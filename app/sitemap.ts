@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
 import { BRANDS, PRODUCT_CATEGORIES } from "@/app/lib/constants";
 import { articles } from "@/app/lib/articles";
-import { PROJECTS } from "@/app/lib/projects";
 import { getProducts } from "@/app/lib/sheets";
 import { getBrandCategoryCombos } from "@/app/lib/products-full";
 import { getBrands } from "@/app/lib/brand-kit-sheets";
@@ -45,7 +44,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...localizedEntry("/shop/hardware", "weekly", 0.85),
     ...localizedEntry("/brands", "monthly", 0.75),
     ...localizedEntry("/our-story", "yearly", 0.6),
-    ...localizedEntry("/inspiration", "monthly", 0.75),
     ...localizedEntry("/showroom", "monthly", 0.7),
     ...localizedEntry("/contact", "yearly", 0.65),
     ...localizedEntry("/trade", "monthly", 0.75),
@@ -88,12 +86,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     localizedEntry(`/insights/${slug}`, "monthly", 0.65)
   );
 
-  // Project detail pages — empty until real case studies land. PROJECTS
-  // is intentionally [] right now; this still flatMaps cleanly to nothing.
-  const projectRoutes: MetadataRoute.Sitemap = PROJECTS.flatMap(({ slug }) =>
-    localizedEntry(`/inspiration/${slug}`, "monthly", 0.7)
-  );
-
   // Product detail pages
   const products = await getProducts();
   const productRoutes: MetadataRoute.Sitemap = products.flatMap((product) =>
@@ -111,6 +103,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...subcategoryRoutes,
     ...productRoutes,
     ...articleRoutes,
-    ...projectRoutes,
   ];
 }
