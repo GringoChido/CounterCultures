@@ -3,19 +3,18 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import MiniSearch from "minisearch";
 import NextLink from "next/link";
-import { Search, ArrowUpRight, FileText, Tag, X } from "lucide-react";
+import { Search, ArrowUpRight, FileText, Tag, Package, X, Loader2 } from "lucide-react";
 import type { SearchDoc, SearchIndexPayload } from "@/app/lib/search-index";
 
 interface SearchPaletteProps {
   locale: "en" | "es";
-  /** Whether the palette is visible. Controlled by Header via cmd-K / button. */
   open: boolean;
   onClose: () => void;
 }
 
 interface DisplayResult {
   id: string;
-  type: SearchDoc["type"];
+  type: "brand" | "article" | "product";
   slug: string;
   name: string;
   subtitle: string;
@@ -24,28 +23,42 @@ interface DisplayResult {
   score: number;
 }
 
+interface ProductHit {
+  id: string;
+  name: string;
+  sku: string;
+  brand: string;
+  category: string;
+  listPrice: number;
+  currency: string;
+}
+
 const COPY = {
   en: {
-    placeholder: "Search brands, articles…",
+    placeholder: "Search products, brands, or articles…",
     noResults: "No matches",
     seeAll: "See all results in catalog →",
     sectionBrand: "Brands",
     sectionArticle: "Insights",
+    sectionProduct: "Products",
     keyboardHint: "↑↓ to navigate · ↵ to open · Esc to close",
-    catalogLink: "Catalog",
-    loading: "Loading search index…",
+    catalogLink: "Browse full catalog",
+    loading: "Loading…",
   },
   es: {
-    placeholder: "Buscar marcas, artículos…",
+    placeholder: "Buscar productos, marcas o artículos…",
     noResults: "Sin coincidencias",
     seeAll: "Ver todo en el catálogo →",
     sectionBrand: "Marcas",
     sectionArticle: "Editorial",
+    sectionProduct: "Productos",
     keyboardHint: "↑↓ navegar · ↵ abrir · Esc cerrar",
-    catalogLink: "Catálogo",
-    loading: "Cargando índice de búsqueda…",
+    catalogLink: "Explorar catálogo completo",
+    loading: "Cargando…",
   },
 };
+
+const MIN_QUERY = 2;
 
 const buildMiniSearch = (docs: SearchDoc[]): MiniSearch<SearchDoc> => {
   const ms = new MiniSearch<SearchDoc>({
@@ -86,11 +99,12 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
   const [index, setIndex] = useState<MiniSearch<SearchDoc> | null>(null);
   const [loading, setLoading] = useState(false);
   const [hasFetched, setHasFetched] = useState(false);
+  const [productResults, setProductResults] = useState<ProductHit[]>([]);
+  const [productLoading, setProductLoading] = useState(false);
+  const productReqRef = useRef(0);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const resultsRef = useRef<HTMLDivElement | null>(null);
 
-  // Lazy-load the index on first open. Client never pays the JSON cost
-  // unless the user actually searches.
   useEffect(() => {
     if (!open || hasFetched) return;
     setLoading(true);
@@ -106,27 +120,63 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
       .finally(() => setLoading(false));
   }, [open, hasFetched]);
 
-  // Focus the input + reset state on open.
+  // Live product search — debounced fetch to the catalog API
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (trimmed.length < MIN_QUERY) {
+      setProductResults([]);
+      return;
+    }
+    setProductLoading(true);
+    const myReq = ++productReqRef.current;
+    const timer = setTimeout(async () => {
+      try {
+        const p = new URLSearchParams({ q: trimmed, limit: "6" });
+        const res = await fetch(`/api/products/search?${p}`);
+        if (myReq !== productReqRef.current) return;
+        if (!res.ok) {
+          setProductResults([]);
+          return;
+        }
+        const data = await res.json();
+        setProductResults(
+          (data.items ?? []).slice(0, 6).map((item: ProductHit) => ({
+            id: item.id,
+            name: item.name,
+            sku: item.sku,
+            brand: item.brand,
+            category: item.category,
+            listPrice: item.listPrice,
+            currency: item.currency,
+          }))
+        );
+      } catch {
+        if (myReq === productReqRef.current) setProductResults([]);
+      } finally {
+        if (myReq === productReqRef.current) setProductLoading(false);
+      }
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [query]);
+
   useEffect(() => {
     if (open) {
       setActiveIndex(0);
-      // setTimeout to wait for the input to mount + animation finish.
       const id = window.setTimeout(() => inputRef.current?.focus(), 50);
       return () => window.clearTimeout(id);
     }
   }, [open]);
 
-  // Run search. Group by type (brands first, then articles).
-  const results = useMemo<DisplayResult[]>(() => {
+  const brandArticleResults = useMemo<DisplayResult[]>(() => {
     if (!index || !query.trim()) return [];
     const raw = index.search(query.trim(), { combineWith: "AND" });
     return raw
-      .slice(0, 12)
+      .slice(0, 8)
       .map((r) => {
         const doc = r as unknown as SearchDoc & { score: number };
         return {
           id: doc.id,
-          type: doc.type,
+          type: doc.type as "brand" | "article",
           slug: doc.slug,
           name: isEs ? doc.nameEs || doc.nameEn : doc.nameEn,
           subtitle: isEs ? doc.subtitleEs || doc.subtitleEn : doc.subtitleEn,
@@ -136,13 +186,29 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
         };
       })
       .sort((a, b) => {
-        // Brands first, then articles, then by score.
         if (a.type !== b.type) return a.type === "brand" ? -1 : 1;
         return b.score - a.score;
       });
   }, [index, query, isEs]);
 
-  // Close on Esc + arrow navigation + enter to open.
+  // Merge all results into a single navigable list: products first, then brands, then articles
+  const allResults = useMemo<DisplayResult[]>(() => {
+    const productDisplayResults: DisplayResult[] = productResults.map((p) => ({
+      id: `product:${p.id}`,
+      type: "product" as const,
+      slug: p.id,
+      name: p.name || p.sku,
+      subtitle: `${p.brand} · ${p.sku}`,
+      hrefSuffix: `/shop/catalog?q=${encodeURIComponent(p.sku || p.name)}`,
+      score: 0,
+    }));
+    return [...productDisplayResults, ...brandArticleResults];
+  }, [productResults, brandArticleResults]);
+
+  const totalCount = allResults.length;
+  const hasQuery = query.trim().length >= MIN_QUERY;
+  const isSearching = productLoading || (loading && !hasFetched);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -151,12 +217,17 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
         onClose();
       } else if (e.key === "ArrowDown") {
         e.preventDefault();
-        setActiveIndex((i) => Math.min(i + 1, Math.max(0, results.length - 1)));
+        setActiveIndex((i) => Math.min(i + 1, Math.max(0, totalCount - 1)));
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
         setActiveIndex((i) => Math.max(0, i - 1));
       } else if (e.key === "Enter") {
-        const r = results[activeIndex];
+        if (hasQuery && totalCount === 0) {
+          window.location.href = `/${locale}/shop/catalog?q=${encodeURIComponent(query.trim())}`;
+          onClose();
+          return;
+        }
+        const r = allResults[activeIndex];
         if (!r) return;
         e.preventDefault();
         const href = r.external ? r.hrefSuffix : `/${locale}${r.hrefSuffix}`;
@@ -170,14 +241,12 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose, results, activeIndex, locale]);
+  }, [open, onClose, allResults, activeIndex, locale, totalCount, hasQuery, query]);
 
-  // Reset active row when results change.
   useEffect(() => {
     setActiveIndex(0);
   }, [query]);
 
-  // Keep active row in view as user arrows down.
   useEffect(() => {
     const container = resultsRef.current;
     if (!container) return;
@@ -185,7 +254,6 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
     el?.scrollIntoView({ block: "nearest" });
   }, [activeIndex]);
 
-  // Backdrop click closes.
   const onBackdrop = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       if (e.target === e.currentTarget) onClose();
@@ -195,9 +263,25 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
 
   if (!open) return null;
 
-  // Group results for section labels.
-  const grouped: Record<SearchDoc["type"], DisplayResult[]> = { brand: [], article: [] };
-  for (const r of results) grouped[r.type].push(r);
+  // Group results by type for section headers
+  const grouped: Record<"product" | "brand" | "article", DisplayResult[]> = {
+    product: [],
+    brand: [],
+    article: [],
+  };
+  for (const r of allResults) grouped[r.type].push(r);
+
+  const SECTION_ORDER = ["product", "brand", "article"] as const;
+  const SECTION_LABELS: Record<string, string> = {
+    product: t.sectionProduct,
+    brand: t.sectionBrand,
+    article: t.sectionArticle,
+  };
+  const SECTION_ICONS: Record<string, typeof Package> = {
+    product: Package,
+    brand: Tag,
+    article: FileText,
+  };
 
   return (
     <div
@@ -219,6 +303,9 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
             placeholder={t.placeholder}
             className="flex-1 bg-transparent border-0 outline-none font-body text-base text-brand-charcoal placeholder:text-dash-text-secondary/45"
           />
+          {isSearching && (
+            <Loader2 className="w-4 h-4 text-dash-text-secondary/50 animate-spin shrink-0" />
+          )}
           <button
             onClick={onClose}
             aria-label="Close search"
@@ -230,11 +317,7 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
 
         {/* Results */}
         <div ref={resultsRef} className="max-h-[60vh] overflow-y-auto">
-          {loading && !hasFetched ? (
-            <p className="px-5 py-8 text-center text-sm text-dash-text-secondary/70 font-body">
-              {t.loading}
-            </p>
-          ) : query.trim() === "" ? (
+          {!hasQuery ? (
             <div className="px-5 py-8 text-center">
               <p className="font-body text-sm text-dash-text-secondary/70">
                 {t.placeholder}
@@ -247,7 +330,7 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
                 {t.catalogLink} →
               </NextLink>
             </div>
-          ) : results.length === 0 ? (
+          ) : totalCount === 0 && !isSearching ? (
             <div className="px-5 py-8 text-center">
               <p className="font-body text-sm text-dash-text-secondary/70">{t.noResults}</p>
               <NextLink
@@ -258,70 +341,62 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
                 {t.seeAll}
               </NextLink>
             </div>
+          ) : totalCount === 0 && isSearching ? (
+            <div className="px-5 py-8 text-center">
+              <Loader2 className="w-5 h-5 text-brand-stone/60 mx-auto animate-spin" />
+            </div>
           ) : (
             <>
-              {(["brand", "article"] as const).map((type) => {
+              {SECTION_ORDER.map((type) => {
                 const rows = grouped[type];
                 if (rows.length === 0) return null;
-                const sectionLabel =
-                  type === "brand" ? t.sectionBrand : t.sectionArticle;
+                const Icon = SECTION_ICONS[type];
                 return (
                   <div key={type}>
                     <p className="px-5 pt-4 pb-2 font-body text-[10px] tracking-[0.2em] uppercase text-dash-text-secondary/60">
-                      {sectionLabel}
+                      {SECTION_LABELS[type]}
                     </p>
                     <ul>
                       {rows.map((r) => {
-                        // Compute the absolute global index across all
-                        // sections so keyboard navigation works.
-                        const globalIndex = results.findIndex((x) => x.id === r.id);
+                        const globalIndex = allResults.findIndex((x) => x.id === r.id);
                         const isActive = globalIndex === activeIndex;
-                        const Icon = type === "brand" ? Tag : FileText;
                         const href = r.external
                           ? r.hrefSuffix
                           : `/${locale}${r.hrefSuffix}`;
-                        const inner = (
-                          <div
-                            data-row-index={globalIndex}
-                            className={`flex items-center gap-3 px-5 py-3 cursor-pointer transition-colors ${
-                              isActive
-                                ? "bg-brand-copper/10 text-brand-charcoal"
-                                : "hover:bg-brand-linen/60"
-                            }`}
-                            onMouseEnter={() => setActiveIndex(globalIndex)}
-                          >
-                            <Icon className="w-4 h-4 text-dash-text-secondary/55 shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <p className="font-body text-sm text-brand-charcoal truncate">
-                                {r.name}
-                              </p>
-                              {r.subtitle && (
-                                <p className="font-body text-xs text-dash-text-secondary/70 truncate">
-                                  {r.subtitle}
-                                </p>
-                              )}
-                            </div>
-                            {r.external && (
-                              <ArrowUpRight className="w-3.5 h-3.5 text-dash-text-secondary/45 shrink-0" />
-                            )}
-                          </div>
-                        );
                         return (
                           <li key={r.id}>
-                            {r.external ? (
-                              <a
-                                href={href}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={onClose}
+                            <NextLink
+                              href={href}
+                              onClick={onClose}
+                              {...(r.external
+                                ? { target: "_blank", rel: "noopener noreferrer" }
+                                : {})}
+                            >
+                              <div
+                                data-row-index={globalIndex}
+                                className={`flex items-center gap-3 px-5 py-3 cursor-pointer transition-colors ${
+                                  isActive
+                                    ? "bg-brand-copper/10 text-brand-charcoal"
+                                    : "hover:bg-brand-linen/60"
+                                }`}
+                                onMouseEnter={() => setActiveIndex(globalIndex)}
                               >
-                                {inner}
-                              </a>
-                            ) : (
-                              <NextLink href={href} onClick={onClose}>
-                                {inner}
-                              </NextLink>
-                            )}
+                                <Icon className="w-4 h-4 text-dash-text-secondary/55 shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-body text-sm text-brand-charcoal truncate">
+                                    {r.name}
+                                  </p>
+                                  {r.subtitle && (
+                                    <p className="font-body text-xs text-dash-text-secondary/70 truncate">
+                                      {r.subtitle}
+                                    </p>
+                                  )}
+                                </div>
+                                {r.external && (
+                                  <ArrowUpRight className="w-3.5 h-3.5 text-dash-text-secondary/45 shrink-0" />
+                                )}
+                              </div>
+                            </NextLink>
                           </li>
                         );
                       })}
@@ -329,6 +404,16 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
                   </div>
                 );
               })}
+              {/* Always offer full catalog search at the bottom */}
+              <div className="px-5 py-3 border-t border-brand-stone/10">
+                <NextLink
+                  href={`/${locale}/shop/catalog?q=${encodeURIComponent(query.trim())}`}
+                  onClick={onClose}
+                  className="inline-flex items-center gap-2 font-body text-xs tracking-[0.18em] uppercase text-brand-copper hover:text-brand-charcoal transition-colors"
+                >
+                  {t.seeAll}
+                </NextLink>
+              </div>
             </>
           )}
         </div>

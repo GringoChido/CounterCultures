@@ -977,7 +977,7 @@ const ProductCard = ({ product, locale, inProject, onOpen, onAdd, t }: ProductCa
         </button>
         <div className="mt-3 pt-3 border-t border-brand-stone/10 flex items-center justify-between gap-2">
           <span className="font-body text-xs text-brand-charcoal">
-            {product.listPrice > 0 ? (
+            {product.listPrice > 10 ? (
               <>
                 <span className="text-dash-text-secondary">{locale === "es" ? "desde" : "from"}</span>{" "}
                 <span className="font-medium">{price}</span>
@@ -1078,7 +1078,7 @@ const ProductTable = ({ items, locale, onOpen, onAdd, isInProject, t }: ProductT
                 {p.brand || "—"}
               </td>
               <td className="px-4 py-3 hidden sm:table-cell text-right font-body text-sm text-brand-charcoal whitespace-nowrap">
-                {p.listPrice > 0 ? (
+                {p.listPrice > 10 ? (
                   <span>
                     <span className="text-dash-text-secondary text-[10px] tracking-wider uppercase mr-1">
                       {locale === "es" ? "desde" : "from"}

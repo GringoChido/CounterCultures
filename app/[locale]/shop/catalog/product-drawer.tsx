@@ -318,7 +318,7 @@ const ProductDrawer = ({
                     {t.listPrice}
                   </div>
                   <div className="text-brand-charcoal">
-                    {product.listPrice > 0 ? (
+                    {product.listPrice > 10 ? (
                       <span className="font-medium">
                         {fmtPrice(product.listPrice, product.currency, locale)}
                       </span>
