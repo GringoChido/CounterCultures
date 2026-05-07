@@ -186,30 +186,40 @@ const journalsCache: Cache<OdooJournal> = { data: null, ts: 0 };
 const fresh = <T>(c: Cache<T>) =>
   c.data !== null && Date.now() - c.ts < CACHE_TTL;
 
+const dedup = <T extends { id: string }>(rows: T[]): T[] => {
+  const seen = new Set<string>();
+  return rows.filter((r) => {
+    if (seen.has(r.id)) return false;
+    seen.add(r.id);
+    return true;
+  });
+};
+
 export const getOdooPartners = async (): Promise<OdooPartner[]> => {
   if (fresh(partnersCache)) return partnersCache.data!;
-  partnersCache.data = await readSheet<OdooPartner>("Odoo_Partners");
+  partnersCache.data = dedup(await readSheet<OdooPartner>("Odoo_Partners"));
   partnersCache.ts = Date.now();
   return partnersCache.data;
 };
 
 export const getOdooInvoices = async (): Promise<OdooInvoice[]> => {
   if (fresh(invoicesCache)) return invoicesCache.data!;
-  invoicesCache.data = await readSheet<OdooInvoice>("Odoo_Invoices");
+  invoicesCache.data = dedup(await readSheet<OdooInvoice>("Odoo_Invoices"));
   invoicesCache.ts = Date.now();
   return invoicesCache.data;
 };
 
 export const getOdooPayments = async (): Promise<OdooPayment[]> => {
   if (fresh(paymentsCache)) return paymentsCache.data!;
-  paymentsCache.data = await readSheet<OdooPayment>("Odoo_Payments");
+  paymentsCache.data = dedup(await readSheet<OdooPayment>("Odoo_Payments"));
   paymentsCache.ts = Date.now();
   return paymentsCache.data;
 };
 
 export const getOdooSaleOrders = async (): Promise<OdooSaleOrder[]> => {
   if (fresh(salesCache)) return salesCache.data!;
-  salesCache.data = await readSheet<OdooSaleOrder>("Odoo_Sale_Orders");
+  const raw = await readSheet<OdooSaleOrder>("Odoo_Sale_Orders");
+  salesCache.data = dedup(raw);
   salesCache.ts = Date.now();
   return salesCache.data;
 };
@@ -1041,7 +1051,7 @@ const purchaseLinesCache: Cache<OdooPurchaseOrderLine> = { data: null, ts: 0 };
 
 export const getOdooPurchaseOrders = async (): Promise<OdooPurchaseOrder[]> => {
   if (fresh(purchaseOrdersCache)) return purchaseOrdersCache.data!;
-  purchaseOrdersCache.data = await readSheet<OdooPurchaseOrder>("Odoo_Purchase_Orders");
+  purchaseOrdersCache.data = dedup(await readSheet<OdooPurchaseOrder>("Odoo_Purchase_Orders"));
   purchaseOrdersCache.ts = Date.now();
   return purchaseOrdersCache.data;
 };
