@@ -133,7 +133,7 @@ const ProductCard = ({
             alt={product.name || product.sku || "Product"}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            className="absolute inset-0 object-cover z-10 bg-white"
+            className="absolute inset-0 object-contain z-10 bg-white"
             onError={() => setImgFailed(true)}
           />
         )}
