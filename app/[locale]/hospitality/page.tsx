@@ -1,59 +1,49 @@
 import type { Metadata } from "next";
-import { InspirationContent } from "./inspiration-content";
+import { HospitalityContent } from "./hospitality-content";
 import { HOTEL_CLIENTS } from "@/app/lib/hotel-clients";
 
 const BASE_URL = "https://countercultures.mx";
 
-interface InspirationPageProps {
+interface HospitalityPageProps {
   params: Promise<{ locale: string }>;
 }
 
 export const generateMetadata = async ({
   params,
-}: InspirationPageProps): Promise<Metadata> => {
+}: HospitalityPageProps): Promise<Metadata> => {
   const { locale } = await params;
   const isEs = locale === "es";
 
   const title = isEs
-    ? "Inspiración — Hoteles y Propiedades que Hemos Especificado"
-    : "Inspiration — Hotels & Properties We've Specified";
+    ? "Hospitalidad — Hoteles que han Especificado Counter Cultures"
+    : "Hospitality — Hotels That Have Specified Counter Cultures";
   const description = isEs
-    ? "Veintidós años abasteciendo hoteles boutique, residencias y propiedades emblemáticas en todo México."
-    : "Twenty-two years supplying boutique hotels, residences, and landmark properties across Mexico.";
+    ? "Hoteles, residencias y propiedades emblemáticas en México que han confiado en Counter Cultures para especificar sus accesorios."
+    : "Hotels, residences, and landmark properties across Mexico that have trusted Counter Cultures to specify their fixtures.";
 
   return {
     title,
     description,
     alternates: {
-      canonical: `${BASE_URL}/${locale}/inspiration`,
+      canonical: `${BASE_URL}/${locale}/hospitality`,
       languages: {
-        en: `${BASE_URL}/en/inspiration`,
-        es: `${BASE_URL}/es/inspiration`,
-        "x-default": `${BASE_URL}/en/inspiration`,
+        en: `${BASE_URL}/en/hospitality`,
+        es: `${BASE_URL}/es/hospitality`,
+        "x-default": `${BASE_URL}/en/hospitality`,
       },
     },
     openGraph: {
       title,
       description,
-      url: `${BASE_URL}/${locale}/inspiration`,
+      url: `${BASE_URL}/${locale}/hospitality`,
       locale: isEs ? "es_MX" : "en_US",
       alternateLocale: isEs ? "en_US" : "es_MX",
       type: "website",
-      images: [
-        {
-          url: `${BASE_URL}/og-image.jpg`,
-          width: 1200,
-          height: 630,
-          alt: isEs
-            ? "Inspiración — propiedades abastecidas por Counter Cultures"
-            : "Inspiration — properties supplied by Counter Cultures",
-        },
-      ],
     },
   };
 };
 
-const InspirationPage = async ({ params }: InspirationPageProps) => {
+const HospitalityPage = async ({ params }: HospitalityPageProps) => {
   const { locale } = await params;
   const isEs = locale === "es";
 
@@ -63,7 +53,7 @@ const InspirationPage = async ({ params }: InspirationPageProps) => {
     name: isEs
       ? "Hoteles que han especificado Counter Cultures"
       : "Hotels that have specified Counter Cultures",
-    url: `${BASE_URL}/${locale}/inspiration`,
+    url: `${BASE_URL}/${locale}/hospitality`,
     numberOfItems: HOTEL_CLIENTS.length,
     itemListElement: HOTEL_CLIENTS.map((hotel, index) => ({
       "@type": "ListItem",
@@ -86,8 +76,8 @@ const InspirationPage = async ({ params }: InspirationPageProps) => {
       {
         "@type": "ListItem",
         position: 2,
-        name: isEs ? "Inspiración" : "Inspiration",
-        item: `${BASE_URL}/${locale}/inspiration`,
+        name: isEs ? "Hospitalidad" : "Hospitality",
+        item: `${BASE_URL}/${locale}/hospitality`,
       },
     ],
   };
@@ -102,9 +92,9 @@ const InspirationPage = async ({ params }: InspirationPageProps) => {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <InspirationContent />
+      <HospitalityContent />
     </>
   );
 };
 
-export default InspirationPage;
+export default HospitalityPage;
