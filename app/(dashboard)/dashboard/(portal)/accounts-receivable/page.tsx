@@ -815,6 +815,235 @@ const cnColumns = [
 ];
 
 // ---------------------------------------------------------------------------
+// AR Request detail / edit panel
+// ---------------------------------------------------------------------------
+
+const ARDetailPanel = ({
+  request,
+  onClose,
+  onUpdated,
+}: {
+  request: ARRequest;
+  onClose: () => void;
+  onUpdated: () => void;
+}) => {
+  const [state, setState] = useState(request.state);
+  const [facturaFolio, setFacturaFolio] = useState(request.facturaFolio);
+  const [facturaNotes, setFacturaNotes] = useState(request.facturaNotes);
+  const [pdfUrl, setPdfUrl] = useState(request.pdfDriveUrl);
+  const [xmlUrl, setXmlUrl] = useState(request.xmlDriveUrl);
+  const [saving, setSaving] = useState(false);
+  const companyConfig = getCompanyConfig(request.company);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await fetch("/api/dashboard/ar-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "update_state",
+          id: request.id,
+          state,
+          updates: {
+            factura_folio: facturaFolio,
+            factura_notes: facturaNotes,
+            pdf_drive_url: pdfUrl,
+            xml_drive_url: xmlUrl,
+          },
+        }),
+      });
+      onUpdated();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const fieldRow = (label: string, value: string | number) => (
+    <div>
+      <div className="text-[10px] uppercase tracking-wider text-dash-text-secondary mb-0.5">
+        {label}
+      </div>
+      <div className="text-sm text-dash-text">{value || "—"}</div>
+    </div>
+  );
+
+  return (
+    <div className="fixed inset-0 z-[60] flex">
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} aria-hidden />
+      <aside className="relative ml-auto w-[560px] max-w-[95vw] h-full bg-dash-surface border-l border-dash-border shadow-xl flex flex-col overflow-hidden">
+        <header
+          className="flex items-start justify-between gap-3 px-6 py-4 border-b-2"
+          style={{ borderBottomColor: companyConfig?.dot ? undefined : "var(--color-dash-border)" }}
+        >
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <CompanyBadge company={request.company} size="sm" />
+              <StatusBadge label={stateLabel(request.state)} variant={stateVariant(request.state)} />
+            </div>
+            <h3
+              className="text-sm font-mono text-dash-text leading-tight break-all"
+              title={request.requestName}
+            >
+              {request.requestName || request.id}
+            </h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded hover:bg-dash-bg text-dash-text-secondary cursor-pointer shrink-0"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </header>
+
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-5">
+          {/* Customer info */}
+          <section>
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-dash-text-secondary mb-2">
+              Customer
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {fieldRow("Name", request.customerName)}
+              {fieldRow("RFC", request.customerRfc || "Público en general")}
+              {fieldRow("Type", request.recipientType === "personalized" ? "Personalized (RFC)" : "Público en general")}
+              {fieldRow("Source", sourceLabel(request.source))}
+            </div>
+          </section>
+
+          {/* Payment info */}
+          <section>
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-dash-text-secondary mb-2">
+              Payment
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {fieldRow("Amount", fmt(request.amount, request.currency))}
+              {fieldRow("Bank", request.bank)}
+              {fieldRow("Method", request.paymentMethod)}
+              {fieldRow("Date", request.paymentDate)}
+              {fieldRow("Deposit", depositLabel(request.depositType, request.depositPercent))}
+              {request.linkedFolio && fieldRow("Linked folio", request.linkedFolio)}
+              {request.orderReference && fieldRow("Order ref", request.orderReference)}
+            </div>
+          </section>
+
+          {/* Editable fields */}
+          <section>
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-dash-text-secondary mb-2">
+              Factura details
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-dash-text-secondary mb-1">
+                  State
+                </label>
+                <select
+                  value={state}
+                  onChange={(e) => setState(e.target.value as FacturaRequestState)}
+                  className="w-full px-3 py-2 border border-dash-border bg-dash-bg text-sm rounded focus:outline-none focus:border-dash-accent"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="draft">Draft</option>
+                  <option value="issued">Issued</option>
+                  <option value="files_attached">Complete</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-dash-text-secondary mb-1">
+                  Factura folio
+                </label>
+                <input
+                  type="text"
+                  value={facturaFolio}
+                  onChange={(e) => setFacturaFolio(e.target.value)}
+                  placeholder="e.g. A-1234"
+                  className="w-full px-3 py-2 border border-dash-border bg-dash-bg text-sm rounded focus:outline-none focus:border-dash-accent"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider text-dash-text-secondary mb-1">
+                    PDF Drive URL
+                  </label>
+                  <input
+                    type="url"
+                    value={pdfUrl}
+                    onChange={(e) => setPdfUrl(e.target.value)}
+                    placeholder="https://drive.google.com/..."
+                    className="w-full px-3 py-2 border border-dash-border bg-dash-bg text-sm rounded focus:outline-none focus:border-dash-accent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider text-dash-text-secondary mb-1">
+                    XML Drive URL
+                  </label>
+                  <input
+                    type="url"
+                    value={xmlUrl}
+                    onChange={(e) => setXmlUrl(e.target.value)}
+                    placeholder="https://drive.google.com/..."
+                    className="w-full px-3 py-2 border border-dash-border bg-dash-bg text-sm rounded focus:outline-none focus:border-dash-accent"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-dash-text-secondary mb-1">
+                  Notes
+                </label>
+                <textarea
+                  value={facturaNotes}
+                  onChange={(e) => setFacturaNotes(e.target.value)}
+                  rows={2}
+                  className="w-full px-3 py-2 border border-dash-border bg-dash-bg text-sm rounded focus:outline-none focus:border-dash-accent resize-none"
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* Metadata */}
+          <section className="text-xs text-dash-text-secondary space-y-1">
+            <div>Requested by {request.requestedBy || "—"} on {shortDate(request.requestedAt)}</div>
+            {request.issuedAt && (
+              <div>Issued by {request.issuedBy || "—"} on {shortDate(request.issuedAt)}</div>
+            )}
+            {request.invoiceId && <div>Invoice: {request.invoiceId}</div>}
+            {request.notes && <div>Original notes: {request.notes}</div>}
+          </section>
+        </div>
+
+        <footer className="border-t border-dash-border px-6 py-3 flex items-center gap-3">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="px-4 py-2 bg-brand-copper text-white text-sm rounded hover:bg-brand-copper/90 disabled:opacity-50 transition-colors cursor-pointer"
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save changes"}
+          </button>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm text-dash-text-secondary hover:text-dash-text transition-colors cursor-pointer"
+          >
+            Cancel
+          </button>
+          {request.pdfDriveUrl && (
+            <a
+              href={request.pdfDriveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-auto flex items-center gap-1 text-xs text-brand-copper hover:underline"
+            >
+              <Paperclip className="w-3.5 h-3.5" />
+              View PDF
+            </a>
+          )}
+        </footer>
+      </aside>
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
 // Main page
 // ---------------------------------------------------------------------------
 
@@ -839,6 +1068,7 @@ const AccountsReceivablePage = () => {
   const [activeTab, setActiveTab] = useState<"requests" | "credit_notes">(
     "requests"
   );
+  const [selectedRequest, setSelectedRequest] = useState<ARRequest | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -1076,7 +1306,11 @@ const AccountsReceivablePage = () => {
           </div>
 
           <div className="bg-dash-surface border border-dash-border rounded">
-            <DataTable columns={requestColumns} data={requests} />
+            <DataTable
+              columns={requestColumns}
+              data={requests}
+              onRowClick={(row) => setSelectedRequest(row)}
+            />
           </div>
         </>
       )}
@@ -1091,6 +1325,18 @@ const AccountsReceivablePage = () => {
             <DataTable columns={cnColumns} data={creditNotes} />
           </div>
         </>
+      )}
+
+      {/* AR Request detail panel */}
+      {selectedRequest && (
+        <ARDetailPanel
+          request={selectedRequest}
+          onClose={() => setSelectedRequest(null)}
+          onUpdated={() => {
+            setSelectedRequest(null);
+            fetchData();
+          }}
+        />
       )}
 
       {/* Quick links to related pages */}
