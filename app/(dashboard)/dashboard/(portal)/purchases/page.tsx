@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createColumnHelper } from "@tanstack/react-table";
 import {
   Truck,
@@ -231,6 +232,7 @@ const PipelineHero = ({
 };
 
 const PurchasesPage = () => {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [state, setState] = useState<POStateFilter>("all");
   const [invoiceStatus, setInvoiceStatus] = useState<POInvoiceFilter>("all");
@@ -371,7 +373,11 @@ const PurchasesPage = () => {
       </div>
 
       <div className="bg-dash-surface border border-dash-border rounded">
-        <DataTable columns={columns} data={rows} />
+        <DataTable
+          columns={columns}
+          data={rows}
+          onRowClick={(row) => router.push(`/dashboard/purchases/${row.id}`)}
+        />
       </div>
     </div>
   );
