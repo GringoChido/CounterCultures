@@ -60,6 +60,7 @@ const navItems: NavItem[] = [
   { label: "Invoices", href: "/dashboard/invoices", icon: FileText, feature: "view_invoices" },
   { label: "Payments", href: "/dashboard/payments", icon: CreditCard, feature: "view_payments" },
   { label: "Accounts Receivable", href: "/dashboard/accounts-receivable", icon: Wallet, feature: "view_ar" },
+  { label: "P&L Reports", href: "/dashboard/reports/pnl", icon: TrendingUp, feature: "view_ar" },
   { label: "Inbox", href: "/dashboard/inbox", icon: Inbox, feature: "view_inbox" },
 
   { label: "Inventory", href: "/dashboard/inventory", icon: Package, section: "Operations", feature: "view_inventory" },
