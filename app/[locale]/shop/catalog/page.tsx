@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { readdirSync } from "node:fs";
+import path from "node:path";
+import Image from "next/image";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { ArtisanProfiles } from "@/app/components/sections/artisan-profiles";
@@ -43,6 +46,52 @@ export const generateMetadata = async ({
 
 const STATS_FALLBACK = { total: 350000, brandCount: 73 };
 
+// Map brand display names to their hero image in /public/Assets/BRANDS/.
+// Files follow the pattern `{slug}-hero.{webp|avif|jpg|jpeg|png}`. Prefer
+// modern formats. Brands without a matching hero image just won't get one
+// (the brand tile falls back to its solid theme color).
+const buildBrandImageMap = (brandNames: string[]): Record<string, string> => {
+  let files: string[] = [];
+  try {
+    const dir = path.join(process.cwd(), "public", "Assets", "BRANDS");
+    files = readdirSync(dir);
+  } catch {
+    return {};
+  }
+
+  const formatRank = [".webp", ".avif", ".jpg", ".jpeg", ".png"];
+  const slugToFile: Record<string, string> = {};
+  for (const file of files) {
+    const m = file.match(/^(.+?)-hero\.([^.]+)$/);
+    if (!m) continue;
+    const [, slug, ext] = m;
+    const newRank = formatRank.indexOf(`.${ext.toLowerCase()}`);
+    if (newRank === -1) continue;
+    const existing = slugToFile[slug];
+    const existingRank = existing
+      ? formatRank.indexOf(path.extname(existing).toLowerCase())
+      : 999;
+    if (newRank < existingRank) {
+      slugToFile[slug] = `/Assets/BRANDS/${file}`;
+    }
+  }
+
+  const result: Record<string, string> = {};
+  for (const name of brandNames) {
+    const slug = name
+      .toLowerCase()
+      .replace(/&/g, "and")
+      .replace(/\+/g, " and ")
+      .replace(/'/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+    if (slugToFile[slug]) {
+      result[name] = slugToFile[slug];
+    }
+  }
+  return result;
+};
+
 const CatalogPage = async ({ params }: CatalogPageProps) => {
   const { locale } = await params;
   const isEs = locale === "es";
@@ -61,44 +110,59 @@ const CatalogPage = async ({ params }: CatalogPageProps) => {
   // so its length is the accurate "authorized brands you can specify" figure.
   const saleableBrandCount = brandCounts.length;
 
+  const brandImageMap = buildBrandImageMap(brandCounts.map((b) => b.brand));
+
   return (
     <>
       <Header locale={locale} />
-      <main id="main" tabIndex={-1} className="pt-16 md:pt-20 bg-brand-linen">
-        {/* Slim utility header — the page is a tool, not a marketing page.
-            The homepage already sells the catalog; here we just orient and
-            get out of the way of the search interface below. */}
-        <section className="bg-brand-linen border-b border-brand-stone/20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-7 md:py-9">
-            <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
-              <div className="min-w-0">
-                <span className="font-body font-semibold text-[11px] tracking-[0.3em] text-brand-copper uppercase">
-                  {isEs ? "Catálogo completo" : "The Full Catalog"}
-                </span>
-                <h1 className="mt-2 font-display text-3xl md:text-4xl lg:text-[2.6rem] font-light text-brand-charcoal tracking-wide leading-[1.1]">
-                  {isEs ? (
-                    <>
-                      <span className="tabular-nums">{stats.total.toLocaleString("es-MX")}</span>{" "}
-                      <span className="italic text-brand-copper">piezas</span>
-                      <span className="text-brand-charcoal/40"> · </span>
-                      <span className="tabular-nums">{saleableBrandCount}</span> marcas
-                    </>
-                  ) : (
-                    <>
-                      <span className="tabular-nums">{stats.total.toLocaleString("en-US")}</span>{" "}
-                      <span className="italic text-brand-copper">pieces</span>
-                      <span className="text-brand-charcoal/40"> · </span>
-                      <span className="tabular-nums">{saleableBrandCount}</span> brands
-                    </>
-                  )}
-                </h1>
-              </div>
-              <p className="font-body text-[11px] md:text-xs text-dash-text-secondary uppercase tracking-[0.18em] shrink-0">
-                {isEs
-                  ? "Precio de fábrica · Cotización en 24h"
-                  : "Factory pricing · 24h quotes"}
-              </p>
-            </div>
+      <main id="main" tabIndex={-1} className="bg-brand-linen">
+        {/* HERO — full-bleed editorial header */}
+        <section className="relative min-h-[60vh] md:min-h-[70vh] flex items-end overflow-hidden bg-brand-charcoal">
+          <Image
+            src="/Assets/home-hero/Lux BathRoom.webp"
+            alt={
+              isEs
+                ? "Catálogo completo Counter Cultures — accesorios de lujo en San Miguel de Allende"
+                : "Counter Cultures full catalog — luxury fixtures in San Miguel de Allende"
+            }
+            fill
+            sizes="100vw"
+            priority
+            className="object-cover opacity-70"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-brand-charcoal via-brand-charcoal/40 to-brand-charcoal/10" />
+          <div className="relative mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 pt-32 pb-14 md:pb-20">
+            <span className="font-body font-semibold text-xs tracking-[0.3em] text-brand-copper uppercase">
+              {isEs ? "Catálogo completo" : "The Full Catalog"}
+            </span>
+            <h1 className="mt-4 font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light text-white leading-[1.05] tracking-wide">
+              {isEs ? (
+                <>
+                  <span className="tabular-nums">
+                    {stats.total.toLocaleString("es-MX")}
+                  </span>{" "}
+                  <span className="italic text-brand-copper">piezas</span>
+                  <span className="text-white/40"> · </span>
+                  <span className="tabular-nums">{saleableBrandCount}</span>{" "}
+                  marcas
+                </>
+              ) : (
+                <>
+                  <span className="tabular-nums">
+                    {stats.total.toLocaleString("en-US")}
+                  </span>{" "}
+                  <span className="italic text-brand-copper">pieces</span>
+                  <span className="text-white/40"> · </span>
+                  <span className="tabular-nums">{saleableBrandCount}</span>{" "}
+                  brands
+                </>
+              )}
+            </h1>
+            <p className="mt-6 font-body text-xs md:text-sm text-white/70 tracking-[0.22em] uppercase">
+              {isEs
+                ? "Precio de fábrica · Cotización en 24 h"
+                : "Factory pricing · 24h quotes"}
+            </p>
           </div>
         </section>
 
@@ -107,6 +171,7 @@ const CatalogPage = async ({ params }: CatalogPageProps) => {
           locale={locale as "en" | "es"}
           brandCounts={brandCounts}
           totalProducts={stats.total}
+          brandImageMap={brandImageMap}
         />
       </main>
       <ArtisanProfiles locale={locale as "en" | "es"} />

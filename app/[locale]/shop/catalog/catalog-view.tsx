@@ -52,6 +52,7 @@ interface CatalogViewProps {
   locale: "en" | "es";
   brandCounts: BrandCount[];
   totalProducts: number;
+  brandImageMap?: Record<string, string>;
 }
 
 type Category = "all" | "bathroom" | "kitchen" | "hardware";
@@ -177,7 +178,7 @@ const VALID_SORTS: SortKey[] = [
   "price_desc",
 ];
 
-const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) => {
+const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {} }: CatalogViewProps) => {
   const t = T[locale];
   const router = useRouter();
   const pathname = usePathname();
@@ -667,9 +668,104 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
                 <p className="font-body text-dash-text-secondary">{t.noResults}</p>
               </div>
             ) : needsAccess ? (
-              <div className="space-y-5">
-                {/* CTA band on top — the gate is explicit, not visual.
-                    Pricing/specs are gated; brand exploration isn't. */}
+              <div className="space-y-6">
+                {/* Brand showcase — clickable tiles. Ghosted hero product
+                    images sit behind a brand-themed color overlay so the
+                    tiles read as "this brand" rather than as flat color. */}
+                <div>
+                  <div className="flex items-baseline justify-between mb-4">
+                    <span className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-copper uppercase">
+                      {locale === "es"
+                        ? `${brandCounts.length} marcas en el catálogo`
+                        : `${brandCounts.length} brands in the catalog`}
+                    </span>
+                    <span className="font-body text-xs text-dash-text-secondary tabular-nums hidden sm:inline">
+                      {totalProducts.toLocaleString()} {locale === "es" ? "piezas" : "pieces"}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {brandCounts.slice(0, 12).map((b) => {
+                      const theme = brandTheme(b.brand);
+                      const heroImage = brandImageMap[b.brand];
+                      return (
+                        <button
+                          key={b.brand}
+                          type="button"
+                          onClick={() => setBrand(b.brand)}
+                          className="group relative aspect-[4/5] overflow-hidden cursor-pointer transition-transform hover:-translate-y-0.5"
+                          style={{ background: theme.bg, color: theme.fg }}
+                          title={b.brand}
+                        >
+                          {/* Ghosted hero product image — sits beneath the
+                              color overlay to give each tile a hint of
+                              what's actually inside that brand. */}
+                          {heroImage && (
+                            <div
+                              aria-hidden="true"
+                              className="absolute inset-0 transition-transform duration-700 group-hover:scale-105"
+                              style={{
+                                backgroundImage: `url('${heroImage}')`,
+                                backgroundSize: "cover",
+                                backgroundPosition: "center",
+                              }}
+                            />
+                          )}
+                          {/* Brand-color overlay — translucent when an image
+                              is present, solid when it isn't. */}
+                          <div
+                            aria-hidden="true"
+                            className="absolute inset-0"
+                            style={{
+                              backgroundColor: theme.bg,
+                              opacity: heroImage ? 0.78 : 1,
+                            }}
+                          />
+                          <div className="absolute inset-0 ring-1 ring-inset ring-black/10 pointer-events-none" />
+
+                          {/* Centered brand wordmark */}
+                          <div className="absolute inset-0 flex items-center justify-center px-4">
+                            <h4
+                              className="font-display font-light tracking-wide text-xl md:text-2xl lg:text-3xl text-center truncate max-w-full opacity-95"
+                              style={{ color: theme.fg }}
+                            >
+                              {b.brand}
+                            </h4>
+                          </div>
+
+                          {/* Bottom info strip — count · view */}
+                          <div
+                            className="absolute inset-x-0 bottom-0 px-3 py-2.5 flex items-center justify-between text-[10px] tracking-wider uppercase"
+                            style={{
+                              background: "rgba(0,0,0,0.22)",
+                              color: theme.fg,
+                            }}
+                          >
+                            <span className="font-mono tabular-nums opacity-85">
+                              {b.count.toLocaleString()}
+                            </span>
+                            <span className="font-body opacity-0 group-hover:opacity-95 transition-opacity">
+                              {locale === "es" ? "Ver →" : "View →"}
+                            </span>
+                          </div>
+
+                          {/* Top corner accent */}
+                          <div
+                            className="absolute top-0 left-0 w-8 h-[2px]"
+                            style={{ background: theme.fg, opacity: 0.4 }}
+                          />
+                          <div
+                            className="absolute top-0 left-0 w-[2px] h-8"
+                            style={{ background: theme.fg, opacity: 0.4 }}
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Catalog Access band — sits below the brand grid. The gate
+                    is explicit, not visual. Pricing/specs are gated; brand
+                    exploration isn't. */}
                 <div className="relative bg-brand-charcoal overflow-hidden">
                   <div
                     className="absolute inset-0 opacity-[0.04]"
@@ -689,8 +785,8 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
                       </h3>
                       <p className="mt-3 font-body text-sm text-white/55">
                         {locale === "es"
-                          ? "Explora las marcas abajo. Solicita acceso para ver detalles y cotizar."
-                          : "Browse brands below. Request access to see details and quote."}
+                          ? "Solicita acceso para ver detalles, precios y cotizar."
+                          : "Request access to see details, pricing, and quote."}
                       </p>
                       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
                         <a
@@ -707,77 +803,6 @@ const CatalogView = ({ locale, brandCounts, totalProducts }: CatalogViewProps) =
                         </a>
                       </div>
                     </div>
-                  </div>
-                </div>
-
-                {/* Brand showcase — crisp, clickable, no blur. These ARE
-                    the product visuals architects see in the real catalog
-                    (98.8% of SKUs use brand-themed typographic panels via
-                    ProductVisual). Click filters to that brand. */}
-                <div>
-                  <div className="flex items-baseline justify-between mb-4">
-                    <span className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-copper uppercase">
-                      {locale === "es"
-                        ? `${brandCounts.length} marcas en el catálogo`
-                        : `${brandCounts.length} brands in the catalog`}
-                    </span>
-                    <span className="font-body text-xs text-dash-text-secondary tabular-nums hidden sm:inline">
-                      {totalProducts.toLocaleString()} {locale === "es" ? "piezas" : "pieces"}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                    {brandCounts.slice(0, 12).map((b) => {
-                      const theme = brandTheme(b.brand);
-                      return (
-                        <button
-                          key={b.brand}
-                          type="button"
-                          onClick={() => setBrand(b.brand)}
-                          className="group relative aspect-[4/5] overflow-hidden cursor-pointer transition-transform hover:-translate-y-0.5"
-                          style={{ background: theme.bg, color: theme.fg }}
-                          title={b.brand}
-                        >
-                          <div className="absolute inset-0 ring-1 ring-inset ring-black/10 pointer-events-none" />
-
-                          {/* Centered brand wordmark — same visual language
-                              as the real ProductVisual typographic panel */}
-                          <div className="absolute inset-0 flex items-center justify-center px-4">
-                            <h4
-                              className="font-display font-light tracking-wide text-xl md:text-2xl lg:text-3xl text-center truncate max-w-full opacity-90"
-                              style={{ color: theme.fg }}
-                            >
-                              {b.brand}
-                            </h4>
-                          </div>
-
-                          {/* Bottom info strip — brand · count · view */}
-                          <div
-                            className="absolute inset-x-0 bottom-0 px-3 py-2.5 flex items-center justify-between text-[10px] tracking-wider uppercase"
-                            style={{
-                              background: "rgba(0,0,0,0.18)",
-                              color: theme.fg,
-                            }}
-                          >
-                            <span className="font-mono tabular-nums opacity-80">
-                              {b.count.toLocaleString()}
-                            </span>
-                            <span className="font-body opacity-0 group-hover:opacity-90 transition-opacity">
-                              {locale === "es" ? "Ver →" : "View →"}
-                            </span>
-                          </div>
-
-                          {/* Top corner accent */}
-                          <div
-                            className="absolute top-0 left-0 w-8 h-[2px]"
-                            style={{ background: theme.fg, opacity: 0.4 }}
-                          />
-                          <div
-                            className="absolute top-0 left-0 w-[2px] h-8"
-                            style={{ background: theme.fg, opacity: 0.4 }}
-                          />
-                        </button>
-                      );
-                    })}
                   </div>
                 </div>
               </div>
