@@ -42,6 +42,14 @@
   --color-status-won: #7A8B6F;
   --color-status-lost: #A85D48;
 
+  /* Company identity — CC Mexico = warm copper, LLC US = cool teal */
+  --color-company-cc: #B87333;
+  --color-company-cc-soft: #F0E2CF;
+  --color-company-cc-text: #8B5A22;
+  --color-company-llc: #4A8B7F;
+  --color-company-llc-soft: #D6EAE5;
+  --color-company-llc-text: #2E6B5E;
+
   /* Chart palette */
   --color-chart-1: #B87333;
   --color-chart-2: #C4725A;

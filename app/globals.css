@@ -56,6 +56,14 @@
   /* PDF/document preview backdrop — neutral gray that mimics paper out-of-page. */
   --color-dash-preview-bg: #F0F0F0;
 
+  /* Company identity — CC Mexico = warm copper, LLC US = cool teal */
+  --color-company-cc: #B87333;
+  --color-company-cc-soft: #F0E2CF;
+  --color-company-cc-text: #8B5A22;
+  --color-company-llc: #4A8B7F;
+  --color-company-llc-soft: #D6EAE5;
+  --color-company-llc-text: #2E6B5E;
+
   /* Categorical palette — dashboard-only, for non-semantic differentiation
      (customs status, pipeline stages, persona tags). Picked to harmonize
      with the warm brand palette rather than fight it. */
