@@ -4,8 +4,6 @@ import { useState, useEffect } from "react";
 import {
   X,
   Package,
-  Plus,
-  Check,
   Loader2,
   Palette,
   Layers,
@@ -13,7 +11,6 @@ import {
   TrendingUp,
 } from "lucide-react";
 import type { ProductFull } from "@/app/lib/products-full";
-import { useProjectListStore } from "@/app/lib/stores/project-list-store";
 import { ProductVisual } from "@/app/components/product-visual";
 
 interface Variant {
@@ -52,8 +49,6 @@ const T = {
     noAlsoSpecified: "Not enough project history yet to pair this with anything.",
     alsoSpecifiedHint:
       "Products that consistently ship alongside this one — real pairings, not algorithmic guesses.",
-    addToProject: "Add to project list",
-    inProject: "✓ Added to project",
     requestQuote: "Request a quote",
     priceNote: "Prices shown are reference only. Final quoted price confirmed on request — IVA not included.",
     variantsHint: "Same model, different finish or size. Click a tile to view.",
@@ -75,8 +70,6 @@ const T = {
     noAlsoSpecified: "Aún no hay suficiente historial para sugerir combinaciones.",
     alsoSpecifiedHint:
       "Productos que acompañan consistentemente a este — patrones reales de proyectos, no sugerencias algorítmicas.",
-    addToProject: "Agregar al proyecto",
-    inProject: "✓ Agregado al proyecto",
     requestQuote: "Solicitar cotización",
     priceNote: "Precios de referencia. Precio final confirmado al cotizar — IVA no incluido.",
     variantsHint: "Mismo modelo, distinto acabado o tamaño. Toca una ficha para verla.",
@@ -128,12 +121,6 @@ const ProductDrawer = ({
   const [description, setDescription] = useState<string | null>(null);
   const [loadingRel, setLoadingRel] = useState(false);
   const [loadingAlso, setLoadingAlso] = useState(false);
-  const [qtyInput, setQtyInput] = useState("1");
-
-  const projectHas = useProjectListStore((s) => s.has);
-  const projectAdd = useProjectListStore((s) => s.add);
-  const inProject = projectHas(product.id);
-
   useEffect(() => {
     setTab("overview");
     setVariants([]);
@@ -141,7 +128,6 @@ const ProductDrawer = ({
     setAlsoSpecified([]);
     setDescription(null);
     setSkuRoot(null);
-    setQtyInput("1");
   }, [product.id]);
 
   // Approved descriptions only — pending/rejected stay hidden from public.
@@ -209,22 +195,6 @@ const ProductDrawer = ({
       cancelled = true;
     };
   }, [product.id]);
-
-  const handleAdd = () => {
-    const q = Math.max(1, parseInt(qtyInput) || 1);
-    projectAdd(
-      {
-        id: product.id,
-        sku: product.sku,
-        name: product.name,
-        brand: product.brand,
-        category: product.category,
-        currency: product.currency,
-        listPrice: product.listPrice,
-      },
-      q
-    );
-  };
 
   return (
     <div className="fixed inset-0 z-[70] flex">
@@ -510,48 +480,6 @@ const ProductDrawer = ({
           )}
         </div>
 
-        {/* Sticky footer — Add to project */}
-        <footer className="border-t border-brand-stone/10 bg-dash-surface px-6 py-4 space-y-2">
-          <div className="flex items-center gap-2">
-            <label className="font-body text-[10px] tracking-[0.18em] uppercase text-dash-text-secondary">
-              {locale === "es" ? "Cant" : "Qty"}
-            </label>
-            <input
-              type="number"
-              min={1}
-              value={qtyInput}
-              onChange={(e) => setQtyInput(e.target.value)}
-              className="w-14 px-2 py-2 text-sm border border-brand-stone/20 bg-dash-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper font-body"
-            />
-            <button
-              type="button"
-              onClick={handleAdd}
-              disabled={inProject}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-body font-semibold transition-colors cursor-pointer disabled:cursor-default ${
-                inProject
-                  ? "bg-brand-copper/10 text-brand-copper border border-brand-copper/30"
-                  : "bg-brand-copper text-white hover:bg-brand-copper/90"
-              }`}
-            >
-              {inProject ? (
-                <>
-                  <Check className="w-4 h-4" />
-                  {t.inProject}
-                </>
-              ) : (
-                <>
-                  <Plus className="w-4 h-4" />
-                  {t.addToProject}
-                </>
-              )}
-            </button>
-          </div>
-          <p className="text-[10px] text-dash-text-secondary text-center font-body">
-            {locale === "es"
-              ? "Arma tu lista y solicita cotización de todo junto."
-              : "Stack items and request a quote on the whole list."}
-          </p>
-        </footer>
       </aside>
     </div>
   );
