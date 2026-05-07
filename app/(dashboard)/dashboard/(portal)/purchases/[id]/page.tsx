@@ -15,6 +15,8 @@ import {
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { AttachmentsPanel } from "@/app/(dashboard)/components/attachments-panel";
 import { MessagesPanel } from "@/app/(dashboard)/components/messages-panel";
+import { OdooEditLink } from "@/app/(dashboard)/components/odoo-link";
+import { DownloadReportButton } from "@/app/(dashboard)/components/download-report-button";
 import { stripHtml } from "@/app/lib/strip-html";
 
 interface PORow {
@@ -293,6 +295,14 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
             {rawOrder.date_planned && <span>Expected {rawOrder.date_planned.slice(0, 10)}</span>}
             <span>Currency {order.currency}</span>
           </div>
+        </div>
+        <div className="shrink-0 flex items-center gap-2">
+          <DownloadReportButton
+            reportName="purchase.report_purchaseorder"
+            recordId={order.id}
+            fileName={`${order.name}.pdf`}
+          />
+          <OdooEditLink model="purchase.order" id={order.id} />
         </div>
       </header>
 

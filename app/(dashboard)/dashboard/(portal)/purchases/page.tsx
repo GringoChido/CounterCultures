@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
+import { OdooCreateLink } from "@/app/(dashboard)/components/odoo-link";
 
 type POStateFilter = "all" | "draft" | "sent" | "purchase" | "done" | "cancel";
 type POInvoiceFilter = "all" | "no" | "to invoice" | "invoiced";
@@ -298,9 +299,12 @@ const PurchasesPage = () => {
   return (
     <div className="p-6 max-w-[1500px] mx-auto">
       <header className="mb-6">
-        <div className="flex items-center gap-3 mb-2">
-          <Truck className="w-6 h-6 text-dash-accent" />
-          <h1 className="font-display text-2xl">Purchase Orders</h1>
+        <div className="flex items-center justify-between gap-3 mb-2">
+          <div className="flex items-center gap-3">
+            <Truck className="w-6 h-6 text-dash-accent" />
+            <h1 className="font-display text-2xl">Purchase Orders</h1>
+          </div>
+          <OdooCreateLink model="purchase.order" label="New PO" />
         </div>
         <p className="text-sm text-dash-text-secondary">
           Vendor POs — what's ordered, received, billed — from the live Odoo snapshot.

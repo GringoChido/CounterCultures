@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, Clock, Percent, DollarSign, CheckCircle2, XCircle, Briefcase, TrendingUp, Loader2 } from "lucide-react";
+import { Users, Clock, DollarSign, CheckCircle2, XCircle, Briefcase, TrendingUp, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
@@ -16,7 +16,6 @@ interface TradeMember {
   company: string;
   contact: string;
   tier: Tier;
-  discount: number;
   status: "active" | "pending" | "suspended";
   totalOrders: number;
   revenue: number;
@@ -37,10 +36,10 @@ const statusVariants: Record<string, BadgeVariant> = {
 };
 
 const tradeMembers: TradeMember[] = [
-  { id: "1", company: "Martinez Design Group", contact: "Elena Martinez", tier: "Gold", discount: 25, status: "active", totalOrders: 42, revenue: 380000, activeProjects: 3, revenueType: "trade" },
-  { id: "2", company: "Coastal Living Interiors", contact: "James Patterson", tier: "Gold", discount: 25, status: "active", totalOrders: 28, revenue: 245000, activeProjects: 2, revenueType: "trade" },
-  { id: "3", company: "Hacienda Renovations", contact: "Carlos Mendoza", tier: "Silver", discount: 18, status: "active", totalOrders: 15, revenue: 120000, activeProjects: 1, revenueType: "trade" },
-  { id: "4", company: "Pacific Homes Builder", contact: "Sarah Kim", tier: "Bronze", discount: 12, status: "pending", totalOrders: 3, revenue: 35000, activeProjects: 0, revenueType: "trade" },
+  { id: "1", company: "Martinez Design Group", contact: "Elena Martinez", tier: "Gold", status: "active", totalOrders: 42, revenue: 380000, activeProjects: 3, revenueType: "trade" },
+  { id: "2", company: "Coastal Living Interiors", contact: "James Patterson", tier: "Gold", status: "active", totalOrders: 28, revenue: 245000, activeProjects: 2, revenueType: "trade" },
+  { id: "3", company: "Hacienda Renovations", contact: "Carlos Mendoza", tier: "Silver", status: "active", totalOrders: 15, revenue: 120000, activeProjects: 1, revenueType: "trade" },
+  { id: "4", company: "Pacific Homes Builder", contact: "Sarah Kim", tier: "Bronze", status: "pending", totalOrders: 3, revenue: 35000, activeProjects: 0, revenueType: "trade" },
 ];
 
 interface Application {
@@ -142,12 +141,11 @@ const TradeProgramPage = () => {
         <p className="text-sm text-dash-text-secondary mt-1">Manage trade members, applications, and program performance</p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <KPICard label="Active Members" value="18" change={12.5} icon={Users} accentColor="bg-brand-copper" />
         <KPICard label="Pending Apps" value={String(pendingApplications.length)} icon={Clock} accentColor="bg-status-new" />
         <KPICard label="Active Projects" value={String(totalActiveProjects)} icon={Briefcase} accentColor="bg-dash-info" />
         <KPICard label="Trade Revenue" value={formatCurrency(totalTradeRevenue)} change={18.3} icon={DollarSign} accentColor="bg-brand-terracotta" />
-        <KPICard label="Avg Discount" value="20%" icon={Percent} accentColor="bg-brand-sage" />
       </div>
 
       {/* Trade vs Direct Revenue */}
@@ -188,7 +186,6 @@ const TradeProgramPage = () => {
                 <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">Company</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">Contact</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">Tier</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">Discount</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">Active Projects</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">Orders</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">Revenue</th>
@@ -205,7 +202,6 @@ const TradeProgramPage = () => {
                       {member.tier}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-dash-text">{member.discount}%</td>
                   <td className="px-4 py-3 text-dash-text">{member.activeProjects || 0}</td>
                   <td className="px-4 py-3 text-dash-text">{member.totalOrders}</td>
                   <td className="px-4 py-3 font-medium text-brand-copper">{formatCurrency(member.revenue)}</td>
@@ -305,9 +301,9 @@ const TradeProgramPage = () => {
             <div>
               <label className="block text-sm font-medium text-dash-text mb-1.5">Assign Tier</label>
               <select className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper/50">
-                <option>Bronze (12%)</option>
-                <option>Silver (18%)</option>
-                <option>Gold (25%)</option>
+                <option>Bronze</option>
+                <option>Silver</option>
+                <option>Gold</option>
               </select>
             </div>
             <div className="pt-4 border-t border-dash-border">

@@ -121,7 +121,11 @@ const AttachmentsPanel = ({ resModel, resId }: AttachmentsPanelProps) => {
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                   <a
-                    href={a.downloadUrl}
+                    href={
+                      a.driveFileId
+                        ? `/api/dashboard/attachments/download?fileId=${encodeURIComponent(a.driveFileId)}`
+                        : a.downloadUrl
+                    }
                     title="Download"
                     className="p-1.5 rounded hover:bg-dash-bg text-dash-text-secondary hover:text-dash-text transition-colors"
                   >

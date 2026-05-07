@@ -94,15 +94,22 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
 
           {/* Right side — Search + WhatsApp + CTA + Mobile toggle */}
           <div className="flex items-center gap-1 sm:gap-2">
-            {/* Search trigger — opens the cmd-K palette */}
+            {/* Search trigger — visible bar on desktop, icon on mobile */}
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
-              className="flex items-center justify-center w-11 h-11 text-brand-charcoal hover:text-brand-terracotta transition-colors cursor-pointer"
+              className="flex items-center gap-2 h-9 text-brand-charcoal hover:text-brand-terracotta transition-colors cursor-pointer
+                         w-9 justify-center
+                         md:w-auto md:justify-start md:px-3.5 md:border md:border-brand-stone/25 md:rounded-full md:bg-white/60 md:hover:border-brand-stone/40"
               aria-label={lang === "es" ? "Buscar (⌘K)" : "Search (⌘K)"}
-              title={lang === "es" ? "Buscar (⌘K)" : "Search (⌘K)"}
             >
-              <Search className="w-5 h-5" />
+              <Search className="w-4 h-4 shrink-0" />
+              <span className="hidden md:inline font-body text-sm text-dash-text-secondary/70">
+                {lang === "es" ? "Buscar…" : "Search…"}
+              </span>
+              <kbd className="hidden md:inline font-mono text-[10px] text-dash-text-secondary/50 border border-brand-stone/20 rounded px-1.5 py-0.5 ml-2">
+                ⌘K
+              </kbd>
             </button>
 
             <a

@@ -70,7 +70,7 @@ const SafeProductImage = ({
           fill
           sizes={sizes}
           priority={priority}
-          className={`absolute inset-0 object-cover z-10 ${imageClassName}`}
+          className={`absolute inset-0 object-contain z-10 bg-white ${imageClassName}`}
           onError={() => setImgFailed(true)}
           onLoad={(e) => {
             const img = e.currentTarget as HTMLImageElement;

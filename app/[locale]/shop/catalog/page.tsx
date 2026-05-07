@@ -12,7 +12,7 @@ import {
 import { CatalogView } from "./catalog-view";
 import { ProjectListBar } from "./project-list-bar";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 1800;
 
 const BASE_URL = "https://countercultures.mx";
 
@@ -45,6 +45,12 @@ export const generateMetadata = async ({
 };
 
 const STATS_FALLBACK = { total: 350000, brandCount: 73 };
+
+const raceWithFallback = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
+  Promise.race([
+    p.catch(() => fallback),
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
 
 // Map brand display names to their hero image in /public/Assets/BRANDS/.
 // Files follow the pattern `{slug}-hero.{webp|avif|jpg|jpeg|png}`. Prefer
@@ -102,7 +108,7 @@ const CatalogPage = async ({ params }: CatalogPageProps) => {
     ),
   ]);
   const [brandCounts, stats] = await Promise.all([
-    getQuoteCatalogBrands(),
+    raceWithFallback(getQuoteCatalogBrands(), 2000, []),
     statsPromise,
   ]);
 

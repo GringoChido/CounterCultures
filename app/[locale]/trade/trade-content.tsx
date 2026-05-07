@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, useRef, type FormEvent } from "react";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { CategoryHero } from "@/app/components/sections/category-hero";
@@ -18,6 +18,8 @@ import {
   FileText,
   HeadphonesIcon,
   Users,
+  Upload,
+  X,
 } from "lucide-react";
 import { useLocale } from "next-intl";
 
@@ -73,6 +75,9 @@ const t = {
     es: "Algo salió mal. Inténtalo de nuevo o contáctanos directamente.",
   },
   reviewedTime: { en: "Applications reviewed within 48 hours", es: "Solicitudes revisadas en 48 horas" },
+  constanciaLabel: { en: "Constancia de Situación Fiscal (PDF)", es: "Constancia de Situación Fiscal (PDF)" },
+  constanciaHint: { en: "Upload your tax registration document", es: "Sube tu constancia fiscal" },
+  fileSelected: { en: "Selected:", es: "Seleccionado:" },
 };
 
 const benefits = [
@@ -148,6 +153,8 @@ const steps = [
 export const TradeContent = () => {
   const locale = useLocale() as "en" | "es";
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [fileName, setFileName] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement | null>(null);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -158,23 +165,13 @@ export const TradeContent = () => {
     try {
       const res = await fetch("/api/trade", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firstName: data.get("firstName"),
-          lastName: data.get("lastName"),
-          company: data.get("company"),
-          profession: data.get("profession"),
-          email: data.get("email"),
-          phone: data.get("phone"),
-          website: data.get("website"),
-          license: data.get("license"),
-          message: data.get("message"),
-        }),
+        body: data,
       });
 
       if (!res.ok) throw new Error();
       setStatus("sent");
       form.reset();
+      setFileName(null);
     } catch {
       setStatus("error");
     }
@@ -374,6 +371,49 @@ export const TradeContent = () => {
                 type="text"
                 placeholder={t.license[locale]}
               />
+              {/* Constancia Fiscal upload */}
+              <div>
+                <label className="block font-body text-sm text-dash-text-secondary mb-1.5">
+                  {t.constanciaLabel[locale]}
+                </label>
+                <div
+                  onClick={() => fileRef.current?.click()}
+                  className="flex items-center gap-3 px-4 py-3 border border-brand-stone/20 rounded-lg bg-dash-surface hover:border-brand-copper/40 transition-colors cursor-pointer"
+                >
+                  <Upload className="w-4 h-4 text-dash-text-secondary/60 shrink-0" />
+                  {fileName ? (
+                    <span className="flex-1 font-body text-sm text-brand-charcoal truncate">
+                      {t.fileSelected[locale]} {fileName}
+                    </span>
+                  ) : (
+                    <span className="flex-1 font-body text-sm text-dash-text-secondary/60">
+                      {t.constanciaHint[locale]}
+                    </span>
+                  )}
+                  {fileName && (
+                    <button
+                      type="button"
+                      onClick={(ev) => {
+                        ev.stopPropagation();
+                        setFileName(null);
+                        if (fileRef.current) fileRef.current.value = "";
+                      }}
+                      className="p-0.5 text-dash-text-secondary/50 hover:text-brand-charcoal cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  name="constancia"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  className="hidden"
+                  onChange={(ev) => setFileName(ev.target.files?.[0]?.name ?? null)}
+                />
+              </div>
+
               <TextAreaField
                 label={t.messagePlaceholder[locale]}
                 hideLabel

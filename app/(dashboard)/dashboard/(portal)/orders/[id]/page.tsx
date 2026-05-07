@@ -16,6 +16,9 @@ import { AttachmentsPanel } from "@/app/(dashboard)/components/attachments-panel
 import { MessagesPanel } from "@/app/(dashboard)/components/messages-panel";
 import { ConfirmOrderButton } from "@/app/(dashboard)/components/orders/confirm-order-button";
 import { StaleQuoteActions } from "@/app/(dashboard)/components/orders/stale-quote-actions";
+import { OdooEditLink } from "@/app/(dashboard)/components/odoo-link";
+import { SendQuoteButton } from "@/app/(dashboard)/components/orders/send-quote-button";
+import { DownloadReportButton } from "@/app/(dashboard)/components/download-report-button";
 import { stripHtml } from "@/app/lib/strip-html";
 
 interface OrderRow {
@@ -213,12 +216,28 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
             <span>Currency {order.currency}</span>
           </div>
         </div>
-        <div className="shrink-0">
+        <div className="shrink-0 flex flex-wrap items-center gap-2">
+          <DownloadReportButton
+            reportName="sale.report_saleorder"
+            recordId={order.id}
+            fileName={`${order.name}.pdf`}
+          />
+          <SendQuoteButton
+            orderId={Number(order.id)}
+            orderName={order.name}
+            orderState={order.rawState}
+            partnerName={order.partnerName}
+            partnerEmail={partnerEmail}
+            partnerLang={partnerLang}
+            amountTotal={order.amountTotal}
+            currency={order.currency}
+          />
           <ConfirmOrderButton
             orderId={Number(order.id)}
             orderName={order.name}
             orderState={order.rawState}
           />
+          <OdooEditLink model="sale.order" id={order.id} />
         </div>
       </header>
 

@@ -299,6 +299,27 @@ export const exportAsPdf = async (fileId: string): Promise<Buffer> => {
   return Buffer.from(res.data as ArrayBuffer);
 };
 
+/** Download binary file content via service account */
+export const downloadFile = async (
+  fileId: string
+): Promise<{ buffer: Buffer; mimeType: string; name: string }> => {
+  const drive = getDrive();
+  const meta = await drive.files.get({
+    fileId,
+    fields: "name, mimeType",
+    supportsAllDrives: true,
+  });
+  const res = await drive.files.get(
+    { fileId, alt: "media", supportsAllDrives: true },
+    { responseType: "arraybuffer" }
+  );
+  return {
+    buffer: Buffer.from(res.data as ArrayBuffer),
+    mimeType: meta.data.mimeType ?? "application/octet-stream",
+    name: meta.data.name ?? "download",
+  };
+};
+
 /** Set a file to be viewable by anyone with the link */
 export const setSharePermission = async (fileId: string): Promise<string> => {
   const drive = getDrive();

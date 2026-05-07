@@ -11,14 +11,11 @@ import {
   ChevronDown,
   LayoutGrid,
   List,
-  Plus,
-  Check,
   MapPin,
   TrendingUp,
   Camera,
 } from "lucide-react";
 import type { ProductFull, ProductFullWithSignals, BrandCount } from "@/app/lib/products-full";
-import { useProjectListStore } from "@/app/lib/stores/project-list-store";
 import { ProductVisual } from "@/app/components/product-visual";
 import { VisualSearchModal } from "@/app/components/visual-search-modal";
 import { brandTheme } from "@/app/lib/product-visuals";
@@ -211,9 +208,6 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {} }:
   const [selected, setSelected] = useState<ProductFull | null>(null);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [visualSearchOpen, setVisualSearchOpen] = useState(false);
-
-  const projectHas = useProjectListStore((s) => s.has);
-  const projectAdd = useProjectListStore((s) => s.add);
 
   // Sync filters → URL (shallow)
   useEffect(() => {
@@ -626,19 +620,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {} }:
                     key={p.id}
                     product={p}
                     locale={locale}
-                    inProject={projectHas(p.id)}
                     onOpen={() => setSelected(p)}
-                    onAdd={() =>
-                      projectAdd({
-                        id: p.id,
-                        sku: p.sku,
-                        name: p.name,
-                        brand: p.brand,
-                        category: p.category,
-                        currency: p.currency,
-                        listPrice: p.listPrice,
-                      })
-                    }
                     t={t}
                   />
                 ))}
@@ -648,18 +630,6 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {} }:
                 items={sortedItems}
                 locale={locale}
                 onOpen={(p) => setSelected(p)}
-                onAdd={(p) =>
-                  projectAdd({
-                    id: p.id,
-                    sku: p.sku,
-                    name: p.name,
-                    brand: p.brand,
-                    category: p.category,
-                    currency: p.currency,
-                    listPrice: p.listPrice,
-                  })
-                }
-                isInProject={(id) => projectHas(id)}
                 t={t}
               />
             ) : result && sortedItems.length === 0 && !isPending ? (
@@ -910,13 +880,11 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {} }:
 interface ProductCardProps {
   product: ProductFullWithSignals;
   locale: "en" | "es";
-  inProject: boolean;
   onOpen: () => void;
-  onAdd: () => void;
   t: typeof T["en"];
 }
 
-const ProductCard = ({ product, locale, inProject, onOpen, onAdd, t }: ProductCardProps) => {
+const ProductCard = ({ product, locale, onOpen, t }: ProductCardProps) => {
   const price = formatPrice(product.listPrice, product.currency, locale);
   return (
     <div className="group bg-dash-surface border border-brand-stone/15 hover:border-brand-copper/60 transition-colors flex flex-col">
@@ -975,9 +943,9 @@ const ProductCard = ({ product, locale, inProject, onOpen, onAdd, t }: ProductCa
             {product.sku || "—"}
           </p>
         </button>
-        <div className="mt-3 pt-3 border-t border-brand-stone/10 flex items-center justify-between gap-2">
+        <div className="mt-3 pt-3 border-t border-brand-stone/10">
           <span className="font-body text-xs text-brand-charcoal">
-            {product.listPrice > 0 ? (
+            {product.listPrice > 10 ? (
               <>
                 <span className="text-dash-text-secondary">{locale === "es" ? "desde" : "from"}</span>{" "}
                 <span className="font-medium">{price}</span>
@@ -986,18 +954,6 @@ const ProductCard = ({ product, locale, inProject, onOpen, onAdd, t }: ProductCa
               <span className="text-dash-text-secondary">{locale === "es" ? "Cotización" : "Quote"}</span>
             )}
           </span>
-          <button
-            type="button"
-            onClick={onAdd}
-            disabled={inProject}
-            className={`flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium rounded transition-colors cursor-pointer disabled:cursor-default ${
-              inProject
-                ? "bg-brand-copper/10 text-brand-copper border border-brand-copper/30"
-                : "bg-brand-copper text-white hover:bg-brand-copper/90"
-            }`}
-          >
-            {inProject ? `✓ ${t.inProject}` : `+ ${t.addToProject}`}
-          </button>
         </div>
       </div>
     </div>
@@ -1013,12 +969,10 @@ interface ProductTableProps {
   items: ProductFullWithSignals[];
   locale: "en" | "es";
   onOpen: (p: ProductFull) => void;
-  onAdd: (p: ProductFull) => void;
-  isInProject: (id: string) => boolean;
   t: typeof T["en"];
 }
 
-const ProductTable = ({ items, locale, onOpen, onAdd, isInProject, t }: ProductTableProps) => (
+const ProductTable = ({ items, locale, onOpen, t }: ProductTableProps) => (
   <div className="border border-brand-stone/15 bg-dash-surface overflow-hidden">
     <table className="w-full text-sm">
       <thead className="bg-brand-linen/60 border-b border-brand-stone/15">
@@ -1027,12 +981,10 @@ const ProductTable = ({ items, locale, onOpen, onAdd, isInProject, t }: ProductT
           <th className="text-left px-4 py-3 font-semibold">{t.colProduct}</th>
           <th className="text-left px-4 py-3 font-semibold hidden md:table-cell">{t.colBrand}</th>
           <th className="text-right px-4 py-3 font-semibold hidden sm:table-cell">{t.colPrice}</th>
-          <th className="px-4 py-3 w-28" />
         </tr>
       </thead>
       <tbody>
         {items.map((p) => {
-          const inList = isInProject(p.id);
           return (
             <tr
               key={p.id}
@@ -1078,7 +1030,7 @@ const ProductTable = ({ items, locale, onOpen, onAdd, isInProject, t }: ProductT
                 {p.brand || "—"}
               </td>
               <td className="px-4 py-3 hidden sm:table-cell text-right font-body text-sm text-brand-charcoal whitespace-nowrap">
-                {p.listPrice > 0 ? (
+                {p.listPrice > 10 ? (
                   <span>
                     <span className="text-dash-text-secondary text-[10px] tracking-wider uppercase mr-1">
                       {locale === "es" ? "desde" : "from"}
@@ -1090,33 +1042,6 @@ const ProductTable = ({ items, locale, onOpen, onAdd, isInProject, t }: ProductT
                     {locale === "es" ? "Cotizar" : "Quote"}
                   </span>
                 )}
-              </td>
-              <td className="px-4 py-3 text-right">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAdd(p);
-                  }}
-                  disabled={inList}
-                  className={`inline-flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-body font-medium rounded transition-colors cursor-pointer disabled:cursor-default ${
-                    inList
-                      ? "bg-brand-copper/10 text-brand-copper border border-brand-copper/30"
-                      : "bg-brand-copper text-white hover:bg-brand-copper/90"
-                  }`}
-                >
-                  {inList ? (
-                    <>
-                      <Check className="w-3 h-3" />
-                      <span className="hidden sm:inline">{t.inProject}</span>
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="w-3 h-3" />
-                      <span className="hidden sm:inline">{t.addToProject}</span>
-                    </>
-                  )}
-                </button>
               </td>
             </tr>
           );

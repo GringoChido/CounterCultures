@@ -92,13 +92,13 @@ const ProductVisual = ({
 
   if (mode === "image") {
     return (
-      <div className={`${positionCls} bg-brand-linen overflow-hidden ${className}`}>
+      <div className={`${positionCls} bg-white overflow-hidden ${className}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={`/products/odoo/${id}.jpg`}
           alt={name}
           onError={() => setMode("typography")}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain"
         />
         {finishChip}
       </div>
@@ -107,14 +107,14 @@ const ProductVisual = ({
 
   if (mode === "probing") {
     return (
-      <div className={`${positionCls} bg-brand-linen overflow-hidden ${className}`}>
+      <div className={`${positionCls} bg-white overflow-hidden ${className}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={`/products/odoo/${id}.jpg`}
           alt={name}
           onLoad={() => setMode("image")}
           onError={() => setMode("typography")}
-          className="w-full h-full object-cover opacity-0"
+          className="w-full h-full object-contain opacity-0"
         />
         {finishChip}
       </div>

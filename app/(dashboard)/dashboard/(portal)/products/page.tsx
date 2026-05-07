@@ -5,6 +5,7 @@ import {
 } from "@/app/lib/products-full";
 import { CatalogSearch } from "./catalog-search";
 import { ActiveOrderBanner } from "./active-order-banner";
+import { OdooCreateLink } from "@/app/(dashboard)/components/odoo-link";
 
 export const dynamic = "force-dynamic";
 
@@ -38,9 +39,12 @@ const ProductsPage = async () => {
   return (
     <div className="space-y-6">
       <ActiveOrderBanner />
-      <div>
-        <h2 className="text-2xl font-bold text-dash-text">Products</h2>
-        <p className="text-sm text-dash-text-secondary mt-1">{statsCopy}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-2xl font-bold text-dash-text">Products</h2>
+          <p className="text-sm text-dash-text-secondary mt-1">{statsCopy}</p>
+        </div>
+        <OdooCreateLink model="product.template" label="New Product" />
       </div>
       <CatalogSearch
         brandCounts={brandCounts}
