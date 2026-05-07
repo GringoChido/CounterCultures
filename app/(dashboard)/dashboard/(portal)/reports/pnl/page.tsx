@@ -33,11 +33,38 @@ interface PnLLineItem {
   count: number;
 }
 
-interface PnLSection {
+interface PnLCategory {
+  code: string;
   label: string;
   items: PnLLineItem[];
   totalMXN: number;
   totalUSD: number;
+}
+
+interface PnLSection {
+  label: string;
+  categories: PnLCategory[];
+  totalMXN: number;
+  totalUSD: number;
+}
+
+interface PnLPriorTotals {
+  netRevenueMXN: number;
+  netRevenueUSD: number;
+  cogsMXN: number;
+  cogsUSD: number;
+  importCostsMXN: number;
+  importCostsUSD: number;
+  grossProfitMXN: number;
+  grossProfitUSD: number;
+  opexMXN: number;
+  opexUSD: number;
+  adjustmentsMXN: number;
+  adjustmentsUSD: number;
+  totalExpensesMXN: number;
+  totalExpensesUSD: number;
+  netIncomeMXN: number;
+  netIncomeUSD: number;
 }
 
 interface PnLReport {
@@ -49,18 +76,15 @@ interface PnLReport {
   revenue: PnLSection;
   refunds: PnLSection;
   netRevenue: { totalMXN: number; totalUSD: number };
-  expenses: PnLSection;
-  expenseRefunds: PnLSection;
-  netExpenses: { totalMXN: number; totalUSD: number };
+  cogs: PnLSection;
+  importCosts: PnLSection;
+  grossProfit: { totalMXN: number; totalUSD: number };
+  opex: PnLSection;
+  adjustments: PnLSection;
+  expenseCredits: PnLSection;
+  totalExpenses: { totalMXN: number; totalUSD: number };
   netIncome: { totalMXN: number; totalUSD: number };
-  priorPeriod: {
-    netRevenueMXN: number;
-    netRevenuUSD: number;
-    netExpensesMXN: number;
-    netExpensesUSD: number;
-    netIncomeMXN: number;
-    netIncomeUSD: number;
-  } | null;
+  priorPeriod: PnLPriorTotals | null;
   cashIn: { totalMXN: number; totalUSD: number };
   cashOut: { totalMXN: number; totalUSD: number };
   generatedAt: string;
@@ -191,6 +215,76 @@ const Variance = ({ current, prior, currency, inverted = false }: {
 // Section row (expandable)
 // ---------------------------------------------------------------------------
 
+const CategoryRow = ({
+  category,
+  currency,
+}: {
+  category: PnLCategory;
+  currency: string;
+}) => {
+  const [open, setOpen] = useState(false);
+  const total = currency === "USD" ? category.totalUSD : category.totalMXN;
+  const otherTotal = currency === "USD" ? category.totalMXN : category.totalUSD;
+  const otherCurrency = currency === "USD" ? "MXN" : "USD";
+
+  return (
+    <>
+      <tr
+        className="cursor-pointer hover:bg-dash-bg-muted/30 transition-colors"
+        onClick={() => setOpen(!open)}
+      >
+        <td className="py-1.5 pl-10 pr-2">
+          <span className="flex items-center gap-1 text-xs text-dash-text-secondary">
+            {category.items.length > 1 && (
+              open ? (
+                <ChevronDown className="w-3 h-3 text-dash-text-muted" />
+              ) : (
+                <ChevronRight className="w-3 h-3 text-dash-text-muted" />
+              )
+            )}
+            {category.items.length <= 1 && <span className="w-3" />}
+            {category.label}
+          </span>
+        </td>
+        <td className="py-1.5 pr-4 text-right text-xs text-dash-text-secondary">
+          {fmt(total, currency)}
+          {otherTotal > 0 && (
+            <span className="text-[10px] text-dash-text-muted ml-1">
+              + {fmt(otherTotal, otherCurrency)}
+            </span>
+          )}
+        </td>
+        <td className="py-1.5 pr-4 text-right text-[10px] text-dash-text-muted">
+          {category.items.length} acct{category.items.length === 1 ? "" : "s"}
+        </td>
+      </tr>
+      {open &&
+        category.items.map((item) => {
+          const amt = currency === "USD" ? item.amountUSD : item.amountMXN;
+          const otherAmt = currency === "USD" ? item.amountMXN : item.amountUSD;
+          return (
+            <tr key={item.accountId} className="bg-dash-bg/20">
+              <td className="py-1 pl-16 pr-2 text-[11px] text-dash-text-muted">
+                {item.accountName}
+              </td>
+              <td className="py-1 pr-4 text-right text-[11px] text-dash-text-muted">
+                {fmt(amt, currency)}
+                {otherAmt > 0 && (
+                  <span className="text-[10px] text-dash-text-muted ml-1">
+                    + {fmt(otherAmt, otherCurrency)}
+                  </span>
+                )}
+              </td>
+              <td className="py-1 pr-4 text-right text-[10px] text-dash-text-muted">
+                {item.count} doc{item.count === 1 ? "" : "s"}
+              </td>
+            </tr>
+          );
+        })}
+    </>
+  );
+};
+
 const SectionRow = ({
   section,
   currency,
@@ -204,6 +298,9 @@ const SectionRow = ({
   const total = currency === "USD" ? section.totalUSD : section.totalMXN;
   const otherTotal = currency === "USD" ? section.totalMXN : section.totalUSD;
   const otherCurrency = currency === "USD" ? "MXN" : "USD";
+  const totalAccounts = section.categories.reduce((s, c) => s + c.items.length, 0);
+
+  if (section.categories.length === 0 && total === 0) return null;
 
   return (
     <>
@@ -232,32 +329,13 @@ const SectionRow = ({
           )}
         </td>
         <td className="py-2.5 pr-4 text-right text-xs text-dash-text-secondary">
-          {section.items.length} {section.items.length === 1 ? "account" : "accounts"}
+          {totalAccounts} {totalAccounts === 1 ? "account" : "accounts"}
         </td>
       </tr>
       {open &&
-        section.items.map((item) => {
-          const amt = currency === "USD" ? item.amountUSD : item.amountMXN;
-          const otherAmt = currency === "USD" ? item.amountMXN : item.amountUSD;
-          return (
-            <tr key={item.accountId} className="bg-dash-bg/30">
-              <td className="py-1.5 pl-10 pr-2 text-xs text-dash-text-secondary">
-                {item.accountName}
-              </td>
-              <td className="py-1.5 pr-4 text-right text-xs text-dash-text-secondary">
-                {fmt(amt, currency)}
-                {otherAmt > 0 && (
-                  <span className="text-[10px] text-dash-text-muted ml-1">
-                    + {fmt(otherAmt, otherCurrency)}
-                  </span>
-                )}
-              </td>
-              <td className="py-1.5 pr-4 text-right text-[10px] text-dash-text-muted">
-                {item.count} doc{item.count === 1 ? "" : "s"}
-              </td>
-            </tr>
-          );
-        })}
+        section.categories.map((cat) => (
+          <CategoryRow key={cat.code} category={cat} currency={currency} />
+        ))}
     </>
   );
 };
@@ -274,15 +352,20 @@ const SummaryCards = ({
   currency: string;
 }) => {
   const rev = currency === "USD" ? report.netRevenue.totalUSD : report.netRevenue.totalMXN;
-  const exp = currency === "USD" ? report.netExpenses.totalUSD : report.netExpenses.totalMXN;
+  const exp = currency === "USD" ? report.totalExpenses.totalUSD : report.totalExpenses.totalMXN;
+  const gp = currency === "USD" ? report.grossProfit.totalUSD : report.grossProfit.totalMXN;
   const net = currency === "USD" ? report.netIncome.totalUSD : report.netIncome.totalMXN;
   const margin = rev > 0 ? (net / rev) * 100 : 0;
+  const gpMargin = rev > 0 ? (gp / rev) * 100 : 0;
 
   const priorRev = report.priorPeriod
-    ? (currency === "USD" ? report.priorPeriod.netRevenuUSD : report.priorPeriod.netRevenueMXN)
+    ? (currency === "USD" ? report.priorPeriod.netRevenueUSD : report.priorPeriod.netRevenueMXN)
     : null;
   const priorExp = report.priorPeriod
-    ? (currency === "USD" ? report.priorPeriod.netExpensesUSD : report.priorPeriod.netExpensesMXN)
+    ? (currency === "USD" ? report.priorPeriod.totalExpensesUSD : report.priorPeriod.totalExpensesMXN)
+    : null;
+  const priorGP = report.priorPeriod
+    ? (currency === "USD" ? report.priorPeriod.grossProfitUSD : report.priorPeriod.grossProfitMXN)
     : null;
   const priorNet = report.priorPeriod
     ? (currency === "USD" ? report.priorPeriod.netIncomeUSD : report.priorPeriod.netIncomeMXN)
@@ -346,24 +429,20 @@ const SummaryCards = ({
       <div className={`bg-dash-surface border ${companyAccent} p-4 rounded-lg`}>
         <div className="flex items-center gap-2 mb-1">
           <span className="text-[10px] uppercase tracking-wider text-dash-text-secondary">
-            Net Margin
+            Gross Profit
           </span>
         </div>
-        <div className={`text-xl font-semibold ${margin >= 0 ? "text-dash-text" : "text-dash-danger"}`}>
-          {margin.toFixed(1)}%
+        <div className={`text-xl font-semibold ${gp >= 0 ? "text-dash-text" : "text-dash-danger"}`}>
+          {fmt(gp, currency)}
         </div>
-        <div className="flex gap-3 mt-1.5">
+        {priorGP !== null && (
+          <div className="mt-1">
+            <Variance current={gp} prior={priorGP} currency={currency} />
+          </div>
+        )}
+        <div className="flex gap-3 mt-1">
           <span className="text-[10px] text-dash-text-muted">
-            Cash in: {fmt(
-              currency === "USD" ? report.cashIn.totalUSD : report.cashIn.totalMXN,
-              currency
-            )}
-          </span>
-          <span className="text-[10px] text-dash-text-muted">
-            Out: {fmt(
-              currency === "USD" ? report.cashOut.totalUSD : report.cashOut.totalMXN,
-              currency
-            )}
+            GP {gpMargin.toFixed(1)}% · Net {margin.toFixed(1)}%
           </span>
         </div>
       </div>
@@ -381,30 +460,41 @@ const exportCSV = (report: PnLReport, currency: string) => {
     ["Company", report.company === "combined" ? "Combined" : report.company.toUpperCase()],
     ["Generated", new Date(report.generatedAt).toLocaleString()],
     [],
-    ["Category", "Account", `Amount (${currency})`, "Documents"],
+    ["Section", "Category", "Account", `Amount (${currency})`, "Documents"],
   ];
 
   const addSection = (section: PnLSection) => {
-    for (const item of section.items) {
-      const amt = currency === "USD" ? item.amountUSD : item.amountMXN;
-      rows.push([section.label, item.accountName, amt.toFixed(2), String(item.count)]);
+    for (const cat of section.categories) {
+      for (const item of cat.items) {
+        const amt = currency === "USD" ? item.amountUSD : item.amountMXN;
+        rows.push([section.label, cat.label, item.accountName, amt.toFixed(2), String(item.count)]);
+      }
     }
     const total = currency === "USD" ? section.totalUSD : section.totalMXN;
-    rows.push([`${section.label} Total`, "", total.toFixed(2), ""]);
+    rows.push([`${section.label} Total`, "", "", total.toFixed(2), ""]);
   };
 
   addSection(report.revenue);
   addSection(report.refunds);
   const netRev = currency === "USD" ? report.netRevenue.totalUSD : report.netRevenue.totalMXN;
-  rows.push(["NET REVENUE", "", netRev.toFixed(2), ""]);
+  rows.push(["NET REVENUE", "", "", netRev.toFixed(2), ""]);
   rows.push([]);
-  addSection(report.expenses);
-  addSection(report.expenseRefunds);
-  const netExp = currency === "USD" ? report.netExpenses.totalUSD : report.netExpenses.totalMXN;
-  rows.push(["TOTAL EXPENSES", "", netExp.toFixed(2), ""]);
+
+  addSection(report.cogs);
+  addSection(report.importCosts);
+  const gp = currency === "USD" ? report.grossProfit.totalUSD : report.grossProfit.totalMXN;
+  rows.push(["GROSS PROFIT", "", "", gp.toFixed(2), ""]);
   rows.push([]);
+
+  addSection(report.opex);
+  addSection(report.adjustments);
+  addSection(report.expenseCredits);
+  const totExp = currency === "USD" ? report.totalExpenses.totalUSD : report.totalExpenses.totalMXN;
+  rows.push(["TOTAL EXPENSES", "", "", totExp.toFixed(2), ""]);
+  rows.push([]);
+
   const netInc = currency === "USD" ? report.netIncome.totalUSD : report.netIncome.totalMXN;
-  rows.push(["NET INCOME", "", netInc.toFixed(2), ""]);
+  rows.push(["NET INCOME", "", "", netInc.toFixed(2), ""]);
 
   const csv = rows.map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
   const blob = new Blob([csv], { type: "text/csv" });
@@ -602,9 +692,7 @@ const PnLPage = () => {
               <tbody>
                 {/* Revenue */}
                 <SectionRow section={report.revenue} currency={displayCurrency} defaultOpen />
-                {report.refunds.items.length > 0 && (
-                  <SectionRow section={report.refunds} currency={displayCurrency} />
-                )}
+                <SectionRow section={report.refunds} currency={displayCurrency} />
                 <tr className="border-t border-dash-border bg-dash-bg/50">
                   <td className="py-2.5 pl-4 pr-2 text-sm font-semibold text-dash-text">
                     Net Revenue
@@ -619,36 +707,63 @@ const PnLPage = () => {
                     {report.priorPeriod && (
                       <Variance
                         current={displayCurrency === "USD" ? report.netRevenue.totalUSD : report.netRevenue.totalMXN}
-                        prior={displayCurrency === "USD" ? report.priorPeriod.netRevenuUSD : report.priorPeriod.netRevenueMXN}
+                        prior={displayCurrency === "USD" ? report.priorPeriod.netRevenueUSD : report.priorPeriod.netRevenueMXN}
                         currency={displayCurrency}
                       />
                     )}
                   </td>
                 </tr>
 
-                {/* Spacer */}
                 <tr><td colSpan={3} className="h-3" /></tr>
 
-                {/* Expenses */}
-                <SectionRow section={report.expenses} currency={displayCurrency} defaultOpen />
-                {report.expenseRefunds.items.length > 0 && (
-                  <SectionRow section={report.expenseRefunds} currency={displayCurrency} />
-                )}
+                {/* COGS + Import Costs */}
+                <SectionRow section={report.cogs} currency={displayCurrency} defaultOpen />
+                <SectionRow section={report.importCosts} currency={displayCurrency} />
+
+                {/* Gross Profit */}
                 <tr className="border-t border-dash-border bg-dash-bg/50">
                   <td className="py-2.5 pl-4 pr-2 text-sm font-semibold text-dash-text">
-                    Total Expenses
+                    Gross Profit
                   </td>
-                  <td className="py-2.5 pr-4 text-right text-sm font-bold text-dash-warn">
+                  <td className="py-2.5 pr-4 text-right text-sm font-bold text-dash-text">
                     {fmt(
-                      displayCurrency === "USD" ? report.netExpenses.totalUSD : report.netExpenses.totalMXN,
+                      displayCurrency === "USD" ? report.grossProfit.totalUSD : report.grossProfit.totalMXN,
                       displayCurrency
                     )}
                   </td>
                   <td className="py-2.5 pr-4 text-right">
                     {report.priorPeriod && (
                       <Variance
-                        current={displayCurrency === "USD" ? report.netExpenses.totalUSD : report.netExpenses.totalMXN}
-                        prior={displayCurrency === "USD" ? report.priorPeriod.netExpensesUSD : report.priorPeriod.netExpensesMXN}
+                        current={displayCurrency === "USD" ? report.grossProfit.totalUSD : report.grossProfit.totalMXN}
+                        prior={displayCurrency === "USD" ? report.priorPeriod.grossProfitUSD : report.priorPeriod.grossProfitMXN}
+                        currency={displayCurrency}
+                      />
+                    )}
+                  </td>
+                </tr>
+
+                <tr><td colSpan={3} className="h-3" /></tr>
+
+                {/* Operating Expenses */}
+                <SectionRow section={report.opex} currency={displayCurrency} defaultOpen />
+                <SectionRow section={report.adjustments} currency={displayCurrency} />
+                <SectionRow section={report.expenseCredits} currency={displayCurrency} />
+
+                <tr className="border-t border-dash-border bg-dash-bg/50">
+                  <td className="py-2.5 pl-4 pr-2 text-sm font-semibold text-dash-text">
+                    Total Expenses
+                  </td>
+                  <td className="py-2.5 pr-4 text-right text-sm font-bold text-dash-warn">
+                    {fmt(
+                      displayCurrency === "USD" ? report.totalExpenses.totalUSD : report.totalExpenses.totalMXN,
+                      displayCurrency
+                    )}
+                  </td>
+                  <td className="py-2.5 pr-4 text-right">
+                    {report.priorPeriod && (
+                      <Variance
+                        current={displayCurrency === "USD" ? report.totalExpenses.totalUSD : report.totalExpenses.totalMXN}
+                        prior={displayCurrency === "USD" ? report.priorPeriod.totalExpensesUSD : report.priorPeriod.totalExpensesMXN}
                         currency={displayCurrency}
                         inverted
                       />
