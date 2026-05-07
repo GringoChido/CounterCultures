@@ -12,39 +12,11 @@ import { getBrandSummary } from "@/app/lib/products-full";
 import { articles, pillarColors, pillarLabels } from "@/app/lib/articles";
 import { Shield, Wrench, HeadphonesIcon, ArrowUpRight, Package } from "lucide-react";
 import { BrandSignatureTile } from "./brand-signature-tile";
+import { BRAND_HERO_IMAGES } from "@/app/lib/brand-heroes";
 
 interface BrandPageProps {
   params: Promise<{ slug: string; locale: string }>;
 }
-
-/**
- * Pre-staged hero images — the 19 hand-picked hero photos kept at
- * /public/Assets/brand-images/ are permanent editorial assets. Protected
- * from any future Brand Kit Sheet churn. Keyed by slug.
- */
-const PRE_STAGED_HEROES: Record<string, string> = {
-  kohler: "/Assets/BRANDS/kohler-hero.webp",
-  toto: "/Assets/BRANDS/toto-hero.webp",
-  brizo: "/Assets/BRANDS/brizo-hero.webp",
-  blanco: "/Assets/BRANDS/blanco-hero.webp",
-  "california-faucets": "/Assets/BRANDS/california-faucets-hero.webp",
-  "sun-valley-bronze": "/Assets/BRANDS/sun-valley-bronze-hero.webp",
-  emtek: "/Assets/BRANDS/emtek-hero.avif",
-  badeloft: "/Assets/BRANDS/badeloft-hero.webp",
-  "villeroy-boch": "/Assets/BRANDS/villeroy-boch-hero.webp",
-  aquaspa: "/Assets/BRANDS/aquaspa-hero.webp",
-  ebbe: "/Assets/BRANDS/ebbe-hero.webp",
-  delta: "/Assets/BRANDS/delta-hero.webp",
-  rohl: "/Assets/BRANDS/rohl-hero.webp",
-  teka: "/Assets/BRANDS/teka-hero.webp",
-  smeg: "/Assets/BRANDS/smeg-hero.webp",
-  bluestar: "/Assets/BRANDS/bluestar-hero.webp",
-  baldwin: "/Assets/BRANDS/baldwin-hero.webp",
-  // Artisan makers also have pre-staged heroes (not in the 73 import list
-  // but the routes still need to render if someone hits /brands/bante or /brands/mistoa)
-  bante: "/Assets/BRANDS/bante-hero.avif",
-  mistoa: "/Assets/BRANDS/mistoa-hero.webp",
-};
 
 const BASE_URL = "https://countercultures.mx";
 
@@ -70,7 +42,7 @@ export const generateMetadata = async ({
   if (!brand) return { title: "Brand Not Found" };
 
   const isEs = locale === "es";
-  const heroImage = PRE_STAGED_HEROES[slug];
+  const heroImage = BRAND_HERO_IMAGES[slug];
 
   const title = isEs
     ? `${brand.name} — Distribuidor Autorizado en San Miguel de Allende`
@@ -122,7 +94,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
   // External-state brands should have redirected at the card click, but if
   // someone lands here directly, still render — helps SEO for the brand name.
   const products = await getProductsByBrand(brand.name);
-  const heroImage = PRE_STAGED_HEROES[slug];
+  const heroImage = BRAND_HERO_IMAGES[slug];
 
   // Full-catalog summary — connects the editorial brand page to the 354k Vault.
   const catalogSummary = await getBrandSummary(brand.name, {
@@ -315,33 +287,60 @@ const BrandPage = async ({ params }: BrandPageProps) => {
           // Typography-led hero for brands without pre-staged imagery —
           // editorial luxe fallback. Auto-upgrades when Roger drops a hero
           // file into this brand's Drive folder.
-          <section className="bg-brand-charcoal text-white py-24 md:py-32">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <p className="font-body font-semibold text-xs tracking-[0.25em] text-brand-copper uppercase flex items-center gap-2">
-                {isStocked && (
-                  <span
-                    aria-hidden
-                    className="inline-block w-2 h-2 rounded-full bg-brand-copper ring-2 ring-white/20"
-                  />
-                )}
-                {stateEyebrow}
-              </p>
-              <h1 className="mt-6 font-display text-5xl md:text-7xl font-light tracking-tight">
+          <section className="relative bg-brand-charcoal text-white pt-32 md:pt-40 pb-20 md:pb-28 overflow-hidden">
+            {/* atmospheric copper wash — keeps the no-image hero from feeling flat */}
+            <div
+              className="absolute inset-0 pointer-events-none opacity-40"
+              style={{
+                background:
+                  "radial-gradient(ellipse 70% 60% at 25% 0%, rgba(184, 115, 51, 0.28), transparent 70%), radial-gradient(ellipse 50% 80% at 100% 100%, rgba(196, 114, 90, 0.18), transparent 65%)",
+              }}
+              aria-hidden
+            />
+            {/* subtle grid texture, same vocabulary as the brand catalog cards */}
+            <div
+              className="absolute inset-0 opacity-[0.04] pointer-events-none"
+              style={{
+                backgroundImage:
+                  "url(\"data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h1v40H0zM0 0v1h40V0z' fill='%23ffffff'/%3E%3C/svg%3E\")",
+              }}
+              aria-hidden
+            />
+            {/* hairline corner accents */}
+            <div className="hidden lg:block absolute top-32 left-8 w-8 h-px bg-brand-copper/60" aria-hidden />
+            <div className="hidden lg:block absolute top-32 left-8 h-8 w-px bg-brand-copper/60" aria-hidden />
+            <div className="hidden lg:block absolute bottom-8 right-8 w-8 h-px bg-brand-copper/60" aria-hidden />
+            <div className="hidden lg:block absolute bottom-8 right-8 h-8 w-px bg-brand-copper/60" aria-hidden />
+
+            <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center gap-4">
+                <span className="h-px w-12 bg-brand-copper" aria-hidden />
+                <p className="font-mono font-semibold text-[11px] tracking-[0.3em] text-brand-copper uppercase flex items-center gap-2">
+                  {isStocked && (
+                    <span
+                      aria-hidden
+                      className="inline-block w-2 h-2 rounded-full bg-brand-copper ring-2 ring-white/20"
+                    />
+                  )}
+                  {stateEyebrow}
+                </p>
+              </div>
+              <h1 className="mt-7 font-display text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-light tracking-wide leading-[1.02]">
                 {brand.name}
               </h1>
               {tagline && (
-                <p className="mt-4 font-display text-xl md:text-2xl text-white/70 italic">
+                <p className="mt-5 font-display text-xl md:text-2xl text-white/65 italic max-w-3xl">
                   {tagline}
                 </p>
               )}
               <p
-                className="mt-8 max-w-2xl font-body text-base md:text-lg text-white/80 leading-relaxed"
+                className="mt-7 max-w-2xl font-body text-base md:text-lg text-white/75 leading-relaxed"
                 data-speakable="description"
               >
                 {description}
               </p>
               {brand.originCountryName && (
-                <p className="mt-6 font-body text-xs tracking-wider uppercase text-white/50">
+                <p className="mt-7 font-mono text-[11px] tracking-[0.3em] uppercase text-white/45">
                   {isEs ? "Origen" : "Origin"} · {brand.originCountryName}
                 </p>
               )}

@@ -1,7 +1,29 @@
 import type { Metadata } from "next";
-import { ResourcesContent } from "./resources-content";
+import { ResourcesContent, type BrandCard } from "./resources-content";
+import { BRANDS, SAMPLE_PRODUCTS } from "@/app/lib/constants";
+import { getBrands } from "@/app/lib/brand-kit-sheets";
+import { BRAND_HERO_IMAGES } from "@/app/lib/brand-heroes";
 
 const BASE_URL = "https://countercultures.mx";
+
+const buildBrandCards = async (locale: string): Promise<BrandCard[]> => {
+  const kitBrands = await getBrands();
+  const validSlugs = new Set(kitBrands.map((b) => b.slug));
+  return BRANDS.map((b) => {
+    const products = SAMPLE_PRODUCTS.filter((p) => p.brand === b.name);
+    const href = validSlugs.has(b.slug)
+      ? `/${locale}/brands/${b.slug}`
+      : `/${locale}/shop/catalog?brand=${encodeURIComponent(b.name)}`;
+    return {
+      name: b.name,
+      slug: b.slug,
+      href,
+      count: products.length,
+      heroImage: BRAND_HERO_IMAGES[b.slug],
+      productImage: products[0]?.image,
+    };
+  });
+};
 
 interface ResourcesPageProps {
   params: Promise<{ locale: string }>;
@@ -62,7 +84,6 @@ const ResourcesPage = async ({ params }: ResourcesPageProps) => {
   const { locale } = await params;
   const isEs = locale === "es";
 
-  // AEO: Comprehensive FAQPage schema for ordering, logistics, returns
   const faqJsonLd = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -161,7 +182,6 @@ const ResourcesPage = async ({ params }: ResourcesPageProps) => {
         ],
   };
 
-  // BreadcrumbList JSON-LD
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -183,7 +203,7 @@ const ResourcesPage = async ({ params }: ResourcesPageProps) => {
 
   return (
     <>
-        <script
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
@@ -191,7 +211,7 @@ const ResourcesPage = async ({ params }: ResourcesPageProps) => {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <ResourcesContent />
+      <ResourcesContent brandCards={await buildBrandCards(locale)} />
     </>
   );
 };

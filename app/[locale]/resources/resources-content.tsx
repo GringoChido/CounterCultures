@@ -6,68 +6,92 @@ import { Footer } from "@/app/components/layout/footer";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { Button } from "@/app/components/ui/button";
 import { glossaryTerms } from "@/app/lib/glossary";
-import { BRANDS } from "@/app/lib/constants";
 import { useLocale } from "next-intl";
 import Link from "next/link";
+import Image from "next/image";
 import {
   FileText,
   Wrench,
   ShieldCheck,
   ChevronDown,
   ChevronUp,
-  BookOpen,
-  ExternalLink,
+  ArrowUpRight,
 } from "lucide-react";
+
+export interface BrandCard {
+  name: string;
+  slug: string;
+  href: string;
+  count: number;
+  heroImage?: string;
+  productImage?: string;
+}
+
+const HERO_IMAGE = "/images/hero/lux-bathroom.webp";
 
 const content = {
   hero: {
     eyebrow: { en: "Resources", es: "Recursos" },
     title: {
-      en: "Everything You Need to Specify with Confidence",
-      es: "Todo Lo Que Necesitas para Especificar con Confianza",
+      en: "Everything you need to specify.",
+      es: "Todo lo que necesitas para especificar.",
     },
     subtitle: {
-      en: "Technical specifications, care guides, brand resources, and industry glossary — all in one place.",
-      es: "Especificaciones técnicas, guías de cuidado, recursos de marca y glosario de la industria — todo en un solo lugar.",
+      en: "Specs, care guides, brand catalogs, glossary, and warranty terms — for architects, designers, and the trade.",
+      es: "Fichas técnicas, cuidado, catálogos de marca, glosario y términos de garantía — para arquitectos, diseñadores y el oficio.",
     },
   },
+  chapters: [
+    { num: "01", slug: "specs", label: { en: "Specifications", es: "Especificaciones" } },
+    { num: "02", slug: "ordering", label: { en: "Ordering", es: "Pedidos" } },
+    { num: "03", slug: "brands", label: { en: "Brand Index", es: "Índice de Marcas" } },
+    { num: "04", slug: "glossary", label: { en: "Glossary", es: "Glosario" } },
+    { num: "05", slug: "warranty", label: { en: "Warranty", es: "Garantía" } },
+  ],
   quickAccess: [
     {
       icon: FileText,
+      num: "01",
       title: { en: "Specification Sheets", es: "Fichas Técnicas" },
       description: {
-        en: "Downloadable cut sheets, CAD files, and rough-in specifications for all major brands. Available through our Trade Program.",
-        es: "Fichas técnicas descargables, archivos CAD y especificaciones de instalación para todas las marcas principales. Disponibles a través de nuestro Programa Trade.",
+        en: "Cut sheets, CAD files, and rough-in dimensions for every brand we carry. Sent on request through the Trade Program.",
+        es: "Fichas técnicas, archivos CAD y dimensiones de instalación para cada marca que llevamos. Enviadas a solicitud a través del Programa Trade.",
       },
-      cta: { en: "Request Spec Sheets", es: "Solicitar Fichas" },
+      cta: { en: "Request Sheets", es: "Solicitar Fichas" },
       href: "/contact",
     },
     {
       icon: Wrench,
+      num: "02",
       title: { en: "Care & Maintenance", es: "Cuidado y Mantenimiento" },
       description: {
-        en: "Product-specific care guides for copper, bronze, Silgranit, porcelain, and other materials. Bilingual guides available for your maintenance team.",
-        es: "Guías de cuidado específicas para cobre, bronce, Silgranit, porcelana y otros materiales. Guías bilingües disponibles para tu equipo de mantenimiento.",
+        en: "Material-specific guides for copper, bronze, Silgranit, porcelain, and Living Finishes — bilingual, written for housekeeping teams.",
+        es: "Guías por material para cobre, bronce, Silgranit, porcelana y Living Finishes — bilingües, escritas para equipos de housekeeping.",
       },
-      cta: { en: "View Care Guides", es: "Ver Guías de Cuidado" },
+      cta: { en: "View Guides", es: "Ver Guías" },
       href: "/insights",
     },
     {
       icon: ShieldCheck,
-      title: { en: "Installation Guides", es: "Guías de Instalación" },
+      num: "03",
+      title: { en: "Installation Reference", es: "Referencia de Instalación" },
       description: {
-        en: "Step-by-step installation documentation and plumber reference sheets. Includes rough-in dimensions and water supply requirements.",
-        es: "Documentación de instalación paso a paso y hojas de referencia para plomeros. Incluye dimensiones de instalación y requisitos de suministro de agua.",
+        en: "Plumber-ready rough-in drawings, water-supply requirements, and step-by-step install notes for every fixture line.",
+        es: "Diagramas listos para plomero, requisitos de suministro de agua y notas de instalación paso a paso para cada línea de accesorios.",
       },
-      cta: { en: "View Guides", es: "Ver Guías" },
+      cta: { en: "View Reference", es: "Ver Referencia" },
       href: "/contact",
     },
   ],
   ordering: {
-    title: { en: "How Ordering Works", es: "Cómo Funciona el Pedido" },
+    eyebrow: { en: "02 — Ordering", es: "02 — Pedidos" },
+    title: {
+      en: "From specification to delivered price.",
+      es: "De la especificación al precio entregado.",
+    },
     subtitle: {
-      en: "From specification to delivery — what to expect when ordering through Counter Cultures.",
-      es: "Desde la especificación hasta la entrega — qué esperar al ordenar a través de Counter Cultures.",
+      en: "How we move a fixture from a Brizo factory in Indiana, a TOTO line in Japan, or a coppersmith's bench in Santa Clara — into a finished bathroom in San Miguel.",
+      es: "Cómo movemos un accesorio desde una fábrica Brizo en Indiana, una línea TOTO en Japón, o un banco de cobre en Santa Clara — hasta un baño terminado en San Miguel.",
     },
     faqs: [
       {
@@ -106,8 +130,8 @@ const content = {
           es: "¿Puedo visitar el showroom para ver productos antes de ordenar?",
         },
         a: {
-          en: "Absolutely. Our San Miguel de Allende showroom displays products from all 12 brands, including working faucet demonstrations and material samples. Walk-ins are welcome Monday–Friday, 10:00–18:00. For Trade Program consultations, we recommend booking an appointment to ensure a dedicated specialist is available.",
-          es: "Absolutamente. Nuestro showroom en San Miguel de Allende exhibe productos de las 12 marcas, incluyendo demostraciones de grifos en funcionamiento y muestras de materiales. Visitas sin cita bienvenidas lunes a viernes, 10:00–18:00.",
+          en: "Absolutely. Our San Miguel de Allende showroom displays products from all major brands, including working faucet demonstrations and material samples. Walk-ins are welcome Monday–Friday, 10:00–18:00. For Trade Program consultations, we recommend booking an appointment to ensure a dedicated specialist is available.",
+          es: "Absolutamente. Nuestro showroom en San Miguel de Allende exhibe productos de las marcas principales, incluyendo demostraciones de grifos en funcionamiento y muestras de materiales. Visitas sin cita bienvenidas lunes a viernes, 10:00–18:00.",
         },
       },
       {
@@ -122,69 +146,126 @@ const content = {
       },
     ],
   },
+  brands: {
+    eyebrow: { en: "03 — Brand Index", es: "03 — Índice de Marcas" },
+    title: {
+      en: "Authorized brands. Mexican artisans.",
+      es: "Marcas autorizadas. Artesanos mexicanos.",
+    },
+    intro: {
+      en: "Nineteen lines, side by side. Tap any to browse the full catalog, finishes, and pricing.",
+      es: "Diecinueve líneas, lado a lado. Toca cualquiera para explorar el catálogo completo, acabados y precios.",
+    },
+  },
+  glossary: {
+    eyebrow: { en: "04 — Glossary", es: "04 — Glosario" },
+    title: {
+      en: "The vocabulary of fixtures.",
+      es: "El vocabulario de los accesorios.",
+    },
+    intro: {
+      en: "Materials, techniques, and standards from the bath, kitchen, and hardware trade — defined in plain language.",
+      es: "Materiales, técnicas y estándares del oficio de baño, cocina y herrajes — definidos en lenguaje claro.",
+    },
+  },
   warranty: {
-    title: { en: "Warranty Coverage", es: "Cobertura de Garantía" },
+    eyebrow: { en: "05 — Warranty", es: "05 — Garantía" },
+    title: { en: "Warranty coverage at a glance.", es: "Cobertura de garantía de un vistazo." },
     subtitle: {
-      en: "Warranty terms vary by manufacturer and application type. Here's a quick reference.",
-      es: "Los términos de garantía varían por fabricante y tipo de aplicación. Aquí una referencia rápida.",
+      en: "Manufacturer terms vary by brand and application. Below is a quick reference — full terms are confirmed on the order acknowledgment.",
+      es: "Los términos del fabricante varían por marca y aplicación. A continuación una referencia rápida — los términos completos se confirman en el acuse del pedido.",
     },
     items: [
-      { brand: "Kohler", residential: "Lifetime limited", commercial: "1 year (3-year on commercial lines)" },
-      { brand: "TOTO", residential: "1 year (5-year Cefiontect)", commercial: "1 year (3-year Washlet)" },
-      { brand: "Brizo", residential: "Lifetime (finish + function)", commercial: "Limited lifetime (5-year finish)" },
-      { brand: "BLANCO", residential: "Limited lifetime", commercial: "2 years" },
-      { brand: "California Faucets", residential: "Lifetime", commercial: "5 years" },
-      { brand: "Sun Valley Bronze", residential: "10 years", commercial: "10 years" },
-      { brand: "Emtek", residential: "Lifetime mechanical", commercial: "5 years" },
-      { brand: "Badeloft", residential: "25 years (surface)", commercial: "10 years" },
-      { brand: "Artisanal (Counter Cultures)", residential: "5 years structural", commercial: "3 years structural" },
-    ],
+      { brand: "Kohler", residential: { en: "Lifetime limited", es: "Vida limitada" }, commercial: { en: "1 yr (3 yr commercial lines)", es: "1 año (3 años líneas comerciales)" } },
+      { brand: "TOTO", residential: { en: "1 yr (5 yr Cefiontect)", es: "1 año (5 años Cefiontect)" }, commercial: { en: "1 yr (3 yr Washlet)", es: "1 año (3 años Washlet)" } },
+      { brand: "Brizo", residential: { en: "Lifetime — finish + function", es: "Vida — acabado + función" }, commercial: { en: "Limited lifetime (5 yr finish)", es: "Vida limitada (5 años acabado)" } },
+      { brand: "BLANCO", residential: { en: "Limited lifetime", es: "Vida limitada" }, commercial: { en: "2 yr", es: "2 años" } },
+      { brand: "California Faucets", residential: { en: "Lifetime", es: "Vida" }, commercial: { en: "5 yr", es: "5 años" } },
+      { brand: "Sun Valley Bronze", residential: { en: "10 yr", es: "10 años" }, commercial: { en: "10 yr", es: "10 años" } },
+      { brand: "Emtek", residential: { en: "Lifetime mechanical", es: "Vida mecánica" }, commercial: { en: "5 yr", es: "5 años" } },
+      { brand: "Badeloft", residential: { en: "25 yr surface", es: "25 años superficie" }, commercial: { en: "10 yr", es: "10 años" } },
+      { brand: { en: "Artisanal (Counter Cultures)", es: "Artesanal (Counter Cultures)" }, residential: { en: "5 yr structural", es: "5 años estructural" }, commercial: { en: "3 yr structural", es: "3 años estructural" } },
+    ] as const,
+  },
+  cta: {
+    title: {
+      en: "Need something we haven't covered?",
+      es: "¿Necesitas algo que no hayamos cubierto?",
+    },
+    subtitle: {
+      en: "Our specification team prepares custom documentation for projects in design — drawings, finish samples, signed quotes. Reach out and we'll route you to the right specialist.",
+      es: "Nuestro equipo de especificación prepara documentación personalizada para proyectos en diseño — dibujos, muestras de acabados, cotizaciones firmadas. Contáctanos y te conectamos con el especialista adecuado.",
+    },
+    primary: { en: "Contact the team", es: "Contactar al equipo" },
+    secondary: { en: "Trade Program", es: "Programa Trade" },
   },
 };
 
-const FAQItem = ({
-  question,
-  answer,
-  isOpen,
-  onToggle,
-}: {
+interface FAQItemProps {
+  num: string;
   question: string;
   answer: string;
   isOpen: boolean;
   onToggle: () => void;
-}) => (
-  <div className="border-b border-brand-stone/10">
+}
+
+const FAQItem = ({ num, question, answer, isOpen, onToggle }: FAQItemProps) => (
+  <div className="border-t border-brand-stone/15 first:border-t-0">
     <button
       onClick={onToggle}
-      className="w-full flex items-center justify-between py-5 min-h-[56px] text-left cursor-pointer gap-4"
+      className="w-full grid grid-cols-[auto_1fr_auto] items-baseline gap-4 md:gap-6 py-6 md:py-7 text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus-visible:ring-offset-brand-linen"
+      aria-expanded={isOpen}
     >
-      <span className="font-body text-base font-medium text-brand-charcoal">
+      <span className="font-mono text-[10px] tracking-[0.25em] text-brand-copper">
+        {num}
+      </span>
+      <span className="font-display text-lg md:text-xl font-light text-brand-charcoal leading-snug">
         {question}
       </span>
-      {isOpen ? (
-        <ChevronUp className="w-5 h-5 text-brand-terracotta shrink-0" />
-      ) : (
-        <ChevronDown className="w-5 h-5 text-dash-text-secondary shrink-0" />
-      )}
+      <span className="text-brand-charcoal/60 self-center">
+        {isOpen ? (
+          <ChevronUp className="w-5 h-5" />
+        ) : (
+          <ChevronDown className="w-5 h-5" />
+        )}
+      </span>
     </button>
-    {isOpen && (
-      <div className="pb-5">
-        <p className="font-body text-sm text-dash-text-secondary leading-relaxed">
-          {answer}
-        </p>
+    <div
+      className={`grid transition-all duration-300 ease-out ${
+        isOpen ? "grid-rows-[1fr] opacity-100 pb-6 md:pb-8" : "grid-rows-[0fr] opacity-0"
+      }`}
+    >
+      <div className="overflow-hidden">
+        <div className="grid grid-cols-[auto_1fr_auto] gap-4 md:gap-6">
+          <span className="font-mono text-[10px] tracking-[0.25em] text-transparent select-none">
+            {num}
+          </span>
+          <p className="font-body text-base text-dash-text-secondary leading-relaxed max-w-3xl">
+            {answer}
+          </p>
+          <span className="w-5" />
+        </div>
       </div>
-    )}
+    </div>
   </div>
 );
 
-export const ResourcesContent = () => {
+export const ResourcesContent = ({ brandCards }: { brandCards: BrandCard[] }) => {
   const locale = useLocale() as "en" | "es";
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const t = (en: string, es: string) => (locale === "es" ? es : en);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [glossaryFilter, setGlossaryFilter] = useState<string>("all");
 
-  const categories = ["all", "material", "technique", "standard", "product", "design"] as const;
+  const categories = [
+    "all",
+    "material",
+    "technique",
+    "standard",
+    "product",
+    "design",
+  ] as const;
   const categoryLabels: Record<string, { en: string; es: string }> = {
-    all: { en: "All", es: "Todos" },
+    all: { en: "All", es: "Todo" },
     material: { en: "Materials", es: "Materiales" },
     technique: { en: "Techniques", es: "Técnicas" },
     standard: { en: "Standards", es: "Estándares" },
@@ -192,10 +273,10 @@ export const ResourcesContent = () => {
     design: { en: "Design", es: "Diseño" },
   };
 
-  const filteredTerms = glossaryFilter === "all"
-    ? glossaryTerms
-    : glossaryTerms.filter((t) => t.category === glossaryFilter);
-
+  const filteredTerms =
+    glossaryFilter === "all"
+      ? glossaryTerms
+      : glossaryTerms.filter((term) => term.category === glossaryFilter);
   const sortedTerms = [...filteredTerms].sort((a, b) =>
     a.term.en.localeCompare(b.term.en)
   );
@@ -204,47 +285,150 @@ export const ResourcesContent = () => {
     <>
       <Header locale={locale} />
       <main id="main" tabIndex={-1}>
-        {/* Hero */}
-        <section className="pt-28 pb-12 md:pt-40 md:pb-20 bg-brand-charcoal">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* HERO — full-bleed image, editorial overlay */}
+        <section className="relative min-h-[88vh] md:min-h-[90vh] flex items-end overflow-hidden bg-brand-charcoal">
+          <Image
+            src={HERO_IMAGE}
+            alt={t(
+              "A specifier's reference for fine fixtures — Counter Cultures",
+              "Una referencia del especificador para accesorios finos — Counter Cultures"
+            )}
+            fill
+            sizes="100vw"
+            priority
+            className="object-cover opacity-75"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-brand-charcoal via-brand-charcoal/55 to-brand-charcoal/15" />
+          <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-brand-charcoal/40 to-transparent" />
+
+          {/* hairline corner accents */}
+          <div className="hidden lg:block absolute top-28 left-8 w-8 h-px bg-brand-copper/60" />
+          <div className="hidden lg:block absolute top-28 left-8 h-8 w-px bg-brand-copper/60" />
+          <div className="hidden lg:block absolute bottom-8 right-8 w-8 h-px bg-brand-copper/60" />
+          <div className="hidden lg:block absolute bottom-8 right-8 h-8 w-px bg-brand-copper/60" />
+
+          <div className="relative mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8 pb-16 md:pb-24 pt-32">
             <AnimatedSection>
-              <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
-                {content.hero.eyebrow[locale]}
-              </span>
-              <h1 className="mt-4 font-display text-4xl sm:text-5xl md:text-7xl font-light text-white tracking-wide">
+              <div className="flex items-center gap-4">
+                <span className="h-px w-12 bg-brand-copper" aria-hidden />
+                <span className="font-mono text-[11px] tracking-[0.32em] text-brand-copper uppercase">
+                  {content.hero.eyebrow[locale]}
+                </span>
+              </div>
+              <h1 className="mt-7 font-display text-4xl sm:text-5xl md:text-7xl lg:text-[5.5rem] font-light text-white leading-[1.02] tracking-wide max-w-5xl">
                 {content.hero.title[locale]}
               </h1>
-              <p className="mt-6 font-body text-base text-white/60 max-w-2xl leading-relaxed">
+              <p className="mt-7 font-body text-base md:text-lg text-white/75 max-w-2xl leading-relaxed">
                 {content.hero.subtitle[locale]}
               </p>
+
+              {/* hero meta strip */}
+              <div className="mt-12 flex flex-wrap items-baseline gap-x-8 gap-y-3 font-mono text-[10px] tracking-[0.25em] uppercase text-white/55">
+                <span>
+                  <span className="text-brand-copper">{glossaryTerms.length}</span>{" "}
+                  {t("Terms", "Términos")}
+                </span>
+                <span aria-hidden className="text-white/25">·</span>
+                <span>
+                  <span className="text-brand-copper">{brandCards.length}</span>{" "}
+                  {t("Brands", "Marcas")}
+                </span>
+                <span aria-hidden className="text-white/25">·</span>
+                <span>
+                  <span className="text-brand-copper">EN</span> /{" "}
+                  <span className="text-brand-copper">ES</span>
+                </span>
+              </div>
             </AnimatedSection>
           </div>
         </section>
 
-        {/* Quick Access Cards */}
-        <section className="py-12 md:py-28 bg-brand-linen">
+        {/* CHAPTER INDEX — table-of-contents strip on linen */}
+        <section className="bg-brand-linen border-b border-brand-stone/15">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
+            <div className="flex items-center gap-2 md:gap-3 py-5 md:py-6 overflow-x-auto scrollbar-hide">
+              <span className="hidden md:inline font-mono text-[10px] tracking-[0.3em] uppercase text-dash-text-muted shrink-0 mr-4">
+                {t("Contents", "Índice")} ⎯
+              </span>
+              {content.chapters.map((c) => (
+                <a
+                  key={c.slug}
+                  href={`#${c.slug}`}
+                  className="group flex items-baseline gap-2 px-3 py-1.5 rounded-sm hover:bg-brand-stone/10 transition-colors shrink-0"
+                >
+                  <span className="font-mono text-[10px] tracking-[0.2em] text-brand-copper">
+                    {c.num}
+                  </span>
+                  <span className="font-body text-sm text-brand-charcoal group-hover:text-brand-terracotta transition-colors whitespace-nowrap">
+                    {c.label[locale]}
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* §01 — QUICK ACCESS / SPECIFICATIONS */}
+        <section id="specs" className="py-20 md:py-32 bg-dash-surface scroll-mt-24">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <AnimatedSection>
+              <div className="grid md:grid-cols-12 gap-8 mb-14 md:mb-20">
+                <div className="md:col-span-5">
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-[11px] tracking-[0.32em] text-brand-copper uppercase">
+                      {t("01 — Specifications", "01 — Especificaciones")}
+                    </span>
+                  </div>
+                  <h2 className="mt-5 font-display text-3xl md:text-5xl font-light tracking-wide text-brand-charcoal leading-[1.1]">
+                    {t(
+                      "Documentation, on request.",
+                      "Documentación, a solicitud."
+                    )}
+                  </h2>
+                </div>
+                <div className="md:col-span-6 md:col-start-7 md:pt-3">
+                  <p className="font-body text-base md:text-lg text-dash-text-secondary leading-relaxed">
+                    {t(
+                      "Three reference packets we keep on hand for every product in the catalog. Architects and contractors get the full set; homeowners get what they need.",
+                      "Tres paquetes de referencia que mantenemos para cada producto del catálogo. Arquitectos y contratistas reciben el set completo; los propietarios reciben lo que necesitan."
+                    )}
+                  </p>
+                </div>
+              </div>
+            </AnimatedSection>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-brand-stone/15 border border-brand-stone/15">
               {content.quickAccess.map((card, i) => {
                 const Icon = card.icon;
                 return (
-                  <AnimatedSection key={i} delay={i * 0.1}>
-                    <div className="flex flex-col h-full bg-dash-surface rounded-lg p-8 border border-brand-stone/10">
-                      <div className="w-12 h-12 rounded-full bg-brand-terracotta/10 flex items-center justify-center mb-6">
-                        <Icon className="w-6 h-6 text-brand-terracotta" />
+                  <AnimatedSection key={i} delay={i * 0.08}>
+                    <Link
+                      href={`/${locale}${card.href}`}
+                      className="group relative flex flex-col h-full bg-dash-surface p-8 md:p-10 hover:bg-brand-linen transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-[11px] tracking-[0.3em] text-brand-copper">
+                          {card.num}
+                        </span>
+                        <Icon
+                          className="w-5 h-5 text-brand-stone group-hover:text-brand-terracotta transition-colors"
+                          strokeWidth={1.25}
+                        />
                       </div>
-                      <h3 className="font-display text-2xl text-brand-charcoal">
+                      <h3 className="mt-10 md:mt-14 font-display text-2xl md:text-3xl font-light text-brand-charcoal leading-tight">
                         {card.title[locale]}
                       </h3>
-                      <p className="mt-3 font-body text-sm text-dash-text-secondary leading-relaxed flex-1">
+                      <p className="mt-4 font-body text-sm md:text-base text-dash-text-secondary leading-relaxed flex-1">
                         {card.description[locale]}
                       </p>
-                      <div className="mt-6">
-                        <Button variant="ghost" size="sm" href={`/${locale}${card.href}`}>
-                          {card.cta[locale]} →
-                        </Button>
+                      <div className="mt-8 flex items-center gap-2 font-mono text-[11px] tracking-[0.25em] uppercase text-brand-charcoal group-hover:text-brand-terracotta transition-colors">
+                        <span>{card.cta[locale]}</span>
+                        <ArrowUpRight
+                          className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                          strokeWidth={1.5}
+                        />
                       </div>
-                    </div>
+                    </Link>
                   </AnimatedSection>
                 );
               })}
@@ -252,211 +436,346 @@ export const ResourcesContent = () => {
           </div>
         </section>
 
-        {/* Ordering FAQ */}
-        <section className="py-12 md:py-28 bg-dash-surface">
-          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-            <AnimatedSection>
-              <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
-                FAQ
-              </span>
-              <h2 className="mt-4 font-display text-4xl md:text-5xl font-light text-brand-charcoal tracking-wide">
-                {content.ordering.title[locale]}
-              </h2>
-              <p className="mt-4 font-body text-base text-dash-text-secondary leading-relaxed">
-                {content.ordering.subtitle[locale]}
-              </p>
-            </AnimatedSection>
+        {/* §02 — ORDERING */}
+        <section id="ordering" className="py-20 md:py-32 bg-brand-linen scroll-mt-24">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid md:grid-cols-12 gap-8 md:gap-12">
+              <div className="md:col-span-4 md:sticky md:top-28 md:self-start">
+                <AnimatedSection>
+                  <span className="font-mono text-[11px] tracking-[0.32em] text-brand-copper uppercase">
+                    {content.ordering.eyebrow[locale]}
+                  </span>
+                  <h2 className="mt-5 font-display text-3xl md:text-5xl font-light tracking-wide text-brand-charcoal leading-[1.05]">
+                    {content.ordering.title[locale]}
+                  </h2>
+                  <p className="mt-5 font-body text-sm md:text-base text-dash-text-secondary leading-relaxed max-w-md">
+                    {content.ordering.subtitle[locale]}
+                  </p>
+                </AnimatedSection>
+              </div>
 
-            <div className="mt-12">
-              {content.ordering.faqs.map((faq, i) => (
-                <FAQItem
-                  key={i}
-                  question={faq.q[locale]}
-                  answer={faq.a[locale]}
-                  isOpen={openFaq === i}
-                  onToggle={() => setOpenFaq(openFaq === i ? null : i)}
-                />
-              ))}
+              <div className="md:col-span-7 md:col-start-6">
+                <AnimatedSection>
+                  <div>
+                    {content.ordering.faqs.map((faq, i) => (
+                      <FAQItem
+                        key={i}
+                        num={String(i + 1).padStart(2, "0")}
+                        question={faq.q[locale]}
+                        answer={faq.a[locale]}
+                        isOpen={openFaq === i}
+                        onToggle={() => setOpenFaq(openFaq === i ? null : i)}
+                      />
+                    ))}
+                  </div>
+                </AnimatedSection>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Brand Resource Hub */}
-        <section className="py-12 md:py-28 bg-brand-linen">
+        {/* §03 — BRAND INDEX — full-bleed marquee strip */}
+        <section id="brands" className="py-20 md:py-32 bg-dash-surface scroll-mt-24 overflow-hidden">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection>
-              <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
-                {locale === "es" ? "Marcas" : "Brands"}
-              </span>
-              <h2 className="mt-4 font-display text-3xl md:text-5xl font-light text-brand-charcoal tracking-wide">
-                {locale === "es"
-                  ? "Centro de Recursos de Marca"
-                  : "Brand Resource Hub"}
-              </h2>
-              <p className="mt-4 font-body text-base text-dash-text-secondary leading-relaxed max-w-2xl">
-                {locale === "es"
-                  ? "Explora los catálogos, líneas de productos e información de cada marca que llevamos."
-                  : "Explore catalogs, product lines, and information for each brand we carry."}
-              </p>
-            </AnimatedSection>
-
-            <div className="mt-10 md:mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-              {BRANDS.map((brand) => (
-                <AnimatedSection key={brand.slug}>
-                  <Link
-                    href={`/${locale}/brands/${brand.slug}`}
-                    className="group flex items-center gap-3 bg-dash-surface rounded-lg p-5 border border-brand-stone/10 hover:border-brand-terracotta/30 transition-colors"
-                  >
-                    <div className="flex-1">
-                      <h3 className="font-body text-sm font-semibold text-brand-charcoal group-hover:text-brand-terracotta transition-colors">
-                        {brand.name}
-                      </h3>
-                    </div>
-                    <ExternalLink className="w-4 h-4 text-dash-text-secondary/40 group-hover:text-brand-terracotta transition-colors" />
-                  </Link>
-                </AnimatedSection>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Glossary */}
-        <section className="py-12 md:py-28 bg-dash-surface" id="glossary">
-          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-            <AnimatedSection>
-              <div className="flex items-center gap-3 mb-4">
-                <BookOpen className="w-6 h-6 text-brand-copper" />
-                <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
-                  {locale === "es" ? "Glosario" : "Glossary"}
-                </span>
-              </div>
-              <h2 className="font-display text-4xl md:text-5xl font-light text-brand-charcoal tracking-wide">
-                {locale === "es"
-                  ? "Glosario de la Industria"
-                  : "Industry Glossary"}
-              </h2>
-              <p className="mt-4 font-body text-base text-dash-text-secondary leading-relaxed max-w-2xl">
-                {locale === "es"
-                  ? "Términos clave del mundo de accesorios de baño, cocina y herraje — explicados claramente."
-                  : "Key terms from the world of bath, kitchen, and hardware fixtures — clearly explained."}
-              </p>
-            </AnimatedSection>
-
-            {/* Category Filter */}
-            <div className="mt-8 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setGlossaryFilter(cat)}
-                  className={`px-4 py-2.5 min-h-[44px] text-sm font-body border rounded-full transition-colors cursor-pointer shrink-0 whitespace-nowrap ${
-                    glossaryFilter === cat
-                      ? "border-brand-terracotta text-brand-terracotta bg-brand-terracotta/5"
-                      : "border-brand-stone/20 text-brand-charcoal hover:border-brand-terracotta hover:text-brand-terracotta"
-                  }`}
-                >
-                  {categoryLabels[cat][locale]}
-                </button>
-              ))}
-            </div>
-
-            {/* Terms List */}
-            <dl className="mt-10 space-y-0 divide-y divide-brand-stone/10">
-              {sortedTerms.map((term) => (
-                <div key={term.term.en} className="py-6">
-                  <dt className="font-display text-xl text-brand-charcoal">
-                    {term.term[locale]}
-                    <span className="ml-3 inline-block px-2 py-0.5 text-[10px] font-body font-medium tracking-wider text-dash-text-secondary uppercase bg-brand-linen rounded">
-                      {categoryLabels[term.category][locale]}
-                    </span>
-                  </dt>
-                  <dd className="mt-2 font-body text-sm text-dash-text-secondary leading-relaxed">
-                    {term.definition[locale]}
-                  </dd>
+              <div className="grid md:grid-cols-12 gap-8 mb-12 md:mb-16">
+                <div className="md:col-span-7">
+                  <span className="font-mono text-[11px] tracking-[0.32em] text-brand-copper uppercase">
+                    {content.brands.eyebrow[locale]}
+                  </span>
+                  <h2 className="mt-5 font-display text-3xl md:text-5xl lg:text-6xl font-light tracking-wide text-brand-charcoal leading-[1.05]">
+                    {content.brands.title[locale]}
+                  </h2>
                 </div>
-              ))}
-            </dl>
+                <div className="md:col-span-4 md:col-start-9 md:pt-2">
+                  <p className="font-body text-sm md:text-base text-dash-text-secondary leading-relaxed">
+                    {content.brands.intro[locale]}
+                  </p>
+                  <div className="mt-5 flex items-baseline gap-2 font-mono text-[10px] tracking-[0.25em] uppercase">
+                    <span className="text-brand-copper text-base">{brandCards.length}</span>
+                    <span className="text-dash-text-muted">{t("Brands", "Marcas")}</span>
+                    <span className="text-dash-text-muted/40 mx-2">·</span>
+                    <span className="text-brand-copper text-base">
+                      {brandCards.reduce((sum, b) => sum + b.count, 0)}
+                    </span>
+                    <span className="text-dash-text-muted">{t("Products", "Productos")}</span>
+                  </div>
+                </div>
+              </div>
+            </AnimatedSection>
+          </div>
+
+          {/* full-bleed marquee — pauses on hover/focus, respects prefers-reduced-motion */}
+          <AnimatedSection>
+            <div
+              className="relative"
+              role="region"
+              aria-label={t("Brand index — auto-scrolling carousel", "Índice de marcas — carrusel auto-deslizante")}
+            >
+              <div className="cc-marquee-track flex w-max gap-4 md:gap-5 px-4 sm:px-6 lg:px-8">
+                {[...brandCards, ...brandCards].map((brand, i) => {
+                  const tileImage = brand.heroImage || brand.productImage;
+                  const isClone = i >= brandCards.length;
+                  return (
+                    <Link
+                      key={`${brand.slug}-${i}`}
+                      href={brand.href}
+                      aria-hidden={isClone || undefined}
+                      tabIndex={isClone ? -1 : 0}
+                      aria-label={
+                        isClone
+                          ? undefined
+                          : `${brand.name} — ${brand.count} ${t(
+                              brand.count === 1 ? "product" : "products",
+                              brand.count === 1 ? "producto" : "productos"
+                            )}`
+                      }
+                      className="group relative shrink-0 block w-[200px] sm:w-[220px] md:w-[240px] aspect-[4/5] rounded-lg overflow-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-copper"
+                    >
+                      {tileImage ? (
+                        <Image
+                          src={tileImage}
+                          alt=""
+                          fill
+                          sizes="240px"
+                          className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+                        />
+                      ) : (
+                        <div className="absolute inset-0 bg-brand-linen" />
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-brand-charcoal/90 via-brand-charcoal/25 to-transparent" />
+
+                      {/* count chip */}
+                      <div className="absolute top-3 left-3 z-10">
+                        <span className="inline-flex items-baseline gap-1.5 font-mono text-[9px] tracking-[0.22em] uppercase text-white/95 bg-brand-charcoal/45 backdrop-blur-sm px-2 py-1 rounded-sm">
+                          {brand.count > 0 ? (
+                            <>
+                              <span className="text-brand-copper">{brand.count}</span>
+                              <span>
+                                {t(
+                                  brand.count === 1 ? "Product" : "Products",
+                                  brand.count === 1 ? "Producto" : "Productos"
+                                )}
+                              </span>
+                            </>
+                          ) : (
+                            <span>{t("Coming Soon", "Próximamente")}</span>
+                          )}
+                        </span>
+                      </div>
+
+                      {/* name + view */}
+                      <div className="absolute inset-x-0 bottom-0 p-4 md:p-5 text-white">
+                        <h3 className="font-display text-xl md:text-2xl leading-tight">
+                          {brand.name}
+                        </h3>
+                        <p className="mt-2 font-mono text-[9px] tracking-[0.22em] uppercase text-brand-copper inline-flex items-center gap-1.5 opacity-0 -translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                          {t("View", "Ver")}
+                          <ArrowUpRight className="w-3 h-3" strokeWidth={1.5} />
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {/* edge fades — match section bg */}
+              <div className="pointer-events-none absolute inset-y-0 left-0 w-12 md:w-24 bg-gradient-to-r from-dash-surface to-transparent z-20" />
+              <div className="pointer-events-none absolute inset-y-0 right-0 w-12 md:w-24 bg-gradient-to-l from-dash-surface to-transparent z-20" />
+            </div>
+          </AnimatedSection>
+        </section>
+
+        {/* §04 — GLOSSARY */}
+        <section id="glossary" className="py-20 md:py-32 bg-brand-linen scroll-mt-24">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid md:grid-cols-12 gap-8 md:gap-12">
+              <div className="md:col-span-4 md:sticky md:top-28 md:self-start">
+                <AnimatedSection>
+                  <span className="font-mono text-[11px] tracking-[0.32em] text-brand-copper uppercase">
+                    {content.glossary.eyebrow[locale]}
+                  </span>
+                  <h2 className="mt-5 font-display text-3xl md:text-5xl font-light tracking-wide text-brand-charcoal leading-[1.05]">
+                    {content.glossary.title[locale]}
+                  </h2>
+                  <p className="mt-5 font-body text-sm md:text-base text-dash-text-secondary leading-relaxed max-w-md">
+                    {content.glossary.intro[locale]}
+                  </p>
+
+                  {/* category filter */}
+                  <div className="mt-8 flex flex-wrap gap-1.5">
+                    {categories.map((cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => setGlossaryFilter(cat)}
+                        className={`px-3 py-1.5 font-mono text-[10px] tracking-[0.2em] uppercase border transition-colors cursor-pointer ${
+                          glossaryFilter === cat
+                            ? "border-brand-charcoal bg-brand-charcoal text-brand-linen"
+                            : "border-brand-stone/30 text-brand-charcoal hover:border-brand-charcoal"
+                        }`}
+                      >
+                        {categoryLabels[cat][locale]}
+                      </button>
+                    ))}
+                  </div>
+
+                  <p className="mt-6 font-mono text-[10px] tracking-[0.22em] uppercase text-dash-text-muted">
+                    <span className="text-brand-copper">
+                      {String(sortedTerms.length).padStart(2, "0")}
+                    </span>{" "}
+                    {t("Entries", "Entradas")}
+                  </p>
+                </AnimatedSection>
+              </div>
+
+              <div className="md:col-span-7 md:col-start-6">
+                <AnimatedSection>
+                  <dl>
+                    {sortedTerms.map((term, i) => (
+                      <div
+                        key={term.term.en}
+                        className="grid grid-cols-[auto_1fr] gap-4 md:gap-6 py-7 border-t border-brand-stone/15 first:border-t-0"
+                      >
+                        <span className="font-mono text-[10px] tracking-[0.25em] text-dash-text-muted pt-2">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <div>
+                          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                            <dt className="font-display text-2xl md:text-3xl font-light text-brand-charcoal leading-tight">
+                              {term.term[locale]}
+                            </dt>
+                            <span className="font-mono text-[10px] tracking-[0.22em] uppercase text-brand-copper">
+                              {categoryLabels[term.category][locale]}
+                            </span>
+                          </div>
+                          <dd className="mt-3 font-body text-base text-dash-text-secondary leading-relaxed max-w-2xl">
+                            {term.definition[locale]}
+                          </dd>
+                        </div>
+                      </div>
+                    ))}
+                  </dl>
+                </AnimatedSection>
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* Warranty Table */}
-        <section className="py-12 md:py-28 bg-brand-linen">
-          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        {/* §05 — WARRANTY */}
+        <section id="warranty" className="py-20 md:py-32 bg-dash-surface scroll-mt-24">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection>
-              <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
-                {locale === "es" ? "Garantía" : "Warranty"}
-              </span>
-              <h2 className="mt-4 font-display text-4xl md:text-5xl font-light text-brand-charcoal tracking-wide">
-                {content.warranty.title[locale]}
-              </h2>
-              <p className="mt-4 font-body text-base text-dash-text-secondary leading-relaxed">
-                {content.warranty.subtitle[locale]}
-              </p>
+              <div className="grid md:grid-cols-12 gap-8 mb-12 md:mb-16">
+                <div className="md:col-span-6">
+                  <span className="font-mono text-[11px] tracking-[0.32em] text-brand-copper uppercase">
+                    {content.warranty.eyebrow[locale]}
+                  </span>
+                  <h2 className="mt-5 font-display text-3xl md:text-5xl font-light tracking-wide text-brand-charcoal leading-[1.05]">
+                    {content.warranty.title[locale]}
+                  </h2>
+                </div>
+                <div className="md:col-span-5 md:col-start-8 md:pt-2">
+                  <p className="font-body text-sm md:text-base text-dash-text-secondary leading-relaxed">
+                    {content.warranty.subtitle[locale]}
+                  </p>
+                </div>
+              </div>
             </AnimatedSection>
 
-            <div className="mt-12 overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b-2 border-brand-charcoal">
-                    <th className="text-left py-3 font-body font-semibold text-xs tracking-wider text-brand-charcoal uppercase">
-                      {locale === "es" ? "Marca" : "Brand"}
-                    </th>
-                    <th className="text-left py-3 font-body font-semibold text-xs tracking-wider text-brand-charcoal uppercase">
-                      {locale === "es" ? "Residencial" : "Residential"}
-                    </th>
-                    <th className="text-left py-3 font-body font-semibold text-xs tracking-wider text-brand-charcoal uppercase">
-                      {locale === "es" ? "Comercial" : "Commercial"}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {content.warranty.items.map((item) => (
-                    <tr
-                      key={item.brand}
-                      className="border-b border-brand-stone/10"
-                    >
-                      <td className="py-4 font-body text-sm font-medium text-brand-charcoal">
-                        {item.brand}
-                      </td>
-                      <td className="py-4 font-body text-sm text-dash-text-secondary">
-                        {item.residential}
-                      </td>
-                      <td className="py-4 font-body text-sm text-dash-text-secondary">
-                        {item.commercial}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <AnimatedSection>
+              <div className="border-t-2 border-brand-charcoal">
+                {/* table header */}
+                <div className="hidden md:grid grid-cols-[auto_2fr_2fr_2fr] gap-6 py-4 border-b border-brand-stone/20">
+                  <span className="w-6" />
+                  <span className="font-mono text-[10px] tracking-[0.25em] uppercase text-dash-text-muted">
+                    {t("Brand", "Marca")}
+                  </span>
+                  <span className="font-mono text-[10px] tracking-[0.25em] uppercase text-dash-text-muted">
+                    {t("Residential", "Residencial")}
+                  </span>
+                  <span className="font-mono text-[10px] tracking-[0.25em] uppercase text-dash-text-muted">
+                    {t("Commercial", "Comercial")}
+                  </span>
+                </div>
 
-            <p className="mt-6 font-body text-xs text-dash-text-secondary/60">
-              {locale === "es"
-                ? "Los términos de garantía son aproximados y están sujetos a las políticas actuales del fabricante. Contacta a Counter Cultures para detalles específicos de cobertura."
-                : "Warranty terms are approximate and subject to current manufacturer policies. Contact Counter Cultures for specific coverage details."}
-            </p>
+                {content.warranty.items.map((item, i) => {
+                  const brandName =
+                    typeof item.brand === "string" ? item.brand : item.brand[locale];
+                  return (
+                    <div
+                      key={brandName}
+                      className="grid grid-cols-[auto_1fr] md:grid-cols-[auto_2fr_2fr_2fr] gap-x-6 gap-y-3 md:gap-y-0 py-5 md:py-6 border-b border-brand-stone/15 hover:bg-brand-linen/40 transition-colors"
+                    >
+                      <span className="font-mono text-[10px] tracking-[0.25em] text-dash-text-muted self-center md:self-center w-6">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span className="font-display text-lg md:text-xl text-brand-charcoal leading-tight self-center">
+                        {brandName}
+                      </span>
+                      <div className="col-start-2 md:col-start-3 md:row-start-1">
+                        <span className="md:hidden block font-mono text-[9px] tracking-[0.22em] uppercase text-dash-text-muted mb-1">
+                          {t("Residential", "Residencial")}
+                        </span>
+                        <span className="font-body text-sm text-dash-text-secondary md:self-center">
+                          {item.residential[locale]}
+                        </span>
+                      </div>
+                      <div className="col-start-2 md:col-start-4 md:row-start-1">
+                        <span className="md:hidden block font-mono text-[9px] tracking-[0.22em] uppercase text-dash-text-muted mb-1">
+                          {t("Commercial", "Comercial")}
+                        </span>
+                        <span className="font-body text-sm text-dash-text-secondary md:self-center">
+                          {item.commercial[locale]}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <p className="mt-8 font-mono text-[10px] tracking-[0.25em] uppercase text-dash-text-muted max-w-2xl leading-relaxed">
+                {t(
+                  "Terms approximate. Coverage subject to current manufacturer policy and confirmed on the order acknowledgment.",
+                  "Términos aproximados. Cobertura sujeta a la política actual del fabricante y confirmada en el acuse del pedido."
+                )}
+              </p>
+            </AnimatedSection>
           </div>
         </section>
 
         {/* CTA */}
-        <section className="py-12 md:py-28 bg-brand-charcoal">
-          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
+        <section className="relative py-20 md:py-32 bg-brand-charcoal overflow-hidden">
+          {/* subtle radial accent */}
+          <div
+            className="absolute inset-0 pointer-events-none opacity-30"
+            style={{
+              background:
+                "radial-gradient(ellipse 60% 50% at 50% 0%, rgba(196, 114, 90, 0.25), transparent 70%)",
+            }}
+            aria-hidden
+          />
+          <div className="relative mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 text-center">
             <AnimatedSection>
-              <h2 className="font-display text-4xl md:text-5xl font-light text-white tracking-wide">
-                {locale === "es"
-                  ? "¿Necesitas Algo Específico?"
-                  : "Need Something Specific?"}
+              <span className="font-mono text-[11px] tracking-[0.32em] text-brand-copper uppercase">
+                {t("Still Specifying", "Sigues Especificando")}
+              </span>
+              <h2 className="mt-6 font-display text-3xl md:text-5xl lg:text-6xl font-light text-white tracking-wide leading-[1.05]">
+                {content.cta.title[locale]}
               </h2>
-              <p className="mt-4 font-body text-base text-white/60 leading-relaxed">
-                {locale === "es"
-                  ? "Nuestro equipo de especificación puede preparar documentación personalizada para tu proyecto. Contáctanos directamente."
-                  : "Our specification team can prepare custom documentation for your project. Contact us directly."}
+              <p className="mt-6 font-body text-base md:text-lg text-white/65 leading-relaxed max-w-2xl mx-auto">
+                {content.cta.subtitle[locale]}
               </p>
-              <div className="mt-8 flex flex-wrap justify-center gap-4">
-                <Button variant="primary" href={`/${locale}/contact`}>
-                  {locale === "es" ? "Contactar Equipo" : "Contact Team"}
+              <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Button variant="primary" size="lg" href="/contact">
+                  {content.cta.primary[locale]}
                 </Button>
-                <Button variant="secondary" href={`/${locale}/trade`} className="border-white text-white hover:bg-dash-surface hover:text-brand-charcoal">
-                  {locale === "es" ? "Programa Trade" : "Trade Program"}
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  href="/trade"
+                  className="text-white hover:text-brand-copper"
+                >
+                  {content.cta.secondary[locale]} →
                 </Button>
               </div>
             </AnimatedSection>
