@@ -18,6 +18,7 @@ export interface Product {
   availability: "in-stock" | "made-to-order" | "special-order" | "quote_only";
   featured?: boolean;
   slug: string;
+  satCode?: string;
 }
 
 export interface Lead {

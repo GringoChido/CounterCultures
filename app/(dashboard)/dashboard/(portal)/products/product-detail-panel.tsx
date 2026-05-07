@@ -19,6 +19,8 @@ import type { ProductFull } from "@/app/lib/products-full";
 import { useActiveOrderStore, type ActiveOrder } from "@/app/lib/stores/active-order-store";
 import { CustomerCombobox } from "@/app/(dashboard)/components/customer-combobox";
 import { ProductVisual } from "@/app/components/product-visual";
+import { SATCodeCombobox } from "@/app/(dashboard)/components/sat-code-combobox";
+import { findSATCode } from "@/app/lib/sat-codes";
 
 interface DealOption {
   id: string;
@@ -140,6 +142,32 @@ const ProductDetailPanel = ({
   const [historyLoading, setHistoryLoading] = useState(false);
   const [history, setHistory] = useState<SalesHistory | null>(null);
 
+  const [satCode, setSatCode] = useState(product.satCode ?? "");
+  const [savingSat, setSavingSat] = useState(false);
+
+  const handleSatCodeChange = async (code: string) => {
+    setSatCode(code);
+    setSavingSat(true);
+    try {
+      const res = await fetch("/api/dashboard/products/sat-code", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productId: product.id, satCode: code }),
+      });
+      if (!res.ok) throw new Error("save failed");
+      toast.success(
+        code
+          ? `SAT code ${code} assigned`
+          : "SAT code removed"
+      );
+    } catch {
+      toast.error("Could not save SAT code");
+      setSatCode(product.satCode ?? "");
+    } finally {
+      setSavingSat(false);
+    }
+  };
+
   // Description state — admin sees status (pending/approved) regardless of gate
   interface DescState {
     descriptionEn: string;
@@ -162,6 +190,7 @@ const ProductDetailPanel = ({
     setSameBrand([]);
     setHistory(null);
     setDesc(null);
+    setSatCode(product.satCode ?? "");
   }, [product.id]);
 
   // Hydrate description from sheet — admin view sees pending + approved alike
@@ -542,6 +571,17 @@ const ProductDetailPanel = ({
                   <div className="text-xs text-dash-text-secondary mb-0.5">Odoo ID</div>
                   <div className="font-mono text-xs text-dash-text-secondary">{product.id}</div>
                 </div>
+              </div>
+
+              {/* SAT code (clave de producto/servicio) */}
+              <div>
+                <div className="text-xs text-dash-text-secondary mb-1">
+                  Clave SAT (producto/servicio)
+                  {savingSat && (
+                    <Loader2 className="inline w-3 h-3 ml-1 animate-spin" />
+                  )}
+                </div>
+                <SATCodeCombobox value={satCode} onChange={handleSatCodeChange} />
               </div>
             </div>
           )}
