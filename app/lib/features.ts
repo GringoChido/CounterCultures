@@ -23,6 +23,7 @@ export const FEATURES = {
   view_purchases: "Purchase orders + vendor bills",
   view_vendors: "Vendor 360 — all activity per supplier",
   view_shipments: "Shipments & customs",
+  view_ar: "Accounts receivable — factura requests, deposits, credit notes",
 
   // Operations
   view_brands: "Brand catalog management",
@@ -74,6 +75,7 @@ const FINANCE_FEATURES: Feature[] = [
   "view_inbox",
   "view_finance",
   "view_stripe",
+  "view_ar",
   "send_prefactura",
   "approve_prefactura",
   "attach_cfdi",

@@ -101,6 +101,8 @@ export interface ProductFull {
    *  (`/products/odoo/<id>.jpg`). Undefined when no image is bundled
    *  so the UI can fall back to typography without trying a 404. */
   imageSrc?: string;
+  /** SAT product/service code (clave de producto/servicio) for CFDI. */
+  satCode?: string;
 }
 
 interface IndexedProduct extends ProductFull {
@@ -154,7 +156,7 @@ const load = async (): Promise<Cache> => {
   // Single call — 354k rows × 10 cols comes back in ~10-20s.
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SHEET_ID,
-    range: `${TAB}!A:J`,
+    range: `${TAB}!A:K`,
   });
   const rows = res.data.values;
   if (!rows || rows.length < 2) {
@@ -173,6 +175,7 @@ const load = async (): Promise<Cache> => {
   const iUom = idx("uom");
   const iActive = idx("active");
   const iSaleOk = idx("sale_ok");
+  const iSatCode = idx("sat_code");
 
   const products: IndexedProduct[] = [];
   const brandAgg = new Map<string, number>();
@@ -207,6 +210,7 @@ const load = async (): Promise<Cache> => {
       uom: (row[iUom] ?? "Units").toString(),
       active: (row[iActive] ?? "").toString() === "true",
       saleOk: (row[iSaleOk] ?? "").toString() === "true",
+      satCode: iSatCode >= 0 ? (row[iSatCode] ?? "").toString() || undefined : undefined,
       stockQty,
       inStock: stockQty > 0,
       imageSrc,
@@ -328,6 +332,7 @@ const stripIndex = (p: IndexedProduct): ProductFull => ({
   uom: p.uom,
   active: p.active,
   saleOk: p.saleOk,
+  satCode: p.satCode,
   stockQty: p.stockQty,
   inStock: p.inStock,
   imageSrc: p.imageSrc,
@@ -734,6 +739,7 @@ const toQuoteProduct = (p: ProductFull): Product => ({
   descriptionEn: "",
   availability: "quote_only" as const,
   slug: slugFor(p.id),
+  satCode: p.satCode,
 });
 
 export interface QuoteCatalogSearchOptions {
