@@ -241,7 +241,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {} }:
         p.set("sort", sortKey);
         p.set("limit", String(PAGE_SIZE));
         p.set("offset", String(offset));
-        const res = await fetch(`/api/dashboard/products/search?${p}`);
+        const res = await fetch(`/api/products/search?${p}`);
         if (res.status === 401) {
           setNeedsAccess(true);
           setResult(null);
