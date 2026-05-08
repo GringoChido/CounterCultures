@@ -50,6 +50,7 @@ interface CatalogViewProps {
   brandCounts: BrandCount[];
   totalProducts: number;
   brandImageMap?: Record<string, string>;
+  initialResult?: SearchResponse | null;
 }
 
 type Category = "all" | "bathroom" | "kitchen" | "hardware";
@@ -175,7 +176,7 @@ const VALID_SORTS: SortKey[] = [
   "price_desc",
 ];
 
-const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {} }: CatalogViewProps) => {
+const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, initialResult }: CatalogViewProps) => {
   const t = T[locale];
   const router = useRouter();
   const pathname = usePathname();
@@ -202,7 +203,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {} }:
   const [inStockOnly, setInStockOnly] = useState(
     searchParams.get("inStock") === "true"
   );
-  const [result, setResult] = useState<SearchResponse | null>(null);
+  const [result, setResult] = useState<SearchResponse | null>(initialResult ?? null);
   const [needsAccess, setNeedsAccess] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [selected, setSelected] = useState<ProductFull | null>(null);

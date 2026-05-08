@@ -134,9 +134,13 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
 
   const meta = categoryMeta[category];
   const catConfig = PRODUCT_CATEGORIES[category as CategoryKey];
+  const COUNTS_FALLBACK = { bathroom: 0, kitchen: 0, hardware: 0 } as Record<string, number>;
   const [products, categoryCounts] = await Promise.all([
     getProducts({ category }),
-    getCategoryCounts().catch(() => ({ bathroom: 0, kitchen: 0, hardware: 0 })),
+    Promise.race([
+      getCategoryCounts().catch(() => COUNTS_FALLBACK),
+      new Promise<Record<string, number>>((r) => setTimeout(() => r(COUNTS_FALLBACK), 2000)),
+    ]),
   ]);
   const fullCatalogCount = categoryCounts[category as CategoryKey] ?? 0;
 
