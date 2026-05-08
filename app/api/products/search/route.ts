@@ -18,6 +18,9 @@ const VALID_SORTS: SearchSort[] = [
   "price_desc",
 ];
 
+const raceTimeout = <T>(p: Promise<T>, ms: number, fallback: T): Promise<T> =>
+  Promise.race([p, new Promise<T>((r) => setTimeout(() => r(fallback), ms))]);
+
 export const GET = async (req: NextRequest) => {
   const sp = req.nextUrl.searchParams;
   const q = sp.get("q") ?? "";
@@ -38,9 +41,10 @@ export const GET = async (req: NextRequest) => {
     : "relevance";
 
   try {
+    const emptyScores = new Map<string, { weightedScore: number; projectCount: number }>();
     const [specScores, inShowroomIds] = await Promise.all([
-      getMostSpecifiedScores(),
-      getInShowroomIds(),
+      raceTimeout(getMostSpecifiedScores(), 2000, emptyScores),
+      raceTimeout(getInShowroomIds(), 2000, new Set<string>()),
     ]);
 
     const result = await searchProducts({
@@ -51,11 +55,16 @@ export const GET = async (req: NextRequest) => {
       limit,
       offset,
       sort,
-      specScores,
-      inShowroomIds,
+      specScores: specScores.size > 0 ? specScores : undefined,
+      inShowroomIds: inShowroomIds.size > 0 ? inShowroomIds : undefined,
     });
 
-    return NextResponse.json(result);
+    const res = NextResponse.json(result);
+    res.headers.set(
+      "Cache-Control",
+      "public, s-maxage=60, stale-while-revalidate=300"
+    );
+    return res;
   } catch (err) {
     console.error("[products/search] error:", err);
     const message = err instanceof Error ? err.message : "Search failed";

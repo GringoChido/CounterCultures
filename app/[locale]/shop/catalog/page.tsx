@@ -8,7 +8,13 @@ import { ArtisanProfiles } from "@/app/components/sections/artisan-profiles";
 import {
   getQuoteCatalogBrands,
   getCatalogStats,
+  searchProducts,
+  type SearchResult,
 } from "@/app/lib/products-full";
+import {
+  getMostSpecifiedScores,
+  getInShowroomIds,
+} from "@/app/lib/catalog-signals";
 import { CatalogView } from "./catalog-view";
 import { ProjectListBar } from "./project-list-bar";
 
@@ -118,6 +124,31 @@ const CatalogPage = async ({ params }: CatalogPageProps) => {
 
   const brandImageMap = buildBrandImageMap(brandCounts.map((b) => b.brand));
 
+  // Pre-render initial products when the cache is warm (brands loaded).
+  // Embeds the first 60 products in the ISR HTML so users see products
+  // immediately instead of a loading spinner.
+  let initialResult: SearchResult | null = null;
+  if (brandCounts.length > 0) {
+    try {
+      const [specScores, showroomIds] = await Promise.all([
+        Promise.race([
+          getMostSpecifiedScores(),
+          new Promise<null>((r) => setTimeout(() => r(null), 2000)),
+        ]).catch(() => null),
+        Promise.race([
+          getInShowroomIds(),
+          new Promise<null>((r) => setTimeout(() => r(null), 2000)),
+        ]).catch(() => null),
+      ]);
+      initialResult = await searchProducts({
+        sort: "most_specified",
+        limit: 60,
+        specScores: specScores && specScores.size > 0 ? specScores : undefined,
+        inShowroomIds: showroomIds && showroomIds.size > 0 ? showroomIds : undefined,
+      });
+    } catch { /* client-side fetch handles it */ }
+  }
+
   return (
     <>
       <Header locale={locale} />
@@ -178,6 +209,7 @@ const CatalogPage = async ({ params }: CatalogPageProps) => {
           brandCounts={brandCounts}
           totalProducts={stats.total}
           brandImageMap={brandImageMap}
+          initialResult={initialResult}
         />
       </main>
       <ArtisanProfiles locale={locale as "en" | "es"} />
