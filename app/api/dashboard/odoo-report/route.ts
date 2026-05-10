@@ -55,9 +55,15 @@ export const GET = async (req: NextRequest) => {
       }),
     });
 
-    const cookies = loginRes.headers.getSetCookie?.() ?? [];
+    const nativeCookies = loginRes.headers.getSetCookie?.() ?? [];
+    const fallbackCookie = loginRes.headers.get("set-cookie");
+    const cookies = nativeCookies.length > 0
+      ? nativeCookies
+      : fallbackCookie
+        ? fallbackCookie.split(/,(?=\s*\w+=)/)
+        : [];
     const sessionCookie = cookies
-      .map((c) => c.split(";")[0])
+      .map((c) => c.split(";")[0].trim())
       .find((c) => c.startsWith("session_id="));
 
     if (!sessionCookie) {
@@ -74,8 +80,8 @@ export const GET = async (req: NextRequest) => {
       }
     );
 
-    if (!pdfRes.ok) {
-      // Fallback to RPC if web report fails
+    const ct = pdfRes.headers.get("content-type") ?? "";
+    if (!pdfRes.ok || !ct.toLowerCase().startsWith("application/pdf")) {
       return await renderViaRpc(report, id);
     }
 
@@ -83,8 +89,8 @@ export const GET = async (req: NextRequest) => {
     return new Response(pdfBuffer, {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${report}-${id}.pdf"`,
-        "Cache-Control": "private, max-age=300",
+        "Content-Disposition": `inline; filename="${report}-${id}.pdf"`,
+        "Cache-Control": "no-store",
       },
     });
   } catch (err) {
@@ -127,10 +133,15 @@ const renderViaRpc = async (
       }
     );
 
-    if (!pdfRes.ok) {
+    const rpcCt = pdfRes.headers.get("content-type") ?? "";
+    if (!pdfRes.ok || !rpcCt.toLowerCase().startsWith("application/pdf")) {
+      const preview = await pdfRes.text().catch(() => "");
       return NextResponse.json(
         {
-          error: `Odoo report returned ${pdfRes.status}. Open in Odoo to download manually.`,
+          error: "odoo_pdf_unavailable",
+          status: pdfRes.status,
+          contentType: rpcCt,
+          preview: preview.slice(0, 400),
         },
         { status: 502 }
       );
@@ -140,8 +151,8 @@ const renderViaRpc = async (
     return new Response(pdfBuffer, {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${report}-${id}.pdf"`,
-        "Cache-Control": "private, max-age=300",
+        "Content-Disposition": `inline; filename="${report}-${id}.pdf"`,
+        "Cache-Control": "no-store",
       },
     });
   } catch (err) {
