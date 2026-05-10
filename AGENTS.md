@@ -5,3 +5,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 <!-- END:nextjs-agent-rules -->
 
 Before touching any AR / AP / Facturas / Payments / Pedimento code, read docs/finance/CLAUDE-FINANCE-RULES.md.
+
+Before touching any cart / checkout / sale-order / lifecycle / customer-communication code,
+read docs/commerce/CART-RULES.md, docs/commerce/LIFECYCLE-STATE-MACHINE.md,
+and docs/commerce/COMMUNICATION-MATRIX.md.
