@@ -16,7 +16,7 @@ import { AttachmentsPanel } from "@/app/(dashboard)/components/attachments-panel
 import { MessagesPanel } from "@/app/(dashboard)/components/messages-panel";
 import { ConfirmOrderButton } from "@/app/(dashboard)/components/orders/confirm-order-button";
 import { StaleQuoteActions } from "@/app/(dashboard)/components/orders/stale-quote-actions";
-import { OdooEditLink } from "@/app/(dashboard)/components/odoo-link";
+
 import { SendQuoteButton } from "@/app/(dashboard)/components/orders/send-quote-button";
 import { DownloadReportButton } from "@/app/(dashboard)/components/download-report-button";
 import { stripHtml } from "@/app/lib/strip-html";
@@ -237,7 +237,7 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
             orderName={order.name}
             orderState={order.rawState}
           />
-          <OdooEditLink model="sale.order" id={order.id} />
+
         </div>
       </header>
 

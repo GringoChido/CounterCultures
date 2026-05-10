@@ -15,7 +15,7 @@ import {
   TrendingUp,
   Building2,
   Truck,
-  ExternalLink,
+
   Search,
   ChevronRight,
   Briefcase,
@@ -220,19 +220,14 @@ const OdooPage = () => {
           <p className="text-sm text-dash-text-secondary mt-1">
             Read-only data import from Odoo. Accounting is moving to the
             portal — this view exists for historical extraction only, not
-            live two-way sync.
+            live two-way sync. Odoo admin access has moved. Contact{" "}
+            <a href="mailto:equipo@countercultures.com.mx" className="text-brand-copper hover:underline">
+              equipo@countercultures.com.mx
+            </a>{" "}
+            for assistance.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <a
-            href="https://counter-cultures.odoo.com/odoo"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-dash-text-secondary border border-dash-border rounded-lg hover:bg-dash-bg transition-colors"
-          >
-            Open Odoo
-            <ExternalLink className="w-3.5 h-3.5" />
-          </a>
           <button
             onClick={loadAll}
             disabled={loading}

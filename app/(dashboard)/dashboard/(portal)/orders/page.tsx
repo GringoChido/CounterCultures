@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
-import { OdooCreateLink } from "@/app/(dashboard)/components/odoo-link";
+
 import { useCurrentUser } from "@/app/lib/use-current-user";
 import {
   MineAllToggle,
@@ -361,7 +361,7 @@ const OrdersPage = () => {
             <ShoppingCart className="w-6 h-6 text-dash-accent" />
             <h1 className="font-display text-2xl">Orders & Quotes</h1>
           </div>
-          <OdooCreateLink model="sale.order" label="New Quote" />
+
         </div>
         <p className="text-sm text-dash-text-secondary">
           Full sales pipeline — quotes, confirmed orders, and fulfillment status from the live Odoo snapshot.

@@ -28,7 +28,7 @@ import {
   ChevronDown,
   LogOut,
   X,
-  Database,
+
   CreditCard,
   Wallet,
   Truck,
@@ -97,8 +97,6 @@ const moreNavItems: NavItem[] = [
   { label: "Drive", href: "/dashboard/drive", icon: FolderOpen, feature: "view_drive" },
   { label: "Finance", href: "/dashboard/finance", icon: Wallet, feature: "view_finance" },
   { label: "Stripe", href: "/dashboard/stripe", icon: CreditCard, feature: "view_stripe" },
-  { label: "Odoo", href: "/dashboard/odoo", icon: Database, feature: "view_odoo" },
-
   { label: "Users & permissions", href: "/dashboard/settings/users", icon: Users, section: "Admin", feature: "manage_users" },
 ];
 

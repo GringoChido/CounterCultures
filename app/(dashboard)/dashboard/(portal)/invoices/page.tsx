@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
-import { OdooCreateLink } from "@/app/(dashboard)/components/odoo-link";
+
 import { useFeatures } from "@/app/lib/use-features";
 
 type MoveTypeFilter = "all" | "customer" | "vendor" | "refund";
@@ -323,7 +323,7 @@ const InvoicesPage = () => {
             <Receipt className="w-6 h-6 text-dash-accent" />
             <h1 className="font-display text-2xl">Invoices</h1>
           </div>
-          <OdooCreateLink model="account.move" label="New Invoice" />
+
         </div>
         <p className="text-sm text-dash-text-secondary">
           Customer invoices, vendor bills, credit notes — from the live Odoo snapshot.

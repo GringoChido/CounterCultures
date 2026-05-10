@@ -5,7 +5,7 @@ import {
 } from "@/app/lib/products-full";
 import { CatalogSearch } from "./catalog-search";
 import { ActiveOrderBanner } from "./active-order-banner";
-import { OdooCreateLink } from "@/app/(dashboard)/components/odoo-link";
+
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +44,7 @@ const ProductsPage = async () => {
           <h2 className="text-2xl font-bold text-dash-text">Products</h2>
           <p className="text-sm text-dash-text-secondary mt-1">{statsCopy}</p>
         </div>
-        <OdooCreateLink model="product.template" label="New Product" />
+
       </div>
       <CatalogSearch
         brandCounts={brandCounts}

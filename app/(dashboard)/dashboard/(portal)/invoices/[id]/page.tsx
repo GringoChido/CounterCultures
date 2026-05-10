@@ -21,7 +21,7 @@ import { MessagesPanel } from "@/app/(dashboard)/components/messages-panel";
 import { MarkPaidButton } from "@/app/(dashboard)/components/payments/mark-paid-button";
 import { PaymentLinkButton } from "@/app/(dashboard)/components/payments/payment-link-button";
 import { InvoiceWorkflowPanel } from "@/app/(dashboard)/components/cfdi/invoice-workflow-panel";
-import { OdooEditLink } from "@/app/(dashboard)/components/odoo-link";
+
 import { DownloadReportButton } from "@/app/(dashboard)/components/download-report-button";
 
 interface InvoiceListRow {
@@ -387,7 +387,7 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
             recordId={invoice.id}
             fileName={`${invoice.name}.pdf`}
           />
-          <OdooEditLink model="account.move" id={invoice.id} />
+
         </div>
       </header>
 
