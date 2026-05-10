@@ -30,8 +30,8 @@ const t = {
   payOnline: { en: "Pay Online", es: "Pagar en Linea" },
   notes: { en: "Notes", es: "Notas" },
   footer: {
-    en: "Counter Cultures | Providencia, San Miguel de Allende, Guanajuato, Mexico | info@countercultures.com.mx",
-    es: "Counter Cultures | Providencia, San Miguel de Allende, Guanajuato, Mexico | info@countercultures.com.mx",
+    en: "Counter Cultures | Providencia, San Miguel de Allende, Guanajuato, Mexico | equipo@countercultures.com.mx",
+    es: "Counter Cultures | Providencia, San Miguel de Allende, Guanajuato, Mexico | equipo@countercultures.com.mx",
   },
 };
 

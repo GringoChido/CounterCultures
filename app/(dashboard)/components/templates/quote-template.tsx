@@ -41,8 +41,8 @@ const t = {
   delivery: { en: "Estimated Delivery", es: "Entrega Estimada" },
   notes: { en: "Notes", es: "Notas" },
   footer: {
-    en: "Counter Cultures | Providencia, San Miguel de Allende, Guanajuato, Mexico | info@countercultures.com.mx",
-    es: "Counter Cultures | Providencia, San Miguel de Allende, Guanajuato, Mexico | info@countercultures.com.mx",
+    en: "Counter Cultures | Providencia, San Miguel de Allende, Guanajuato, Mexico | equipo@countercultures.com.mx",
+    es: "Counter Cultures | Providencia, San Miguel de Allende, Guanajuato, Mexico | equipo@countercultures.com.mx",
   },
   authorized: {
     en: "Authorized dealer for Kohler, TOTO, Brizo, BLANCO, California Faucets, and 14 more brands.",

@@ -26,8 +26,8 @@ const t = {
   total: { en: "Total", es: "Total" },
   notes: { en: "Notes for Manufacturer", es: "Notas para el Fabricante" },
   footer: {
-    en: "Counter Cultures | Providencia, San Miguel de Allende, Guanajuato, Mexico | info@countercultures.com.mx",
-    es: "Counter Cultures | Providencia, San Miguel de Allende, Guanajuato, Mexico | info@countercultures.com.mx",
+    en: "Counter Cultures | Providencia, San Miguel de Allende, Guanajuato, Mexico | equipo@countercultures.com.mx",
+    es: "Counter Cultures | Providencia, San Miguel de Allende, Guanajuato, Mexico | equipo@countercultures.com.mx",
   },
 };
 

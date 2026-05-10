@@ -27,8 +27,8 @@ const t = {
   printName: { en: "Print Name", es: "Nombre" },
   dateSign: { en: "Date", es: "Fecha" },
   footer: {
-    en: "Counter Cultures | Providencia, San Miguel de Allende, Guanajuato, Mexico | info@countercultures.com.mx",
-    es: "Counter Cultures | Providencia, San Miguel de Allende, Guanajuato, Mexico | info@countercultures.com.mx",
+    en: "Counter Cultures | Providencia, San Miguel de Allende, Guanajuato, Mexico | equipo@countercultures.com.mx",
+    es: "Counter Cultures | Providencia, San Miguel de Allende, Guanajuato, Mexico | equipo@countercultures.com.mx",
   },
 };
 

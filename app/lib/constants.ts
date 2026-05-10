@@ -7,7 +7,7 @@ export const SITE_CONFIG = {
   showroom: {
     address: "Calle San Juan #11-A, Col. Providencia, 37737 San Miguel de Allende, Gto.",
     phone: "415.154.8375",
-    email: "info@countercultures.com.mx",
+    email: "equipo@countercultures.com.mx",
     whatsapp: "415.154.8375",
     hours: "Lunes a Viernes, 10:00 – 18:00",
     // Maps deep link — prefixes the business name so Google Maps surfaces

@@ -34,7 +34,7 @@ const QuoteDocument = ({
           <p className="text-[11px] text-dash-text-secondary mt-3">
             Providencia, San Miguel de Allende, Guanajuato, MX
             <br />
-            info@countercultures.com.mx &middot; +52-415-154-8375
+            equipo@countercultures.com.mx &middot; +52-415-154-8375
           </p>
         </div>
         <div className="text-right">
@@ -246,7 +246,7 @@ const QuoteDocument = ({
       <div className="border-t border-dash-border pt-4 text-center text-[10px] text-dash-text-muted">
         <p>
           Counter Cultures &middot; Providencia, San Miguel de Allende,
-          Guanajuato, MX &middot; info@countercultures.com.mx
+          Guanajuato, MX &middot; equipo@countercultures.com.mx
         </p>
         <p className="mt-1">
           Authorized dealer for Kohler, TOTO, Brizo, BLANCO, California

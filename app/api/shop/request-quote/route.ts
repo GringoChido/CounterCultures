@@ -261,7 +261,7 @@ ${notes ? `\nNotes from customer:\n${notes}` : ""}
   <h2 style="font-weight:400;font-size:18px;margin:0 0 8px;">${greeting}, ${escapeHtml(contact.name.split(" ")[0])}</h2>
   <p style="line-height:1.7;color:#6B6B6B;">${body1}</p>
   <p style="line-height:1.7;color:#6B6B6B;">
-    ${body2} <a href="mailto:info@countercultures.com.mx" style="color:#B87333;">info@countercultures.com.mx</a>.
+    ${body2} <a href="mailto:equipo@countercultures.com.mx" style="color:#B87333;">equipo@countercultures.com.mx</a>.
   </p>
   <hr style="border:none;border-top:1px solid #E5E0DB;margin:24px 0;"/>
   <p style="font-size:11px;color:#999;">Counter Cultures · Providencia, San Miguel de Allende, Guanajuato, México</p>

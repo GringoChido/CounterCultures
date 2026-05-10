@@ -173,7 +173,7 @@ const TrackPage = async ({
             </a>{" "}
             or{" "}
             <a
-              href="mailto:hello@countercultures.com.mx"
+              href="mailto:equipo@countercultures.com.mx"
               className="text-brand-copper underline underline-offset-2"
             >
               email

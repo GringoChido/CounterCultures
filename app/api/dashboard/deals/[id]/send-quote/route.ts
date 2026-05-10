@@ -100,7 +100,7 @@ export const POST = async (
   <hr style="border:none;border-top:1px solid #E5E0DB;margin:28px 0;"/>
   <p style="font-size:11px;color:#999;line-height:1.6;margin:0;">
     Counter Cultures · Providencia, San Miguel de Allende, Guanajuato, México<br/>
-    info@countercultures.com.mx · +52-415-154-8375
+    equipo@countercultures.com.mx · +52-415-154-8375
   </p>
 </div>
 `.trim();
@@ -116,7 +116,7 @@ export const POST = async (
     `View quote & pay deposit:`,
     shareUrl,
     ``,
-    `Counter Cultures · info@countercultures.com.mx · +52-415-154-8375`,
+    `Counter Cultures · equipo@countercultures.com.mx · +52-415-154-8375`,
   ]
     .filter(Boolean)
     .join("\n");

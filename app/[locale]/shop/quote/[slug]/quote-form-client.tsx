@@ -25,7 +25,7 @@ const T = {
     submit: "Send Request",
     sending: "Sending…",
     success: "We'll be in touch within 24 hours.",
-    error: "Something went wrong. Please try again or email hola@countercultures.com.mx.",
+    error: "Something went wrong. Please try again or email equipo@countercultures.com.mx.",
     required: "Required",
   },
   es: {
@@ -39,7 +39,7 @@ const T = {
     submit: "Enviar Solicitud",
     sending: "Enviando…",
     success: "Nos pondremos en contacto en menos de 24 horas.",
-    error: "Algo salió mal. Intenta de nuevo o escribe a hola@countercultures.com.mx.",
+    error: "Algo salió mal. Intenta de nuevo o escribe a equipo@countercultures.com.mx.",
     required: "Requerido",
   },
 };

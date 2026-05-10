@@ -73,7 +73,7 @@ const ShowroomPage = async ({ params }: ShowroomPageProps) => {
       : "San Miguel de Allende's premier showroom for luxury bath, kitchen, and hardware fixtures. Authorized dealer for Kohler, TOTO, Brizo, BLANCO, and more.",
     url: `${BASE_URL}/${locale}/showroom`,
     telephone: "+52-415-154-8375",
-    email: "info@countercultures.com.mx",
+    email: "equipo@countercultures.com.mx",
     address: {
       "@type": "PostalAddress",
       streetAddress: "Calle San Juan #11-A, Col. Providencia",
