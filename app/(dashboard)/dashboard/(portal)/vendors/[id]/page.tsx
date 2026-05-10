@@ -15,6 +15,7 @@ import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/sta
 import { CreditPanel } from "@/app/(dashboard)/components/partner/credit-panel";
 import { PartnerHierarchy } from "@/app/(dashboard)/components/partner/partner-hierarchy";
 import { AgingBuckets } from "@/app/(dashboard)/components/partner/aging-buckets";
+import { BulkPaySelector } from "@/app/(dashboard)/components/partner/bulk-pay-selector";
 import { VendorTermsPanel } from "@/app/(dashboard)/components/vendor/vendor-terms-panel";
 
 interface PartnerRow {
@@ -146,7 +147,7 @@ const VendorDetailPage = ({
   const [data, setData] = useState<ProfileData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const loadVendor = () => {
     fetch(`/api/dashboard/vendors/${id}`, { credentials: "include" })
       .then(async (r) => {
         if (!r.ok) {
@@ -157,6 +158,10 @@ const VendorDetailPage = ({
       })
       .then((d) => setData(d))
       .catch((err) => setError(err instanceof Error ? err.message : "load_failed"));
+  };
+
+  useEffect(() => {
+    loadVendor();
   }, [id]);
 
   if (error) {
@@ -280,43 +285,18 @@ const VendorDetailPage = ({
         <AgingBuckets aging={aging} mode="vendor" />
       </div>
 
-      {/* Open AP — surfaced first because it's actionable */}
+      {/* Open AP — bulk-pay selector with aging order + running balance */}
       {openAP.length > 0 && (
         <section className="mb-6">
           <h2 className="font-display text-sm uppercase tracking-wider text-dash-text-secondary mb-3">
             Open AP ({openAP.length})
           </h2>
-          <div className="bg-dash-warn-soft/60 border border-dash-warn rounded overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="border-b border-dash-warn text-xs uppercase tracking-wider text-dash-warn/80">
-                <tr>
-                  <th className="text-left p-3">Bill #</th>
-                  <th className="text-left p-3">PO ref</th>
-                  <th className="text-left p-3">Issued</th>
-                  <th className="text-left p-3">Due</th>
-                  <th className="text-right p-3">Total</th>
-                  <th className="text-right p-3">Outstanding</th>
-                </tr>
-              </thead>
-              <tbody>
-                {openAP.map((b) => (
-                  <tr key={b.id} className="border-b border-dash-warn/50">
-                    <td className="p-3 font-mono text-xs">
-                      <Link href={`/dashboard/invoices/${b.id}`} className="hover:text-dash-accent">
-                        {b.name}
-                      </Link>
-                    </td>
-                    <td className="p-3 text-xs text-dash-text-secondary">{b.invoice_origin || "—"}</td>
-                    <td className="p-3 text-xs">{(b.invoice_date || "").slice(0, 10) || "—"}</td>
-                    <td className="p-3 text-xs">{(b.invoice_date_due || "").slice(0, 10) || "—"}</td>
-                    <td className="p-3 text-right text-xs">{fmt(num(b.amount_total), b.currency_id)}</td>
-                    <td className="p-3 text-right text-xs font-medium text-brand-terracotta">
-                      {fmt(num(b.amount_residual), b.currency_id)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="bg-dash-surface border border-dash-border rounded p-4">
+            <BulkPaySelector
+              bills={openAP}
+              vendorName={partner.name}
+              onPaymentRegistered={loadVendor}
+            />
           </div>
         </section>
       )}
