@@ -14,6 +14,7 @@ import {
   Check,
 } from "lucide-react";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
+import { EditPaymentModal } from "@/app/(dashboard)/components/payments/edit-payment-modal";
 
 interface PaymentRow {
   id: string;
@@ -45,6 +46,7 @@ interface LinkedMove {
   amount_residual: string;
   currency_id: string;
   move_type: string;
+  invoice_origin: string;
 }
 
 interface RawPayment {
@@ -188,13 +190,27 @@ const PaymentDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
             {payment.methodName && <span>{payment.methodName}</span>}
           </div>
         </div>
-        <div
-          className={`text-right font-semibold text-2xl ${
-            isInbound ? "text-brand-sage" : "text-brand-terracotta"
-          }`}
-        >
-          {isInbound ? "+" : "−"}
-          {fmt(payment.amount, payment.currency)}
+        <div className="flex flex-col items-end gap-2">
+          <div
+            className={`font-semibold text-2xl ${
+              isInbound ? "text-brand-sage" : "text-brand-terracotta"
+            }`}
+          >
+            {isInbound ? "+" : "−"}
+            {fmt(payment.amount, payment.currency)}
+          </div>
+          {payment.rawState !== "cancel" && (
+            <EditPaymentModal
+              paymentId={payment.id}
+              paymentName={payment.name}
+              currentDate={payment.date}
+              currentRef={rawPayment.ref || ""}
+              currentMemo={payment.memo}
+              currentAmount={payment.amount}
+              currentCurrency={payment.currency}
+              currentJournalId={payment.journalId}
+            />
+          )}
         </div>
       </header>
 
@@ -318,6 +334,30 @@ const PaymentDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
           </p>
         </div>
       )}
+
+      {/* Related orders — extracted from invoice_origin on linked invoices/bills */}
+      {(() => {
+        const origins = [...new Set(
+          [...invoices, ...bills]
+            .map((m) => m.invoice_origin)
+            .filter(Boolean)
+        )];
+        if (origins.length === 0) return null;
+        return (
+          <div className="mt-4 flex items-center gap-2 text-xs text-dash-text-secondary">
+            <span className="uppercase tracking-wider">Related orders:</span>
+            {origins.map((o) => (
+              <Link
+                key={o}
+                href={`/dashboard/orders?q=${encodeURIComponent(o)}`}
+                className="px-2 py-0.5 bg-dash-surface border border-dash-border rounded hover:border-dash-accent hover:text-dash-text transition-colors"
+              >
+                {o}
+              </Link>
+            ))}
+          </div>
+        );
+      })()}
     </div>
   );
 };

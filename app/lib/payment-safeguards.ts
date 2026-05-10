@@ -45,10 +45,15 @@ export interface PaymentUpdate {
   ref?: string;
   memo?: string;
   amount?: string;
+  journal_id?: string;
+  currency_id?: string;
+  exchange_rate?: string;
+  force?: boolean;
 }
 
 export interface SafeguardResult {
   allowed: boolean;
+  requiresConfirmation?: boolean;
   reason?: string;
   warnings: string[];
   preservedLinks: {
@@ -61,7 +66,9 @@ export interface SafeguardResult {
 // Editable fields — everything NOT in this list is read-only
 // ---------------------------------------------------------------------------
 
-const EDITABLE_FIELDS = new Set(["date", "ref", "memo", "amount"]);
+const EDITABLE_FIELDS = new Set(["date", "ref", "memo", "amount", "journal_id", "currency_id", "exchange_rate"]);
+
+const CONFIRMATION_FIELDS = new Set(["amount", "currency_id", "exchange_rate"]);
 
 // ---------------------------------------------------------------------------
 // Validation
@@ -128,6 +135,7 @@ export const validatePaymentUpdate = async (
 
   const warnings: string[] = [];
   const isReconciled = invoiceIds.length > 0 || billIds.length > 0;
+  const touchesConfirmationField = Object.keys(updates).some((k) => CONFIRMATION_FIELDS.has(k));
 
   if (updates.amount && isReconciled) {
     const oldAmount = parseFloat(payment.amount) || 0;
@@ -139,6 +147,28 @@ export const validatePaymentUpdate = async (
         `Verify the balance is correct.`
       );
     }
+  }
+
+  if (updates.currency_id && isReconciled && updates.currency_id !== payment.currency_id) {
+    warnings.push(
+      `Currency changed from ${payment.currency_id} to ${updates.currency_id} — ` +
+      `reconciliations with ${invoiceIds.length + billIds.length} document(s) will be preserved.`
+    );
+  }
+
+  if (updates.exchange_rate && isReconciled) {
+    warnings.push(
+      `Exchange rate updated — reconciliations with ${invoiceIds.length + billIds.length} document(s) will be preserved.`
+    );
+  }
+
+  if (isReconciled && touchesConfirmationField) {
+    return {
+      allowed: true,
+      requiresConfirmation: true,
+      warnings,
+      preservedLinks: { invoiceIds, billIds },
+    };
   }
 
   return {
@@ -156,17 +186,27 @@ export const validatePaymentUpdate = async (
 export const applyPaymentUpdate = async (
   paymentId: string,
   updates: PaymentUpdate
-): Promise<{ ok: boolean; error?: string; warnings: string[] }> => {
+): Promise<{ ok: boolean; error?: string; warnings: string[]; requiresConfirmation?: boolean; preservedLinks?: SafeguardResult["preservedLinks"] }> => {
+  const { force, ...rest } = updates;
   const cleanUpdates: Record<string, string> = {};
-  for (const [k, v] of Object.entries(updates)) {
+  for (const [k, v] of Object.entries(rest)) {
     if (v !== undefined && EDITABLE_FIELDS.has(k)) {
-      cleanUpdates[k] = v;
+      cleanUpdates[k] = String(v);
     }
   }
 
   const validation = await validatePaymentUpdate(paymentId, cleanUpdates);
   if (!validation.allowed) {
     return { ok: false, error: validation.reason, warnings: validation.warnings };
+  }
+
+  if (validation.requiresConfirmation && !force) {
+    return {
+      ok: false,
+      requiresConfirmation: true,
+      warnings: validation.warnings,
+      preservedLinks: validation.preservedLinks,
+    };
   }
 
   const idx = await findRowIndex("Odoo_Payments", "id", paymentId);

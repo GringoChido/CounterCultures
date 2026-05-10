@@ -1,12 +1,13 @@
 /**
- * Factura email detector — scans Gmail subjects for the COMPROBANTE
- * naming convention used by Javier and Roger when requesting facturas.
+ * @deprecated LEGACY — Gmail subject scanner for COMPROBANTE pattern.
+ *
+ * Per CLAUDE-FINANCE-RULES rule 6, this scanner is DEPRECATED. The
+ * primary factura detection path is now the Santander deposit feed
+ * (santander-deposits.ts + /api/dashboard/santander-deposits/upload).
+ *
+ * This file remains as a manual fallback only. Do not add new callers.
  *
  * Pattern: COMPROBANTE_S01630_$ 22,500_MXN_SANTANDER_30 DIC 2025_T.CREDITO
- *
- * Detection runs against inbox threads and auto-populates the
- * AR_Factura_Requests queue so Finance doesn't have to manually re-enter
- * data she can already see in the email subject.
  */
 
 import { getGmailClient } from "./gmail";

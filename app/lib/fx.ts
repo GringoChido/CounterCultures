@@ -140,6 +140,67 @@ export const consolidateToCurrency = (
   return { total, mixed, missing };
 };
 
+/**
+ * Get a rate for a specific date. Checks FX_Rates for the given date first
+ * (including manual overrides). Falls back to today's cached rate.
+ */
+export const getFXRateForDate = async (
+  from: string,
+  to: string,
+  date?: string
+): Promise<{ rate: number; source: string; fetchedAt: string } | null> => {
+  const targetDate = date ?? new Date().toISOString().slice(0, 10);
+  let rows: FXRateRow[] = [];
+  try {
+    rows = await readSheet<FXRateRow>("FX_Rates");
+  } catch {
+    return null;
+  }
+
+  const match = rows
+    .filter((r) => r.date === targetDate && r.base?.toUpperCase() === from.toUpperCase() && r.quote?.toUpperCase() === to.toUpperCase())
+    .sort((a, b) => (b.fetched_at ?? "").localeCompare(a.fetched_at ?? ""));
+
+  if (match.length > 0) {
+    const top = match[0];
+    const rateNum = Number(top.rate);
+    if (Number.isFinite(rateNum) && rateNum > 0) {
+      return { rate: rateNum, source: top.source || "unknown", fetchedAt: top.fetched_at };
+    }
+  }
+
+  const current = await getCurrentFXRate();
+  if (!current) return null;
+  if (current.base.toUpperCase() === from.toUpperCase() && current.quote.toUpperCase() === to.toUpperCase()) {
+    return { rate: current.rate, source: current.source, fetchedAt: current.fetchedAt };
+  }
+  if (current.quote.toUpperCase() === from.toUpperCase() && current.base.toUpperCase() === to.toUpperCase()) {
+    return { rate: 1 / current.rate, source: current.source, fetchedAt: current.fetchedAt };
+  }
+  return null;
+};
+
+/**
+ * Records a manual rate override for a specific date.
+ */
+export const recordManualRate = async (
+  from: string,
+  to: string,
+  date: string,
+  rate: number,
+  source = "manual_override"
+): Promise<void> => {
+  await appendRow("FX_Rates", [
+    date,
+    from.toUpperCase(),
+    to.toUpperCase(),
+    String(rate),
+    source,
+    new Date().toISOString(),
+  ]);
+  cache = null;
+};
+
 // ── Writer (cron only) ────────────────────────────────────────────
 
 interface FetchedRate {

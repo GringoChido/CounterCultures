@@ -66,6 +66,8 @@ export interface RegisterPaymentInput {
   ref?: string;
   /** Free-text memo shown on the payment record. */
   memo?: string;
+  /** Exchange rate override. Stored in ref as FX:<rate>@<source> if Odoo schema doesn't expose it. */
+  exchangeRate?: number;
 }
 
 export interface RegisterPaymentResult {
@@ -101,6 +103,7 @@ export const registerPayment = async (
         payment_date: input.paymentDate,
         communication: input.memo ?? "",
         ...(input.ref ? { ref: input.ref } : {}),
+        ...(input.exchangeRate ? { ref: `${input.ref ?? ""}${input.ref ? " | " : ""}FX:${input.exchangeRate}@manual`.trim() } : {}),
       },
     ],
     {
@@ -371,6 +374,132 @@ export const cancelOrder = async (
   }
 
   return { orderId: updated.id, state: updated.state };
+};
+
+// ── Vendor Bills ──────────────────────────────────────────────────
+
+export interface CreateBillFromPOResult {
+  billId: number;
+  billName: string;
+  amount: number;
+  state: string;
+}
+
+/**
+ * Creates a draft vendor bill from a purchase order WITHOUT requiring a
+ * goods receipt first. Odoo's default flow forces "Receive Products" →
+ * "Create Bill", but Counter Cultures often receives the invoice before
+ * physical receipt (international shipping). This calls Odoo's
+ * `action_create_invoice` on the PO, which generates an account.move
+ * (in_invoice) in draft state linked back to the PO via invoice_origin.
+ */
+export const createBillFromPO = async (
+  purchaseOrderId: number
+): Promise<CreateBillFromPOResult> => {
+  requireOdooConfigured();
+  const uid = await getUid();
+
+  // Verify the PO exists and is in a billable state
+  const [po] = (await execute(uid, "purchase.order", "read", [[purchaseOrderId]], {
+    fields: ["id", "name", "state", "invoice_status"],
+  })) as { id: number; name: string; state: string; invoice_status: string }[];
+
+  if (!po) throw new Error(`Purchase order ${purchaseOrderId} not found`);
+  if (po.state === "draft" || po.state === "cancel") {
+    throw new Error(
+      `PO ${po.name} is in '${po.state}' state — confirm it before creating a bill`
+    );
+  }
+
+  // action_create_invoice creates a draft vendor bill from the PO lines
+  const action = (await execute(
+    uid,
+    "purchase.order",
+    "action_create_invoice",
+    [[purchaseOrderId]]
+  )) as { res_id?: number; res_ids?: number[]; domain?: unknown[] } | boolean;
+
+  let billId: number | null = null;
+  if (typeof action === "object" && action !== null) {
+    if (typeof action.res_id === "number" && action.res_id > 0) {
+      billId = action.res_id;
+    } else if (Array.isArray(action.res_ids) && action.res_ids.length > 0) {
+      billId = action.res_ids[0];
+    }
+  }
+
+  if (!billId) {
+    // Fallback: find the most recent bill with this PO as origin
+    const moves = (await execute(
+      uid,
+      "account.move",
+      "search_read",
+      [[
+        ["invoice_origin", "=", po.name],
+        ["move_type", "=", "in_invoice"],
+      ]],
+      { fields: ["id", "name"], order: "id desc", limit: 1 }
+    )) as { id: number; name: string }[];
+    if (moves[0]) billId = moves[0].id;
+  }
+
+  if (!billId) {
+    throw new Error(
+      `Bill creation triggered but Odoo did not return a bill ID for PO ${po.name}. Check Odoo manually.`
+    );
+  }
+
+  const [bill] = (await execute(uid, "account.move", "read", [[billId]], {
+    fields: ["id", "name", "amount_total", "state"],
+  })) as { id: number; name: string; amount_total: number; state: string }[];
+
+  // Spot-refresh the mirror
+  try {
+    await syncInvoiceInMirror(bill.id);
+  } catch (err) {
+    console.warn(
+      "[odoo/write] post-bill mirror sync failed (non-fatal):",
+      err instanceof Error ? err.message : err
+    );
+  }
+
+  return {
+    billId: bill.id,
+    billName: bill.name,
+    amount: bill.amount_total,
+    state: bill.state,
+  };
+};
+
+export interface BackfillPedimentoResult {
+  updatedCount: number;
+  invoiceIds: number[];
+}
+
+export const backfillPedimentoNumber = async (
+  invoiceIds: number[],
+  pedimentoNumber: string
+): Promise<BackfillPedimentoResult> => {
+  requireOdooConfigured();
+  const uid = await getUid();
+  const updated: number[] = [];
+
+  for (const invoiceId of invoiceIds) {
+    const [move] = (await execute(uid, "account.move", "read", [[invoiceId]], {
+      fields: ["narration", "ref", "state"],
+    })) as { narration: string | false; ref: string | false; state: string }[];
+
+    if (!move) continue;
+
+    const currentRef = (move.ref || "") as string;
+    if (currentRef.includes(pedimentoNumber)) continue;
+
+    const newRef = currentRef ? `${currentRef} | Ped. ${pedimentoNumber}` : `Ped. ${pedimentoNumber}`;
+    await execute(uid, "account.move", "write", [[invoiceId], { ref: newRef }]);
+    updated.push(invoiceId);
+  }
+
+  return { updatedCount: updated.length, invoiceIds: updated };
 };
 
 export const stampCFDI = async (

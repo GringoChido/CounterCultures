@@ -31,7 +31,7 @@ export type FacturaRequestState =
   | "files_attached"
   | "cancelled";
 
-export type FacturaRequestSource = "javier_email" | "roger_transfer" | "manual";
+export type FacturaRequestSource = "javier_email" | "roger_transfer" | "manual" | "santander_deposit";
 
 export type FacturaCompany = "cc" | "llc";
 

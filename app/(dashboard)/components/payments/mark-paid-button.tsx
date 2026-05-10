@@ -43,6 +43,16 @@ const MarkPaidButton = ({
   const [paymentDate, setPaymentDate] = useState(todayISO);
   const [ref, setRef] = useState("");
   const [memo, setMemo] = useState(`Payment for ${invoiceName}`);
+  const [paymentCurrency, setPaymentCurrency] = useState(invoiceCurrency);
+  const [exchangeRate, setExchangeRate] = useState("");
+  const [rateSource, setRateSource] = useState("");
+  const [useRateForToday, setUseRateForToday] = useState(false);
+
+  const isCrossCurrency = paymentCurrency !== invoiceCurrency;
+  const rateNum = parseFloat(exchangeRate) || 0;
+  const convertedAmount = isCrossCurrency && rateNum > 0
+    ? (parseFloat(amount) || 0) * rateNum
+    : null;
 
   useEffect(() => {
     if (!open || journals !== null) return;
@@ -66,6 +76,22 @@ const MarkPaidButton = ({
       })
       .finally(() => setLoadingJournals(false));
   }, [open, journals, invoiceCurrency]);
+
+  useEffect(() => {
+    if (!open || !isCrossCurrency) return;
+    const from = paymentCurrency;
+    const to = invoiceCurrency;
+    fetch(`/api/dashboard/fx?from=${from}&to=${to}&date=${paymentDate}`, { credentials: "include" })
+      .then(async (r) => {
+        if (!r.ok) return;
+        const data = await r.json();
+        if (data.rate?.rate) {
+          setExchangeRate(String(data.rate.rate));
+          setRateSource(data.rate.source === "manual_override" ? "manual" : "ECB");
+        }
+      })
+      .catch(() => { /* non-critical */ });
+  }, [open, isCrossCurrency, paymentCurrency, invoiceCurrency, paymentDate]);
 
   if (!features.ready || !features.has("register_payment")) {
     return null;
@@ -93,6 +119,11 @@ const MarkPaidButton = ({
         paymentDate,
         ref: ref.trim() || undefined,
         memo: memo.trim() || undefined,
+        ...(isCrossCurrency && rateNum > 0 ? {
+          paymentCurrency,
+          exchangeRate: rateNum,
+          useRateForAllToday: useRateForToday,
+        } : {}),
       }),
     });
     setSubmitting(false);
@@ -185,6 +216,61 @@ const MarkPaidButton = ({
                   />
                 </div>
               </div>
+
+              {/* FX section */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-medium text-dash-text-muted uppercase tracking-wider mb-1.5">
+                    Moneda de pago / Payment currency
+                  </label>
+                  <select
+                    value={paymentCurrency}
+                    onChange={(e) => setPaymentCurrency(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg bg-dash-surface focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+                  >
+                    <option value="MXN">MXN</option>
+                    <option value="USD">USD</option>
+                  </select>
+                </div>
+                {isCrossCurrency && (
+                  <div>
+                    <label className="block text-[11px] font-medium text-dash-text-muted uppercase tracking-wider mb-1.5">
+                      Tipo de cambio / Rate
+                      {rateSource && (
+                        <span className="ml-1 text-[9px] font-normal text-dash-text-secondary">
+                          ({rateSource})
+                        </span>
+                      )}
+                    </label>
+                    <input
+                      type="number"
+                      step="0.0001"
+                      min="0"
+                      value={exchangeRate}
+                      onChange={(e) => { setExchangeRate(e.target.value); setRateSource("manual"); }}
+                      className="w-full px-3 py-2 text-sm border border-dash-border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-copper/30 focus:border-brand-copper"
+                    />
+                  </div>
+                )}
+              </div>
+              {isCrossCurrency && convertedAmount !== null && rateNum > 0 && (
+                <div className="bg-brand-copper/5 border border-brand-copper/20 rounded-lg p-3 text-xs">
+                  <p className="text-dash-text">
+                    ${(parseFloat(amount) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })} {paymentCurrency} × {rateNum.toFixed(4)} = <span className="font-semibold">${convertedAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })} {invoiceCurrency}</span>
+                  </p>
+                  <label className="flex items-center gap-2 mt-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={useRateForToday}
+                      onChange={(e) => setUseRateForToday(e.target.checked)}
+                      className="rounded border-dash-border text-brand-copper focus:ring-brand-copper/30"
+                    />
+                    <span className="text-dash-text-secondary">
+                      Usar este tipo de cambio para todos los pagos de hoy
+                    </span>
+                  </label>
+                </div>
+              )}
 
               <div>
                 <label className="block text-[11px] font-medium text-dash-text-muted uppercase tracking-wider mb-1.5">

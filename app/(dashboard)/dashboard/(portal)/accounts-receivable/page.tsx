@@ -20,6 +20,10 @@ import {
   ChevronDown,
   ChevronRight,
   Mail,
+  Upload,
+  Landmark,
+  Ban,
+  FileBarChart,
 } from "lucide-react";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import {
@@ -94,6 +98,21 @@ interface CreditNote {
   notes: string;
   createdAt: string;
   resolvedAt: string;
+}
+
+interface SantanderDeposit {
+  id: string;
+  date: string;
+  amount: number;
+  currency: string;
+  reference: string;
+  source: string;
+  paymentMethod: string;
+  customerId: string;
+  customerName: string;
+  notes: string;
+  status: string;
+  facturaRequestId: string;
 }
 
 interface ARSummary {
@@ -1044,6 +1063,125 @@ const ARDetailPanel = ({
 };
 
 // ---------------------------------------------------------------------------
+// Deposit entry form (inline)
+// ---------------------------------------------------------------------------
+
+const DepositEntryForm = ({
+  onSubmit,
+  onCancel,
+}: {
+  onSubmit: (data: Record<string, unknown>) => Promise<void>;
+  onCancel: () => void;
+}) => {
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [amount, setAmount] = useState("");
+  const [currency, setCurrency] = useState("MXN");
+  const [reference, setReference] = useState("");
+  const [source, setSource] = useState<string>("customer");
+  const [paymentMethod, setPaymentMethod] = useState("wire");
+  const [customerName, setCustomerName] = useState("");
+  const [notes, setNotes] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await onSubmit({
+        date,
+        amount: parseFloat(amount) || 0,
+        currency,
+        reference,
+        source,
+        paymentMethod,
+        customerName,
+        notes,
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="bg-dash-surface border border-dash-border rounded p-4 mb-4">
+      <div className="flex items-center justify-between mb-3">
+        <h4 className="text-xs font-medium uppercase tracking-wider text-dash-text">
+          Add Santander deposit / Agregar depósito
+        </h4>
+        <button type="button" onClick={onCancel} className="p-1 rounded hover:bg-dash-bg transition-colors cursor-pointer">
+          <X className="w-3.5 h-3.5 text-dash-text-secondary" />
+        </button>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+        <div>
+          <label className="block text-[10px] uppercase tracking-wider text-dash-text-secondary mb-1">Date / Fecha</label>
+          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required className="w-full px-2 py-1.5 border border-dash-border bg-dash-bg text-sm rounded focus:outline-none focus:border-dash-accent" />
+        </div>
+        <div>
+          <label className="block text-[10px] uppercase tracking-wider text-dash-text-secondary mb-1">Reference / Referencia</label>
+          <input type="text" value={reference} onChange={(e) => setReference(e.target.value)} required placeholder="e.g. 0012345678" className="w-full px-2 py-1.5 border border-dash-border bg-dash-bg text-sm rounded focus:outline-none focus:border-dash-accent" />
+        </div>
+        <div>
+          <label className="block text-[10px] uppercase tracking-wider text-dash-text-secondary mb-1">Amount / Monto</label>
+          <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} required step="0.01" min="0" className="w-full px-2 py-1.5 border border-dash-border bg-dash-bg text-sm rounded focus:outline-none focus:border-dash-accent" />
+        </div>
+        <div>
+          <label className="block text-[10px] uppercase tracking-wider text-dash-text-secondary mb-1">Currency / Moneda</label>
+          <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="w-full px-2 py-1.5 border border-dash-border bg-dash-bg text-sm rounded focus:outline-none focus:border-dash-accent">
+            <option value="MXN">MXN</option>
+            <option value="USD">USD</option>
+          </select>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+        <div>
+          <label className="block text-[10px] uppercase tracking-wider text-dash-text-secondary mb-1">Source / Origen</label>
+          <select value={source} onChange={(e) => setSource(e.target.value)} className="w-full px-2 py-1.5 border border-dash-border bg-dash-bg text-sm rounded focus:outline-none focus:border-dash-accent">
+            <option value="customer">Customer / Cliente</option>
+            <option value="roger_transfer">Roger (owner transfer)</option>
+            <option value="netpay">NetPay</option>
+            <option value="other">Other / Otro</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-[10px] uppercase tracking-wider text-dash-text-secondary mb-1">Payment method / Método</label>
+          <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="w-full px-2 py-1.5 border border-dash-border bg-dash-bg text-sm rounded focus:outline-none focus:border-dash-accent">
+            <option value="wire">Wire / Transferencia</option>
+            <option value="credit_card">Credit card / T. Crédito</option>
+            <option value="debit_card">Debit card / T. Débito</option>
+            <option value="cash">Cash / Efectivo</option>
+            <option value="cheque">Cheque</option>
+            <option value="other">Other / Otro</option>
+          </select>
+        </div>
+        <div className="md:col-span-2">
+          <label className="block text-[10px] uppercase tracking-wider text-dash-text-secondary mb-1">Customer / Cliente</label>
+          <input type="text" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Customer name or description" className="w-full px-2 py-1.5 border border-dash-border bg-dash-bg text-sm rounded focus:outline-none focus:border-dash-accent" />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <button type="submit" disabled={saving || !reference || !amount} className="px-3 py-1.5 bg-brand-copper text-white text-xs rounded hover:bg-brand-copper/90 disabled:opacity-50 transition-colors cursor-pointer">
+          {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Add deposit"}
+        </button>
+        <button type="button" onClick={onCancel} className="px-3 py-1.5 text-xs text-dash-text-secondary hover:text-dash-text transition-colors cursor-pointer">
+          Cancel
+        </button>
+        {source === "customer" && (
+          <span className="text-[10px] text-brand-sage ml-auto">
+            Will auto-queue factura request
+          </span>
+        )}
+        {source === "roger_transfer" && (
+          <span className="text-[10px] text-dash-text-muted ml-auto">
+            Owner transfer — no auto-factura
+          </span>
+        )}
+      </div>
+    </form>
+  );
+};
+
+// ---------------------------------------------------------------------------
 // Main page
 // ---------------------------------------------------------------------------
 
@@ -1069,6 +1207,12 @@ const AccountsReceivablePage = () => {
     "requests"
   );
   const [selectedRequest, setSelectedRequest] = useState<ARRequest | null>(null);
+  const [depositsOpen, setDepositsOpen] = useState(false);
+  const [deposits, setDeposits] = useState<SantanderDeposit[]>([]);
+  const [depositsLoading, setDepositsLoading] = useState(false);
+  const [showDepositForm, setShowDepositForm] = useState(false);
+  const [uploadingCSV, setUploadingCSV] = useState(false);
+  const [uploadResult, setUploadResult] = useState<{ imported: number; duplicates: number; facturasQueued: number } | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -1099,7 +1243,18 @@ const AccountsReceivablePage = () => {
     return () => clearTimeout(timer);
   }, [query, stateFilter, companyFilter, depositFilter]);
 
-  const handleScanGmail = async () => {
+  const fetchDeposits = async () => {
+    setDepositsLoading(true);
+    try {
+      const res = await fetch("/api/dashboard/santander-deposits");
+      const data = await res.json();
+      setDeposits(data.deposits ?? []);
+    } finally {
+      setDepositsLoading(false);
+    }
+  };
+
+  const handleScanDeposits = async () => {
     setScanning(true);
     setScanResult(null);
     try {
@@ -1107,12 +1262,59 @@ const AccountsReceivablePage = () => {
         method: "POST",
       });
       const data = await res.json();
-      setScanResult({ scanned: data.scanned, queued: data.queued, skipped: data.skipped });
-      if (data.queued > 0) fetchData();
+      setScanResult({ scanned: 0, queued: data.queued ?? 0, skipped: 0 });
+      if (data.queued > 0) {
+        fetchData();
+        fetchDeposits();
+      }
     } finally {
       setScanning(false);
     }
   };
+
+  const handleCSVUpload = async (file: File) => {
+    setUploadingCSV(true);
+    setUploadResult(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/dashboard/santander-deposits/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setUploadResult({ imported: data.imported, duplicates: data.duplicates, facturasQueued: data.facturasQueued });
+        fetchDeposits();
+        fetchData();
+      }
+    } finally {
+      setUploadingCSV(false);
+    }
+  };
+
+  const handleQueueFactura = async (depositId: string) => {
+    await fetch("/api/dashboard/santander-deposits", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ depositId, action: "queue_factura" }),
+    });
+    fetchDeposits();
+    fetchData();
+  };
+
+  const handleSkipDeposit = async (depositId: string) => {
+    await fetch("/api/dashboard/santander-deposits", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ depositId, action: "skip" }),
+    });
+    fetchDeposits();
+  };
+
+  useEffect(() => {
+    if (depositsOpen && deposits.length === 0) fetchDeposits();
+  }, [depositsOpen]);
 
   const handleCreateRequest = async (data: Record<string, unknown>) => {
     setSubmitting(true);
@@ -1188,20 +1390,20 @@ const AccountsReceivablePage = () => {
         <div className="flex-1" />
         {scanResult && (
           <span className="text-[10px] text-dash-text-secondary mb-1 mr-2">
-            Scanned {scanResult.scanned}: {scanResult.queued} queued, {scanResult.skipped} already existed
+            {scanResult.queued} queued from deposits
           </span>
         )}
         <button
-          onClick={handleScanGmail}
+          onClick={handleScanDeposits}
           disabled={scanning}
           className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-brand-sage hover:bg-brand-sage/10 rounded transition-colors mb-1 cursor-pointer disabled:opacity-50"
         >
           {scanning ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            <Mail className="w-4 h-4" />
+            <Landmark className="w-4 h-4" />
           )}
-          Scan Gmail
+          Scan deposits
         </button>
         <button
           onClick={() => setShowForm(!showForm)}
@@ -1219,6 +1421,188 @@ const AccountsReceivablePage = () => {
           submitting={submitting}
         />
       )}
+
+      {/* ── Santander Deposits ─────────────────────────────── */}
+      <div className="mb-6">
+        <button
+          onClick={() => setDepositsOpen(!depositsOpen)}
+          className="flex items-center gap-2 w-full text-left px-4 py-3 bg-dash-surface border border-dash-border rounded transition-colors hover:border-dash-accent cursor-pointer"
+        >
+          {depositsOpen ? (
+            <ChevronDown className="w-4 h-4 text-dash-text-secondary" />
+          ) : (
+            <ChevronRight className="w-4 h-4 text-dash-text-secondary" />
+          )}
+          <Landmark className="w-4 h-4 text-brand-copper" />
+          <span className="text-sm font-medium text-dash-text">
+            Santander Deposits
+          </span>
+          {deposits.filter((d) => d.status === "pending").length > 0 && (
+            <span className="text-[10px] bg-brand-copper/10 text-brand-copper px-2 py-0.5 rounded-full font-medium">
+              {deposits.filter((d) => d.status === "pending").length} pending
+            </span>
+          )}
+          <span className="flex-1" />
+          {depositsOpen && (
+            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+              <label className="flex items-center gap-1.5 px-3 py-1 text-xs text-brand-sage hover:bg-brand-sage/10 rounded transition-colors cursor-pointer">
+                {uploadingCSV ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Upload className="w-3.5 h-3.5" />
+                )}
+                Upload CSV
+                <input
+                  type="file"
+                  accept=".csv"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) handleCSVUpload(f);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+              <button
+                onClick={() => setShowDepositForm(!showDepositForm)}
+                className="flex items-center gap-1.5 px-3 py-1 text-xs text-brand-copper hover:bg-brand-copper/10 rounded transition-colors cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Add deposit
+              </button>
+            </div>
+          )}
+        </button>
+
+        {depositsOpen && (
+          <div className="border border-t-0 border-dash-border rounded-b bg-dash-bg p-4">
+            {uploadResult && (
+              <div className="mb-3 text-xs text-dash-text-secondary bg-brand-sage/5 border border-brand-sage/20 rounded p-2">
+                Imported {uploadResult.imported} deposits ({uploadResult.duplicates} duplicates skipped), {uploadResult.facturasQueued} facturas queued
+              </div>
+            )}
+
+            {showDepositForm && (
+              <DepositEntryForm
+                onSubmit={async (data) => {
+                  await fetch("/api/dashboard/santander-deposits", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data),
+                  });
+                  setShowDepositForm(false);
+                  fetchDeposits();
+                  fetchData();
+                }}
+                onCancel={() => setShowDepositForm(false)}
+              />
+            )}
+
+            {depositsLoading ? (
+              <div className="flex items-center gap-2 text-sm text-dash-text-secondary py-4 justify-center">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Loading deposits…
+              </div>
+            ) : deposits.length === 0 ? (
+              <div className="text-sm text-dash-text-secondary py-4 text-center">
+                No deposits imported yet. Upload a Santander CSV or add one manually.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-[10px] uppercase tracking-wider text-dash-text-secondary border-b border-dash-border">
+                      <th className="text-left py-2 px-2">Date</th>
+                      <th className="text-left py-2 px-2">Reference</th>
+                      <th className="text-left py-2 px-2">Customer / Description</th>
+                      <th className="text-right py-2 px-2">Amount</th>
+                      <th className="text-left py-2 px-2">Source</th>
+                      <th className="text-left py-2 px-2">Status</th>
+                      <th className="text-right py-2 px-2">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {deposits.map((d) => (
+                      <tr
+                        key={d.id}
+                        className="border-b border-dash-border/50 hover:bg-dash-surface/50 transition-colors"
+                      >
+                        <td className="py-2 px-2 text-dash-text-secondary whitespace-nowrap">
+                          {shortDate(d.date)}
+                        </td>
+                        <td className="py-2 px-2 font-mono text-xs">{d.reference}</td>
+                        <td className="py-2 px-2 text-dash-text line-clamp-1 max-w-[200px]">
+                          {d.customerName || "—"}
+                        </td>
+                        <td className="py-2 px-2 text-right font-medium">
+                          {fmt(d.amount, d.currency)}
+                        </td>
+                        <td className="py-2 px-2">
+                          <span
+                            className={`text-[10px] uppercase tracking-wider ${
+                              d.source === "customer"
+                                ? "text-brand-sage"
+                                : d.source === "roger_transfer"
+                                  ? "text-brand-copper"
+                                  : d.source === "netpay"
+                                    ? "text-dash-text-secondary"
+                                    : "text-dash-text-muted"
+                            }`}
+                          >
+                            {d.source === "roger_transfer" ? "Roger" : d.source}
+                          </span>
+                        </td>
+                        <td className="py-2 px-2">
+                          <StatusBadge
+                            variant={
+                              d.status === "pending"
+                                ? "new"
+                                : d.status === "factura_queued"
+                                  ? "success"
+                                  : "default"
+                            }
+                            label={d.status === "factura_queued" ? "Queued" : d.status === "skipped" ? "Skipped" : "Pending"}
+                          />
+                        </td>
+                        <td className="py-2 px-2 text-right">
+                          {d.status === "pending" && d.source === "customer" && (
+                            <div className="flex items-center justify-end gap-1">
+                              <button
+                                onClick={() => handleQueueFactura(d.id)}
+                                className="text-[10px] px-2 py-0.5 text-brand-sage hover:bg-brand-sage/10 rounded transition-colors cursor-pointer"
+                                title="Queue factura request"
+                              >
+                                <FileBarChart className="w-3 h-3" />
+                              </button>
+                              <button
+                                onClick={() => handleSkipDeposit(d.id)}
+                                className="text-[10px] px-2 py-0.5 text-dash-text-muted hover:text-dash-text-secondary hover:bg-dash-bg rounded transition-colors cursor-pointer"
+                                title="Skip — no factura needed"
+                              >
+                                <Ban className="w-3 h-3" />
+                              </button>
+                            </div>
+                          )}
+                          {d.status === "pending" && d.source === "roger_transfer" && (
+                            <span className="text-[10px] text-dash-text-muted">
+                              Owner — no auto-factura
+                            </span>
+                          )}
+                          {d.status === "pending" && d.source === "netpay" && (
+                            <span className="text-[10px] text-dash-text-muted">
+                              NetPay — skip
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {activeTab === "requests" && (
         <>

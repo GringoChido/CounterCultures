@@ -13,6 +13,7 @@ import {
   Send,
   MessageCircle,
   Mail,
+  Truck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
@@ -298,6 +299,119 @@ const CopyableUUID = ({ uuid }: { uuid: string }) => {
   );
 };
 
+// ---------------------------------------------------------------------------
+// Shipping scenario picker (vendor bills only)
+// ---------------------------------------------------------------------------
+
+const SCENARIOS = [
+  { value: "", label: "Not set", labelEs: "Sin asignar" },
+  { value: "direct_ship", label: "Direct ship", labelEs: "Envío directo" },
+  { value: "warehouse", label: "Warehouse (SMA)", labelEs: "Almacén (SMA)" },
+  { value: "consolidated", label: "Consolidated", labelEs: "Consolidado" },
+  { value: "drop_ship", label: "Drop ship (broker)", labelEs: "Drop ship (agente)" },
+];
+
+const ShippingScenarioPicker = ({ invoiceId }: { invoiceId: string }) => {
+  const [scenario, setScenario] = useState("");
+  const [loaded, setLoaded] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [notifyingUps, setNotifyingUps] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/dashboard/invoices/${invoiceId}/tags`)
+      .then((r) => r.ok ? r.json() : { tags: {} })
+      .then((data: { tags: Record<string, string> }) => {
+        setScenario(data.tags.shipping_scenario ?? "");
+      })
+      .catch(() => {})
+      .finally(() => setLoaded(true));
+  }, [invoiceId]);
+
+  const handleChange = async (val: string) => {
+    setScenario(val);
+    setSaving(true);
+    try {
+      await fetch(`/api/dashboard/invoices/${invoiceId}/tags`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tagType: "shipping_scenario", tagValue: val }),
+      });
+    } catch {
+      toast.error("Failed to save shipping scenario");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!loaded) return null;
+
+  const current = SCENARIOS.find((s) => s.value === scenario) ?? SCENARIOS[0];
+
+  return (
+    <div className="mb-6 flex items-center gap-3">
+      <Truck className="w-4 h-4 text-dash-text-secondary" />
+      <span className="text-[10px] uppercase tracking-wider text-dash-text-secondary">
+        Shipping / Envío
+      </span>
+      <div className="flex gap-1">
+        {SCENARIOS.filter((s) => s.value).map((s) => (
+          <button
+            key={s.value}
+            onClick={() => handleChange(scenario === s.value ? "" : s.value)}
+            disabled={saving}
+            className={`px-2.5 py-1 text-[11px] rounded border transition-colors cursor-pointer ${
+              scenario === s.value
+                ? "bg-brand-sage/10 border-brand-sage/40 text-brand-sage font-medium"
+                : "bg-dash-surface border-dash-border text-dash-text-secondary hover:border-dash-accent"
+            }`}
+            title={s.labelEs}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+      {saving && <Loader2 className="w-3 h-3 animate-spin text-dash-text-secondary" />}
+      {scenario === "direct_ship" && (
+        <button
+          type="button"
+          disabled={notifyingUps}
+          onClick={async () => {
+            if (!confirm("Send shipment notification to UPS agents?")) return;
+            setNotifyingUps(true);
+            try {
+              const r = await fetch(`/api/dashboard/invoices/${invoiceId}/notify-ups`, {
+                method: "POST",
+              });
+              const d = await r.json().catch(() => ({}));
+              if (!r.ok) {
+                toast.error(d.error ?? `HTTP ${r.status}`);
+                return;
+              }
+              toast.success(
+                d.emailStatus === "sent"
+                  ? "UPS agents notified"
+                  : "Status logged (email not configured)"
+              );
+            } catch {
+              toast.error("Failed to notify UPS agents");
+            } finally {
+              setNotifyingUps(false);
+            }
+          }}
+          className="inline-flex items-center gap-1 px-2 py-1 text-[11px] rounded bg-brand-copper text-white hover:bg-brand-copper/90 disabled:opacity-50"
+        >
+          {notifyingUps ? (
+            <Loader2 className="w-3 h-3 animate-spin" />
+          ) : (
+            <Send className="w-3 h-3" />
+          )}
+          Notify UPS
+        </button>
+      )}
+    </div>
+  );
+};
+
 const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
   const [data, setData] = useState<InvoiceDetailData | null>(null);
@@ -378,7 +492,14 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
             <span>{moveTypeLabel(invoice.moveType)}</span>
             <span>Issued {invoice.date || "—"}</span>
             <span>Due {invoice.dueDate || "—"}</span>
-            {invoice.origin && <span>Origin {invoice.origin}</span>}
+            {invoice.origin && (
+              <Link
+                href={`/dashboard/orders?q=${encodeURIComponent(invoice.origin)}`}
+                className="hover:text-dash-accent transition-colors"
+              >
+                Origin {invoice.origin} →
+              </Link>
+            )}
           </div>
         </div>
         <div className="shrink-0 flex items-center gap-2">
@@ -534,6 +655,11 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
         </section>
       </div>
 
+      {/* Shipping scenario — vendor bills only */}
+      {(invoice.moveType === "in_invoice" || invoice.moveType === "in_refund") && (
+        <ShippingScenarioPicker invoiceId={invoice.id} />
+      )}
+
       {/* Lines */}
       <section className="mb-6">
         <h2 className="font-display text-sm uppercase tracking-wider text-dash-text-secondary mb-3">
@@ -610,7 +736,11 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
               <tbody>
                 {payments.map((p) => (
                   <tr key={p.id} className="border-b border-dash-border/50">
-                    <td className="p-3 font-mono text-xs">{p.name}</td>
+                    <td className="p-3 font-mono text-xs">
+                      <Link href={`/dashboard/payments/${p.id}`} className="hover:text-dash-accent transition-colors">
+                        {p.name}
+                      </Link>
+                    </td>
                     <td className="p-3 text-xs">{(p.date || "").slice(0, 10)}</td>
                     <td className="p-3">
                       <StatusBadge label={p.state} variant={stateVariant(p.state)} />

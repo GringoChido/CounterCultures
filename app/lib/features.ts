@@ -53,6 +53,7 @@ export const FEATURES = {
   approve_prefactura: "Mark a client's prefactura as approved (unlocks CFDI attach)",
   attach_cfdi: "Attach CFDI XML + PDF to an invoice (uploads to Odoo + Drive)",
   register_payment: "Mark a payment received and reconcile",
+  edit_payment: "Edit payment fields (date, ref, amount, rate) with safeguards",
   send_payment_link: "Generate a Stripe payment link for an invoice",
 
   // System
@@ -80,6 +81,7 @@ const FINANCE_FEATURES: Feature[] = [
   "approve_prefactura",
   "attach_cfdi",
   "register_payment",
+  "edit_payment",
   "send_payment_link",
 ];
 
