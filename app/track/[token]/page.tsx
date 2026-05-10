@@ -15,6 +15,8 @@ type TrackData = {
   milestones: string[];
   expectedDelivery: string | null;
   createdAt: string | null;
+  lineItems?: Array<{ name: string; brand: string; quantity: number; finish: string | null; sku: string }>;
+  updates?: Array<{ date: string; channel: string; subject: string }>;
 };
 
 const fetchStatus = async (token: string, origin: string): Promise<TrackData | null> => {
@@ -155,6 +157,53 @@ const TrackPage = async ({
                 >
                   {b}
                 </span>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {data.lineItems && data.lineItems.length > 0 ? (
+          <section className="mb-10">
+            <p className="text-[11px] uppercase tracking-[0.14em] text-dash-text-muted mb-3">
+              Items
+            </p>
+            <div className="space-y-2">
+              {data.lineItems.map((item) => (
+                <div
+                  key={item.sku}
+                  className="flex items-baseline justify-between bg-dash-surface border border-dash-border rounded-lg px-4 py-3"
+                >
+                  <div>
+                    <p className="text-sm font-medium">{item.name}</p>
+                    <p className="text-xs text-dash-text-muted">
+                      {item.brand}{item.finish ? ` · ${item.finish}` : ""}
+                    </p>
+                  </div>
+                  <span className="text-xs text-dash-text-secondary">
+                    x{item.quantity}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {data.updates && data.updates.length > 0 ? (
+          <section className="mb-10">
+            <p className="text-[11px] uppercase tracking-[0.14em] text-dash-text-muted mb-3">
+              Recent updates
+            </p>
+            <div className="space-y-2">
+              {data.updates.map((u, i) => (
+                <div
+                  key={i}
+                  className="flex items-baseline gap-3 text-sm"
+                >
+                  <span className="text-[11px] text-dash-text-muted whitespace-nowrap">
+                    {formatDate(u.date)}
+                  </span>
+                  <span className="text-dash-text-secondary">{u.subject}</span>
+                </div>
               ))}
             </div>
           </section>
