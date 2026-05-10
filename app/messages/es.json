@@ -132,7 +132,6 @@
   },
   "product": {
     "inquire": "Preguntar Sobre Esta Pieza",
-    "tradePricing": "Solicitar Precio Profesional",
     "specSheet": "Descargar Ficha Técnica",
     "finishes": "Acabados Disponibles",
     "specifications": "Especificaciones",
@@ -141,7 +140,6 @@
     "madeToOrder": "Hecho a Pedido (4-8 semanas)",
     "specialOrder": "Pedido Especial",
     "artisanBadge": "Hecho a Mano por Artesanos Mexicanos",
-    "tradePriceNote": "Precios profesionales disponibles — solicita acceso",
     "relatedProducts": "También Te Puede Interesar",
     "whatsappMessage": "Hola, me interesa {product} (SKU: {sku}). ¿Me pueden dar más información?"
   },

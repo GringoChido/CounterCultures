@@ -29,14 +29,12 @@ const availabilityMap = {
 const t = (locale: "en" | "es", key: string) => {
   const translations: Record<string, Record<string, string>> = {
     inquire: { en: "Inquire About This Piece", es: "Preguntar Sobre Esta Pieza" },
-    tradePricing: { en: "Request Trade Pricing", es: "Solicitar Precio Profesional" },
     specSheet: { en: "Download Spec Sheet", es: "Descargar Ficha Técnica" },
     payOnline: { en: "Pay / Reserve Online", es: "Pagar / Reservar en Línea" },
     reserveDeposit: { en: "Reserve with 30% Deposit", es: "Reservar con 30% de Anticipo" },
     finishes: { en: "Available Finishes", es: "Acabados Disponibles" },
     specifications: { en: "Specifications", es: "Especificaciones" },
     artisanBadge: { en: "Handcrafted by Mexican Artisans", es: "Hecho a Mano por Artesanos Mexicanos" },
-    tradePriceNote: { en: "Trade pricing available — apply for access", es: "Precios profesionales disponibles — solicita acceso" },
     relatedProducts: { en: "You May Also Like", es: "También Te Puede Interesar" },
     home: { en: "Home", es: "Inicio" },
     shop: { en: "Shop", es: "Tienda" },
@@ -231,9 +229,6 @@ const ProductDetail = ({
                   {product.currency}
                 </span>
               </div>
-              <p className="mt-1 font-body text-xs text-dash-text-secondary italic">
-                {t(locale, "tradePriceNote")}
-              </p>
 
               {/* Description */}
               <p data-speakable="description" className="mt-6 font-body text-base text-dash-text-secondary leading-relaxed">
@@ -283,20 +278,12 @@ const ProductDetail = ({
                   <MessageCircle className="w-4 h-4" />
                   {t(locale, "inquire")}
                 </a>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Link
-                    href={`/${locale}/trade`}
-                    className="flex-1 py-3.5 min-h-[48px] border border-brand-charcoal text-brand-charcoal font-body text-sm font-medium tracking-wider hover:bg-brand-charcoal hover:text-white transition-colors duration-300 text-center flex items-center justify-center"
-                  >
-                    {t(locale, "tradePricing")}
-                  </Link>
-                  <button
-                    className="flex-1 py-3.5 min-h-[48px] border border-brand-stone/30 text-dash-text-secondary font-body text-sm font-medium tracking-wider hover:border-brand-stone hover:text-brand-charcoal transition-colors duration-300 flex items-center justify-center gap-2 cursor-pointer"
+                <button
+                    className="w-full py-3.5 min-h-[48px] border border-brand-stone/30 text-dash-text-secondary font-body text-sm font-medium tracking-wider hover:border-brand-stone hover:text-brand-charcoal transition-colors duration-300 flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Download className="w-4 h-4" />
                     {t(locale, "specSheet")}
                   </button>
-                </div>
                 <button
                   onClick={handleCheckout}
                   disabled={checkoutLoading}
