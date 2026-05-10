@@ -12,7 +12,6 @@ import { CatalogDepthBandAsync } from "@/app/components/sections/catalog-depth-b
 import { TwoPathsBand } from "@/app/components/sections/two-paths-band";
 import { FounderStory } from "@/app/components/sections/founder-story";
 import { HospitalityTeaser } from "@/app/components/sections/hospitality-teaser";
-import { TradeTeaser } from "@/app/components/sections/trade-teaser";
 import { Testimonial } from "@/app/components/sections/testimonial";
 import { ContactCTA } from "@/app/components/sections/contact-cta";
 import { NewsletterStrip } from "@/app/components/sections/newsletter-strip";
@@ -240,7 +239,6 @@ const HomePage = async ({ params }: HomePageProps) => {
         <FounderStory locale={lang} />
         <Testimonial locale={lang} />
         <TwoPathsBand locale={lang} />
-        <TradeTeaser locale={lang} />
         <ContactCTA locale={lang} />
         <NewsletterStrip locale={lang} />
       </main>

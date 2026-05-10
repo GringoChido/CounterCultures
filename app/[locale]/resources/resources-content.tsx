@@ -769,14 +769,6 @@ export const ResourcesContent = ({ brandCards }: { brandCards: BrandCard[] }) =>
                 <Button variant="primary" size="lg" href="/contact">
                   {content.cta.primary[locale]}
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="lg"
-                  href="/trade"
-                  className="text-white hover:text-brand-copper"
-                >
-                  {content.cta.secondary[locale]} →
-                </Button>
               </div>
             </AnimatedSection>
           </div>

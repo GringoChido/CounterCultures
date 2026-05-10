@@ -247,14 +247,6 @@ export const HospitalityContent = () => {
                 <Button variant="primary" size="lg" href="/contact">
                   {t("Start a Conversation", "Iniciar Conversación")}
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="lg"
-                  href="/trade"
-                  className="text-white hover:text-brand-copper"
-                >
-                  {t("Trade Program", "Programa Trade")} →
-                </Button>
               </div>
             </AnimatedSection>
           </div>

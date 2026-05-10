@@ -266,17 +266,6 @@ export const ContactContent = () => {
                   </Button>
                 </div>
 
-                <div className="mt-8 pt-8 border-t border-brand-stone/15">
-                  <h4 className="font-body text-sm font-semibold text-brand-charcoal mb-3">
-                    {t.forProfessionals[locale]}
-                  </h4>
-                  <p className="font-body text-sm text-dash-text-secondary leading-relaxed">
-                    {t.tradeCopy[locale]}
-                  </p>
-                  <Button variant="ghost" size="sm" href="/trade" className="mt-3">
-                    {t.learnTrade[locale]}
-                  </Button>
-                </div>
               </AnimatedSection>
             </div>
           </div>
