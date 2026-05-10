@@ -60,6 +60,7 @@ const TERMINAL: Set<PipelineStage> = new Set<PipelineStage>([
   "closed-lost",
   "won",
   "lost",
+  "abandoned",
 ]);
 
 export const GET = async (request: NextRequest) => {
@@ -173,6 +174,41 @@ export const GET = async (request: NextRequest) => {
           }
         }
       }
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // (3b) T-18 / T-19: cart abandonment + review window
+  //      Fires nightly_sweep for cart_submitted and delivered deals with
+  //      hours_in_stage so T-18/T-19 predicates can trigger.
+  // -------------------------------------------------------------------------
+  for (const row of pipelineRows) {
+    if (!row.id || !row.stage_entered_at) continue;
+    const stage = row.stage;
+    if (stage !== "cart_submitted" && stage !== "delivered") continue;
+    const enteredAt = Date.parse(row.stage_entered_at);
+    if (!Number.isFinite(enteredAt)) continue;
+    const hoursInStage = (now.getTime() - enteredAt) / (1000 * 60 * 60);
+    const daysSince = hoursInStage / 24;
+    try {
+      if (stage === "cart_submitted" && hoursInStage >= 168) {
+        await evaluateAndTransition(
+          "nightly_sweep",
+          row.id,
+          { hours_in_stage: Math.round(hoursInStage) },
+          "system"
+        );
+      }
+      if (stage === "delivered" && daysSince >= 7) {
+        await evaluateAndTransition(
+          "review_window_open",
+          row.id,
+          { days_since_delivered: Math.round(daysSince) },
+          "system"
+        );
+      }
+    } catch (err) {
+      errors.push(`sweep-t18/t19 ${row.id}: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
 
