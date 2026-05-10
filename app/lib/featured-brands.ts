@@ -5,25 +5,27 @@ import type { Brand } from "@/app/lib/brand-kit-types";
 // Flagship brands surfaced in the homepage + brand-page bands.
 // Order is editorial — change here only.
 export const FLAGSHIP_SLUGS = [
-  "brizo",
-  "kohler",
-  "toto",
   "california-faucets",
-  "blanco",
+  "toto",
+  "bante",
+  "badeloft",
   "emtek",
   "sun-valley-bronze",
-  "badeloft",
+  "baldwin",
+  "blanco",
 ] as const;
 
-const PRE_STAGED_HEROES: Record<string, string> = {
-  kohler: "/Assets/BRANDS/kohler-hero.webp",
-  toto: "/Assets/BRANDS/toto-hero.webp",
-  brizo: "/Assets/BRANDS/brizo-hero.webp",
-  blanco: "/Assets/BRANDS/blanco-hero.webp",
+const PRE_STAGED_HEROES: Record<string, string | undefined> = {
   "california-faucets": "/Assets/BRANDS/california-faucets-hero.webp",
-  "sun-valley-bronze": "/Assets/BRANDS/sun-valley-bronze-hero.webp",
-  emtek: "/Assets/BRANDS/emtek-hero.avif",
+  toto: "/Assets/BRANDS/toto-hero.webp",
+  bante: undefined,
   badeloft: "/Assets/BRANDS/badeloft-hero.webp",
+  emtek: "/Assets/BRANDS/emtek-hero.avif",
+  "sun-valley-bronze": "/Assets/BRANDS/sun-valley-bronze-hero.webp",
+  baldwin: undefined,
+  blanco: "/Assets/BRANDS/blanco-hero.webp",
+  kohler: "/Assets/BRANDS/kohler-hero.webp",
+  brizo: "/Assets/BRANDS/brizo-hero.webp",
 };
 
 export type FeaturedBrand = Brand & {
@@ -42,15 +44,17 @@ export type FeaturedBrand = Brand & {
 // service-account key parse failure). Without this, the homepage band
 // silently renders empty whenever the sheet load hiccups. Names sourced
 // from the editorial brand list; minimal fields only.
-const FLAGSHIP_FALLBACK: Record<string, { name: string }> = {
-  kohler: { name: "Kohler" },
-  toto: { name: "TOTO" },
-  brizo: { name: "Brizo" },
-  blanco: { name: "BLANCO" },
+export const FLAGSHIP_FALLBACK: Record<string, { name: string }> = {
   "california-faucets": { name: "California Faucets" },
-  "sun-valley-bronze": { name: "Sun Valley Bronze" },
-  emtek: { name: "Emtek" },
+  toto: { name: "TOTO" },
+  bante: { name: "Banté" },
   badeloft: { name: "Badeloft" },
+  emtek: { name: "Emtek" },
+  "sun-valley-bronze": { name: "Sun Valley Bronze" },
+  baldwin: { name: "Baldwin" },
+  blanco: { name: "BLANCO" },
+  kohler: { name: "Kohler" },
+  brizo: { name: "Brizo" },
 };
 
 const buildFlagshipFallback = (): FeaturedBrand[] =>

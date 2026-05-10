@@ -54,15 +54,16 @@ export const NAV_LINKS = [
 ] as const;
 
 export const BRANDS = [
-  { name: "Kohler", slug: "kohler" },
-  { name: "TOTO", slug: "toto" },
-  { name: "Brizo", slug: "brizo" },
-  { name: "BLANCO", slug: "blanco" },
   { name: "California Faucets", slug: "california-faucets" },
-  { name: "Sun Valley Bronze", slug: "sun-valley-bronze" },
-  { name: "Emtek", slug: "emtek" },
-  { name: "Badeloft", slug: "badeloft" },
+  { name: "TOTO", slug: "toto" },
   { name: "Banté", slug: "bante" },
+  { name: "Badeloft", slug: "badeloft" },
+  { name: "Emtek", slug: "emtek" },
+  { name: "Sun Valley Bronze", slug: "sun-valley-bronze" },
+  { name: "Baldwin", slug: "baldwin" },
+  { name: "BLANCO", slug: "blanco" },
+  { name: "Kohler", slug: "kohler" },
+  { name: "Brizo", slug: "brizo" },
   { name: "Mistoa", slug: "mistoa" },
   { name: "Villeroy & Boch", slug: "villeroy-boch" },
   { name: "AquaSpa", slug: "aquaspa" },
@@ -72,7 +73,6 @@ export const BRANDS = [
   { name: "Teka", slug: "teka" },
   { name: "SMEG", slug: "smeg" },
   { name: "Bluestar", slug: "bluestar" },
-  { name: "Baldwin", slug: "baldwin" },
 ] as const;
 
 export const PRODUCT_CATEGORIES = {

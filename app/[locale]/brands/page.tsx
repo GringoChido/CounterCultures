@@ -79,12 +79,14 @@ const buildFallbackBrands = (): import("@/app/lib/brand-kit-types").Brand[] =>
  * hero band above the filterable grid.
  */
 const FLAGSHIP_SLUGS: readonly string[] = [
-  "kohler",
-  "toto",
-  "brizo",
-  "blanco",
   "california-faucets",
+  "toto",
+  "bante",
+  "badeloft",
+  "emtek",
   "sun-valley-bronze",
+  "baldwin",
+  "blanco",
 ];
 
 /* ------------------------------------------------------------------ */

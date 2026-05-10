@@ -29,6 +29,7 @@ const brandGroups = {
       brands: [
         { name: "Emtek", slug: "emtek" },
         { name: "Sun Valley Bronze", slug: "sun-valley-bronze" },
+        { name: "Baldwin", slug: "baldwin" },
       ],
     },
   ],
@@ -56,6 +57,7 @@ const brandGroups = {
       brands: [
         { name: "Emtek", slug: "emtek" },
         { name: "Sun Valley Bronze", slug: "sun-valley-bronze" },
+        { name: "Baldwin", slug: "baldwin" },
       ],
     },
   ],
@@ -64,14 +66,14 @@ const brandGroups = {
 const content = {
   en: {
     eyebrow: "Authorized Dealer",
-    headline: "Kohler. TOTO. Brizo. BLANCO. Sun Valley Bronze. And more.",
+    headline: "California Faucets. TOTO. Banté. Badeloft. Emtek. And more.",
     supporting:
       "Authorized dealer for 19 international kitchen, bath, and hardware brands — plus a hand-picked network of Mexican artisans. Authenticated, warranty-backed, factory-direct.",
     ctaText: "See all 19 authorized brands →",
   },
   es: {
     eyebrow: "Distribuidor Autorizado",
-    headline: "Kohler. TOTO. Brizo. BLANCO. Sun Valley Bronze. Y más.",
+    headline: "California Faucets. TOTO. Banté. Badeloft. Emtek. Y más.",
     supporting:
       "Distribuidor autorizado de 19 marcas internacionales de cocina, baño y herrajes — más una red selecta de artesanos mexicanos. Autenticadas, con garantía de fábrica, importación directa.",
     ctaText: "Ver las 19 marcas autorizadas →",
