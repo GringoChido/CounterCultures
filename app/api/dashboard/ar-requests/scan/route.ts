@@ -1,30 +1,46 @@
-import { NextResponse, type NextRequest } from "next/server";
-import {
-  scanGmailForFacturas,
-  autoQueueFacturaEmails,
-} from "@/app/lib/factura-detector";
-
 /**
- * GET  — preview: scan Gmail for COMPROBANTE emails, return matches without queuing
- * POST — auto-queue: scan and create AR requests for unprocessed emails
+ * GET  — scan Santander deposits for pending → factura queue candidates
+ * POST — auto-queue: process pending deposits into AR factura requests
+ *
+ * DEPRECATED: the Gmail subject scraper (`scanGmailForFacturas`) is replaced
+ * by the Santander deposit feed. This route now operates on deposits instead.
+ * The Gmail functions remain in factura-detector.ts for backwards compat but
+ * are no longer invoked from here.
  */
+
+import { NextResponse, type NextRequest } from "next/server";
+import { listDeposits, linkDepositToFactura } from "@/app/lib/santander-deposits";
+import { createFacturaRequest, buildDepositNotes } from "@/app/lib/ar-factura";
+import { requireFeature, FeatureDeniedError } from "@/app/lib/auth";
 
 export const GET = async (req: NextRequest) => {
   try {
-    const maxResults = Math.min(
-      Number(req.nextUrl.searchParams.get("maxResults") ?? 20),
-      50
-    );
-    const detected = await scanGmailForFacturas(maxResults);
+    await requireFeature("register_payment");
+    const deposits = await listDeposits({ status: "pending" });
+    const customerDeposits = deposits.filter((d) => d.source === "customer");
+
     return NextResponse.json({
-      detected,
-      total: detected.length,
-      newCount: detected.filter((d) => !d.alreadyQueued).length,
+      detected: customerDeposits.map((d) => ({
+        id: d.id,
+        reference: d.reference,
+        amount: d.amount,
+        currency: d.currency,
+        date: d.date,
+        customerName: d.customerName,
+        alreadyQueued: false,
+      })),
+      total: customerDeposits.length,
+      newCount: customerDeposits.length,
+      source: "santander_deposits",
+      deprecationNotice: "Gmail scanner deprecated — deposits now sourced from Santander_Deposits sheet",
     });
   } catch (err) {
+    if (err instanceof FeatureDeniedError) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
     console.error("[ar-requests/scan] GET error:", err);
     return NextResponse.json(
-      { error: "Failed to scan Gmail" },
+      { error: "Failed to scan deposits" },
       { status: 500 }
     );
   }
@@ -32,9 +48,54 @@ export const GET = async (req: NextRequest) => {
 
 export const POST = async () => {
   try {
-    const result = await autoQueueFacturaEmails();
-    return NextResponse.json(result);
+    const user = await requireFeature("register_payment");
+    const deposits = await listDeposits({ status: "pending" });
+    const customerDeposits = deposits.filter((d) => d.source === "customer");
+
+    let queued = 0;
+    for (const deposit of customerDeposits) {
+      const facturaRequest = await createFacturaRequest({
+        state: "pending",
+        source: "santander_deposit",
+        company: "cc",
+        requestName: `DEP_${deposit.reference}_$${deposit.amount.toLocaleString("en-US", { minimumFractionDigits: 0 })}_${deposit.currency}`,
+        customerName: deposit.customerName,
+        customerRfc: "",
+        recipientType: "general_public",
+        amount: deposit.amount,
+        currency: deposit.currency,
+        bank: "SANTANDER",
+        paymentMethod: deposit.paymentMethod,
+        paymentDate: deposit.date,
+        depositType: "full",
+        depositPercent: 100,
+        linkedFolio: "",
+        facturaFolio: "",
+        facturaNotes: buildDepositNotes({ depositType: "full", depositPercent: 100 }),
+        pdfDriveUrl: "",
+        xmlDriveUrl: "",
+        solucionFactibleId: "",
+        requestedBy: user.email,
+        requestedAt: new Date().toISOString(),
+        issuedAt: "",
+        issuedBy: "",
+        orderReference: "",
+        invoiceId: "",
+        notes: `Auto-queued from scan (deposit ${deposit.reference})`,
+      });
+      await linkDepositToFactura(deposit.id, facturaRequest.id);
+      queued++;
+    }
+
+    return NextResponse.json({
+      queued,
+      skipped: 0,
+      source: "santander_deposits",
+    });
   } catch (err) {
+    if (err instanceof FeatureDeniedError) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
     console.error("[ar-requests/scan] POST error:", err);
     return NextResponse.json(
       { error: "Failed to auto-queue facturas" },
