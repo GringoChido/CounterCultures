@@ -10,6 +10,7 @@
 
 import { getBrands } from "./brand-kit-sheets";
 import { getAllArticles } from "./posts-sheet";
+import { FLAGSHIP_FALLBACK } from "./featured-brands";
 
 export type SearchDocType = "brand" | "article";
 
@@ -56,30 +57,55 @@ export const buildSearchIndex = async (): Promise<SearchIndexPayload> => {
     getAllArticles().catch(() => []),
   ]);
 
-  const brandDocs: SearchDoc[] = brands.map((b) => ({
-    id: `brand:${b.slug}`,
-    type: "brand",
-    slug: b.slug,
-    nameEn: b.name,
-    nameEs: b.name,
-    subtitleEn: b.taglineEn || b.originCountryName || "",
-    subtitleEs: b.taglineEs || b.taglineEn || b.originCountryName || "",
-    bodyEn: b.descriptionEn || "",
-    bodyEs: b.descriptionEs || b.descriptionEn || "",
-    keywords: [
-      b.originCountry,
-      b.originCountryName,
-      ...(b.categorySlugs || []),
-      b.primaryCategorySlug,
-    ]
-      .filter(Boolean)
-      .join(" "),
-    hrefSuffix:
-      b.stockedState === "external" && (b.externalUrl || b.websiteUrl)
-        ? b.externalUrl || b.websiteUrl
-        : `/brands/${b.slug}`,
-    external: b.stockedState === "external" && Boolean(b.externalUrl || b.websiteUrl),
-  }));
+  if (!brands.length) {
+    console.warn("[search-index] getBrands() returned empty — using FLAGSHIP_FALLBACK for brand search docs");
+  }
+
+  const brandDocs: SearchDoc[] = brands.length > 0
+    ? brands.map((b) => {
+        const nameTokens = b.name.toLowerCase().split(/\s+/);
+        return {
+          id: `brand:${b.slug}`,
+          type: "brand" as const,
+          slug: b.slug,
+          nameEn: b.name,
+          nameEs: b.name,
+          subtitleEn: b.taglineEn || b.originCountryName || "",
+          subtitleEs: b.taglineEs || b.taglineEn || b.originCountryName || "",
+          bodyEn: b.descriptionEn || "",
+          bodyEs: b.descriptionEs || b.descriptionEn || "",
+          keywords: [
+            ...nameTokens,
+            b.originCountry,
+            b.originCountryName,
+            ...(b.categorySlugs || []),
+            b.primaryCategorySlug,
+          ]
+            .filter(Boolean)
+            .join(" "),
+          hrefSuffix:
+            b.stockedState === "external" && (b.externalUrl || b.websiteUrl)
+              ? b.externalUrl || b.websiteUrl
+              : `/brands/${b.slug}`,
+          external: b.stockedState === "external" && Boolean(b.externalUrl || b.websiteUrl),
+        };
+      })
+    : Object.entries(FLAGSHIP_FALLBACK).map(([slug, meta]) => {
+        const nameTokens = meta.name.toLowerCase().split(/\s+/);
+        return {
+          id: `brand:${slug}`,
+          type: "brand" as const,
+          slug,
+          nameEn: meta.name,
+          nameEs: meta.name,
+          subtitleEn: "",
+          subtitleEs: "",
+          bodyEn: "",
+          bodyEs: "",
+          keywords: nameTokens.join(" "),
+          hrefSuffix: `/brands/${slug}`,
+        };
+      });
 
   // Filter draft articles out of public search. Sheet-backed articles carry a
   // `status` field; hardcoded ones don't (treat as published).
