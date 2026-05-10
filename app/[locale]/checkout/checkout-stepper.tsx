@@ -261,7 +261,8 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
         window.location.href = data.stripeUrl;
       } else if (data.dealId) {
         clear();
-        router.push(`/${locale}/checkout/submitted/${data.dealId}`);
+        const trackerParam = data.trackerUrl ? `?tracker=${encodeURIComponent(data.trackerUrl)}` : "";
+        router.push(`/${locale}/checkout/submitted/${data.dealId}${trackerParam}`);
       }
     } catch {
       setSubmitting(false);
@@ -269,19 +270,28 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
   };
 
   return (
-    <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10 md:py-16">
+    <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10 md:py-16 min-h-[70vh]">
       {/* Step indicators */}
-      <div className="flex items-center justify-between mb-10">
+      <nav aria-label="Checkout progress" className="flex items-center justify-between mb-10">
         {STEPS[locale].map((label, i) => (
           <div key={label} className="flex items-center gap-2">
             <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center font-mono text-sm ${
-                i <= step
-                  ? "bg-brand-terracotta text-white"
-                  : "bg-brand-stone/10 text-dash-text-secondary"
+              aria-current={i === step ? "step" : undefined}
+              className={`w-8 h-8 rounded-full flex items-center justify-center font-mono text-sm transition-colors ${
+                i < step
+                  ? "bg-brand-sage text-white"
+                  : i === step
+                    ? "bg-brand-terracotta text-white"
+                    : "bg-brand-stone/10 text-dash-text-secondary"
               }`}
             >
-              {i + 1}
+              {i < step ? (
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                i + 1
+              )}
             </div>
             <span
               className={`hidden sm:inline font-body text-sm ${
@@ -293,7 +303,7 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
             {i < 3 && <div className="hidden sm:block w-8 h-px bg-brand-stone/20 mx-2" />}
           </div>
         ))}
-      </div>
+      </nav>
 
       {/* Step 0: Contact */}
       {step === 0 && (
@@ -517,18 +527,23 @@ function Input({
 }) {
   return (
     <div>
-      <label className="font-body text-xs text-dash-text-secondary">{label}</label>
+      <label className="block font-body text-xs tracking-wide text-dash-text-secondary mb-1.5">
+        {label}
+      </label>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={`mt-1 w-full px-3 py-2.5 font-body text-sm border focus:outline-none ${
+        aria-invalid={!!error}
+        className={`w-full px-3 py-2.5 font-body text-sm border transition-colors focus:outline-none focus:ring-1 ${
           error
-            ? "border-red-400 focus:border-red-500"
-            : "border-brand-stone/20 focus:border-brand-terracotta"
+            ? "border-red-400 focus:border-red-500 focus:ring-red-500/20"
+            : "border-brand-stone/20 focus:border-brand-terracotta focus:ring-brand-terracotta/20"
         }`}
       />
-      {error && <p className="mt-1 font-body text-xs text-red-600">{error}</p>}
+      {error && (
+        <p className="mt-1 font-body text-xs text-red-600" role="alert">{error}</p>
+      )}
     </div>
   );
 }
