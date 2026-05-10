@@ -155,13 +155,6 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               </a>
             </div>
 
-            <NextLink
-              href="/dashboard"
-              className="hidden md:inline-flex font-body text-sm font-medium px-5 py-2.5 bg-brand-copper text-white hover:bg-brand-terracotta transition-colors duration-300"
-            >
-              Portal
-            </NextLink>
-
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               className="lg:hidden flex items-center justify-center w-11 h-11 text-brand-charcoal cursor-pointer"
@@ -375,15 +368,6 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                 </a>
               </div>
 
-              <div className="pt-4 pb-2 flex flex-col gap-3">
-                <NextLink
-                  href="/dashboard"
-                  onClick={() => setMobileOpen(false)}
-                  className="block text-center py-3.5 bg-brand-copper text-white font-body font-medium text-sm hover:bg-brand-terracotta transition-colors"
-                >
-                  Counter Portal
-                </NextLink>
-              </div>
             </div>
           </motion.div>
         )}
