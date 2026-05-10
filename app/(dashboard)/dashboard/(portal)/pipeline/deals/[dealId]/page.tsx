@@ -102,6 +102,7 @@ const DealDetailPage = ({
   const [shipments, setShipments] = useState<Trafico[]>([]);
   const [directShipments, setDirectShipments] = useState<DirectShipment[]>([]);
   const [events, setEvents] = useState<DealEvent[]>([]);
+  const [messages, setMessages] = useState<Array<{ message_id: string; direction: string; channel: string; subject: string; body_snippet: string; status: string; created_at: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -160,6 +161,20 @@ const DealDetailPage = ({
         if (eventsRes.ok) {
           const data = (await eventsRes.json()) as { events?: DealEvent[] };
           if (!aborted) setEvents(data.events ?? []);
+        }
+
+        // Fetch conversation messages
+        try {
+          const msgsRes = await fetch(
+            `/api/dashboard/deals/${encodeURIComponent(dealId)}/messages`,
+            { cache: "no-store" }
+          );
+          if (msgsRes.ok && !aborted) {
+            const data = (await msgsRes.json()) as { messages?: typeof messages };
+            setMessages(data.messages ?? []);
+          }
+        } catch {
+          // Non-blocking
         }
       } catch (err) {
         if (!aborted)
@@ -437,6 +452,46 @@ const DealDetailPage = ({
           </ul>
         )}
       </section>
+
+      {messages.length > 0 && (
+        <section className="bg-dash-surface border border-dash-border rounded-xl p-5">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary mb-3">
+            Messages
+          </h2>
+          <ul className="space-y-2">
+            {messages.slice(-20).map((m) => (
+              <li
+                key={m.message_id}
+                className="flex items-start gap-3 py-1.5 border-b border-dash-border last:border-0"
+              >
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
+                  m.direction === "inbound" ? "bg-brand-sage/10" : "bg-brand-copper/10"
+                }`}>
+                  {m.channel === "whatsapp" ? (
+                    <MessageCircle className={`w-3.5 h-3.5 ${m.direction === "inbound" ? "text-brand-sage" : "text-brand-copper"}`} />
+                  ) : (
+                    <Mail className={`w-3.5 h-3.5 ${m.direction === "inbound" ? "text-brand-sage" : "text-brand-copper"}`} />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-dash-text">
+                    <span className="font-medium">
+                      {m.direction === "inbound" ? "Received" : "Sent"}
+                    </span>
+                    {m.subject ? <span className="text-dash-text-secondary"> · {m.subject}</span> : null}
+                  </p>
+                  <p className="text-[11px] text-dash-text-secondary mt-0.5 truncate">
+                    {m.body_snippet}
+                  </p>
+                  <p className="text-[10px] text-dash-text-muted mt-0.5">
+                    {m.channel} · {m.status} · {(() => { try { return format(new Date(m.created_at), "MMM d, h:mm a"); } catch { return m.created_at; } })()}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="flex items-center gap-2 flex-wrap">
         <a
