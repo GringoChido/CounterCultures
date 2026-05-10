@@ -85,7 +85,9 @@ type SheetTab =
   | "AR_Factura_Requests"
   | "AR_Credit_Notes"
   | "Santander_Deposits"
-  | "Invoice_Tags";
+  | "Invoice_Tags"
+  | "Bank_Fee_Rates"
+  | "Bank_Fee_Entries";
 
 // In-memory TTL cache. Keyed by tab. Reference tables get a longer TTL
 // because they almost never change; active tables use the short TTL so a
