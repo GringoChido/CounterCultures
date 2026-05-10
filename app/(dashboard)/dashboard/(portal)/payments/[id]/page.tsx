@@ -14,6 +14,7 @@ import {
   Check,
 } from "lucide-react";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
+import { EditPaymentModal } from "@/app/(dashboard)/components/payments/edit-payment-modal";
 
 interface PaymentRow {
   id: string;
@@ -188,13 +189,27 @@ const PaymentDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
             {payment.methodName && <span>{payment.methodName}</span>}
           </div>
         </div>
-        <div
-          className={`text-right font-semibold text-2xl ${
-            isInbound ? "text-brand-sage" : "text-brand-terracotta"
-          }`}
-        >
-          {isInbound ? "+" : "−"}
-          {fmt(payment.amount, payment.currency)}
+        <div className="flex flex-col items-end gap-2">
+          <div
+            className={`font-semibold text-2xl ${
+              isInbound ? "text-brand-sage" : "text-brand-terracotta"
+            }`}
+          >
+            {isInbound ? "+" : "−"}
+            {fmt(payment.amount, payment.currency)}
+          </div>
+          {payment.rawState !== "cancel" && (
+            <EditPaymentModal
+              paymentId={payment.id}
+              paymentName={payment.name}
+              currentDate={payment.date}
+              currentRef={rawPayment.ref || ""}
+              currentMemo={payment.memo}
+              currentAmount={payment.amount}
+              currentCurrency={payment.currency}
+              currentJournalId={payment.journalId}
+            />
+          )}
         </div>
       </header>
 
