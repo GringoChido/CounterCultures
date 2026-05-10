@@ -12,7 +12,10 @@ import {
   AlertTriangle,
   ShieldAlert,
   CreditCard,
+  FilePlus,
 } from "lucide-react";
+import { toast } from "sonner";
+import { useFeatures } from "@/app/lib/use-features";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { AttachmentsPanel } from "@/app/(dashboard)/components/attachments-panel";
 import { MessagesPanel } from "@/app/(dashboard)/components/messages-panel";
@@ -190,9 +193,11 @@ const POBlocksSendBanner = ({ poId }: { poId: string }) => {
 
 const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
+  const features = useFeatures();
   const [data, setData] = useState<Data | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [creatingBill, setCreatingBill] = useState(false);
 
   useEffect(() => {
     fetch(`/api/dashboard/purchases/${id}`)
@@ -230,6 +235,34 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
       </div>
     );
   }
+
+  const refetchData = () => {
+    fetch(`/api/dashboard/purchases/${id}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((d) => { if (d) setData(d); })
+      .catch(() => {});
+  };
+
+  const handleCreateBill = async () => {
+    setCreatingBill(true);
+    try {
+      const res = await fetch(`/api/dashboard/purchases/${id}/create-bill`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        toast.error(body.error || "Failed to create bill");
+        return;
+      }
+      toast.success(`Bill ${body.bill.billName} created (draft)`);
+      refetchData();
+    } catch {
+      toast.error("Failed to create bill");
+    } finally {
+      setCreatingBill(false);
+    }
+  };
 
   const { order, rawOrder, lines, bills, linkedSaleOrder, linkedPayments = [] } = data;
 
@@ -312,6 +345,23 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
           </div>
         </div>
         <div className="shrink-0 flex items-center gap-2">
+          {features.ready && features.has("register_payment") &&
+            order.rawState !== "draft" && order.rawState !== "cancel" &&
+            order.invoiceStatus !== "invoiced" && (
+            <button
+              type="button"
+              onClick={handleCreateBill}
+              disabled={creatingBill}
+              className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium border border-brand-copper/40 bg-brand-copper/5 text-brand-copper rounded hover:bg-brand-copper/10 transition-colors cursor-pointer disabled:opacity-50"
+            >
+              {creatingBill ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <FilePlus className="w-3.5 h-3.5" />
+              )}
+              Create bill
+            </button>
+          )}
           <DownloadReportButton
             reportName="purchase.report_purchaseorder"
             recordId={order.id}
