@@ -346,6 +346,8 @@ const stripIndex = (p: IndexedProduct): ProductFull => ({
 //  30: name contains q
 //  20: brand contains q
 //   0: no match
+const hasImage = (p: IndexedProduct) => (p.imageSrc ? 1 : 0);
+
 const scoreRow = (p: IndexedProduct, q: string): number => {
   if (p._sku === q) return 100;
   if (p._sku.startsWith(q)) return 80;
@@ -411,7 +413,7 @@ export const searchProducts = async (
     } else if (sort === "price_desc") {
       scored.sort((a, b) => b.p.listPrice - a.p.listPrice);
     } else {
-      scored.sort((a, b) => b.s - a.s || a.p._sku.localeCompare(b.p._sku));
+      scored.sort((a, b) => b.s - a.s || (hasImage(b.p) - hasImage(a.p)) || a.p._sku.localeCompare(b.p._sku));
     }
     matched = scored.map((x) => x.p);
   } else {
@@ -437,6 +439,8 @@ export const searchProducts = async (
       matched = [...matched].sort((a, b) => a.listPrice - b.listPrice);
     } else if (sort === "price_desc") {
       matched = [...matched].sort((a, b) => b.listPrice - a.listPrice);
+    } else {
+      matched = [...matched].sort((a, b) => (hasImage(b) - hasImage(a)) || a._sku.localeCompare(b._sku));
     }
   }
 
