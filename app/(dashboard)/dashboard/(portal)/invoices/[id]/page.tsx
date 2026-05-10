@@ -13,6 +13,7 @@ import {
   Send,
   MessageCircle,
   Mail,
+  Truck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
@@ -298,6 +299,81 @@ const CopyableUUID = ({ uuid }: { uuid: string }) => {
   );
 };
 
+// ---------------------------------------------------------------------------
+// Shipping scenario picker (vendor bills only)
+// ---------------------------------------------------------------------------
+
+const SCENARIOS = [
+  { value: "", label: "Not set", labelEs: "Sin asignar" },
+  { value: "direct_ship", label: "Direct ship", labelEs: "Envío directo" },
+  { value: "warehouse", label: "Warehouse (SMA)", labelEs: "Almacén (SMA)" },
+  { value: "consolidated", label: "Consolidated", labelEs: "Consolidado" },
+  { value: "drop_ship", label: "Drop ship (broker)", labelEs: "Drop ship (agente)" },
+];
+
+const ShippingScenarioPicker = ({ invoiceId }: { invoiceId: string }) => {
+  const [scenario, setScenario] = useState("");
+  const [loaded, setLoaded] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/dashboard/invoices/${invoiceId}/tags`)
+      .then((r) => r.ok ? r.json() : { tags: {} })
+      .then((data: { tags: Record<string, string> }) => {
+        setScenario(data.tags.shipping_scenario ?? "");
+      })
+      .catch(() => {})
+      .finally(() => setLoaded(true));
+  }, [invoiceId]);
+
+  const handleChange = async (val: string) => {
+    setScenario(val);
+    setSaving(true);
+    try {
+      await fetch(`/api/dashboard/invoices/${invoiceId}/tags`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tagType: "shipping_scenario", tagValue: val }),
+      });
+    } catch {
+      toast.error("Failed to save shipping scenario");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!loaded) return null;
+
+  const current = SCENARIOS.find((s) => s.value === scenario) ?? SCENARIOS[0];
+
+  return (
+    <div className="mb-6 flex items-center gap-3">
+      <Truck className="w-4 h-4 text-dash-text-secondary" />
+      <span className="text-[10px] uppercase tracking-wider text-dash-text-secondary">
+        Shipping / Envío
+      </span>
+      <div className="flex gap-1">
+        {SCENARIOS.filter((s) => s.value).map((s) => (
+          <button
+            key={s.value}
+            onClick={() => handleChange(scenario === s.value ? "" : s.value)}
+            disabled={saving}
+            className={`px-2.5 py-1 text-[11px] rounded border transition-colors cursor-pointer ${
+              scenario === s.value
+                ? "bg-brand-sage/10 border-brand-sage/40 text-brand-sage font-medium"
+                : "bg-dash-surface border-dash-border text-dash-text-secondary hover:border-dash-accent"
+            }`}
+            title={s.labelEs}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+      {saving && <Loader2 className="w-3 h-3 animate-spin text-dash-text-secondary" />}
+    </div>
+  );
+};
+
 const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
   const [data, setData] = useState<InvoiceDetailData | null>(null);
@@ -540,6 +616,11 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
           )}
         </section>
       </div>
+
+      {/* Shipping scenario — vendor bills only */}
+      {(invoice.moveType === "in_invoice" || invoice.moveType === "in_refund") && (
+        <ShippingScenarioPicker invoiceId={invoice.id} />
+      )}
 
       {/* Lines */}
       <section className="mb-6">
