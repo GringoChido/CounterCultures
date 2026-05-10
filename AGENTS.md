@@ -9,3 +9,5 @@ Before touching any AR / AP / Facturas / Payments / Pedimento code, read docs/fi
 Before touching any cart / checkout / sale-order / lifecycle / customer-communication code,
 read docs/commerce/CART-RULES.md, docs/commerce/LIFECYCLE-STATE-MACHINE.md,
 and docs/commerce/COMMUNICATION-MATRIX.md.
+
+Before touching staff auth, login, or portal access code, read docs/staff/STAFF-LOGIN.md.
