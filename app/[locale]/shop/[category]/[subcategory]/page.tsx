@@ -167,8 +167,12 @@ const SubcategoryPage = async ({ params }: SubcategoryPageProps) => {
             lang === "en"
               ? `${catLabel} Collection`
               : `Colección de ${catLabel}`;
+          const queryConfig =
+            SUBCATEGORY_CATALOG_QUERY[category]?.[subcategory];
           const catalogKeyword =
-            SUBCATEGORY_CATALOG_QUERY[category]?.[subcategory] ?? "";
+            typeof queryConfig === "string"
+              ? queryConfig
+              : queryConfig?.include?.[0] ?? "";
           const catalogHref =
             `/${locale}/shop/catalog?category=${category}` +
             (catalogKeyword ? `&q=${encodeURIComponent(catalogKeyword)}` : "");

@@ -119,14 +119,17 @@ export const PRODUCT_CATEGORIES = {
 
 export type CategoryKey = keyof typeof PRODUCT_CATEGORIES;
 
-// Keywords used to deep-link subcategory pages into the full-catalog search.
-// Empty string means "no keyword filter" — just narrow by category.
-export const SUBCATEGORY_CATALOG_QUERY: Record<string, Record<string, string>> = {
+// Keywords used to deep-link subcategory pages into the full-catalog search
+// and to post-filter products on subcategory pages.
+// String = simple keyword. Object = include/exclude name-based filtering.
+export type SubcategoryQuery = string | { include: string[]; exclude?: string[] };
+
+export const SUBCATEGORY_CATALOG_QUERY: Record<string, Record<string, SubcategoryQuery>> = {
   bathroom: {
     sinks: "sink",
-    faucets: "faucet",
-    bathtubs: "tub",
-    "tub-fillers": "tub filler",
+    faucets: { include: ["faucet", "mixer"], exclude: ["drain"] },
+    bathtubs: { include: ["tub", "bathtub"], exclude: ["drain", "tub filler", "tub spout"] },
+    "tub-fillers": { include: ["tub filler", "tub spout", "bath filler"] },
     spa: "spa",
     toilets: "toilet",
     showers: "shower",

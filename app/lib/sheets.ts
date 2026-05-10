@@ -19,7 +19,7 @@ import { GoogleAuth } from "google-auth-library";
 import { sheets as sheetsApi } from "@googleapis/sheets";
 import { getGooglePrivateKey } from "./google-private-key";
 import type { Product, ProductFilter } from "./types";
-import { SAMPLE_PRODUCTS, PRODUCT_CATEGORIES } from "./constants";
+import { SAMPLE_PRODUCTS, PRODUCT_CATEGORIES, SUBCATEGORY_CATALOG_QUERY } from "./constants";
 import type { CategoryKey } from "./constants";
 
 // ── Config ────────────────────────────────────────────────────────────
@@ -294,7 +294,16 @@ export const getProductsBySubcategory = async (
   category: string,
   subcategory: string
 ): Promise<Product[]> => {
-  return getProducts({ category, subcategory });
+  const products = await getProducts({ category, subcategory });
+  const query = SUBCATEGORY_CATALOG_QUERY[category]?.[subcategory];
+  if (query && typeof query === "object" && query.exclude?.length) {
+    const patterns = query.exclude.map((e) => e.toLowerCase());
+    return products.filter((p) => {
+      const name = p.name.toLowerCase();
+      return !patterns.some((pat) => name.includes(pat));
+    });
+  }
+  return products;
 };
 
 export interface QuoteSearchOptions {
