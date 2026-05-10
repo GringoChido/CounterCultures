@@ -46,6 +46,7 @@ interface LinkedMove {
   amount_residual: string;
   currency_id: string;
   move_type: string;
+  invoice_origin: string;
 }
 
 interface RawPayment {
@@ -333,6 +334,30 @@ const PaymentDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
           </p>
         </div>
       )}
+
+      {/* Related orders — extracted from invoice_origin on linked invoices/bills */}
+      {(() => {
+        const origins = [...new Set(
+          [...invoices, ...bills]
+            .map((m) => m.invoice_origin)
+            .filter(Boolean)
+        )];
+        if (origins.length === 0) return null;
+        return (
+          <div className="mt-4 flex items-center gap-2 text-xs text-dash-text-secondary">
+            <span className="uppercase tracking-wider">Related orders:</span>
+            {origins.map((o) => (
+              <Link
+                key={o}
+                href={`/dashboard/orders?q=${encodeURIComponent(o)}`}
+                className="px-2 py-0.5 bg-dash-surface border border-dash-border rounded hover:border-dash-accent hover:text-dash-text transition-colors"
+              >
+                {o}
+              </Link>
+            ))}
+          </div>
+        );
+      })()}
     </div>
   );
 };

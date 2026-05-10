@@ -1215,16 +1215,18 @@ export interface PurchaseOrderDetail {
   linkedSaleOrder: OdooSaleOrder | null;
   lines: OdooPurchaseOrderLine[];
   bills: OdooInvoice[];
+  linkedPayments: PaymentListRow[];
 }
 
 export const getPurchaseOrderDetail = async (
   orderId: string
 ): Promise<PurchaseOrderDetail | null> => {
-  const [pos, lines, invoices, saleOrders] = await Promise.all([
+  const [pos, lines, invoices, saleOrders, payments] = await Promise.all([
     getOdooPurchaseOrders(),
     getOdooPurchaseOrderLines(),
     getOdooInvoices(),
     getOdooSaleOrders(),
+    getOdooPayments(),
   ]);
   const p = pos.find((x) => x.id === orderId);
   if (!p) return null;
@@ -1239,6 +1241,15 @@ export const getPurchaseOrderDetail = async (
       (i.move_type === "in_invoice" || i.move_type === "in_refund") &&
       i.invoice_origin === p.name
   );
+
+  // Payments linked to these bills via reconciled_bill_ids
+  const billIdSet = new Set(bills.map((b) => b.id));
+  const linkedPayments = payments
+    .filter((pay) => {
+      const billIds = (pay.reconciled_bill_ids || "").split(",").map((s) => s.trim()).filter(Boolean);
+      return billIds.some((bid) => billIdSet.has(bid));
+    })
+    .map(toPaymentRow);
 
   // PO → SO linkage: purchase.order.origin holds the source document name.
   // Typically that's a sale.order name (e.g. "S00078"); look it up by name.
@@ -1255,6 +1266,7 @@ export const getPurchaseOrderDetail = async (
     lines: poLines,
     bills,
     linkedSaleOrder,
+    linkedPayments,
   };
 };
 

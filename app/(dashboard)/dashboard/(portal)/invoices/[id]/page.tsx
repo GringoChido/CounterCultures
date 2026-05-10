@@ -378,7 +378,14 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
             <span>{moveTypeLabel(invoice.moveType)}</span>
             <span>Issued {invoice.date || "—"}</span>
             <span>Due {invoice.dueDate || "—"}</span>
-            {invoice.origin && <span>Origin {invoice.origin}</span>}
+            {invoice.origin && (
+              <Link
+                href={`/dashboard/orders?q=${encodeURIComponent(invoice.origin)}`}
+                className="hover:text-dash-accent transition-colors"
+              >
+                Origin {invoice.origin} →
+              </Link>
+            )}
           </div>
         </div>
         <div className="shrink-0 flex items-center gap-2">
@@ -610,7 +617,11 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
               <tbody>
                 {payments.map((p) => (
                   <tr key={p.id} className="border-b border-dash-border/50">
-                    <td className="p-3 font-mono text-xs">{p.name}</td>
+                    <td className="p-3 font-mono text-xs">
+                      <Link href={`/dashboard/payments/${p.id}`} className="hover:text-dash-accent transition-colors">
+                        {p.name}
+                      </Link>
+                    </td>
                     <td className="p-3 text-xs">{(p.date || "").slice(0, 10)}</td>
                     <td className="p-3">
                       <StatusBadge label={p.state} variant={stateVariant(p.state)} />
