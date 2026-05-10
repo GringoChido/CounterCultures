@@ -304,6 +304,88 @@ const handlePaymentFailed = async (invoice: Stripe.Invoice): Promise<void> => {
 };
 
 // ---------------------------------------------------------------------------
+// Checkout Session → Cart Purchase paid
+// ---------------------------------------------------------------------------
+
+const handleCartPurchaseCompleted = async (
+  session: Stripe.Checkout.Session
+): Promise<void> => {
+  const dealId = (session.metadata?.deal_id ?? "").toString().trim();
+  const cartSessionId = (session.metadata?.cart_session_id ?? "").toString();
+  if (!dealId) {
+    console.warn("[Stripe Webhook] cart_purchase session missing deal_id metadata");
+    return;
+  }
+
+  const amount = (session.amount_total ?? 0) / 100;
+  const currency = (session.currency ?? "mxn").toUpperCase();
+  const email = session.customer_details?.email ?? session.customer_email ?? "";
+  const paymentIntentId =
+    typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : session.payment_intent?.id ?? "";
+
+  // Update Cart_Sessions status
+  try {
+    const cartRowIndex = await findRowIndex("Cart_Sessions", "cart_session_id", cartSessionId);
+    if (cartRowIndex !== null) {
+      const rows = await readSheet<Record<string, string>>("Cart_Sessions");
+      const row = rows[cartRowIndex];
+      if (row) {
+        const headers = Object.keys(row);
+        const updatedRow: Record<string, string> = { ...row, status: "paid" };
+        await updateRow("Cart_Sessions", cartRowIndex, headers.map((h) => updatedRow[h] ?? ""));
+      }
+    }
+  } catch (err) {
+    console.error("[Stripe Webhook] Failed to update Cart_Sessions:", err);
+  }
+
+  // Append Deal_Payments row
+  try {
+    await appendRow("Deal_Payments", [
+      `PAY-${Date.now()}`,
+      dealId,
+      amount.toString(),
+      currency,
+      "paid",
+      "full",
+      new Date().toISOString(),
+      session.id,
+      paymentIntentId,
+      email,
+    ]);
+  } catch (err) {
+    console.error("[Stripe Webhook] Failed to append Deal_Payments:", err);
+  }
+
+  // Fire rule engine → order_confirmed
+  try {
+    await evaluateAndTransition(
+      "stripe_payment",
+      dealId,
+      {
+        kind: "cart_purchase",
+        allocated_to: "full",
+        amount,
+        currency,
+        session_id: session.id,
+        customer_email: email,
+        customer_name: session.metadata?.customer_name ?? "",
+      },
+      "stripe-webhook"
+    );
+  } catch (err) {
+    console.error("[Stripe Webhook] rule engine failed for cart purchase:", err);
+  }
+
+  await logActivity(
+    "cart_purchase_paid",
+    `Deal ${dealId}: ${currency} ${amount} paid via cart checkout${email ? ` by ${email}` : ""} (session ${session.id})`
+  );
+};
+
+// ---------------------------------------------------------------------------
 // Checkout Session → Quote Deposit paid
 // ---------------------------------------------------------------------------
 
@@ -316,10 +398,15 @@ const handlePaymentFailed = async (invoice: Stripe.Invoice): Promise<void> => {
 const handleCheckoutSessionCompleted = async (
   session: Stripe.Checkout.Session
 ): Promise<void> => {
-  const dealId = (session.metadata?.dealId ?? "").toString().trim();
   const kind = (session.metadata?.kind ?? "").toString();
+
+  if (kind === "cart_purchase") {
+    await handleCartPurchaseCompleted(session);
+    return;
+  }
+
+  const dealId = (session.metadata?.dealId ?? "").toString().trim();
   if (!dealId || kind !== "quote_deposit") {
-    // Not our deposit flow — ignore quietly.
     return;
   }
 
