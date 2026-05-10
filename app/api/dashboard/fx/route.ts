@@ -1,18 +1,24 @@
 /**
- * GET /api/dashboard/fx — returns the most recent USD→MXN rate stored in
- * the FX_Rates sheet tab. Used by the <MoneyEquiv> client component.
- *
- * Returns { rate: FXRate | null }. Always 200 — null indicates "no rate
- * available, hide the equivalent" rather than an error condition.
- *
- * No feature gate; every signed-in user gets to see the rate.
+ * GET /api/dashboard/fx — returns FX rate.
+ * Accepts optional query params: ?from=USD&to=MXN&date=YYYY-MM-DD
+ * Defaults to USD→MXN for today when no params given.
  */
 
-import { NextResponse } from "next/server";
-import { getCurrentFXRate } from "@/app/lib/fx";
+import { NextResponse, type NextRequest } from "next/server";
+import { getCurrentFXRate, getFXRateForDate } from "@/app/lib/fx";
 
-export const GET = async (): Promise<Response> => {
+export const GET = async (req: NextRequest): Promise<Response> => {
   try {
+    const sp = req.nextUrl.searchParams;
+    const from = sp.get("from");
+    const to = sp.get("to");
+    const date = sp.get("date") ?? undefined;
+
+    if (from && to) {
+      const result = await getFXRateForDate(from, to, date);
+      return NextResponse.json({ rate: result });
+    }
+
     const rate = await getCurrentFXRate();
     return NextResponse.json({ rate });
   } catch (err) {

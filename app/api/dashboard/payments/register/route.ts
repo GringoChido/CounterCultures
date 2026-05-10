@@ -13,6 +13,7 @@ import { requireFeature, FeatureDeniedError } from "@/app/lib/auth";
 import { registerPayment } from "@/app/lib/odoo/write";
 import { invalidateOdooCache } from "@/app/lib/odoo-sheets";
 import { appendRow } from "@/app/lib/dashboard-sheets";
+import { recordManualRate } from "@/app/lib/fx";
 
 const Body = z.object({
   invoiceId: z.number().int().positive(),
@@ -21,6 +22,9 @@ const Body = z.object({
   paymentDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   ref: z.string().max(120).optional(),
   memo: z.string().max(500).optional(),
+  paymentCurrency: z.string().length(3).optional(),
+  exchangeRate: z.number().positive().optional(),
+  useRateForAllToday: z.boolean().optional(),
 });
 
 export const POST = async (req: NextRequest): Promise<Response> => {
@@ -28,7 +32,21 @@ export const POST = async (req: NextRequest): Promise<Response> => {
     const user = await requireFeature("register_payment");
     const body = Body.parse(await req.json());
 
-    const result = await registerPayment(body);
+    const result = await registerPayment({
+      invoiceId: body.invoiceId,
+      amount: body.amount,
+      journalId: body.journalId,
+      paymentDate: body.paymentDate,
+      ref: body.ref,
+      memo: body.memo,
+      exchangeRate: body.exchangeRate,
+    });
+
+    if (body.useRateForAllToday && body.exchangeRate && body.paymentCurrency) {
+      const from = body.paymentCurrency.toUpperCase();
+      const to = from === "USD" ? "MXN" : "USD";
+      await recordManualRate(from, to, body.paymentDate, body.exchangeRate, "manual_override");
+    }
 
     // Audit: log the actual portal user who registered the payment.
     // Activity_Log schema: id | timestamp | actor_email | action | entity_type | entity_id | details
@@ -47,6 +65,8 @@ export const POST = async (req: NextRequest): Promise<Response> => {
         journal_id: result.journalId,
         payment_date: result.paymentDate,
         ref: body.ref ?? null,
+        exchange_rate: body.exchangeRate ?? null,
+        payment_currency: body.paymentCurrency ?? null,
       }),
     ]).catch((err) =>
       console.error("[payments/register] Activity_Log append failed:", err)

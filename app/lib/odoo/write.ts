@@ -66,6 +66,8 @@ export interface RegisterPaymentInput {
   ref?: string;
   /** Free-text memo shown on the payment record. */
   memo?: string;
+  /** Exchange rate override. Stored in ref as FX:<rate>@<source> if Odoo schema doesn't expose it. */
+  exchangeRate?: number;
 }
 
 export interface RegisterPaymentResult {
@@ -101,6 +103,7 @@ export const registerPayment = async (
         payment_date: input.paymentDate,
         communication: input.memo ?? "",
         ...(input.ref ? { ref: input.ref } : {}),
+        ...(input.exchangeRate ? { ref: `${input.ref ?? ""}${input.ref ? " | " : ""}FX:${input.exchangeRate}@manual`.trim() } : {}),
       },
     ],
     {
