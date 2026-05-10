@@ -1,4 +1,4 @@
-import { Clock, Wallet, Truck } from "lucide-react";
+import { Clock, ClipboardCheck, Truck } from "lucide-react";
 
 interface HowItWorksBandProps {
   locale: "en" | "es";
@@ -19,12 +19,12 @@ const COPY = {
         body: "Send a piece, a SKU, or a list. We confirm price, lead time, and finishes within one business day. Some pieces are in stock at the showroom; most ship factory-direct.",
       },
       {
-        title: "Deposit to start",
-        body: "Once you approve the quote, a deposit of 70% (or more, depending on the brand and order) reserves the order. We place it direct with the manufacturer the same day.",
+        title: "Confirm your order",
+        body: "We finalize specifications, lead times, and shipping address. Payment terms are confirmed during your quote review.",
       },
       {
-        title: "Balance when ready",
-        body: "When the order is built and ready to ship, we send the balance request. After balance clears we deliver — factory-direct across Mexico, white-glove on request.",
+        title: "Delivery",
+        body: "Some pieces ship next day; made-to-order items take 4–6 weeks. We deliver factory-direct across Mexico, white-glove on request.",
       },
     ],
   },
@@ -37,18 +37,18 @@ const COPY = {
         body: "Envíanos una pieza, un SKU o una lista. Confirmamos precio, tiempo de entrega y acabados en un día hábil. Algunas piezas están en showroom; la mayoría se envían directo de fábrica.",
       },
       {
-        title: "Anticipo para iniciar",
-        body: "Al aprobar la cotización, un anticipo desde 70% (o más, según la marca y el pedido) reserva la orden. La colocamos directo con el fabricante el mismo día.",
+        title: "Confirma tu pedido",
+        body: "Finalizamos especificaciones, tiempos de entrega y dirección de envío. Los términos de pago se confirman durante la revisión de tu cotización.",
       },
       {
-        title: "Saldo al estar listo",
-        body: "Cuando el pedido está listo para enviarse, te solicitamos el saldo. Una vez liquidado, entregamos — directo de fábrica en toda la República. Servicio premium bajo solicitud.",
+        title: "Entrega",
+        body: "Algunas piezas se envían al día siguiente; los pedidos especiales tardan de 4 a 6 semanas. Entregamos directo de fábrica en toda la República. Servicio premium bajo solicitud.",
       },
     ],
   },
 };
 
-const ICONS = [Clock, Wallet, Truck] as const;
+const ICONS = [Clock, ClipboardCheck, Truck] as const;
 
 const HowItWorksBand = ({
   locale,

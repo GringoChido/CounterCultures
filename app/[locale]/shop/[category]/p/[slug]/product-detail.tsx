@@ -30,8 +30,7 @@ const t = (locale: "en" | "es", key: string) => {
   const translations: Record<string, Record<string, string>> = {
     inquire: { en: "Inquire About This Piece", es: "Preguntar Sobre Esta Pieza" },
     specSheet: { en: "Download Spec Sheet", es: "Descargar Ficha Técnica" },
-    payOnline: { en: "Pay / Reserve Online", es: "Pagar / Reservar en Línea" },
-    reserveDeposit: { en: "Reserve with 30% Deposit", es: "Reservar con 30% de Anticipo" },
+    payOnline: { en: "Pay Online", es: "Pagar en Línea" },
     finishes: { en: "Available Finishes", es: "Acabados Disponibles" },
     specifications: { en: "Specifications", es: "Especificaciones" },
     artisanBadge: { en: "Handcrafted by Mexican Artisans", es: "Hecho a Mano por Artesanos Mexicanos" },
@@ -60,13 +59,6 @@ const ProductDetail = ({
     .map((img, i) => ({ img, i }))
     .filter(({ i }) => !thumbErrors.has(i));
 
-  // High-value items use the deposit-only checkout flow (pay deposit now,
-  // balance requested when the order is built and ready to ship). Deposit
-  // is 70% per Roger's stated minimum (was 30% — that figure was wrong).
-  const isHighValue = product.price > 50000;
-  const depositPercent = isHighValue ? 70 : undefined;
-  const displayAmount = isHighValue ? Math.round(product.price * 0.7) : product.price;
-
   const handleCheckout = async () => {
     setCheckoutLoading(true);
     try {
@@ -79,7 +71,6 @@ const ProductDetail = ({
           amount: product.price,
           currency: "mxn",
           locale,
-          depositPercent,
         }),
       });
       const data = await res.json();
@@ -289,11 +280,7 @@ const ProductDetail = ({
                   disabled={checkoutLoading}
                   className="w-full py-3 font-body text-sm font-medium border border-brand-stone/20 text-brand-charcoal hover:bg-brand-charcoal hover:text-white transition-colors disabled:opacity-50 cursor-pointer"
                 >
-                  {checkoutLoading
-                    ? "..."
-                    : isHighValue
-                      ? `${t(locale, "reserveDeposit")} ($${displayAmount.toLocaleString()} MXN)`
-                      : t(locale, "payOnline")}
+                  {checkoutLoading ? "..." : t(locale, "payOnline")}
                 </button>
               </div>
 
