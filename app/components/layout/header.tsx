@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { NAV_LINKS, SITE_CONFIG, PRODUCT_CATEGORIES } from "@/app/lib/constants";
 import { SearchPalette } from "@/app/components/search/search-palette";
+import { CartIconButton } from "@/app/components/cart/cart-icon-button";
+import { CartDrawer } from "@/app/components/cart/cart-drawer";
 
 const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
   const locale = localeProp as "en" | "es";
@@ -121,6 +123,8 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
             >
               <MessageCircle className="w-5 h-5" />
             </a>
+
+            <CartIconButton />
 
             {/* Language toggle — full page reload to bypass CDN/router cache */}
             <div className="flex items-center font-body text-xs tracking-wider">
@@ -392,6 +396,8 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
       />
+
+      <CartDrawer locale={lang} />
     </header>
   );
 };
