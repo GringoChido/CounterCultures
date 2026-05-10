@@ -32,7 +32,6 @@ const footerNav = {
     { label: { en: "Insights", es: "Perspectivas" }, href: "/insights" },
     { label: { en: "Resources", es: "Recursos" }, href: "/resources" },
     { label: { en: "Trade Program", es: "Programa Trade" }, href: "/trade" },
-    { label: { en: "Counter Portal", es: "Counter Portal" }, href: "/dashboard" },
   ],
   contact: [
     { label: { en: "Showroom", es: "Showroom" }, href: "/showroom" },
@@ -95,7 +94,7 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
               {footerNav.company.map((link) => (
                 <li key={link.href}>
                   <Link
-                    href={link.href === "/dashboard" ? link.href : `/${lang}${link.href}`}
+                    href={`/${lang}${link.href}`}
                     className="inline-flex items-center min-h-[36px] font-body text-sm text-dash-text-secondary hover:text-brand-terracotta transition-colors"
                   >
                     {link.label[lang]}
@@ -199,6 +198,12 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
               className="font-body text-xs text-dash-text-secondary hover:text-brand-terracotta transition-colors"
             >
               {lang === "es" ? "Devoluciones" : "Returns & Warranty"}
+            </Link>
+            <Link
+              href="/dashboard/login"
+              className="font-body text-xs text-dash-text-secondary/50 hover:text-dash-text-secondary transition-colors"
+            >
+              {lang === "es" ? "Equipo" : "Staff"}
             </Link>
           </div>
         </div>

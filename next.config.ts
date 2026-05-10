@@ -46,6 +46,9 @@ const nextConfig: NextConfig = {
       // Stranded inspiration detail URLs (the case-study slug pages were
       // retired with sample content). Bounce to the index instead of 404.
       { source: "/:locale(en|es)/inspiration/:slug", destination: "/:locale/inspiration", permanent: true },
+      // /portal → staff login (the public "Portal" button was removed)
+      { source: "/portal", destination: "/dashboard/login", permanent: false },
+      { source: "/:locale(en|es)/portal", destination: "/dashboard/login", permanent: false },
     ];
   },
   async headers() {
