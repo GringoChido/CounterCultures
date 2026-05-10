@@ -471,6 +471,37 @@ export const createBillFromPO = async (
   };
 };
 
+export interface BackfillPedimentoResult {
+  updatedCount: number;
+  invoiceIds: number[];
+}
+
+export const backfillPedimentoNumber = async (
+  invoiceIds: number[],
+  pedimentoNumber: string
+): Promise<BackfillPedimentoResult> => {
+  requireOdooConfigured();
+  const uid = await getUid();
+  const updated: number[] = [];
+
+  for (const invoiceId of invoiceIds) {
+    const [move] = (await execute(uid, "account.move", "read", [[invoiceId]], {
+      fields: ["narration", "ref", "state"],
+    })) as { narration: string | false; ref: string | false; state: string }[];
+
+    if (!move) continue;
+
+    const currentRef = (move.ref || "") as string;
+    if (currentRef.includes(pedimentoNumber)) continue;
+
+    const newRef = currentRef ? `${currentRef} | Ped. ${pedimentoNumber}` : `Ped. ${pedimentoNumber}`;
+    await execute(uid, "account.move", "write", [[invoiceId], { ref: newRef }]);
+    updated.push(invoiceId);
+  }
+
+  return { updatedCount: updated.length, invoiceIds: updated };
+};
+
 export const stampCFDI = async (
   _invoiceId: number
 ): Promise<{ uuid: string; state: string }> => {

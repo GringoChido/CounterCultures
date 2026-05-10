@@ -166,14 +166,22 @@ export const POST = async (
     const apiKey = process.env.RESEND_API_KEY;
     let emailStatus: "sent" | "dry_run" | "failed" = "dry_run";
     let messageId: string | undefined;
+
+    const BROKER_CONTACTS = [
+      trafico.brokerEmail,
+      trafico.crossingAgentEmail,
+      trafico.warehouseEmail,
+    ].filter((e): e is string => !!e && e.includes("@"));
+    const ROGER_CC = process.env.OWNER_EMAIL ?? "roger@countercultures.com.mx";
+
     if (apiKey) {
       const resend = new Resend(apiKey);
-      const cc = trafico.crossingAgentEmail ? [trafico.crossingAgentEmail] : [];
+      const toAddrs = BROKER_CONTACTS.length > 0 ? BROKER_CONTACTS : [trafico.brokerEmail];
       try {
         const result = await resend.emails.send({
           from: FROM,
-          to: trafico.brokerEmail,
-          cc,
+          to: toAddrs,
+          cc: [ROGER_CC],
           replyTo: user.email,
           subject: emailDraft.subject ?? `Tráfico ${trafico.traficoNumber || trafico.id}`,
           text: emailDraft.body ?? "",
@@ -191,7 +199,7 @@ export const POST = async (
       }
     } else {
       console.warn(
-        `[send-to-broker] RESEND_API_KEY not set — would have sent to ${trafico.brokerEmail}`
+        `[send-to-broker] RESEND_API_KEY not set — would have sent to ${BROKER_CONTACTS.join(", ")}`
       );
     }
 
@@ -214,7 +222,8 @@ export const POST = async (
       "trafico",
       id,
       JSON.stringify({
-        broker_email: trafico.brokerEmail,
+        recipients: BROKER_CONTACTS,
+        cc: [ROGER_CC],
         item_count: trafico.items.length,
         invoice_value_usd: trafico.invoiceValueUSD ?? 0,
         email_status: emailStatus,

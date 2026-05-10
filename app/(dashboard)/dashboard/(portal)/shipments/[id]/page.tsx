@@ -16,7 +16,9 @@ import {
   Building,
   Package,
   Shield,
+  Hash,
 } from "lucide-react";
+import { toast } from "sonner";
 import { TRAFICO_STATUS_CONFIG, getDocumentChecklist, type Trafico } from "@/app/lib/customs-data";
 import type { HydratedTrafico } from "@/app/lib/trafico-hydrator";
 import type { TraficoEvent } from "@/app/lib/trafico-events";
@@ -58,6 +60,7 @@ const ShipmentDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [uploadingKey, setUploadingKey] = useState<string | null>(null);
+  const [backfillingPedimento, setBackfillingPedimento] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const pendingDocKeyRef = useRef<string | null>(null);
 
@@ -117,6 +120,31 @@ const ShipmentDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
     }
   };
 
+  const handleBackfillPedimento = async () => {
+    if (!confirm("Write pedimento # to all linked Odoo invoices/bills?")) return;
+    setBackfillingPedimento(true);
+    try {
+      const r = await fetch(
+        `/api/dashboard/traficos/${encodeURIComponent(id)}/backfill-pedimento`,
+        { method: "POST" }
+      );
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        toast.error(data.error ?? `HTTP ${r.status}`);
+        return;
+      }
+      toast.success(
+        data.updatedCount > 0
+          ? `Pedimento # written to ${data.updatedCount} invoice(s)`
+          : "No invoices needed updating"
+      );
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed");
+    } finally {
+      setBackfillingPedimento(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -165,9 +193,24 @@ const ShipmentDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
             </h1>
             <p className="text-xs font-mono text-dash-text-secondary mt-1">{trafico.id}</p>
             {trafico.pedimentoNumber && (
-              <p className="text-xs text-dash-text-secondary mt-0.5">
-                Pedimento: <span className="font-mono">{trafico.pedimentoNumber}</span>
-              </p>
+              <div className="flex items-center gap-2 mt-0.5">
+                <p className="text-xs text-dash-text-secondary">
+                  Pedimento: <span className="font-mono">{trafico.pedimentoNumber}</span>
+                </p>
+                <button
+                  type="button"
+                  onClick={handleBackfillPedimento}
+                  disabled={backfillingPedimento}
+                  className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded bg-brand-copper/10 text-brand-copper hover:bg-brand-copper/20 disabled:opacity-50"
+                >
+                  {backfillingPedimento ? (
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                  ) : (
+                    <Hash className="w-3 h-3" />
+                  )}
+                  Apply to Odoo
+                </button>
+              </div>
             )}
           </div>
           <div className="flex flex-col items-end gap-2">

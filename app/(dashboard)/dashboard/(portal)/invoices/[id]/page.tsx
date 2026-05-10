@@ -315,6 +315,7 @@ const ShippingScenarioPicker = ({ invoiceId }: { invoiceId: string }) => {
   const [scenario, setScenario] = useState("");
   const [loaded, setLoaded] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [notifyingUps, setNotifyingUps] = useState(false);
 
   useEffect(() => {
     fetch(`/api/dashboard/invoices/${invoiceId}/tags`)
@@ -370,6 +371,43 @@ const ShippingScenarioPicker = ({ invoiceId }: { invoiceId: string }) => {
         ))}
       </div>
       {saving && <Loader2 className="w-3 h-3 animate-spin text-dash-text-secondary" />}
+      {scenario === "direct_ship" && (
+        <button
+          type="button"
+          disabled={notifyingUps}
+          onClick={async () => {
+            if (!confirm("Send shipment notification to UPS agents?")) return;
+            setNotifyingUps(true);
+            try {
+              const r = await fetch(`/api/dashboard/invoices/${invoiceId}/notify-ups`, {
+                method: "POST",
+              });
+              const d = await r.json().catch(() => ({}));
+              if (!r.ok) {
+                toast.error(d.error ?? `HTTP ${r.status}`);
+                return;
+              }
+              toast.success(
+                d.emailStatus === "sent"
+                  ? "UPS agents notified"
+                  : "Status logged (email not configured)"
+              );
+            } catch {
+              toast.error("Failed to notify UPS agents");
+            } finally {
+              setNotifyingUps(false);
+            }
+          }}
+          className="inline-flex items-center gap-1 px-2 py-1 text-[11px] rounded bg-brand-copper text-white hover:bg-brand-copper/90 disabled:opacity-50"
+        >
+          {notifyingUps ? (
+            <Loader2 className="w-3 h-3 animate-spin" />
+          ) : (
+            <Send className="w-3 h-3" />
+          )}
+          Notify UPS
+        </button>
+      )}
     </div>
   );
 };
