@@ -39,7 +39,8 @@ export type StageRuleTrigger =
   | "cart_submitted"         // /api/checkout/quote or /api/checkout/buy POST
   | "payment_initiated"      // Stripe checkout.session.created
   | "delivery_confirmed"     // manual dashboard action
-  | "review_window_open";    // daily cron, +7d after delivered
+  | "review_window_open"     // daily cron, +7d after delivered
+  | "follow_up_drip";        // daily drip cron, sends reminders
 
 export interface StageRuleContext {
   deal: PipelineDeal;
