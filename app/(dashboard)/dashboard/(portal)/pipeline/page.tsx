@@ -155,6 +155,25 @@ const stageConfig: Record<
   "balance-pending":     { label: "Balance Pending",   color: "text-dash-warn",   bgColor: "bg-dash-warn" },
   "complete":            { label: "Complete",          color: "text-dash-success", bgColor: "bg-dash-success" },
   "post-delivery-issue": { label: "Issue",             color: "text-dash-danger",     bgColor: "bg-dash-danger" },
+  // Cart lifecycle stages
+  "cart_submitted":      { label: "Cart Submitted",    color: "text-dash-info",    bgColor: "bg-dash-info" },
+  "quote_drafting":      { label: "Quote Drafting",    color: "text-dash-cat-violet", bgColor: "bg-dash-cat-violet" },
+  "payment_pending":     { label: "Payment Pending",   color: "text-dash-warn",    bgColor: "bg-dash-warn" },
+  "payment_received":    { label: "Payment Received",  color: "text-dash-success", bgColor: "bg-dash-success" },
+  "order_confirmed":     { label: "Order Confirmed",   color: "text-dash-success", bgColor: "bg-dash-success" },
+  "vendor_po_placed":    { label: "Vendor PO Placed",  color: "text-dash-info",    bgColor: "bg-dash-info" },
+  "vendor_shipped":      { label: "Vendor Shipped",    color: "text-dash-info",    bgColor: "bg-dash-info" },
+  "in_transit":          { label: "In Transit",        color: "text-dash-info",    bgColor: "bg-dash-info" },
+  "at_customs":          { label: "At Customs",        color: "text-dash-warn",    bgColor: "bg-dash-warn" },
+  "at_warehouse":        { label: "At Warehouse",      color: "text-dash-cat-teal",   bgColor: "bg-dash-cat-teal" },
+  "factura_issued":      { label: "Factura Issued",    color: "text-dash-success", bgColor: "bg-dash-success" },
+  "review_requested":    { label: "Review Requested",  color: "text-dash-cat-lime",   bgColor: "bg-dash-cat-lime" },
+  // Terminal / pause
+  "archived":            { label: "Archived",          color: "text-dash-text-secondary", bgColor: "bg-dash-text-secondary" },
+  "cancelled":           { label: "Cancelled",         color: "text-dash-danger",  bgColor: "bg-dash-danger" },
+  "refunded":            { label: "Refunded",          color: "text-dash-danger",  bgColor: "bg-dash-danger" },
+  "on_hold":             { label: "On Hold",           color: "text-dash-warn",    bgColor: "bg-dash-warn" },
+  "abandoned":           { label: "Abandoned",         color: "text-dash-text-secondary", bgColor: "bg-dash-text-secondary" },
 };
 
 type PipelineView = "sales" | "operations";

@@ -35,7 +35,11 @@ export type StageRuleTrigger =
   | "stripe_payment"         // Stripe webhook confirmed a payment
   | "doc_attached"           // doc uploaded + attached to deal
   | "manual"                 // explicit user action ("Mark Approved")
-  | "nightly_sweep";         // cron-driven
+  | "nightly_sweep"          // cron-driven
+  | "cart_submitted"         // /api/checkout/quote or /api/checkout/buy POST
+  | "payment_initiated"      // Stripe checkout.session.created
+  | "delivery_confirmed"     // manual dashboard action
+  | "review_window_open";    // daily cron, +7d after delivered
 
 export interface StageRuleContext {
   deal: PipelineDeal;
@@ -274,6 +278,84 @@ export const STAGE_RULES: StageRule[] = [
       const d = ctx.event.payload.customs_hold_days;
       return typeof d === "number" && d > 7;
     },
+    slaDays: { green: 0, yellow: 0, red: 0 },
+  },
+
+  // ================================================================
+  // Cart & Post-Delivery Lifecycle Rules (T-15 → T-20)
+  // ================================================================
+
+  // ---------------------------------------------------------------- T-15
+  {
+    id: "T-15-cart-submitted-quote",
+    fromStages: ["discovery", "target-identified"],
+    toStage: "cart_submitted",
+    trigger: "cart_submitted",
+    predicate: (ctx) => ctx.event.payload.mode === "quote",
+    slaDays: { green: 1, yellow: 1, red: 2 },
+  },
+  {
+    id: "T-15b-cart-submitted-buy",
+    fromStages: ["discovery", "target-identified"],
+    toStage: "cart_submitted",
+    trigger: "cart_submitted",
+    predicate: (ctx) => ctx.event.payload.mode === "buy",
+    slaDays: { green: 1, yellow: 1, red: 2 },
+  },
+
+  // ---------------------------------------------------------------- T-16
+  {
+    id: "T-16-payment-initiated",
+    fromStages: ["cart_submitted", "quote-approved"],
+    toStage: "payment_pending",
+    trigger: "payment_initiated",
+    predicate: () => true,
+    slaDays: { green: 0, yellow: 0, red: 1 },
+  },
+
+  // ---------------------------------------------------------------- T-17
+  {
+    id: "T-17-payment-received",
+    fromStages: ["payment_pending"],
+    toStage: "payment_received",
+    trigger: "stripe_payment",
+    predicate: (ctx) => ctx.event.payload.kind === "cart_purchase",
+    slaDays: { green: 0, yellow: 0, red: 0 },
+  },
+
+  // ---------------------------------------------------------------- T-18
+  {
+    id: "T-18-cart-abandoned",
+    fromStages: ["cart_submitted"],
+    toStage: "abandoned",
+    trigger: "nightly_sweep",
+    predicate: (ctx) => {
+      const hours = ctx.event.payload.hours_in_stage;
+      return typeof hours === "number" && hours >= 168; // 7 days
+    },
+    slaDays: { green: 0, yellow: 0, red: 0 },
+  },
+
+  // ---------------------------------------------------------------- T-19
+  {
+    id: "T-19-review-window",
+    fromStages: ["delivered"],
+    toStage: "review_requested",
+    trigger: "review_window_open",
+    predicate: (ctx) => {
+      const days = ctx.event.payload.days_since_delivered;
+      return typeof days === "number" && days >= 7;
+    },
+    slaDays: { green: 0, yellow: 0, red: 0 },
+  },
+
+  // ---------------------------------------------------------------- T-20
+  {
+    id: "T-20-delivery-confirmed",
+    fromStages: ["delivery-scheduled"],
+    toStage: "delivered",
+    trigger: "delivery_confirmed",
+    predicate: () => true,
     slaDays: { green: 0, yellow: 0, red: 0 },
   },
 ];
