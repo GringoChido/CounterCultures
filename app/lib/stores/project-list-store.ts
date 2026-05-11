@@ -1,11 +1,7 @@
 /**
- * Project List — the customer-facing "quote cart" on /shop/catalog.
- *
- * Architect browses the 354k catalog, stacks items into their project list,
- * then submits the whole list as a quote request. Roger gets an email with
- * the SKUs; a deal gets auto-created in the pipeline with line items.
- *
- * localStorage-persisted so the list survives page refresh and cross-tab work.
+ * @deprecated Prefer `useCartStore` from `@/app/lib/stores/cart-store`.
+ * This store is retained for backward compatibility with project-list-bar.
+ * The cart store migrates data from `cc_project_list_v1` on first load.
  */
 import { create } from "zustand";
 import { persist } from "zustand/middleware";

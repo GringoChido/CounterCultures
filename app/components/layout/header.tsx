@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { NAV_LINKS, SITE_CONFIG, PRODUCT_CATEGORIES } from "@/app/lib/constants";
 import { SearchPalette } from "@/app/components/search/search-palette";
+import { CartIconButton } from "@/app/components/cart/cart-icon-button";
+import { CartDrawer } from "@/app/components/cart/cart-drawer";
 
 const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
   const locale = localeProp as "en" | "es";
@@ -122,6 +124,8 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
               <MessageCircle className="w-5 h-5" />
             </a>
 
+            <CartIconButton />
+
             {/* Language toggle — full page reload to bypass CDN/router cache */}
             <div className="flex items-center font-body text-xs tracking-wider">
               <a
@@ -150,13 +154,6 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                 <span className="hidden sm:inline">Español</span>
               </a>
             </div>
-
-            <NextLink
-              href="/dashboard"
-              className="hidden md:inline-flex font-body text-sm font-medium px-5 py-2.5 bg-brand-copper text-white hover:bg-brand-terracotta transition-colors duration-300"
-            >
-              Portal
-            </NextLink>
 
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -371,15 +368,6 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                 </a>
               </div>
 
-              <div className="pt-4 pb-2 flex flex-col gap-3">
-                <NextLink
-                  href="/dashboard"
-                  onClick={() => setMobileOpen(false)}
-                  className="block text-center py-3.5 bg-brand-copper text-white font-body font-medium text-sm hover:bg-brand-terracotta transition-colors"
-                >
-                  Counter Portal
-                </NextLink>
-              </div>
             </div>
           </motion.div>
         )}
@@ -392,6 +380,8 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
       />
+
+      <CartDrawer locale={lang} />
     </header>
   );
 };

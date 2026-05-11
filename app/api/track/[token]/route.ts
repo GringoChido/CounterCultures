@@ -14,6 +14,7 @@
 
 import { NextResponse } from "next/server";
 import { readSheet } from "@/app/lib/dashboard-sheets";
+import { listMessagesForDeal } from "@/app/lib/conversation-log";
 
 type PipelineRow = {
   id: string;
@@ -25,6 +26,15 @@ type PipelineRow = {
   created_at: string;
   tracking_token?: string;
 };
+
+interface LineItemRow extends Record<string, string> {
+  deal_id: string;
+  product_name: string;
+  brand: string;
+  quantity: string;
+  finish: string;
+  sku: string;
+}
 
 // 14 internal stages → 5 customer-friendly milestones.
 const MILESTONES = [
@@ -80,6 +90,34 @@ export const GET = async (
       .map((s) => s.trim())
       .filter(Boolean);
 
+    // Fetch line items for this deal
+    const allLineItems = await readSheet<LineItemRow>("Deal_Line_Items");
+    const lineItems = allLineItems
+      .filter((li) => li.deal_id === match.id)
+      .map((li) => ({
+        name: li.product_name,
+        brand: li.brand,
+        quantity: Number(li.quantity) || 1,
+        finish: li.finish || null,
+        sku: li.sku,
+      }));
+
+    // Fetch recent outbound messages (customer sees their communication history)
+    let updates: Array<{ date: string; channel: string; subject: string }> = [];
+    try {
+      const messages = await listMessagesForDeal(match.id);
+      updates = messages
+        .filter((m) => m.direction === "outbound")
+        .slice(-5)
+        .map((m) => ({
+          date: m.created_at,
+          channel: m.channel,
+          subject: m.subject || m.body_snippet.slice(0, 60),
+        }));
+    } catch {
+      // Non-blocking
+    }
+
     return NextResponse.json({
       orderId: match.id,
       projectName: match.name || match.company || "Your order",
@@ -89,6 +127,8 @@ export const GET = async (
       milestones: MILESTONES,
       expectedDelivery: match.expected_close || null,
       createdAt: match.created_at || null,
+      lineItems,
+      updates,
     });
   } catch (err) {
     console.error("[/api/track]", err);

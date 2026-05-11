@@ -35,9 +35,17 @@ const STATIC_SLAS: Partial<Record<PipelineStage, SlaThresholds>> = {
   ordering: { green: 3, yellow: 5, red: 7 },
   "customs-cleared": { green: 1, yellow: 2, red: 3 },
   received: { green: 5, yellow: 7, red: 10 },
-  "delivery-scheduled": { green: 2, yellow: 5, red: 10 }, // until scheduled date + grace
+  "delivery-scheduled": { green: 2, yellow: 5, red: 10 },
   delivered: { green: 2, yellow: 3, red: 5 },
   "balance-pending": { green: 14, yellow: 21, red: 30 },
+  // Cart lifecycle stages
+  cart_submitted: { green: 1, yellow: 1, red: 2 },
+  quote_drafting: { green: 1, yellow: 1, red: 2 },
+  payment_pending: { green: 0, yellow: 0, red: 1 },
+  order_confirmed: { green: 1, yellow: 2, red: 3 },
+  at_customs: { green: 5, yellow: 7, red: 10 },
+  at_warehouse: { green: 7, yellow: 10, red: 14 },
+  factura_issued: { green: 7, yellow: 10, red: 14 },
 };
 
 // Brand-dependent stages fall back to these defaults when Brand_Lead_Times

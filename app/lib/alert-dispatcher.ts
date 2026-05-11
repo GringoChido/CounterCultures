@@ -233,6 +233,55 @@ export const ALERT_ROUTES: Record<string, AlertRoute> = {
     ruleId: "T-14-critical-customs-hold",
     roger: { templateId: "R-14-issue", channels: ["dashboard", "whatsapp"] },
   },
+
+  // =========================================================================
+  // Cart Lifecycle Routes (T-15 → T-20)
+  // =========================================================================
+
+  // T-15 cart_submitted (quote path)
+  "T-15-cart-submitted-quote": {
+    ruleId: "T-15-cart-submitted-quote",
+    customer: { templateId: "C-12-cart-received", channels: ["email", "whatsapp"] },
+    roger: { templateId: "R-15-cart-submitted", channels: ["email", "whatsapp", "dashboard"] },
+  },
+  "T-15b-cart-submitted-buy": {
+    ruleId: "T-15b-cart-submitted-buy",
+    roger: { templateId: "R-15-cart-submitted", channels: ["email", "whatsapp", "dashboard"] },
+  },
+
+  // T-16 payment_initiated
+  "T-16-payment-initiated": {
+    ruleId: "T-16-payment-initiated",
+    customer: { templateId: "C-13-complete-purchase", channels: ["email"] },
+  },
+
+  // T-17 payment_received (cart purchase)
+  "T-17-payment-received": {
+    ruleId: "T-17-payment-received",
+    customer: { templateId: "C-14-payment-confirmed", channels: ["email", "whatsapp"] },
+    roger: { templateId: "R-16-payment-received", channels: ["whatsapp", "dashboard"] },
+    finance: { templateId: "F-08-cart-payment-recorded", channels: ["email", "dashboard"] },
+  },
+
+  // T-18 cart_abandoned (nightly sweep, 24h)
+  "T-18-cart-abandoned": {
+    ruleId: "T-18-cart-abandoned",
+    customer: { templateId: "C-15-cart-abandoned", channels: ["email"] },
+    roger: { templateId: "R-17-cart-abandoned", channels: ["dashboard"] },
+  },
+
+  // T-19 review_window_open (+7d post-delivery)
+  "T-19-review-window": {
+    ruleId: "T-19-review-window",
+    customer: { templateId: "C-16-review-request", channels: ["email", "whatsapp"] },
+  },
+
+  // T-20 delivery_confirmed
+  "T-20-delivery-confirmed": {
+    ruleId: "T-20-delivery-confirmed",
+    customer: { templateId: "C-21-delivered", channels: ["email", "whatsapp"] },
+    roger: { templateId: "R-11-delivered", channels: ["dashboard"] },
+  },
 };
 
 // ---------------------------------------------------------------------------

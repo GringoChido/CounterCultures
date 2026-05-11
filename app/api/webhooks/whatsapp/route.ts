@@ -21,6 +21,8 @@ import {
   findRowIndex,
   updateRowByHeader,
 } from "@/app/lib/dashboard-sheets";
+import { appendMessage } from "@/app/lib/conversation-log";
+import { findActiveDealByPhone } from "@/app/lib/deal-lookup";
 
 interface MetaContact {
   wa_id: string;
@@ -294,6 +296,25 @@ export const POST = async (request: NextRequest): Promise<Response> => {
           phoneNumberId,
           linkedLeadId: leadId,
         });
+
+        // Route to Conversation_Log if this phone matches an active deal
+        try {
+          const dealId = await findActiveDealByPhone(m.from);
+          if (dealId) {
+            await appendMessage({
+              deal_id: dealId,
+              customer_email: "",
+              direction: "inbound",
+              channel: "whatsapp",
+              locale: "es",
+              body_snippet: summary,
+              status: "delivered",
+              external_id: m.id,
+            });
+          }
+        } catch {
+          // Non-blocking
+        }
 
         // Roger gets a heads-up on the first message from a new lead.
         // Subsequent messages for the same lead just append to notes,

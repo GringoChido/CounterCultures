@@ -16,7 +16,13 @@ export type PipelineStage =
   | "ordering" | "in-production" | "shipping"
   | "in-customs" | "customs-cleared" | "received"
   | "delivery-scheduled" | "delivered" | "balance-pending"
-  | "complete" | "post-delivery-issue";
+  | "complete" | "post-delivery-issue"
+  // Cart lifecycle stages
+  | "cart_submitted" | "quote_drafting" | "payment_pending" | "payment_received"
+  | "order_confirmed" | "vendor_po_placed" | "vendor_shipped" | "in_transit"
+  | "at_customs" | "at_warehouse" | "factura_issued" | "review_requested"
+  // Terminal / pause stages
+  | "archived" | "cancelled" | "refunded" | "on_hold" | "abandoned";
 
 // ---------------------------------------------------------------------------
 // Stage Classification Constants
@@ -68,6 +74,25 @@ const STAGE_TO_PHASE: Record<PipelineStage, JourneyPhase> = {
   "balance-pending": "delivered",
   "complete": "delivered",
   "post-delivery-issue": "delivered",
+  // Cart lifecycle stages
+  "cart_submitted": "discovery",
+  "quote_drafting": "design",
+  "payment_pending": "close",
+  "payment_received": "close",
+  "order_confirmed": "fulfillment",
+  "vendor_po_placed": "fulfillment",
+  "vendor_shipped": "fulfillment",
+  "in_transit": "fulfillment",
+  "at_customs": "fulfillment",
+  "at_warehouse": "fulfillment",
+  "factura_issued": "delivered",
+  "review_requested": "delivered",
+  // Terminal / pause
+  "archived": "delivered",
+  "cancelled": "close",
+  "refunded": "close",
+  "on_hold": "fulfillment",
+  "abandoned": "discovery",
 };
 
 export const JOURNEY_PHASE_INDEX: Record<JourneyPhase, number> = {

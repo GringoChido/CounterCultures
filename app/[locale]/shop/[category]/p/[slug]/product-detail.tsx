@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { ChevronRight, MessageCircle, ChevronDown, Download, Sparkles } from "lucide-react";
 import { ProductCard, formatPrice } from "@/app/components/ui/product-card";
 import { SafeProductImage } from "@/app/components/safe-product-image";
+import { AddToCartButton } from "@/app/components/cart/add-to-cart-button";
 import type { Product } from "@/app/lib/types";
 import { SITE_CONFIG } from "@/app/lib/constants";
 
@@ -53,34 +54,10 @@ const ProductDetail = ({
   const [selectedImage, setSelectedImage] = useState(0);
   const [thumbErrors, setThumbErrors] = useState<Set<number>>(new Set());
   const [specsOpen, setSpecsOpen] = useState(false);
-  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   const goodThumbs = product.images
     .map((img, i) => ({ img, i }))
     .filter(({ i }) => !thumbErrors.has(i));
-
-  const handleCheckout = async () => {
-    setCheckoutLoading(true);
-    try {
-      const res = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productName: product.nameEn,
-          productSku: product.sku,
-          amount: product.price,
-          currency: "mxn",
-          locale,
-        }),
-      });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-    } catch {
-      // Checkout unavailable
-    } finally {
-      setCheckoutLoading(false);
-    }
-  };
 
   const whatsappMessage = locale === "es"
     ? `Hola, me interesa ${product.name} (SKU: ${product.sku}). ¿Me pueden dar más información?`
@@ -275,13 +252,11 @@ const ProductDetail = ({
                     <Download className="w-4 h-4" />
                     {t(locale, "specSheet")}
                   </button>
-                <button
-                  onClick={handleCheckout}
-                  disabled={checkoutLoading}
-                  className="w-full py-3 font-body text-sm font-medium border border-brand-stone/20 text-brand-charcoal hover:bg-brand-charcoal hover:text-white transition-colors disabled:opacity-50 cursor-pointer"
-                >
-                  {checkoutLoading ? "..." : t(locale, "payOnline")}
-                </button>
+                <AddToCartButton
+                  product={product}
+                  locale={locale}
+                  selectedFinish={selectedFinish}
+                />
               </div>
 
               {/* Specifications */}

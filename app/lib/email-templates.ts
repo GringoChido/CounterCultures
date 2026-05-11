@@ -296,6 +296,7 @@ export interface AlertWhatsAppContent {
 export interface AlertTemplate {
   id: string;
   audience: AlertAudience;
+  category?: "transactional" | "marketing";
   locales: {
     en: AlertLocaleContent;
     es: AlertLocaleContent;
@@ -1047,6 +1048,636 @@ Balance: {balance_amount_mxn} MXN`,
 Deal: DEAL-{deal_id}
 Cliente: {customer_name}
 Saldo: {balance_amount_mxn} MXN`,
+      },
+    },
+  },
+
+  // =========================================================================
+  // CART LIFECYCLE — CUSTOMER C-12..C-22
+  // =========================================================================
+
+  "C-12-cart-received": {
+    id: "C-12-cart-received",
+    audience: "customer",
+    category: "transactional",
+    locales: {
+      en: {
+        subject: "We've received your selections — {project_name}",
+        body: `Hi {customer_first_name},
+
+Thanks for putting together your selections for {project_name}. Roger will review your list and send a formal quote within 24 hours.
+
+You can track your order at any time here: {tracker_url}
+
+If you have questions in the meantime, reply to this email or message us on WhatsApp.
+
+Warmly,
+Counter Cultures`,
+      },
+      es: {
+        subject: "Hemos recibido tu seleccion — {project_name}",
+        body: `Hola {customer_first_name},
+
+Gracias por armar tu seleccion para {project_name}. Roger revisara tu lista y enviara una cotizacion formal en menos de 24 horas.
+
+Puedes dar seguimiento a tu pedido aqui: {tracker_url}
+
+Si tienes preguntas, responde este correo o escribenos por WhatsApp.
+
+Un abrazo,
+Counter Cultures`,
+      },
+    },
+    whatsapp: {
+      en: "Hi {customer_first_name}! We received your selections for {project_name}. Roger will send your formal quote within 24 hours. Track here: {tracker_url}",
+      es: "Hola {customer_first_name}! Recibimos tu seleccion para {project_name}. Roger enviara tu cotizacion en menos de 24 horas. Seguimiento: {tracker_url}",
+      metaTemplateName: undefined,
+    },
+  },
+
+  "C-13-complete-purchase": {
+    id: "C-13-complete-purchase",
+    audience: "customer",
+    category: "transactional",
+    locales: {
+      en: {
+        subject: "Complete your purchase — {project_name}",
+        body: `Hi {customer_first_name},
+
+Your checkout session for {project_name} is ready. Complete your payment here: {stripe_link}
+
+Total: {total_value}
+
+This link expires in 24 hours. If you have questions, reply to this email.
+
+Roger
+Counter Cultures`,
+      },
+      es: {
+        subject: "Completa tu compra — {project_name}",
+        body: `Hola {customer_first_name},
+
+Tu sesion de pago para {project_name} esta lista. Completa tu pago aqui: {stripe_link}
+
+Total: {total_value}
+
+Este enlace expira en 24 horas. Si tienes preguntas, responde este correo.
+
+Roger
+Counter Cultures`,
+      },
+    },
+  },
+
+  "C-14-payment-confirmed": {
+    id: "C-14-payment-confirmed",
+    audience: "customer",
+    category: "transactional",
+    locales: {
+      en: {
+        subject: "Payment confirmed — order in motion",
+        body: `Hi {customer_first_name},
+
+Your payment of {total_value} has been confirmed. Your order is now in motion.
+
+What happens next:
+1. We place the purchase order with the manufacturer
+2. You'll receive updates as your order progresses
+3. Track everything here: {tracker_url}
+
+Thank you for choosing Counter Cultures.
+
+Roger`,
+      },
+      es: {
+        subject: "Pago confirmado — pedido en marcha",
+        body: `Hola {customer_first_name},
+
+Tu pago de {total_value} fue confirmado. Tu pedido esta en marcha.
+
+Siguientes pasos:
+1. Colocamos la orden de compra con el fabricante
+2. Recibiras actualizaciones conforme avance tu pedido
+3. Da seguimiento aqui: {tracker_url}
+
+Gracias por elegir Counter Cultures.
+
+Roger`,
+      },
+    },
+    whatsapp: {
+      en: "Payment confirmed! Your order for {total_value} is in motion. Track here: {tracker_url}",
+      es: "Pago confirmado! Tu pedido por {total_value} esta en marcha. Seguimiento: {tracker_url}",
+      metaTemplateName: undefined,
+    },
+  },
+
+  "C-15-cart-abandoned": {
+    id: "C-15-cart-abandoned",
+    audience: "customer",
+    category: "marketing",
+    locales: {
+      en: {
+        subject: "You left some pieces behind",
+        body: `Hi {customer_first_name},
+
+You left some pieces in your cart at Counter Cultures. They're still waiting for you.
+
+View your cart: {tracker_url}
+
+If you have questions about pricing, availability, or shipping, just reply to this email. Roger is happy to help.
+
+Counter Cultures`,
+      },
+      es: {
+        subject: "Dejaste algunas piezas atras",
+        body: `Hola {customer_first_name},
+
+Dejaste algunas piezas en tu carrito de Counter Cultures. Siguen esperandote.
+
+Ver tu carrito: {tracker_url}
+
+Si tienes preguntas sobre precios, disponibilidad o envio, responde este correo. Roger con gusto te ayuda.
+
+Counter Cultures`,
+      },
+    },
+  },
+
+  "C-16-review-request": {
+    id: "C-16-review-request",
+    audience: "customer",
+    category: "marketing",
+    locales: {
+      en: {
+        subject: "How is the experience?",
+        body: `Hi {customer_first_name},
+
+It's been a week since your pieces arrived. How is the experience?
+
+We'd love to hear your thoughts: {testimonial_link}
+
+Your feedback helps other clients make confident decisions, and helps us keep improving.
+
+Thank you,
+Roger
+Counter Cultures`,
+      },
+      es: {
+        subject: "Como ha sido la experiencia?",
+        body: `Hola {customer_first_name},
+
+Ha pasado una semana desde que llegaron tus piezas. Como ha sido la experiencia?
+
+Nos encantaria conocer tu opinion: {testimonial_link}
+
+Tu retroalimentacion ayuda a otros clientes a tomar decisiones con confianza, y nos ayuda a seguir mejorando.
+
+Gracias,
+Roger
+Counter Cultures`,
+      },
+    },
+    whatsapp: {
+      en: "Hi {customer_first_name}! It's been a week since delivery. How are the pieces? We'd love your feedback: {testimonial_link}",
+      es: "Hola {customer_first_name}! Paso una semana desde la entrega. Como van las piezas? Nos encantaria tu opinion: {testimonial_link}",
+      metaTemplateName: undefined,
+    },
+  },
+
+  "C-17-vendor-shipped": {
+    id: "C-17-vendor-shipped",
+    audience: "customer",
+    category: "transactional",
+    locales: {
+      en: {
+        subject: "Your order has shipped",
+        body: `Hi {customer_first_name},
+
+Your order for {project_name} has shipped from the manufacturer. Tracking: {tracking_link}
+
+Estimated arrival: {eta_delivered}
+
+Track everything here: {tracker_url}
+
+Roger
+Counter Cultures`,
+      },
+      es: {
+        subject: "Tu pedido fue enviado",
+        body: `Hola {customer_first_name},
+
+Tu pedido para {project_name} fue enviado por el fabricante. Rastreo: {tracking_link}
+
+Llegada estimada: {eta_delivered}
+
+Seguimiento completo: {tracker_url}
+
+Roger
+Counter Cultures`,
+      },
+    },
+    whatsapp: {
+      en: "Your order shipped! Tracking: {tracking_link}. ETA: {eta_delivered}. Full status: {tracker_url}",
+      es: "Tu pedido fue enviado! Rastreo: {tracking_link}. ETA: {eta_delivered}. Seguimiento: {tracker_url}",
+      metaTemplateName: undefined,
+    },
+  },
+
+  "C-18-at-customs": {
+    id: "C-18-at-customs",
+    audience: "customer",
+    category: "transactional",
+    locales: {
+      en: {
+        subject: "Crossing the border",
+        body: `Hi {customer_first_name},
+
+Your order is now at Mexican customs. This process typically takes 3-5 business days. We'll notify you as soon as it clears.
+
+Track here: {tracker_url}
+
+Roger
+Counter Cultures`,
+      },
+      es: {
+        subject: "En cruce fronterizo",
+        body: `Hola {customer_first_name},
+
+Tu pedido esta en aduana mexicana. Este proceso normalmente toma 3-5 dias habiles. Te notificaremos cuando sea liberado.
+
+Seguimiento: {tracker_url}
+
+Roger
+Counter Cultures`,
+      },
+    },
+  },
+
+  "C-19-at-warehouse": {
+    id: "C-19-at-warehouse",
+    audience: "customer",
+    category: "transactional",
+    locales: {
+      en: {
+        subject: "Arrived at our San Miguel warehouse",
+        body: `Hi {customer_first_name},
+
+Great news: your order arrived at our warehouse in San Miguel de Allende. We'll contact you shortly to schedule delivery.
+
+Track here: {tracker_url}
+
+Roger
+Counter Cultures`,
+      },
+      es: {
+        subject: "Llego a nuestro almacen",
+        body: `Hola {customer_first_name},
+
+Buenas noticias: tu pedido llego a nuestro almacen en San Miguel de Allende. Te contactaremos pronto para agendar la entrega.
+
+Seguimiento: {tracker_url}
+
+Roger
+Counter Cultures`,
+      },
+    },
+    whatsapp: {
+      en: "Your order arrived at our San Miguel warehouse! We'll schedule delivery soon. Status: {tracker_url}",
+      es: "Tu pedido llego a nuestro almacen! Agendaremos entrega pronto. Seguimiento: {tracker_url}",
+      metaTemplateName: undefined,
+    },
+  },
+
+  "C-20-delivery-scheduled": {
+    id: "C-20-delivery-scheduled",
+    audience: "customer",
+    category: "transactional",
+    locales: {
+      en: {
+        subject: "Delivery scheduled",
+        body: `Hi {customer_first_name},
+
+Your delivery is scheduled for {scheduled_delivery_datetime} at {delivery_location}.
+
+If you need to reschedule, reply to this email or call us.
+
+Roger
+Counter Cultures`,
+      },
+      es: {
+        subject: "Entrega agendada",
+        body: `Hola {customer_first_name},
+
+Tu entrega esta agendada para {scheduled_delivery_datetime} en {delivery_location}.
+
+Si necesitas reagendar, responde este correo o llamanos.
+
+Roger
+Counter Cultures`,
+      },
+    },
+    whatsapp: {
+      en: "Delivery scheduled: {scheduled_delivery_datetime} at {delivery_location}. Reply to reschedule.",
+      es: "Entrega agendada: {scheduled_delivery_datetime} en {delivery_location}. Responde para reagendar.",
+      metaTemplateName: undefined,
+    },
+  },
+
+  "C-21-delivered": {
+    id: "C-21-delivered",
+    audience: "customer",
+    category: "transactional",
+    locales: {
+      en: {
+        subject: "Delivered — welcome home",
+        body: `Hi {customer_first_name},
+
+Your pieces have been delivered. Welcome home.
+
+If anything needs attention, reply to this email or reach us on WhatsApp. We're here.
+
+Enjoy,
+Roger
+Counter Cultures`,
+      },
+      es: {
+        subject: "Entregado — bienvenido a casa",
+        body: `Hola {customer_first_name},
+
+Tus piezas fueron entregadas. Bienvenido a casa.
+
+Si algo necesita atencion, responde este correo o escribenos por WhatsApp. Estamos aqui.
+
+Disfruta,
+Roger
+Counter Cultures`,
+      },
+    },
+    whatsapp: {
+      en: "Your pieces have been delivered! If anything needs attention, just reply here. Enjoy!",
+      es: "Tus piezas fueron entregadas! Si algo necesita atencion, responde aqui. Disfruta!",
+      metaTemplateName: undefined,
+    },
+  },
+
+  "C-22-factura-issued": {
+    id: "C-22-factura-issued",
+    audience: "customer",
+    category: "transactional",
+    locales: {
+      en: {
+        subject: "Your SAT factura is ready",
+        body: `Hi {customer_first_name},
+
+Your SAT factura (CFDI) for {project_name} is ready. The PDF and XML are attached.
+
+UUID: {factura_uuid}
+
+If you need a correction, reply within 72 hours.
+
+Counter Cultures`,
+      },
+      es: {
+        subject: "Tu factura SAT esta lista",
+        body: `Hola {customer_first_name},
+
+Tu factura SAT (CFDI) para {project_name} esta lista. El PDF y XML estan adjuntos.
+
+UUID: {factura_uuid}
+
+Si necesitas una correccion, responde dentro de 72 horas.
+
+Counter Cultures`,
+      },
+    },
+  },
+
+  // =========================================================================
+  // CART LIFECYCLE — ROGER R-15..R-19
+  // =========================================================================
+
+  "R-15-cart-submitted": {
+    id: "R-15-cart-submitted",
+    audience: "roger",
+    category: "transactional",
+    locales: {
+      en: {
+        subject: "New cart from {customer_name} — {total_value}",
+        body: `New cart submission:
+
+Customer: {customer_name} ({customer_email})
+Phone: {customer_phone}
+Total: {total_value}
+Items: {item_count}
+Mode: {mode}
+Deal: DEAL-{deal_id}
+
+Review in dashboard: {dashboard_link}`,
+      },
+      es: {
+        subject: "Nuevo carrito de {customer_name} — {total_value}",
+        body: `Nueva solicitud de carrito:
+
+Cliente: {customer_name} ({customer_email})
+Telefono: {customer_phone}
+Total: {total_value}
+Articulos: {item_count}
+Modo: {mode}
+Deal: DEAL-{deal_id}
+
+Revisar en dashboard: {dashboard_link}`,
+      },
+    },
+    whatsapp: {
+      en: "New cart: {customer_name}, {total_value}, {item_count} items. Mode: {mode}. Deal: {deal_id}",
+      es: "Nuevo carrito: {customer_name}, {total_value}, {item_count} articulos. Modo: {mode}. Deal: {deal_id}",
+      metaTemplateName: undefined,
+    },
+  },
+
+  "R-16-payment-received": {
+    id: "R-16-payment-received",
+    audience: "roger",
+    category: "transactional",
+    locales: {
+      en: {
+        subject: "Payment received: {customer_name} {total_value}",
+        body: `Payment confirmed via Stripe:
+
+Customer: {customer_name}
+Amount: {total_value}
+Deal: DEAL-{deal_id}
+Odoo SO: {sale_order_name}`,
+      },
+      es: {
+        subject: "Pago recibido: {customer_name} {total_value}",
+        body: `Pago confirmado via Stripe:
+
+Cliente: {customer_name}
+Monto: {total_value}
+Deal: DEAL-{deal_id}
+Odoo SO: {sale_order_name}`,
+      },
+    },
+    whatsapp: {
+      en: "Payment received: {customer_name}, {total_value}. Deal: {deal_id}. Odoo: {sale_order_name}",
+      es: "Pago recibido: {customer_name}, {total_value}. Deal: {deal_id}. Odoo: {sale_order_name}",
+      metaTemplateName: undefined,
+    },
+  },
+
+  "R-17-cart-abandoned": {
+    id: "R-17-cart-abandoned",
+    audience: "roger",
+    category: "transactional",
+    locales: {
+      en: {
+        subject: "Abandoned cart: {customer_name} {total_value}",
+        body: `Cart abandoned after 24 hours:
+
+Customer: {customer_name} ({customer_email})
+Total: {total_value}
+Items: {item_count}
+Deal: DEAL-{deal_id}
+
+Re-engagement email (C-15) sent to customer.`,
+      },
+      es: {
+        subject: "Carrito abandonado: {customer_name} {total_value}",
+        body: `Carrito abandonado despues de 24 horas:
+
+Cliente: {customer_name} ({customer_email})
+Total: {total_value}
+Articulos: {item_count}
+Deal: DEAL-{deal_id}
+
+Correo de reenganche (C-15) enviado al cliente.`,
+      },
+    },
+  },
+
+  "R-18-customer-replied": {
+    id: "R-18-customer-replied",
+    audience: "roger",
+    category: "transactional",
+    locales: {
+      en: {
+        subject: "New reply from {customer_name}",
+        body: `{customer_name} sent a message:
+
+Channel: {channel}
+Deal: DEAL-{deal_id}
+
+Message:
+{message_body}
+
+Reply in dashboard: {dashboard_link}`,
+      },
+      es: {
+        subject: "Nueva respuesta de {customer_name}",
+        body: `{customer_name} envio un mensaje:
+
+Canal: {channel}
+Deal: DEAL-{deal_id}
+
+Mensaje:
+{message_body}
+
+Responder en dashboard: {dashboard_link}`,
+      },
+    },
+    whatsapp: {
+      en: "Reply from {customer_name} on {channel}: \"{message_body}\" — Deal: {deal_id}",
+      es: "Respuesta de {customer_name} por {channel}: \"{message_body}\" — Deal: {deal_id}",
+      metaTemplateName: undefined,
+    },
+  },
+
+  "R-19-review-received": {
+    id: "R-19-review-received",
+    audience: "roger",
+    category: "transactional",
+    locales: {
+      en: {
+        subject: "New review: {rating} — {customer_name}",
+        body: `New customer review:
+
+Customer: {customer_name}
+Rating: {rating}/5
+Deal: DEAL-{deal_id}
+
+Review text:
+{review_text}`,
+      },
+      es: {
+        subject: "Nueva resena: {rating} — {customer_name}",
+        body: `Nueva resena de cliente:
+
+Cliente: {customer_name}
+Calificacion: {rating}/5
+Deal: DEAL-{deal_id}
+
+Texto:
+{review_text}`,
+      },
+    },
+  },
+
+  // =========================================================================
+  // CART LIFECYCLE — FINANCE F-08..F-09
+  // =========================================================================
+
+  "F-08-cart-payment-recorded": {
+    id: "F-08-cart-payment-recorded",
+    audience: "finance",
+    category: "transactional",
+    locales: {
+      en: {
+        subject: "Cart purchase recorded — invoice {invoice_id}",
+        body: `Cart purchase payment recorded:
+
+Customer: {customer_name}
+Amount: {total_value}
+Odoo Invoice: {invoice_id}
+Odoo SO: {sale_order_name}
+Deal: DEAL-{deal_id}`,
+      },
+      es: {
+        subject: "Compra de carrito registrada — factura {invoice_id}",
+        body: `Pago de compra de carrito registrado:
+
+Cliente: {customer_name}
+Monto: {total_value}
+Factura Odoo: {invoice_id}
+Odoo SO: {sale_order_name}
+Deal: DEAL-{deal_id}`,
+      },
+    },
+  },
+
+  "F-09-factura-emitted": {
+    id: "F-09-factura-emitted",
+    audience: "finance",
+    category: "transactional",
+    locales: {
+      en: {
+        subject: "Factura emitted: {factura_uuid}",
+        body: `SAT factura emitted:
+
+UUID: {factura_uuid}
+Customer: {customer_name}
+Deal: DEAL-{deal_id}
+Amount: {total_value}`,
+      },
+      es: {
+        subject: "Factura emitida: {factura_uuid}",
+        body: `Factura SAT emitida:
+
+UUID: {factura_uuid}
+Cliente: {customer_name}
+Deal: DEAL-{deal_id}
+Monto: {total_value}`,
       },
     },
   },
