@@ -45,7 +45,8 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
   const categories = Object.entries(PRODUCT_CATEGORIES);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-brand-linen/95 backdrop-blur-sm border-b border-brand-stone/10">
+    <>
+      <header className="fixed top-0 left-0 right-0 z-50 bg-brand-linen/95 backdrop-blur-sm border-b border-brand-stone/10">
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
@@ -373,8 +374,8 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
         )}
       </AnimatePresence>
 
-      {/* Search palette — rendered via portal-like fixed positioning, always
-          available regardless of nav state. Lazy-loads its index on first open. */}
+    </header>
+
       <SearchPalette
         locale={lang}
         open={searchOpen}
@@ -382,7 +383,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
       />
 
       <CartDrawer locale={lang} />
-    </header>
+    </>
   );
 };
 

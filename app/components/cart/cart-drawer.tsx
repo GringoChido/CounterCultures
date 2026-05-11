@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Minus, Plus, Trash2 } from "lucide-react";
+import { X, Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import NextLink from "next/link";
 import { useCartStore } from "@/app/lib/stores/cart-store";
 import { useUiStore } from "@/app/lib/stores/ui-store";
@@ -105,20 +105,20 @@ export const CartDrawer = ({ locale = "en" }: { locale?: "en" | "es" }) => {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "tween", duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
-            className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white shadow-2xl flex flex-col"
+            className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-brand-linen shadow-2xl flex flex-col"
             role="dialog"
             aria-modal="true"
             aria-label={t.title}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-brand-stone/10">
-              <h2 className="font-display text-lg font-light tracking-wide text-brand-charcoal">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-brand-stone/10">
+              <h2 className="font-display text-xl font-light tracking-wide text-brand-charcoal">
                 {t.title}
               </h2>
               <button
                 type="button"
                 onClick={closeCart}
-                className="flex items-center justify-center w-9 h-9 text-dash-text-secondary hover:text-brand-charcoal transition-colors cursor-pointer"
+                className="flex items-center justify-center w-10 h-10 text-brand-stone hover:text-brand-charcoal transition-colors cursor-pointer"
                 aria-label="Close"
               >
                 <X className="w-5 h-5" />
@@ -127,13 +127,20 @@ export const CartDrawer = ({ locale = "en" }: { locale?: "en" | "es" }) => {
 
             {/* Body */}
             {items.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
-                <p className="font-body text-base text-brand-charcoal">{t.empty}</p>
-                <p className="font-body text-sm text-dash-text-secondary mt-1">{t.emptyHint}</p>
+              <div className="flex-1 flex flex-col items-center justify-center px-8 text-center">
+                <div className="w-20 h-20 flex items-center justify-center rounded-full bg-brand-stone/8 mb-6">
+                  <ShoppingBag className="w-8 h-8 text-brand-stone/40" />
+                </div>
+                <p className="font-display text-lg font-light text-brand-charcoal tracking-wide">
+                  {t.empty}
+                </p>
+                <p className="font-body text-sm text-brand-stone mt-2 max-w-[240px]">
+                  {t.emptyHint}
+                </p>
                 <NextLink
                   href={`/${locale}/shop`}
                   onClick={closeCart}
-                  className="mt-6 px-6 py-2.5 bg-brand-charcoal text-white font-body text-sm font-medium hover:bg-brand-terracotta transition-colors"
+                  className="mt-8 px-8 py-3 bg-brand-charcoal text-white font-body text-sm font-medium tracking-wider hover:bg-brand-terracotta transition-colors duration-300"
                 >
                   {t.browseCta}
                 </NextLink>
@@ -148,12 +155,12 @@ export const CartDrawer = ({ locale = "en" }: { locale?: "en" | "es" }) => {
                 )}
 
                 {/* Items list */}
-                <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+                <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
                   {items.map((item) => (
-                    <div key={item.id} className="flex gap-3">
+                    <div key={item.id} className="flex gap-4">
                       {/* Thumbnail */}
                       {item.imageSrc ? (
-                        <div className="w-16 h-16 shrink-0 bg-brand-stone/5 overflow-hidden">
+                        <div className="w-20 h-20 shrink-0 bg-brand-stone/5 overflow-hidden">
                           <img
                             src={item.imageSrc}
                             alt=""
@@ -161,7 +168,7 @@ export const CartDrawer = ({ locale = "en" }: { locale?: "en" | "es" }) => {
                           />
                         </div>
                       ) : (
-                        <div className="w-16 h-16 shrink-0 bg-brand-stone/5" />
+                        <div className="w-20 h-20 shrink-0 bg-brand-stone/8" />
                       )}
 
                       {/* Details */}
@@ -169,23 +176,23 @@ export const CartDrawer = ({ locale = "en" }: { locale?: "en" | "es" }) => {
                         <p className="font-body text-sm font-medium text-brand-charcoal truncate">
                           {item.name}
                         </p>
-                        <p className="font-body text-xs text-dash-text-secondary">
+                        <p className="font-body text-xs text-brand-stone mt-0.5">
                           {item.brand}
-                          {item.selectedFinish && ` — ${item.selectedFinish}`}
+                          {item.selectedFinish && ` · ${item.selectedFinish}`}
                         </p>
                         {item.notes && (
-                          <p className="font-body text-xs text-dash-text-secondary/70 mt-0.5 truncate">
+                          <p className="font-body text-xs text-brand-stone/70 mt-0.5 truncate">
                             {t.notes}: {item.notes}
                           </p>
                         )}
 
                         {/* Qty + price */}
-                        <div className="flex items-center justify-between mt-2">
-                          <div className="flex items-center gap-1">
+                        <div className="flex items-center justify-between mt-3">
+                          <div className="flex items-center gap-1.5">
                             <button
                               type="button"
                               onClick={() => updateQty(item.id, item.quantity - 1)}
-                              className="w-7 h-7 flex items-center justify-center border border-brand-stone/20 text-dash-text-secondary hover:text-brand-charcoal hover:border-brand-stone/40 transition-colors cursor-pointer"
+                              className="w-8 h-8 flex items-center justify-center border border-brand-stone/15 text-brand-stone hover:text-brand-charcoal hover:border-brand-stone/30 transition-colors cursor-pointer"
                               aria-label="Decrease quantity"
                             >
                               <Minus className="w-3 h-3" />
@@ -196,7 +203,7 @@ export const CartDrawer = ({ locale = "en" }: { locale?: "en" | "es" }) => {
                             <button
                               type="button"
                               onClick={() => updateQty(item.id, item.quantity + 1)}
-                              className="w-7 h-7 flex items-center justify-center border border-brand-stone/20 text-dash-text-secondary hover:text-brand-charcoal hover:border-brand-stone/40 transition-colors cursor-pointer"
+                              className="w-8 h-8 flex items-center justify-center border border-brand-stone/15 text-brand-stone hover:text-brand-charcoal hover:border-brand-stone/30 transition-colors cursor-pointer"
                               aria-label="Increase quantity"
                             >
                               <Plus className="w-3 h-3" />
@@ -204,7 +211,7 @@ export const CartDrawer = ({ locale = "en" }: { locale?: "en" | "es" }) => {
                             <button
                               type="button"
                               onClick={() => remove(item.id)}
-                              className="ml-2 w-7 h-7 flex items-center justify-center text-dash-text-secondary/60 hover:text-red-600 transition-colors cursor-pointer"
+                              className="ml-2 w-8 h-8 flex items-center justify-center text-brand-stone/50 hover:text-brand-terracotta transition-colors cursor-pointer"
                               aria-label={t.remove}
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -220,23 +227,23 @@ export const CartDrawer = ({ locale = "en" }: { locale?: "en" | "es" }) => {
                 </div>
 
                 {/* Footer */}
-                <div className="border-t border-brand-stone/10 px-6 py-4 space-y-3">
+                <div className="border-t border-brand-stone/10 bg-brand-linen px-6 py-5 space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="font-body text-sm text-dash-text-secondary">{t.subtotal}</span>
-                    <span className="font-display text-lg text-brand-charcoal">{formatted(subtotal)}</span>
+                    <span className="font-body text-sm text-brand-stone">{t.subtotal}</span>
+                    <span className="font-display text-xl font-light text-brand-charcoal">{formatted(subtotal)}</span>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <NextLink
                       href={`/${locale}/cart`}
                       onClick={closeCart}
-                      className="flex items-center justify-center py-3 border border-brand-stone/20 font-body text-sm font-medium text-brand-charcoal hover:border-brand-stone/40 transition-colors"
+                      className="flex items-center justify-center py-3.5 border border-brand-stone/20 font-body text-sm font-medium text-brand-charcoal hover:border-brand-charcoal transition-colors"
                     >
                       {t.viewCart}
                     </NextLink>
                     <NextLink
                       href={`/${locale}/checkout`}
                       onClick={closeCart}
-                      className="flex items-center justify-center py-3 bg-brand-terracotta text-white font-body text-sm font-medium hover:bg-brand-copper transition-colors"
+                      className="flex items-center justify-center py-3.5 bg-brand-terracotta text-white font-body text-sm font-medium tracking-wider hover:bg-brand-copper transition-colors"
                     >
                       {t.checkout}
                     </NextLink>
