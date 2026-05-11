@@ -118,17 +118,12 @@ const CatalogPage = async ({ params }: CatalogPageProps) => {
     statsPromise,
   ]);
 
-  // brandCounts comes from getQuoteCatalogBrands() (saleable subset only),
-  // so its length is the accurate "authorized brands you can specify" figure.
-  const saleableBrandCount = brandCounts.length;
+  const saleableBrandCount = brandCounts.length || STATS_FALLBACK.brandCount;
 
   const brandImageMap = buildBrandImageMap(brandCounts.map((b) => b.brand));
 
-  // Pre-render initial products when the cache is warm (brands loaded).
-  // Embeds the first 60 products in the ISR HTML so users see products
-  // immediately instead of a loading spinner.
   let initialResult: SearchResult | null = null;
-  if (brandCounts.length > 0) {
+  {
     try {
       const [specScores, showroomIds] = await Promise.all([
         Promise.race([
