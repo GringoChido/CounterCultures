@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import NextLink from "next/link";
+import { ChevronLeft, ChevronRight, Loader2, ShoppingBag } from "lucide-react";
 import { useCartStore } from "@/app/lib/stores/cart-store";
 
 const BUYABLE_THRESHOLD_MXN = 50_000;
@@ -175,8 +176,17 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
 
   if (items.length === 0) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-20 text-center">
-        <p className="font-body text-base text-brand-charcoal">{t.emptyCart}</p>
+      <div className="mx-auto max-w-2xl px-4 py-20 flex flex-col items-center text-center">
+        <div className="w-16 h-16 flex items-center justify-center rounded-full bg-brand-stone/8 mb-5">
+          <ShoppingBag className="w-7 h-7 text-brand-stone/40" />
+        </div>
+        <p className="font-display text-lg font-light text-brand-charcoal">{t.emptyCart}</p>
+        <NextLink
+          href={`/${locale}/shop`}
+          className="mt-6 px-8 py-3 bg-brand-charcoal text-white font-body text-sm font-medium tracking-wider hover:bg-brand-terracotta transition-colors"
+        >
+          {locale === "es" ? "Ver Tienda" : "Browse Shop"}
+        </NextLink>
       </div>
     );
   }
@@ -272,35 +282,37 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
   return (
     <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10 md:py-16 min-h-[70vh]">
       {/* Step indicators */}
-      <nav aria-label="Checkout progress" className="flex items-center justify-between mb-10">
+      <nav aria-label="Checkout progress" className="flex items-center mb-10">
         {STEPS[locale].map((label, i) => (
-          <div key={label} className="flex items-center gap-2">
-            <div
-              aria-current={i === step ? "step" : undefined}
-              className={`w-8 h-8 rounded-full flex items-center justify-center font-mono text-sm transition-colors ${
-                i < step
-                  ? "bg-brand-sage text-white"
-                  : i === step
-                    ? "bg-brand-terracotta text-white"
-                    : "bg-brand-stone/10 text-dash-text-secondary"
-              }`}
-            >
-              {i < step ? (
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              ) : (
-                i + 1
-              )}
+          <div key={label} className="flex items-center flex-1 last:flex-none">
+            <div className="flex flex-col items-center gap-1.5">
+              <div
+                aria-current={i === step ? "step" : undefined}
+                className={`w-8 h-8 flex items-center justify-center font-mono text-xs transition-colors ${
+                  i < step
+                    ? "bg-brand-sage text-white"
+                    : i === step
+                      ? "bg-brand-terracotta text-white"
+                      : "bg-brand-stone/10 text-brand-stone"
+                }`}
+              >
+                {i < step ? (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  i + 1
+                )}
+              </div>
+              <span
+                className={`font-body text-[11px] sm:text-xs tracking-wide ${
+                  i <= step ? "text-brand-charcoal" : "text-brand-stone"
+                }`}
+              >
+                {label}
+              </span>
             </div>
-            <span
-              className={`hidden sm:inline font-body text-sm ${
-                i <= step ? "text-brand-charcoal" : "text-dash-text-secondary"
-              }`}
-            >
-              {label}
-            </span>
-            {i < 3 && <div className="hidden sm:block w-8 h-px bg-brand-stone/20 mx-2" />}
+            {i < 3 && <div className="flex-1 h-px bg-brand-stone/15 mx-2 sm:mx-3 mt-[-18px]" />}
           </div>
         ))}
       </nav>
