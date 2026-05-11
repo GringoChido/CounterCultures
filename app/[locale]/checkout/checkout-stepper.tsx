@@ -130,6 +130,7 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
   const [submitting, setSubmitting] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const items = useCartStore((s) => s.items);
   const subtotal = useCartStore((s) => s.subtotal());
@@ -230,6 +231,7 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
 
   const handleSubmit = async () => {
     if (!termsAccepted) return;
+    setSubmitError(null);
     setSubmitting(true);
 
     const payload = {
@@ -267,14 +269,24 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
       });
       const data = await res.json();
 
+      if (!res.ok) {
+        setSubmitError(data.error || (locale === "es" ? "Error al enviar. Intenta de nuevo." : "Something went wrong. Please try again."));
+        setSubmitting(false);
+        return;
+      }
+
       if (isBuyPath && data.stripeUrl) {
         window.location.href = data.stripeUrl;
       } else if (data.dealId) {
         clear();
         const trackerParam = data.trackerUrl ? `?tracker=${encodeURIComponent(data.trackerUrl)}` : "";
         router.push(`/${locale}/checkout/submitted/${data.dealId}${trackerParam}`);
+      } else {
+        setSubmitError(locale === "es" ? "Respuesta inesperada. Intenta de nuevo." : "Unexpected response. Please try again.");
+        setSubmitting(false);
       }
     } catch {
+      setSubmitError(locale === "es" ? "Error de conexion. Intenta de nuevo." : "Connection error. Please try again.");
       setSubmitting(false);
     }
   };
@@ -473,6 +485,13 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
             />
             <span className="font-body text-xs text-dash-text-secondary">{t.terms}</span>
           </label>
+        </div>
+      )}
+
+      {/* Error banner */}
+      {submitError && (
+        <div className="mt-6 px-4 py-3 bg-red-50 border border-red-200 text-red-700 font-body text-sm" role="alert">
+          {submitError}
         </div>
       )}
 
