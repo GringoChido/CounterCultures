@@ -422,6 +422,27 @@ const buildCashFlow = (
 // Public API
 // ---------------------------------------------------------------------------
 
+export const getLatestPeriodWithData = async (): Promise<{ year: number; month: number }> => {
+  const invoices = await getOdooInvoices();
+  const now = new Date();
+
+  let maxDate = "";
+  for (const inv of invoices) {
+    if (inv.state !== "posted") continue;
+    const d = parseDate(inv.invoice_date) ?? parseDate(inv.date);
+    if (d && d > maxDate) maxDate = d;
+  }
+
+  if (maxDate) {
+    return {
+      year: parseInt(maxDate.slice(0, 4), 10),
+      month: parseInt(maxDate.slice(5, 7), 10),
+    };
+  }
+
+  return { year: now.getFullYear(), month: now.getMonth() + 1 };
+};
+
 export const generatePnLReport = async (opts: {
   company: Company | "combined";
   periodType: PeriodType;

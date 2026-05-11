@@ -110,7 +110,16 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
               {t.contact[lang]}
             </h4>
             <ul className="space-y-2 font-body text-sm text-dash-text-secondary">
-              <li>{SITE_CONFIG.showroom.address}</li>
+              <li>
+                <a
+                  href={SITE_CONFIG.showroom.mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-brand-terracotta transition-colors"
+                >
+                  {SITE_CONFIG.showroom.address}
+                </a>
+              </li>
               <li>{SITE_CONFIG.showroom.hours}</li>
               <li>
                 <a
