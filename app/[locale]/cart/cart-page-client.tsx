@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import NextLink from "next/link";
 import { Minus, Plus, Trash2, ShoppingBag, Tag, X } from "lucide-react";
 import { useCartStore } from "@/app/lib/stores/cart-store";
+import { CartWatermark, CartWordmark } from "@/app/components/cart/cart-watermark";
 
 const T = {
   en: {
@@ -127,7 +128,10 @@ export const CartPageClient = ({ locale }: { locale: "en" | "es" }) => {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 md:py-16">
+    <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 md:py-16">
+      <CartWatermark />
+      <div className="relative z-10">
+      <CartWordmark />
       <h1 className="font-display text-2xl md:text-3xl font-light tracking-wide text-brand-charcoal">
         {t.title}
       </h1>
@@ -336,6 +340,7 @@ export const CartPageClient = ({ locale }: { locale: "en" | "es" }) => {
             </NextLink>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
