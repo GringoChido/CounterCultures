@@ -6,6 +6,7 @@ import { X, Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import NextLink from "next/link";
 import { useCartStore } from "@/app/lib/stores/cart-store";
 import { useUiStore } from "@/app/lib/stores/ui-store";
+import { CartWordmark } from "@/app/components/cart/cart-watermark";
 
 const T = {
   en: {
@@ -112,9 +113,12 @@ export const CartDrawer = ({ locale = "en" }: { locale?: "en" | "es" }) => {
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-5 border-b border-brand-stone/10">
-              <h2 className="font-display text-xl font-light tracking-wide text-brand-charcoal">
-                {t.title}
-              </h2>
+              <div>
+                <CartWordmark />
+                <h2 className="font-display text-xl font-light tracking-wide text-brand-charcoal">
+                  {t.title}
+                </h2>
+              </div>
               <button
                 type="button"
                 onClick={closeCart}

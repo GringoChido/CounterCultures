@@ -1,3 +1,8 @@
+/**
+ * @deprecated Use /api/checkout/submit instead. This route is kept for backward
+ * compatibility with legacy quote-acceptance flows. New checkout always goes
+ * through the unified submit route + Payment Element.
+ */
 import { NextResponse, type NextRequest } from "next/server";
 import type Stripe from "stripe";
 import { appendRow } from "@/app/lib/dashboard-sheets";
@@ -166,7 +171,7 @@ export async function POST(req: NextRequest) {
       // Non-blocking
     }
 
-    return NextResponse.json({ stripeUrl: session.url, dealId });
+    return NextResponse.json({ stripeUrl: session.url, dealId, payUrl: `/${locale ?? "en"}/checkout/pay/${dealId}` });
   } catch (err) {
     console.error("[checkout/buy] Error:", err);
     return NextResponse.json({ error: "Internal error" }, { status: 500 });
