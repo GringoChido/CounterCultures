@@ -1,14 +1,16 @@
 # Counter Cultures — Finance Rules of Record
 
-Source: Tonina (AP lead), 2026 feedback documents (Claude .instructions.docx + Factura flow and banking fees.docx).
+> **IDENTITY NOTE: "Antonia" = "Antonia" — they are the same person.** This document was originally sourced from feedback by the AP lead, who the team calls **Antonia**. Source files and earlier passes of this doc use the older name "Antonia." Anywhere this doc says "Antonia," read "Antonia." `role=finance` in the auth system.
+
+Source: Antonia (AP lead — historically called "Antonia" in source feedback docs; same person), 2026 feedback documents (Claude .instructions.docx + Factura flow and banking fees.docx).
 This file is canonical. Every Claude session touching AR / AP / Facturas / Payments / Pedimento / Banking must read it before editing code.
 
 ## Facturas / SAT
 
 1. Facturas auto-create ONLY when a deposit is received into the SANTANDER account (CC's fiscal account in Mexico).
 2. ALL Santander deposits require a factura — no exceptions for customer deposits.
-3. Owner (Roger) transfers into Santander are NOT auto-factura'd. They land in an "Owner deposits" review queue. Tonina creates the factura manually if/when required.
-4. Tonina is notified of owner transfers via email, WhatsApp, or by reviewing Roger's Excel movements. The system surfaces these in a dedicated UI for manual handling.
+3. Owner (Roger) transfers into Santander are NOT auto-factura'd. They land in an "Owner deposits" review queue. Antonia creates the factura manually if/when required.
+4. Antonia is notified of owner transfers via email, WhatsApp, or by reviewing Roger's Excel movements. The system surfaces these in a dedicated UI for manual handling.
 5. NetPay deposits do NOT generate SAT facturas, but the associated processing fees must still be recorded as expenses.
 6. The legacy Gmail-subject scanner (COMPROBANTE_ pattern) is DEPRECATED. It remains as a manual fallback only.
 
@@ -18,11 +20,11 @@ This file is canonical. Every Claude session touching AR / AP / Facturas / Payme
 8. Editing a payment (date, ref, amount, currency, rate) goes through `payment-safeguards.ts`. If the edit affects amount/currency/rate, a confirmation dialog asks the user whether to preserve reconciliations. Default = preserve.
 9. Every payment records the FX rate used. Pre-fill from `FX_Rates` sheet (Frankfurter/ECB). User can override per-payment or for the whole day. Manual overrides persist to `FX_Rates` with `source=manual_override`.
 10. Bulk payments to vendors apply by AGING (oldest first) by default. Override allowed for deposit-on-large-bills exception.
-11. Bulk payment UI shows a running balance as bills are selected so Tonina can match her bank transfer amount.
+11. Bulk payment UI shows a running balance as bills are selected so Antonia can match her bank transfer amount.
 
 ## Vendor bills / POs
 
-12. The dashboard exposes a "Receive & Bill" action that validates the Odoo picking and creates the draft bill in one step, so Tonina is not forced to receive inventory in Odoo before generating a bill from a foreign vendor.
+12. The dashboard exposes a "Receive & Bill" action that validates the Odoo picking and creates the draft bill in one step, so Antonia is not forced to receive inventory in Odoo before generating a bill from a foreign vendor.
 13. Vendor bills are tagged with one of three shipping scenarios: `dropship_to_client`, `direct_to_mexico_ups`, `agent_in_laredo`. Each scenario surfaces its downstream action.
 14. For `direct_to_mexico_ups`: notify the four UPS agents (`yulissagarcia@`, `fabianmartinez@`, `fatimasanchez@`, `cristinaavila@` — all `@ups.com`) with Roger CC'd.
 15. For `agent_in_laredo`: log shipment to the Laredo Drive sheet (https://docs.google.com/spreadsheets/d/1y2OIJ1WN0IWFyN5W8IMAIADMWl2FOgvYA8EqIJFvwfw).
@@ -56,7 +58,7 @@ This file is canonical. Every Claude session touching AR / AP / Facturas / Payme
 
 ## Naming / language
 
-31. Tonina works primarily in Spanish. Every UI label has an EN + ES pair.
+31. Antonia works primarily in Spanish. Every UI label has an EN + ES pair.
 32. Preserve her terms: expediente, pedimento, cadena, alta en padrón de importador, comprobante, factura.
 
 ## Operational
