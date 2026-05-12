@@ -520,6 +520,8 @@ const PnLPage = () => {
   const [loading, setLoading] = useState(true);
   const [displayCurrency, setDisplayCurrency] = useState("MXN");
 
+  const [defaultResolved, setDefaultResolved] = useState(false);
+
   const fetchReport = useCallback(async () => {
     setLoading(true);
     try {
@@ -542,8 +544,19 @@ const PnLPage = () => {
   }, [company, periodType, year, period]);
 
   useEffect(() => {
-    fetchReport();
-  }, [fetchReport]);
+    fetch("/api/dashboard/reports/pnl/latest")
+      .then((r) => r.json())
+      .then(({ year: y, month: m }: { year: number; month: number }) => {
+        setYear(y);
+        setPeriod(m);
+      })
+      .catch(() => {})
+      .finally(() => setDefaultResolved(true));
+  }, []);
+
+  useEffect(() => {
+    if (defaultResolved) fetchReport();
+  }, [fetchReport, defaultResolved]);
 
   const companyAccent =
     company === "llc"

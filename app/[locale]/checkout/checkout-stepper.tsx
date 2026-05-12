@@ -79,8 +79,8 @@ const T = {
     noFactura: "No factura requested",
     sameAsShippingShort: "Same as shipping",
     subtotal: "Subtotal",
-    iva: "IVA (16%)",
-    ivaNote: "Applied for Mexico delivery",
+    tradeDiscount: "Trade discount",
+    iva: "VAT (16%) — Included on tax invoice",
     shipping: "Shipping",
     shippingNote: "Quoted after review",
     total: "Estimated total",
@@ -273,23 +273,43 @@ interface BillingForm {
 
 const RFC_REGEX = /^([A-ZÑ&]{3,4})(\d{6})([A-Z\d]{3})$/;
 
+const RFC_REGEX = /^([A-ZÑ&]{3,4})\d{6}([A-Z\d]{3})$/i;
+
+const SAVED_INFO_KEY = "cc_checkout_saved_v1";
+
+interface SavedCheckoutInfo {
+  contact: ContactForm;
+  address: AddressForm;
+  billing: BillingAddressForm;
+  factura: Omit<FacturaForm, "constanciaBase64">;
+  project: ProjectForm;
+  billingSameAsShipping: boolean;
+  savedAt: number;
+}
+
+type StepKey = "contact" | "shipTo" | "billing" | "review";
+
 export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
   const t = T[locale];
+  const satLabel = (entry: { label_es: string; label_en: string }) => locale === "es" ? entry.label_es : entry.label_en;
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [termsScrolled, setTermsScrolled] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [mobileSummaryOpen, setMobileSummaryOpen] = useState(false);
 
   const items = useCartStore((s) => s.items);
   const subtotal = useCartStore((s) => s.subtotal());
-  const cartMode = useCartStore((s) => s.cartMode());
   const cartSessionId = useCartStore((s) => s.cartSessionId);
   const tradeCode = useCartStore((s) => s.tradeCode);
+  const tradeDiscountPct = useCartStore((s) => s.tradeDiscountPct);
   const clear = useCartStore((s) => s.clear);
+  const updateQty = useCartStore((s) => s.updateQty);
+  const removeItem = useCartStore((s) => s.remove);
 
   const [contact, setContact] = useState<ContactForm>({
     firstName: "",
@@ -347,6 +367,178 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
     locale,
   });
 
+  // Check for saved checkout info on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(SAVED_INFO_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as SavedCheckoutInfo;
+        if (parsed.contact?.nombre && parsed.contact?.email) {
+          setSavedInfo(parsed);
+        }
+      }
+    } catch { /* ignore corrupt data */ }
+  }, []);
+
+  // Sync browser autofill to React state for all form fields
+  useEffect(() => {
+    const form = formRef.current;
+    if (!form) return;
+    const handleAutofill = (e: Event) => {
+      const el = e.target as HTMLInputElement | HTMLSelectElement;
+      const n = el.name;
+      const v = el.value;
+      if (!n || !v) return;
+      const contactMap: Record<string, (prev: ContactForm) => ContactForm> = {
+        "organization": (p) => ({ ...p, company: v }),
+        "given-name": (p) => ({ ...p, nombre: v }),
+        "family-name": (p) => ({ ...p, apellidoPaterno: v }),
+        "additional-name": (p) => ({ ...p, apellidoMaterno: v }),
+        "email": (p) => ({ ...p, email: v }),
+        "tel": (p) => ({ ...p, phone: v }),
+      };
+      if (contactMap[n]) { setContact(contactMap[n]); return; }
+      const shippingMap: Record<string, (prev: AddressForm) => AddressForm> = {
+        "address-line1": (p) => ({ ...p, line1: v }),
+        "address-line2": (p) => ({ ...p, line2: v }),
+        "address-line3": (p) => ({ ...p, line3: v }),
+        "city": (p) => ({ ...p, city: v }),
+        "state": (p) => ({ ...p, state: v }),
+        "postal-code": (p) => ({ ...p, postal: v }),
+        "country": (p) => ({ ...p, country: v as "MX" | "US" }),
+      };
+      if (shippingMap[n]) { setAddress(shippingMap[n]); return; }
+      const billingMap: Record<string, (prev: BillingAddressForm) => BillingAddressForm> = {
+        "cc-name": (p) => ({ ...p, name: v }),
+        "billing-organization": (p) => ({ ...p, company: v }),
+        "billing-address-line1": (p) => ({ ...p, line1: v }),
+        "billing-address-line2": (p) => ({ ...p, line2: v }),
+        "billing-address-line3": (p) => ({ ...p, line3: v }),
+        "billing-address-level2": (p) => ({ ...p, city: v }),
+        "billing-address-level1": (p) => ({ ...p, state: v }),
+        "billing-postal-code": (p) => ({ ...p, postal: v }),
+        "billing-country": (p) => ({ ...p, country: v as "MX" | "US" }),
+        "billing-tel": (p) => ({ ...p, phone: v }),
+      };
+      if (billingMap[n]) { setBilling(billingMap[n]); return; }
+    };
+    form.addEventListener("change", handleAutofill, true);
+    form.addEventListener("animationstart", handleAutofill, true);
+    return () => {
+      form.removeEventListener("change", handleAutofill, true);
+      form.removeEventListener("animationstart", handleAutofill, true);
+    };
+  }, []);
+
+  const stepKeys = useMemo<StepKey[]>(() =>
+    billingSameAsShipping
+      ? ["contact", "shipTo", "review"]
+      : ["contact", "shipTo", "billing", "review"],
+  [billingSameAsShipping]);
+
+  const stepLabels = useMemo(() => {
+    const labels: Record<StepKey, string> = {
+      contact: t.stepContact,
+      shipTo: t.stepShipTo,
+      billing: t.stepBilling,
+      review: t.stepReview,
+    };
+    return stepKeys.map((k) => labels[k]);
+  }, [t, stepKeys]);
+
+  const currentStepKey = stepKeys[step] ?? "contact";
+  const totalSteps = stepKeys.length;
+  const isLastStep = step === totalSteps - 1;
+
+  const fetchShippingRates = useCallback(async () => {
+    if (!address.postal || !address.country) return;
+    setShippingLoading(true);
+    setShippingError(false);
+    try {
+      const res = await fetch("/api/shipping/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: items.map((i) => ({
+            weight_kg: 5,
+            length_cm: 30,
+            width_cm: 30,
+            height_cm: 20,
+            quantity: i.quantity,
+          })),
+          address: { postal: address.postal, country: address.country },
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setShippingRates(data.rates ?? []);
+        if (data.rates?.length > 0 && !selectedShippingRate) {
+          setSelectedShippingRate(data.rates[0].rate_id);
+        }
+      } else {
+        setShippingError(true);
+      }
+    } catch {
+      setShippingError(true);
+    } finally {
+      setShippingLoading(false);
+    }
+  }, [address.postal, address.country, items, selectedShippingRate]);
+
+  useEffect(() => {
+    if (currentStepKey !== "review") return;
+    if (shippingDebounceRef.current) clearTimeout(shippingDebounceRef.current);
+    shippingDebounceRef.current = setTimeout(fetchShippingRates, 400);
+    return () => { if (shippingDebounceRef.current) clearTimeout(shippingDebounceRef.current); };
+  }, [currentStepKey, fetchShippingRates]);
+
+  // Handle terms scroll tracking
+  const handleTermsScroll = useCallback(() => {
+    const el = termsRef.current;
+    if (!el) return;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 8) {
+      setTermsScrolled(true);
+    }
+  }, []);
+
+  const applySavedInfo = useCallback(() => {
+    if (!savedInfo) return;
+    setContact(savedInfo.contact);
+    setAddress(savedInfo.address);
+    setBilling(savedInfo.billing);
+    setFactura({ ...savedInfo.factura, constanciaBase64: null });
+    setProject(savedInfo.project);
+    setBillingSameAsShipping(savedInfo.billingSameAsShipping);
+    setSavedInfoDismissed(true);
+  }, [savedInfo]);
+
+  const clearSavedInfo = useCallback(() => {
+    localStorage.removeItem(SAVED_INFO_KEY);
+    setSavedInfo(null);
+    setSavedInfoDismissed(true);
+  }, []);
+
+  const saveInfoToStorage = useCallback(() => {
+    const toSave: SavedCheckoutInfo = {
+      contact,
+      address,
+      billing,
+      factura: {
+        enabled: factura.enabled,
+        rfc: factura.rfc,
+        razonSocial: factura.razonSocial,
+        cpFiscal: factura.cpFiscal,
+        regimenFiscal: factura.regimenFiscal,
+        usoCfdi: factura.usoCfdi,
+        email: factura.email,
+      },
+      project,
+      billingSameAsShipping,
+      savedAt: Date.now(),
+    };
+    localStorage.setItem(SAVED_INFO_KEY, JSON.stringify(toSave));
+  }, [contact, address, billing, factura, project, billingSameAsShipping]);
+
   if (!mounted) {
     return (
       <div className="cc-paper min-h-[60vh] flex items-center justify-center">
@@ -385,6 +577,16 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
       ? total < BUYABLE_THRESHOLD_MXN
       : total < BUYABLE_THRESHOLD_MXN / 20);
 
+  const validateFactura = (): Record<string, string> => {
+    const e: Record<string, string> = {};
+    if (!factura.rfc.trim() || !RFC_REGEX.test(factura.rfc)) e.rfc = t.invalidRfc;
+    if (!factura.razonSocial.trim()) e.razonSocial = t.required;
+    if (!factura.cpFiscal.trim() || !/^\d{5}$/.test(factura.cpFiscal)) e.cpFiscal = t.invalidPostal;
+    if (!factura.regimenFiscal) e.regimenFiscal = t.required;
+    if (!factura.usoCfdi) e.usoCfdi = t.required;
+    return e;
+  };
+
   const validateStep = (): boolean => {
     const e: Record<string, string> = {};
     if (step === 0) {
@@ -395,12 +597,19 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
         !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email)
       )
         e.email = t.invalidEmail;
+      if (factura.enabled && !contact.company.trim()) e.company = t.required;
     }
-    if (step === 1) {
+
+    if (currentStepKey === "shipTo") {
       if (!address.line1.trim()) e.line1 = t.required;
       if (!address.city.trim()) e.city = t.required;
       if (!address.state.trim()) e.state = t.required;
       if (!address.postal.trim()) e.postal = t.required;
+      if (address.country === "MX" && !/^\d{5}$/.test(address.postal)) e.postal = t.invalidPostal;
+      if (factura.enabled) {
+        const facturaErrors = validateFactura();
+        Object.assign(e, facturaErrors);
+      }
     }
     if (step === 2) {
       if (!billing.sameAsShipping) {
@@ -507,16 +716,21 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
       })),
       cartSessionId,
       tradeCode: tradeCode ?? null,
-      mode: isBuyPath ? "buy" : "quote",
       subtotal,
       ivaAmount,
+      shippingAmount,
+      selectedShippingRate: chosenRate ? {
+        carrier: chosenRate.carrier,
+        service: chosenRate.service,
+        rate_id: chosenRate.rate_id,
+        amount_mxn: chosenRate.amount_mxn,
+      } : null,
       total,
       currency: sourceCurrency,
     };
 
     try {
-      const endpoint = isBuyPath ? "/api/checkout/buy" : "/api/checkout/quote";
-      const res = await fetch(endpoint, {
+      const res = await fetch("/api/checkout/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -534,8 +748,10 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
         return;
       }
 
-      if (isBuyPath && data.stripeUrl) {
-        window.location.href = data.stripeUrl;
+      saveInfoToStorage();
+
+      if (data.payUrl) {
+        router.push(data.payUrl);
       } else if (data.dealId) {
         clear();
         const trackerParam = data.trackerUrl
@@ -1174,6 +1390,18 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
               <span className="text-brand-stone/30">·</span>
               <div className="font-body text-xs">SAT CFDI 4.0</div>
             </div>
+
+            {/* Terms checkbox */}
+            <label className="flex items-start gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+                disabled={!termsScrolled}
+                className="w-4 h-4 mt-0.5 accent-brand-terracotta disabled:opacity-40"
+              />
+              <span className="font-body text-xs text-dash-text-secondary">{t.termsLabel}</span>
+            </label>
           </div>
 
           {/* ────────── RIGHT: Order rail (desktop only) ────────── */}
@@ -1244,10 +1472,13 @@ function Input({
 }: InputProps) {
   return (
     <div>
-      <label className="block font-body text-xs tracking-wide text-dash-text-secondary mb-1.5">
+      <label htmlFor={id} className="block font-body text-xs tracking-wide text-dash-text-secondary mb-1.5">
         {label}
       </label>
       <input
+        ref={inputRef}
+        id={id}
+        name={name}
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}

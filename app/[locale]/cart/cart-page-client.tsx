@@ -435,6 +435,7 @@ export const CartPageClient = ({ locale }: { locale: "en" | "es" }) => {
           </div>
         </div>
       </div>
+      </div>
     </div>
   );
 };

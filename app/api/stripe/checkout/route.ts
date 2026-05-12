@@ -1,3 +1,8 @@
+/**
+ * @deprecated Use /api/stripe/payment-intent for new checkout flows.
+ * This route creates a Stripe Checkout Session redirect. Legacy
+ * quote-acceptance flows may still use it.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe, isConfigured } from "@/app/lib/stripe";
 import { getProducts } from "@/app/lib/sheets";
