@@ -91,7 +91,8 @@ type SheetTab =
   | "Trade_Codes"
   | "Cart_Sessions"
   | "Conversation_Log"
-  | "Customer_Preferences";
+  | "Customer_Preferences"
+  | "Attachment_Visibility";
 
 // In-memory TTL cache. Keyed by tab. Reference tables get a longer TTL
 // because they almost never change; active tables use the short TTL so a

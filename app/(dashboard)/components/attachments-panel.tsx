@@ -1,8 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Paperclip, Download, ExternalLink, FileText, FileImage, FileArchive, File, Eye } from "lucide-react";
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { Paperclip, Download, ExternalLink, FileText, FileImage, FileArchive, File, Eye, EyeOff } from "lucide-react";
 import SequenceViewer from "@/app/(dashboard)/components/attachments/sequence-viewer";
+import {
+  classifyAttachment,
+  applyOverrides,
+  isHidden,
+  type AttachmentVisibility,
+} from "@/app/lib/attachment-visibility";
 
 interface AttachmentRow {
   id: string;
@@ -44,10 +50,20 @@ const labelFor = (mime: string): string => {
   return mime.split("/")[1]?.toUpperCase() || "FILE";
 };
 
+const hashFn = (name: string): string => {
+  let h = 0;
+  const s = name.trim().toLowerCase();
+  for (let i = 0; i < s.length; i++) {
+    h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  }
+  return Math.abs(h).toString(36);
+};
+
 const AttachmentsPanel = ({ resModel, resId }: AttachmentsPanelProps) => {
   const [items, setItems] = useState<AttachmentRow[] | null>(null);
   const [error, setError] = useState(false);
   const [viewerOpenAt, setViewerOpenAt] = useState<number | null>(null);
+  const [overrides, setOverrides] = useState<Record<string, "user-show" | "user-hide">>({});
 
   useEffect(() => {
     if (!resId) return;
@@ -57,6 +73,61 @@ const AttachmentsPanel = ({ resModel, resId }: AttachmentsPanelProps) => {
       .then((d) => setItems(d.items ?? []))
       .catch(() => setError(true));
   }, [resModel, resId]);
+
+  useEffect(() => {
+    if (!resId) return;
+    const params = new URLSearchParams({ resModel, resId });
+    fetch(`/api/dashboard/attachments/visibility?${params.toString()}`)
+      .then((r) => (r.ok ? r.json() : { overrides: {} }))
+      .then((d) => setOverrides(d.overrides ?? {}))
+      .catch(() => {});
+  }, [resModel, resId]);
+
+  const visMap = useMemo(() => {
+    if (!items) return new Map<string, AttachmentVisibility>();
+    const map = new Map<string, AttachmentVisibility>();
+    for (const a of items) {
+      const auto = classifyAttachment({ name: a.name, mimetype: a.mimetype, fileSize: a.fileSize });
+      const fnHash = hashFn(a.name);
+      const override = overrides[fnHash] as AttachmentVisibility | undefined;
+      map.set(a.id, applyOverrides(auto, override));
+    }
+    return map;
+  }, [items, overrides]);
+
+  const hiddenCount = useMemo(() => {
+    let n = 0;
+    for (const v of visMap.values()) if (isHidden(v)) n++;
+    return n;
+  }, [visMap]);
+
+  const visibleItems = useMemo(() => {
+    if (!items) return [];
+    return items.filter((a) => !isHidden(visMap.get(a.id) ?? "auto-show"));
+  }, [items, visMap]);
+
+  const toggleVisibility = useCallback(
+    async (a: AttachmentRow) => {
+      const current = visMap.get(a.id) ?? "auto-show";
+      const next: "user-show" | "user-hide" = isHidden(current) ? "user-show" : "user-hide";
+      const fnHash = hashFn(a.name);
+      setOverrides((prev) => ({ ...prev, [fnHash]: next }));
+      try {
+        await fetch("/api/dashboard/attachments/visibility", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ resModel, resId, filename: a.name, visibility: next }),
+        });
+      } catch {
+        setOverrides((prev) => {
+          const copy = { ...prev };
+          delete copy[fnHash];
+          return copy;
+        });
+      }
+    },
+    [visMap, resModel, resId]
+  );
 
   if (error) {
     return (
@@ -88,9 +159,16 @@ const AttachmentsPanel = ({ resModel, resId }: AttachmentsPanelProps) => {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-dash-text-secondary">
-            {items.length === 0 ? "none" : `${items.length} file${items.length === 1 ? "" : "s"}`}
+            {items.length === 0
+              ? "none"
+              : `${items.length} file${items.length === 1 ? "" : "s"}`}
+            {hiddenCount > 0 && (
+              <span className="ml-1 text-dash-text-secondary/60">
+                ({hiddenCount} oculto{hiddenCount === 1 ? "" : "s"} / hidden)
+              </span>
+            )}
           </span>
-          {items.length > 0 && (
+          {visibleItems.length > 0 && (
             <button
               type="button"
               onClick={() => setViewerOpenAt(0)}
@@ -113,13 +191,25 @@ const AttachmentsPanel = ({ resModel, resId }: AttachmentsPanelProps) => {
         <ul className="divide-y divide-dash-border/60">
           {items.map((a, idx) => {
             const Icon = iconFor(a.mimetype);
+            const vis = visMap.get(a.id) ?? "auto-show";
+            const hidden = isHidden(vis);
             return (
-              <li key={a.id} className="px-5 py-3 flex items-center gap-3">
+              <li
+                key={a.id}
+                className={`px-5 py-3 flex items-center gap-3 ${hidden ? "opacity-60" : ""}`}
+              >
                 <Icon className="w-4 h-4 text-dash-text-secondary shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-dash-text truncate" title={a.name}>
-                    {a.name}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm text-dash-text truncate" title={a.name}>
+                      {a.name}
+                    </p>
+                    {hidden && (
+                      <span className="shrink-0 text-[9px] px-1.5 py-0.5 rounded bg-dash-bg text-dash-text-secondary">
+                        Probable logotipo / Likely logo
+                      </span>
+                    )}
+                  </div>
                   <p className="text-[11px] text-dash-text-secondary mt-0.5">
                     {labelFor(a.mimetype)} · {formatSize(a.fileSize)}
                     {a.createdAt && ` · ${a.createdAt}`}
@@ -128,7 +218,19 @@ const AttachmentsPanel = ({ resModel, resId }: AttachmentsPanelProps) => {
                 <div className="flex items-center gap-1 shrink-0">
                   <button
                     type="button"
-                    onClick={() => setViewerOpenAt(idx)}
+                    onClick={() => toggleVisibility(a)}
+                    title={hidden ? "Mostrar / Show" : "Ocultar / Hide"}
+                    aria-label={hidden ? "Mostrar / Show" : "Ocultar / Hide"}
+                    className="p-1.5 rounded hover:bg-dash-bg text-dash-text-secondary hover:text-dash-accent transition-colors"
+                  >
+                    {hidden ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const visIdx = visibleItems.findIndex((v) => v.id === a.id);
+                      setViewerOpenAt(visIdx >= 0 ? visIdx : idx);
+                    }}
                     title="Previsualizar / Preview"
                     aria-label="Previsualizar / Preview"
                     className="p-1.5 rounded hover:bg-dash-bg text-dash-text-secondary hover:text-dash-accent transition-colors"
@@ -161,9 +263,23 @@ const AttachmentsPanel = ({ resModel, resId }: AttachmentsPanelProps) => {
           })}
         </ul>
       )}
-      {viewerOpenAt !== null && items && items.length > 0 && (
+      {hiddenCount > 0 && visibleItems.length < items.length && (
+        <div className="px-5 py-2 border-t border-dash-border/60">
+          <button
+            type="button"
+            onClick={() => {
+              setViewerOpenAt(0);
+            }}
+            className="text-[10px] text-dash-text-secondary hover:text-dash-accent transition-colors"
+          >
+            Mostrar {hiddenCount} oculto{hiddenCount === 1 ? "" : "s"} en secuencia /
+            Show {hiddenCount} hidden in sequence
+          </button>
+        </div>
+      )}
+      {viewerOpenAt !== null && visibleItems.length > 0 && (
         <SequenceViewer
-          items={items.map((it) => ({
+          items={visibleItems.map((it) => ({
             id: it.id,
             name: it.name,
             mimetype: it.mimetype,
@@ -174,7 +290,7 @@ const AttachmentsPanel = ({ resModel, resId }: AttachmentsPanelProps) => {
               ? `/api/dashboard/attachments/download?fileId=${encodeURIComponent(it.driveFileId)}`
               : it.downloadUrl,
           }))}
-          startIndex={viewerOpenAt}
+          startIndex={Math.min(viewerOpenAt, visibleItems.length - 1)}
           onClose={() => setViewerOpenAt(null)}
         />
       )}
