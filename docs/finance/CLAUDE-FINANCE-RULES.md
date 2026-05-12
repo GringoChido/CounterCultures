@@ -64,3 +64,13 @@ This file is canonical. Every Claude session touching AR / AP / Facturas / Payme
 33. Every mutating action logs to `Activity_Log` with actor, entity, before/after.
 34. Every mutating action is feature-gated via `useFeatures()`.
 35. New feature keys default ON for Owner + Manager + AP, OFF for Read-Only.
+
+## Attachments / Documents
+
+36. Operations attachments (vendor bills, POs, sale orders, inbox messages when wired) render a unified sequence viewer with keyboard navigation, so reviewers do not have to open each file singularly.
+37. Attachments matching the logo/noise heuristic auto-hide from the default sequence. Users can override per file; overrides persist in the `Attachment_Visibility` sheet tab keyed on `(res_model, res_id, filename_hash)` and the toggle is logged to `Activity_Log`.
+
+## Navigation
+
+38. Accounts Payable has a dedicated tab at `/dashboard/accounts-payable`. The tab is sidebar-pinned (between AR and P&L Reports) and gated behind `view_ap`.
+39. The AP queue, the open vendor bills aging table, and the vendor terms table all live on the AP page. The AP queue API is `GET /api/dashboard/ap-queue` and remains the single source of truth.
