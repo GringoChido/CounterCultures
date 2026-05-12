@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
-import APQueueSection from "@/app/(dashboard)/components/ap/ap-queue-section";
+
 
 type PaymentTypeFilter = "all" | "inbound" | "outbound";
 type PaymentStateFilter = "all" | "draft" | "posted" | "cancel" | "sent";
@@ -395,7 +395,16 @@ const PaymentsPage = () => {
         />
       )}
 
-      <APQueueSection />
+      <Link
+        href="/dashboard/accounts-payable"
+        className="mb-6 flex items-center gap-2 bg-brand-terracotta/5 border border-brand-terracotta/20 rounded px-4 py-3 text-sm text-brand-terracotta hover:bg-brand-terracotta/10 transition-colors"
+      >
+        <span>→</span>
+        <span>
+          Cola de AP ahora vive en Cuentas por Pagar. /
+          The AP queue now lives on Accounts Payable.
+        </span>
+      </Link>
 
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-3 mb-4">
