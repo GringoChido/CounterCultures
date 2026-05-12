@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Paperclip, Download, ExternalLink, FileText, FileImage, FileArchive, File } from "lucide-react";
+import { Paperclip, Download, ExternalLink, FileText, FileImage, FileArchive, File, Eye } from "lucide-react";
+import SequenceViewer from "@/app/(dashboard)/components/attachments/sequence-viewer";
 
 interface AttachmentRow {
   id: string;
@@ -46,6 +47,7 @@ const labelFor = (mime: string): string => {
 const AttachmentsPanel = ({ resModel, resId }: AttachmentsPanelProps) => {
   const [items, setItems] = useState<AttachmentRow[] | null>(null);
   const [error, setError] = useState(false);
+  const [viewerOpenAt, setViewerOpenAt] = useState<number | null>(null);
 
   useEffect(() => {
     if (!resId) return;
@@ -84,9 +86,22 @@ const AttachmentsPanel = ({ resModel, resId }: AttachmentsPanelProps) => {
           <Paperclip className="w-3.5 h-3.5 text-dash-text-secondary" />
           <h2 className="text-sm font-medium text-dash-text">Attachments</h2>
         </div>
-        <span className="text-xs text-dash-text-secondary">
-          {items.length === 0 ? "none" : `${items.length} file${items.length === 1 ? "" : "s"}`}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-dash-text-secondary">
+            {items.length === 0 ? "none" : `${items.length} file${items.length === 1 ? "" : "s"}`}
+          </span>
+          {items.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setViewerOpenAt(0)}
+              className="inline-flex items-center gap-1 text-[10px] text-dash-accent hover:text-dash-accent/80 transition-colors"
+              aria-label="Ver secuencia / Preview all"
+            >
+              <Eye className="w-3 h-3" />
+              Ver secuencia / Preview all
+            </button>
+          )}
+        </div>
       </div>
       {items.length === 0 ? (
         <div className="px-5 py-4">
@@ -96,7 +111,7 @@ const AttachmentsPanel = ({ resModel, resId }: AttachmentsPanelProps) => {
         </div>
       ) : (
         <ul className="divide-y divide-dash-border/60">
-          {items.map((a) => {
+          {items.map((a, idx) => {
             const Icon = iconFor(a.mimetype);
             return (
               <li key={a.id} className="px-5 py-3 flex items-center gap-3">
@@ -111,6 +126,15 @@ const AttachmentsPanel = ({ resModel, resId }: AttachmentsPanelProps) => {
                   </p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setViewerOpenAt(idx)}
+                    title="Previsualizar / Preview"
+                    aria-label="Previsualizar / Preview"
+                    className="p-1.5 rounded hover:bg-dash-bg text-dash-text-secondary hover:text-dash-accent transition-colors"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                  </button>
                   <a
                     href={a.viewUrl}
                     target="_blank"
@@ -136,6 +160,23 @@ const AttachmentsPanel = ({ resModel, resId }: AttachmentsPanelProps) => {
             );
           })}
         </ul>
+      )}
+      {viewerOpenAt !== null && items && items.length > 0 && (
+        <SequenceViewer
+          items={items.map((it) => ({
+            id: it.id,
+            name: it.name,
+            mimetype: it.mimetype,
+            fileSize: it.fileSize,
+            driveFileId: it.driveFileId,
+            viewUrl: it.viewUrl,
+            downloadUrl: it.driveFileId
+              ? `/api/dashboard/attachments/download?fileId=${encodeURIComponent(it.driveFileId)}`
+              : it.downloadUrl,
+          }))}
+          startIndex={viewerOpenAt}
+          onClose={() => setViewerOpenAt(null)}
+        />
       )}
     </div>
   );
