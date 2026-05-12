@@ -670,7 +670,13 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
             ) : result && sortedItems.length === 0 && !isPending ? (
               <div className="py-24 text-center">
                 <Package className="w-10 h-10 text-dash-text-secondary/40 mx-auto mb-3" />
-                <p className="font-body text-dash-text-secondary">{t.noResults}</p>
+                <p className="font-body text-dash-text-secondary">
+                  {!hasFilters && totalProducts === 0
+                    ? locale === "es"
+                      ? "Cargando catálogo — los datos de producto están siendo configurados."
+                      : "Catalog loading — product data is being configured."
+                    : t.noResults}
+                </p>
               </div>
             ) : needsAccess ? (
               <div className="space-y-6">

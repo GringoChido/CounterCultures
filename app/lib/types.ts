@@ -14,6 +14,7 @@ export interface Product {
   artisanal: boolean;
   description: string;
   descriptionEn: string;
+  features?: string[];
   specifications?: Record<string, string>;
   availability: "in-stock" | "made-to-order" | "special-order" | "quote_only";
   featured?: boolean;
