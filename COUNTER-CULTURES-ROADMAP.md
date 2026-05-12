@@ -65,7 +65,7 @@ For background and evidence behind any fix, see `docs/baseline/` (the read-mostl
 | # | Fix | File | Status | Effort |
 |---|-----|------|--------|--------|
 | P1.1 | **Resend setup (staging-only sandbox mode)** — email infra for staging tests; production DNS verification is Phase 2 | [`docs/fixes/p1-resend-setup.md`](docs/fixes/p1-resend-setup.md) | 🟡 PARTIAL — env vars set in Netlify + debug route written; needs sandbox-mode rewrite (no `countercultures.com.mx` DNS) | 30 min |
-| P1.2 | **Customer accounts + storage** — magic-link + Google OAuth, Customers sheet | [`docs/fixes/p1-customer-accounts.md`](docs/fixes/p1-customer-accounts.md) | 🔴 PENDING | 2 days |
+| P1.2 | **Customer accounts + storage** — magic-link + Google OAuth, Customers sheet | [`docs/fixes/p1-customer-accounts.md`](docs/fixes/p1-customer-accounts.md) | 🟢 DONE — PR [#40](https://github.com/GringoChido/CounterCultures/pull/40); Google OAuth client needs manual creation in GCP | 2 days |
 | P1.3 | **Trade pricing spreadsheet + lookup engine** — separate Sheet, tier-ready schema | [`docs/fixes/p1-trade-pricing.md`](docs/fixes/p1-trade-pricing.md) | 🔴 PENDING | 1 day |
 | P1.4 | **Promo / F&F code on PAY page** — new scope; cart input + validation + Stripe re-quote | [`docs/fixes/p1-promo-code-checkout.md`](docs/fixes/p1-promo-code-checkout.md) | 🔴 PENDING | 1 day |
 | P1.5 | **Product detail pages** — 354K SKUs have no PDPs (biggest UX/SEO win) | [`docs/fixes/p1-product-detail-pages.md`](docs/fixes/p1-product-detail-pages.md) | 🔴 PENDING | 2-3 days |
