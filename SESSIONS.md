@@ -43,27 +43,25 @@ The 5 P0 fixes are all "set the right thing, redeploy, verify" — combine them.
 
 ---
 
-### 🟡 Session 2 — Resend STAGING SANDBOX mode · ⏱️ ~30 min · REFRAMED
+### 🟢 Session 2 — Resend STAGING SANDBOX mode — DONE 2026-05-12 · ⏱️ ~30 min · REFRAMED
 
-**Scope-corrected** (formerly tried to verify the production domain — that's Phase 2). Phase 1 uses Resend's sandbox sender (`onboarding@resend.dev`) and authorized test recipients (Joshua + Roger). Zero production DNS work.
+**Paste (kept for reference):**
 
-**Paste:**
+> Read AGENTS.md and docs/fixes/p1-resend-setup.md, then execute. STAGING SANDBOX MODE — use Resend's sandbox sender; zero production DNS.
 
-> Read AGENTS.md and docs/fixes/p1-resend-setup.md, then execute. This is STAGING SANDBOX MODE — do not verify any domain at Resend, do not touch production DNS, do not modify nameservers anywhere. Use Resend's sandbox sender and authorized-recipient model.
-
-**Dependencies:** none · **Status:** 🟡 PARTIAL — Netlify env vars + debug route exist, needs sandbox-sender update + Cloudflare zone cleanup
+**Dependencies:** none · **Status:** 🟢 DONE — `RESEND_API_KEY` + `CRON_PROBE_KEY` set on Netlify (the latter closed a P0.3 deploy gap where the env var never reached Netlify). Resend verified end-to-end via direct API call (HTTP 200 + message ID). **Recipient-locked to `admin@countercultures.com.mx`** (Joshua's Workspace alias) — Resend sandbox model no longer supports a test-recipient allowlist; only the account-owner inbox can receive. Also set `STAGING_EMAIL_REDIRECT=admin@countercultures.com.mx` on Netlify and patched `app/lib/email.ts` to read it — every send in staging auto-routes to admin@. Any-recipient unlock = Phase 2 cutover (verify a Counter Cultures sender domain at Resend then). No Phase 1 domain verification work, by design.
 
 ---
 
-### ⬜ Session 3 — Customer accounts (magic-link + Google OAuth) · ⏱️ ~2 days
+### 🟡 Session 3 — Customer accounts (magic-link + Google OAuth) · ⏱️ ~2 days · IN PROGRESS
 
-The foundational v1 customer account system.
+The foundational v1 customer account system. Scope grew to include the `STAGING_EMAIL_REDIRECT` pattern (custom `sendVerificationRequest` that rewrites magic-link recipients to admin@ in staging while the Customers sheet row keeps the originally-submitted email).
 
 **Paste:**
 
-> Read AGENTS.md and docs/fixes/p1-customer-accounts.md, then execute.
+> Read AGENTS.md and docs/fixes/p1-customer-accounts.md, then execute. STAGING NOTE: Resend sandbox only delivers to admin@countercultures.com.mx. Implement EmailProvider with a custom `sendVerificationRequest` that respects `STAGING_EMAIL_REDIRECT` env var (already set on Netlify). Customers sheet rows store the originally-submitted email; only SMTP delivery gets rewritten.
 
-**Dependencies:** Session 2 (Resend) · **Status:** ⬜
+**Dependencies:** Session 2 ✅ · **Status:** 🟡 IN PROGRESS 2026-05-12
 
 ---
 
@@ -113,7 +111,7 @@ Replace Elena Martinez / Coastal Living Interiors / Hacienda Renovations / Pacif
 
 > Read AGENTS.md and docs/fixes/p1-trade-program-real-data.md, then execute.
 
-**Dependencies:** Sessions 2, 3 (Resend + Customer accounts) · **Status:** ⬜
+**Dependencies:** Sessions 2 ✅, 3 (Customer accounts). NOTE: in staging, trade approval emails redirect to admin@ via `STAGING_EMAIL_REDIRECT`. Real-recipient delivery waits for Phase 2 cutover when a Counter Cultures sender domain gets verified at Resend. · **Status:** ⬜
 
 ---
 
@@ -167,7 +165,7 @@ Adds clave de producto/servicio, clave de unidad, HS code, IVA rate per product.
 
 ---
 
-### ⬜ Session 12 — Factura ↔ Stripe bridge · ⏱️ ~2 days
+### ⛔ Session 12 — Factura ↔ Stripe bridge · ⏱️ ~2 days · BLOCKED
 
 Stripe payments now auto-emit facturas (the compliance gap).
 
@@ -175,7 +173,7 @@ Stripe payments now auto-emit facturas (the compliance gap).
 
 > Read AGENTS.md and docs/fixes/p1-factura-stripe-bridge.md, then execute.
 
-**Dependencies:** Session 1 (Stripe webhook), Session 11 (fiscal fields) · **Status:** ⬜
+**Dependencies:** Session 1 (Stripe webhook — ⚪ BLOCKED on Roger granting Stripe team access to Joshua so STRIPE_WEBHOOK_SECRET can be set), Session 11 (fiscal fields) · **Status:** ⛔ BLOCKED on P0.2
 
 ---
 
@@ -191,7 +189,7 @@ Stop showing `{issue_type}` to users.
 
 ---
 
-### ⬜ Session 14 — Dual payment ledgers reconciliation · ⏱️ ~1 day
+### ⛔ Session 14 — Dual payment ledgers reconciliation · ⏱️ ~1 day · BLOCKED
 
 Payments (4,674 Odoo) vs Finance (48 CRM) — one source of truth.
 
@@ -199,7 +197,7 @@ Payments (4,674 Odoo) vs Finance (48 CRM) — one source of truth.
 
 > Read AGENTS.md and docs/fixes/p1-dual-payment-ledgers.md, then execute.
 
-**Dependencies:** Session 1 (Stripe webhook) · **Status:** ⬜
+**Dependencies:** Session 1 (Stripe webhook — ⚪ BLOCKED on Roger granting Stripe team access) · **Status:** ⛔ BLOCKED on P0.2
 
 ---
 
@@ -329,7 +327,7 @@ The $35M MXN backlog gets working again.
 
 > Read AGENTS.md and docs/fixes/p2-stale-quotes-engine.md, then execute.
 
-**Dependencies:** Session 2 (Resend) · **Status:** ⬜
+**Dependencies:** Session 2 ✅. NOTE: in staging, follow-up emails all redirect to admin@ via `STAGING_EMAIL_REDIRECT`. Real-customer delivery waits for Phase 2 cutover. Session is build-only in Phase 1; live customer nudges go out post-cutover. · **Status:** ⬜
 
 ---
 
@@ -341,7 +339,7 @@ Daily digest to Roger + Antonia.
 
 > Read AGENTS.md and docs/fixes/p2-inventory-notifications.md, then execute.
 
-**Dependencies:** Session 2 (Resend) · **Status:** ⬜
+**Dependencies:** Session 2 ✅. NOTE: in staging, alerts redirect to admin@ via `STAGING_EMAIL_REDIRECT` rather than reaching Roger/Antonina directly. Real-recipient delivery waits for Phase 2 cutover. Build the engine now; live alerts to Roger and Antonina activate post-cutover. · **Status:** ⬜
 
 ---
 

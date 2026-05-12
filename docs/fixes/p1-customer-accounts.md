@@ -6,6 +6,18 @@
 ## Why this matters
 Counter Cultures has no customer-account system today. Every checkout is anonymous, every order is detached from a persistent identity, the cart vanishes on browser refresh, trade members can't log in to see "their" pricing, and repeat purchasers re-enter shipping/RFC/factura data every time. Industry-standard for 2026 ecommerce is passwordless (magic link + social) — passwords are a liability, not a moat. Building this NOW unblocks trade pricing (P1.3), promo-code mutual exclusion (P1.4), trade-program data (P1.6), and the factura Stripe bridge (P1.13). It also enables persistent carts, saved fiscal data, and order history without inventing a second auth surface that conflicts with staff NextAuth.
 
+## STAGING RECIPIENT LIMIT — critical context (added 2026-05-12)
+
+Resend's sandbox sender (`onboarding@resend.dev`, configured during P1.1) **only delivers to the Resend account-owner inbox**: `admin@countercultures.com.mx`. Sending to any other recipient returns HTTP 403 (`validation_error: You can only send testing emails to your own email address`). Resend changed this model and removed the test-recipient allowlist that earlier docs referenced.
+
+Until production cutover (Phase 2) verifies a Counter Cultures sender domain at Resend, all customer magic-link emails sent during staging will fail unless the recipient is admin@. Joshua owns admin@ as a Workspace alias, so the Phase 1 path is a recipient-redirect pattern (already wired in `app/lib/email.ts` for the existing email functions; the Customer accounts EmailProvider needs its own redirect-aware send too):
+
+1. Add a `STAGING_EMAIL_REDIRECT` env var on Netlify production context. Set to `admin@countercultures.com.mx`.
+2. In the customer `EmailProvider` config, supply a custom `sendVerificationRequest` (do NOT use the default `server` SMTP config). The function reads `STAGING_EMAIL_REDIRECT` and rewrites the SMTP recipient to that address when set — while still storing the original email on the `Customers` sheet row.
+3. Log both the original recipient and the actual delivered recipient so debugging in staging isn't guesswork.
+
+This pattern works end-to-end in staging and disappears cleanly at Phase 2 cutover when the Counter Cultures sender domain gets verified at Resend (the unset env var is a no-op, magic links flow to real customer recipients).
+
 ## The problem (evidence)
 - No `Customers` tab exists in the main CRM sheet — only `Pipeline`, `Deal_Line_Items`, `Cart_Sessions`, etc.
 - `app/lib/auth-options.ts` is staff-only (allowlist + role mapping for owner/finance/sales).
@@ -56,7 +68,14 @@ Columns (in order):
 ## The fix (step by step)
 1. In the CRM sheet, add tab `Customers` with the schema above. Add tab `Customer_Carts` with columns: `email | cart_json | updated_at`.
 2. Add env vars: `NEXTAUTH_CUSTOMER_SECRET`, `GOOGLE_CLIENT_ID_CUSTOMER`, `GOOGLE_CLIENT_SECRET_CUSTOMER` (separate OAuth app — staff and customer must NOT share consent screen).
-3. Create `app/lib/customer-auth.ts` with `NextAuthOptions` exporting an `EmailProvider` configured to send via Resend (`from: process.env.RESEND_FROM_TRANSACTIONAL`) and `GoogleProvider` (customer client). Pages: `signIn: '/account/sign-in'`, `verifyRequest: '/account/check-email'`. JWT callback: stamp `{ audience: 'customer', email, isTrade, tradeTier }`.
+3. Create `app/lib/customer-auth.ts` with `NextAuthOptions` exporting an `EmailProvider` and `GoogleProvider` (customer client). For the `EmailProvider`, configure a custom `sendVerificationRequest` (not NextAuth's default `server` SMTP config) that:
+   - Sends via the Resend SDK directly (`new Resend(process.env.RESEND_API_KEY)`)
+   - Uses `from: process.env.RESEND_FROM_TRANSACTIONAL` (currently `onboarding@resend.dev`)
+   - Reads `STAGING_EMAIL_REDIRECT` env var and rewrites the SMTP recipient to that address when set — see "Staging recipient limit" section above
+   - Logs both the originally-submitted email AND the actually-delivered recipient via `console.info` (or Sentry breadcrumb) so staging debugging is unambiguous
+   - Stores the ORIGINAL email (not the redirected recipient) on the `Customers` sheet row — the redirect only affects SMTP delivery, not data persistence
+   
+   Pages: `signIn: '/account/sign-in'`, `verifyRequest: '/account/check-email'`. JWT callback: stamp `{ audience: 'customer', email, isTrade, tradeTier }`.
 4. Wire `app/api/auth/customer/[...nextauth]/route.ts` to that options object.
 5. Build `/account/sign-in` UI: email input + "Email me a link" button + "Continue with Google" button.
 6. In NextAuth `signIn` callback, call `upsertCustomer({ email, lastLoginAt: now, createdAt: existing?.createdAt ?? now })`. If new, also call `backfillPipelineByEmail(email)` — set `customer_email = email` on all Pipeline rows where `contact_email = email`.
@@ -77,16 +96,19 @@ Columns (in order):
 
 ## Verification
 ```bash
-# 1. Trigger sign-in via curl simulating UI
+# 1. Trigger sign-in via curl simulating UI.
+#    In staging with STAGING_EMAIL_REDIRECT set, ANY email here is fine —
+#    the SMTP recipient gets rewritten to admin@countercultures.com.mx automatically.
+#    The Customers sheet row records the originally-submitted email.
 curl -X POST "$BASE_URL/api/auth/customer/signin/email" \
   -d "email=test+$(date +%s)@untold.works"
 
-# 2. Inspect Customers tab — new row should appear
-# 3. Click link in email, complete sign-in
+# 2. Inspect Customers tab — new row should appear with the originally-submitted email
+# 3. Open admin@countercultures.com.mx inbox (Joshua's Workspace alias), click magic link, complete sign-in
 # 4. Curl the cart endpoint
 curl "$BASE_URL/api/customer/cart" -H "Cookie: <customer-session-cookie>"
 ```
-Expected: 200, JSON `{ items: [], updated_at: "<ISO>" }`. New Customers row visible in sheet.
+Expected: 200, JSON `{ items: [], updated_at: "<ISO>" }`. New Customers row visible in sheet under the originally-submitted email (test+...@untold.works), not admin@. Magic-link email arrived at admin@.
 
 ## Dependencies
 **Requires:** P1.1 (Resend) — magic links must send.

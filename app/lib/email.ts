@@ -21,9 +21,32 @@ const getResend = () => {
   return _resend;
 };
 
-const FROM = "Counter Cultures <noreply@countercultures.com.mx>";
+// Resend sender: env-driven so we can swap between sandbox and a verified
+// Counter Cultures domain without touching code. Display name stays
+// "Counter Cultures" — only the @-domain changes.
+// Phase 1 (staging) — `RESEND_FROM_TRANSACTIONAL=onboarding@resend.dev` (sandbox).
+// Phase 2 (cutover) — flip to a verified Counter-Cultures sender at Resend.
+const FROM_ADDRESS = process.env.RESEND_FROM_TRANSACTIONAL || "onboarding@resend.dev";
+const FROM = `Counter Cultures <${FROM_ADDRESS}>`;
 const ROGER_EMAIL = process.env.NOTIFY_EMAIL || "roger@countercultures.com.mx";
 const WHATSAPP_NUMBER = process.env.WHATSAPP_NOTIFY_NUMBER || "";
+
+// Staging guardrail: when STAGING_EMAIL_REDIRECT is set, every email
+// recipient gets rewritten to that address before send. Unset = production
+// mode (recipients flow through as-is). Removed at Phase 2 cutover once a
+// verified Counter Cultures sender domain is live and any-recipient sending
+// is allowed by Resend.
+const STAGING_EMAIL_REDIRECT = process.env.STAGING_EMAIL_REDIRECT;
+
+const redirectRecipient = (to: string): string => {
+  if (!STAGING_EMAIL_REDIRECT) return to;
+  if (to === STAGING_EMAIL_REDIRECT) return to;
+  console.info(
+    `[Email] STAGING_EMAIL_REDIRECT active — recipient rewritten ` +
+      `(original: ${to}, delivered: ${STAGING_EMAIL_REDIRECT})`
+  );
+  return STAGING_EMAIL_REDIRECT;
+};
 
 // --- Internal notification to Roger via WhatsApp API ---
 //
@@ -48,7 +71,7 @@ export const notifyWhatsApp = async (message: string): Promise<void> => {
 export const sendContactConfirmation = async (to: string, name: string): Promise<void> => {
   await getResend()?.emails.send({
     from: FROM,
-    to,
+    to: redirectRecipient(to),
     subject: "We received your message — Counter Cultures",
     html: `
       <div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; color: #2C2C2C;">
@@ -72,7 +95,7 @@ export const sendContactConfirmation = async (to: string, name: string): Promise
 export const sendTradeConfirmation = async (to: string, name: string, company: string): Promise<void> => {
   await getResend()?.emails.send({
     from: FROM,
-    to,
+    to: redirectRecipient(to),
     subject: "Trade Application Received — Counter Cultures",
     html: `
       <div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; color: #2C2C2C;">
@@ -95,7 +118,7 @@ export const sendTradeConfirmation = async (to: string, name: string, company: s
 export const sendNewsletterWelcome = async (to: string): Promise<void> => {
   await getResend()?.emails.send({
     from: FROM,
-    to,
+    to: redirectRecipient(to),
     subject: "Welcome to Counter Cultures",
     html: `
       <div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; color: #2C2C2C;">
@@ -120,7 +143,7 @@ export const sendBookingConfirmation = async (
 ): Promise<void> => {
   await getResend()?.emails.send({
     from: FROM,
-    to,
+    to: redirectRecipient(to),
     subject: "Showroom Visit Confirmed — Counter Cultures",
     html: `
       <div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; color: #2C2C2C;">
@@ -155,7 +178,7 @@ export const sendDocument = async (
 ): Promise<void> => {
   await getResend()?.emails.send({
     from: FROM,
-    to,
+    to: redirectRecipient(to),
     subject,
     html: `
       <div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; color: #2C2C2C;">
@@ -178,7 +201,7 @@ export const sendDocument = async (
 export const notifyRoger = async (subject: string, body: string): Promise<void> => {
   await getResend()?.emails.send({
     from: FROM,
-    to: ROGER_EMAIL,
+    to: redirectRecipient(ROGER_EMAIL),
     subject,
     html: `
       <div style="font-family: monospace; max-width: 560px; margin: 0 auto; color: #2C2C2C;">
