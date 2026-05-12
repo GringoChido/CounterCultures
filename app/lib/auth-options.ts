@@ -45,13 +45,10 @@ export const authOptions: AuthOptions = {
       const inDomain = email.endsWith(`@${ALLOWED_DOMAIN}`);
       if (!inDomain && !allowlist.includes(email)) return false;
 
-      // Bootstrap mode: if the Users sheet has no rows yet (fresh deploy),
-      // allow domain + allowlist members through so the first user can seed
-      // it from inside the portal. Once any row exists, enforce membership.
-      const { getAllUsers } = await import("./users-sheet");
-      const allUsers = await getAllUsers();
-      if (allUsers.length === 0) return true;
-
+      // Membership is REQUIRED. Bootstrap mode is removed (P0 security fix):
+      // an empty Users sheet now rejects all sign-ins so the auth hole cannot
+      // re-open accidentally. The Users sheet must be seeded out-of-band
+      // (Sheets UI or admin script) before any portal user can authenticate.
       const user = await findUserByEmail(email);
       if (!user || !user.active) return false;
       return true;
@@ -63,10 +60,13 @@ export const authOptions: AuthOptions = {
       // (next request after their JWT refreshes will have the new values).
       if (email && (!token.role || trigger === "update" || trigger === "signIn")) {
         const u = await findUserByEmail(email);
-        // Default to "owner" for bootstrap users (no Users-sheet row yet) so
-        // the first sign-in can populate the sheet. Once seeded, this branch
-        // resolves to the row's actual role.
-        token.role = (u?.role ?? "owner") as UserRole;
+        // signIn callback now requires a Users-sheet row; if `u` is missing
+        // here it's an unexpected state. Default to a safe "sales" role
+        // (least privilege) and log so the issue surfaces.
+        if (!u) {
+          console.warn(`[auth] No Users-sheet row found for authenticated email ${email}; defaulting to sales role.`);
+        }
+        token.role = (u?.role ?? "sales") as UserRole;
         token.name = u?.name ?? token.name;
         token.featureOverrides = u?.featureOverrides ?? "";
       }

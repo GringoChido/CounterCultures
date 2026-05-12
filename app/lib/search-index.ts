@@ -127,8 +127,26 @@ export const buildSearchIndex = async (): Promise<SearchIndexPayload> => {
     hrefSuffix: `/insights/${a.slug}`,
   }));
 
+  // Dedup by `id` to defend against upstream data with duplicate slugs.
+  // MiniSearch.addAll throws on the second duplicate-ID document, breaking
+  // the entire client search palette. First-wins keeps the dedup outcome
+  // deterministic. Each dropped duplicate gets a console warn so the
+  // upstream data quality issue stays visible without crashing.
+  const allDocs = [...brandDocs, ...articleDocs];
+  const seen = new Map<string, SearchDoc>();
+  for (const doc of allDocs) {
+    if (seen.has(doc.id)) {
+      console.warn(
+        `[search-index] duplicate document ID "${doc.id}" — keeping first, dropping duplicate. ` +
+          `Fix upstream data (likely duplicate slug in Posts sheet or articles.ts).`
+      );
+      continue;
+    }
+    seen.set(doc.id, doc);
+  }
+
   return {
     generatedAt: new Date().toISOString(),
-    documents: [...brandDocs, ...articleDocs],
+    documents: Array.from(seen.values()),
   };
 };

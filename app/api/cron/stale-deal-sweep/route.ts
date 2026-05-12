@@ -64,11 +64,16 @@ const TERMINAL: Set<PipelineStage> = new Set<PipelineStage>([
 ]);
 
 export const GET = async (request: NextRequest) => {
-  // Gate: only fire from Netlify's scheduler OR a verified admin probe.
-  const sentinel = request.headers.get("x-netlify-scheduled");
+  // P0 security: require the probe key. The old sentinel-or-probe pattern
+  // accepted `x-netlify-scheduled: 1` which any external caller could spoof.
+  // Scheduled invocations now go through `netlify/functions/stale-deal-sweep.ts`
+  // which sends the probe key from CRON_PROBE_KEY env var.
+  const expected = process.env.CRON_PROBE_KEY;
+  if (!expected) {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
   const probeKey = request.headers.get("x-cron-probe-key");
-  const allowed = sentinel === "1" || (!!probeKey && probeKey === process.env.CRON_PROBE_KEY);
-  if (!allowed) {
+  if (!probeKey || probeKey !== expected) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 

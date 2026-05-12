@@ -3,9 +3,10 @@
  * /api/cron/stale-deal-sweep. Schedule is declared in netlify.toml
  * ([functions."stale-deal-sweep"] schedule = "0 14 * * *").
  *
- * Kept thin on purpose: all logic lives in the Next.js route so it's
- * testable standalone via fetch. This pass-through just injects the
- * `x-netlify-scheduled` sentinel header that the route gates on.
+ * Auth: pass-through sends `x-cron-probe-key` header sourced from the
+ * CRON_PROBE_KEY env var. The route handler validates against the same
+ * env var. The old `x-netlify-scheduled: 1` sentinel was removed because
+ * any external caller could spoof it.
  */
 
 export default async (): Promise<Response> => {
@@ -16,8 +17,15 @@ export default async (): Promise<Response> => {
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
+  const probeKey = process.env.CRON_PROBE_KEY;
+  if (!probeKey) {
+    return new Response(
+      JSON.stringify({ error: "CRON_PROBE_KEY env var not configured" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
   const res = await fetch(`${base}/api/cron/stale-deal-sweep`, {
-    headers: { "x-netlify-scheduled": "1" },
+    headers: { "x-cron-probe-key": probeKey },
   });
   return new Response(await res.text(), {
     status: res.status,
