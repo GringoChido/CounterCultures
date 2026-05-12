@@ -38,11 +38,14 @@ type ModelKey = "invoices" | "payments" | "sale_orders";
 const ALL_MODELS: ModelKey[] = ["invoices", "payments", "sale_orders"];
 
 const isAuthorized = (req: NextRequest): boolean => {
-  const sentinel = req.headers.get("x-netlify-scheduled");
+  // P0 security: require the probe key. The old sentinel-or-probe pattern
+  // accepted `x-netlify-scheduled: 1` which any external caller could spoof.
+  // Scheduled invocations now go through `netlify/functions/odoo-sync.ts`
+  // which sends the probe key from CRON_PROBE_KEY env var.
+  const expected = process.env.CRON_PROBE_KEY;
+  if (!expected) return false; // fail-closed when not configured
   const probeKey = req.headers.get("x-cron-probe-key");
-  if (sentinel === "1") return true;
-  if (probeKey && probeKey === process.env.CRON_PROBE_KEY) return true;
-  return false;
+  return !!probeKey && probeKey === expected;
 };
 
 const parseModels = (raw: string | null): ModelKey[] => {
