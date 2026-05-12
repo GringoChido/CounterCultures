@@ -1,0 +1,236 @@
+/**
+ * Stage 5 — LLM-generate bilingual descriptions for parents without one.
+ *
+ * For every PARENT product (from product-families.json — singletons too) that
+ * lacks a descriptionEs OR descriptionEn after the legacy scrape, ask Claude
+ * Haiku to write both: an evocative 60-90 word Spanish marketing description
+ * and a precise 60-90 word English technical description, plus 4-6 feature
+ * bullets in each language.
+ *
+ * Inputs the LLM sees:
+ *   - brand name + brand voice glossary (scripts/.gitignored/spanish-drafts.json)
+ *   - Odoo English name + description fragment
+ *   - SKU and category
+ *
+ * Output flag: every generated entry is tagged `descriptionSource: "ai"` so
+ * the new site can show a subtle "Auto-translated" tag and so future passes
+ * can prioritize human/photographer review on these specific SKUs.
+ *
+ * Cost: ~$0.003 per call × ~3,500 parents = ~$11.
+ * Wall: ~30 min at concurrency 8.
+ *
+ * Usage:
+ *   npx tsx scripts/scrape/10-llm-fill-descriptions.ts            # full run
+ *   npx tsx scripts/scrape/10-llm-fill-descriptions.ts --limit 25  # smoke
+ *   npx tsx scripts/scrape/10-llm-fill-descriptions.ts --brand Emtek
+ */
+import * as path from "node:path";
+import { promises as fs } from "node:fs";
+import { config } from "dotenv";
+import Anthropic from "@anthropic-ai/sdk";
+import { REPO_ROOT, STAGING, readJson, writeJson, exists, pool } from "./_lib";
+
+config({ path: path.join(REPO_ROOT, ".env.local") });
+
+const MODEL_MAP: Record<string, string> = {
+  haiku: "claude-haiku-4-5-20251001",
+  sonnet: "claude-sonnet-4-6",
+  opus: "claude-opus-4-6",
+};
+
+const arg = (name: string, fallback?: string): string | undefined => {
+  const i = process.argv.indexOf(`--${name}`); return i < 0 ? fallback : process.argv[i + 1];
+};
+
+interface CsvRow {
+  odoo_id: string; sku: string; name: string; brand: string;
+  list_price: string; description: string; uom: string;
+}
+
+const parseCsv = async (csvPath: string): Promise<CsvRow[]> => {
+  const text = await fs.readFile(csvPath, "utf-8");
+  const clean = text.replace(/^﻿/, "");
+  const out: CsvRow[] = [];
+  let header: string[] = []; let field = ""; let row: string[] = []; let inQuotes = false; let i = 0;
+  const pushField = () => { row.push(field); field = ""; };
+  const pushRow = () => {
+    if (!header.length) header = row;
+    else if (row.some((c) => c !== "")) {
+      const o: Record<string, string> = {};
+      for (let k = 0; k < header.length; k++) o[header[k]] = row[k] ?? "";
+      out.push(o as unknown as CsvRow);
+    }
+    row = [];
+  };
+  while (i < clean.length) {
+    const c = clean[i];
+    if (inQuotes) {
+      if (c === '"') { if (clean[i+1] === '"') { field += '"'; i+=2; continue; } inQuotes = false; i++; continue; }
+      field += c; i++; continue;
+    }
+    if (c === '"') { inQuotes = true; i++; continue; }
+    if (c === ",") { pushField(); i++; continue; }
+    if (c === "\n") { pushField(); pushRow(); i++; continue; }
+    if (c === "\r") { i++; continue; }
+    field += c; i++;
+  }
+  if (field || row.length) { pushField(); pushRow(); }
+  return out;
+};
+
+const SYSTEM_PROMPT = `You are a senior bilingual product copywriter for Counter Cultures, a luxury bath/kitchen/hardware retailer in San Miguel de Allende, Mexico. You write evocative but precise product descriptions in both Spanish (es-MX, primary) and English (en-US).
+
+Voice rules:
+- Confident, specific, sensory. Not flowery, not salesy.
+- Reference materials and mechanisms by name when known (cerámica, magnedock, vías de agua, válvula termostática, latón macizo).
+- Use the brand's own collection name verbatim (LITZE, Edalyn, Cimarron, etc.).
+- Mexican Spanish conventions: use "Tarja" for kitchen sink, "Lavabo" for bathroom sink, "Grifo/Mezcladora" for faucet, "Bañera/Tina" for tub, "Chapas" for door locks, "Jaladeras" for pulls.
+- Length: 60-90 words per description. Feature bullets: 4-6 each, 6-10 words each.
+
+Output STRICT JSON, no other text:
+{
+  "descriptionEs": "string",
+  "descriptionEn": "string",
+  "featuresEs": ["string", ...],
+  "featuresEn": ["string", ...]
+}`;
+
+const buildPrompt = (r: CsvRow, brandTagline?: string, brandDescriptionEs?: string): string => {
+  const cleaned = r.description.replace(/https?:\/\/\S+/g, "").trim().slice(0, 400);
+  return `Brand: ${r.brand}${brandTagline ? `\nBrand tagline (es): ${brandTagline}` : ""}${brandDescriptionEs ? `\nBrand voice (es): ${brandDescriptionEs}` : ""}
+
+Product
+  Odoo name (en): ${r.name}
+  SKU: ${r.sku}
+  Unit: ${r.uom}
+  Existing description fragment: ${cleaned || "(none)"}
+
+Write the bilingual content. Return JSON only.`;
+};
+
+interface Generated {
+  odoo_id: string;
+  sku: string;
+  brand: string;
+  descriptionEs: string;
+  descriptionEn: string;
+  featuresEs: string[];
+  featuresEn: string[];
+  source: "ai";
+  modelUsed: string;
+  generatedAt: string;
+}
+
+const callLLM = async (client: Anthropic, model: string, r: CsvRow, brandTag?: string, brandDescEs?: string): Promise<Generated | null> => {
+  const userPrompt = buildPrompt(r, brandTag, brandDescEs);
+  const res = await client.messages.create({
+    model, max_tokens: 700,
+    system: SYSTEM_PROMPT,
+    messages: [{ role: "user", content: userPrompt }],
+  });
+  const text = res.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join("").trim();
+  const m = /\{[\s\S]*\}/.exec(text);
+  if (!m) return null;
+  try {
+    const parsed = JSON.parse(m[0]);
+    return {
+      odoo_id: r.odoo_id,
+      sku: r.sku,
+      brand: r.brand,
+      descriptionEs: String(parsed.descriptionEs ?? "").trim(),
+      descriptionEn: String(parsed.descriptionEn ?? "").trim(),
+      featuresEs: Array.isArray(parsed.featuresEs) ? parsed.featuresEs.map(String) : [],
+      featuresEn: Array.isArray(parsed.featuresEn) ? parsed.featuresEn.map(String) : [],
+      source: "ai",
+      modelUsed: model,
+      generatedAt: new Date().toISOString(),
+    };
+  } catch { return null; }
+};
+
+const run = async () => {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) { console.error("[10] ANTHROPIC_API_KEY missing"); process.exit(1); }
+  const client = new Anthropic({ apiKey });
+
+  const modelKey = arg("model", "haiku") ?? "haiku";
+  const model = MODEL_MAP[modelKey] ?? MODEL_MAP.haiku;
+  const concurrency = Number(arg("concurrency", "6"));
+  const limit = Number(arg("limit", "0") || 0);
+  const brandFilter = arg("brand", "");
+
+  // Load brand glossary (taglines + voice) for in-context priming
+  const brandGlossaryPath = path.join(REPO_ROOT, "scripts", ".gitignored", "spanish-drafts.json");
+  const brandGlossary: Record<string, { taglineEs?: string; descriptionEs?: string }> = (await exists(brandGlossaryPath))
+    ? await readJson(brandGlossaryPath) : {};
+
+  // Build the work queue: parents (or singletons) lacking ES OR EN description.
+  const families = (await exists(path.join(REPO_ROOT, "app", "lib", "product-families.json")))
+    ? await readJson<{ parents: Record<string, any>; childToParent: Record<string, string> }>(
+        path.join(REPO_ROOT, "app", "lib", "product-families.json"))
+    : { parents: {}, childToParent: {} };
+  const childIds = new Set(Object.keys(families.childToParent));
+
+  const csv = await parseCsv(path.join(REPO_ROOT, "scripts", "products-odoo.csv"));
+
+  // Existing product-content from prior stages → check what already has descriptionEs.
+  const productContent: Record<string, any> = (await exists(path.join(REPO_ROOT, "app", "lib", "product-content.json")))
+    ? await readJson(path.join(REPO_ROOT, "app", "lib", "product-content.json")) : {};
+
+  const todo = csv.filter((r) => {
+    if (childIds.has(r.odoo_id)) return false; // children inherit from parent
+    if (brandFilter && r.brand !== brandFilter) return false;
+    const existing = productContent[r.odoo_id];
+    // Generate when missing ES (the gating requirement). If existing legacy
+    // scrape gave us ES, skip — never overwrite human-curated content.
+    if (existing?.descriptionEs && existing.descriptionEs.length > 50) return false;
+    // Skip "Shipping & Handling" and pure finish/color rows
+    if (!r.sku || r.sku.length < 3) return false;
+    if (!r.name || r.name.length < 5) return false;
+    return true;
+  });
+
+  const subset = limit > 0 ? todo.slice(0, limit) : todo;
+  console.log(`[10] Generating descriptions for ${subset.length} parents (model=${model}, concurrency=${concurrency})`);
+  if (brandFilter) console.log(`[10]   filter: brand="${brandFilter}"`);
+
+  const outPath = path.join(REPO_ROOT, "app", "lib", "product-content.json");
+  let ok = 0, fail = 0;
+  const slugFromBrand = (b: string): string => b.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+  await pool(subset, concurrency, async (r) => {
+    const brandSlug = slugFromBrand(r.brand);
+    const g = brandGlossary[brandSlug];
+    try {
+      const gen = await callLLM(client, model, r, g?.taglineEs, g?.descriptionEs);
+      if (!gen) { fail++; return; }
+      // Merge into product-content.json — read/modify/write to survive crashes.
+      const existing = productContent[r.odoo_id] ?? {
+        legacySlug: "", legacyUrl: "", title: "", features: [], gallery: [],
+        variants: [], breadcrumb: [], updatedAt: new Date().toISOString(), matchConfidence: 0,
+      };
+      existing.descriptionEs = gen.descriptionEs;
+      existing.descriptionEn = gen.descriptionEn;
+      existing.featuresEs = gen.featuresEs;
+      existing.featuresEn = gen.featuresEn;
+      existing.descriptionSource = "ai";
+      existing.modelUsed = gen.modelUsed;
+      existing.updatedAt = new Date().toISOString();
+      productContent[r.odoo_id] = existing;
+      ok++;
+      if (ok % 10 === 0) {
+        console.log(`[10]   …${ok}/${subset.length} (failed=${fail})`);
+        // Checkpoint
+        await writeJson(outPath, productContent);
+      }
+    } catch (e) {
+      fail++;
+    }
+  });
+
+  await writeJson(outPath, productContent);
+  console.log(`[10] ✓ generated=${ok} failed=${fail} (total=${subset.length})`);
+  console.log(`[10]   → ${outPath}`);
+};
+
+run().catch((e) => { console.error(e); process.exit(1); });

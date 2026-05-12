@@ -1,0 +1,51 @@
+
+[20:51:59] STAGE 1.1 — Discover product URLs on countercultures.com.mx
+[01] sitemap already discovered (/Users/joshuasemolik/Desktop/_PROJECTS/counter-cultures/staging/cc-mx/sitemap.json); pass --force to redo.
+
+[20:52:01] STAGE 1.2 — Scrape every legacy product page (Spanish copy + image URLs)
+[02] Scraping 633 products (concurrency=4, refresh=false)…
+[02] ✓ scraped=0 skipped=633 failed=0 (total=633)
+
+[20:52:03] STAGE 1.3 — Download gallery images (hi-res)
+[03] Found 628 product JSON files. Downloading images (concurrency=5, max-per=12)…
+[03] Total image jobs: 6563
+[03] ✓ downloaded=0 skipped=6563 failed=0 (total=6563)
+
+[20:52:05] STAGE 1.4 — Extract spec-sheet URLs from Odoo descriptions + download PDFs
+[04] Parsed 4236 rows from products-odoo.csv
+[04] 609 products carry a spec URL.
+[04] ✓ downloaded=0 skipped=203 failed=406 (total=609)
+
+[21:03:36] STAGE 1.5 — Brizo/Delta spec PDFs by URL pattern
+[brizo/delta] 265 targets (Brizo/Delta SKUs without an existing spec URL)
+[brizo/delta] ✓ found=0 / 265 (results in staging/specs-by-pattern.json)
+
+[21:03:52] STAGE 2.1 — Fuzzy match scraped slugs ↔ Odoo SKUs
+[05] Odoo rows: 4236
+[05] Scraped products: 628
+[05] ✓ high=124 low=477 no-match=27 → /Users/joshuasemolik/Desktop/_PROJECTS/counter-cultures/staging/cc-mx/match-map.json
+[05]   Manual review needed for 504 matches.
+
+[21:03:54] STAGE 2.2 — LLM-assisted matching for low-confidence rows (Haiku, ~5 min)
+◇ injected env (24) from .env.local // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+[05b] Loaded 4236 Odoo names for candidate enrichment.
+[05b] LLM matching 477 rows (model=claude-haiku-4-5-20251001, concurrency=6, threshold=0.45)
+[05b]   …25/477 upgraded=9 none=0 unchanged=16
+[05b]   …50/477 upgraded=13 none=0 unchanged=37
+[05b]   …75/477 upgraded=25 none=0 unchanged=50
+[05b]   …100/477 upgraded=35 none=0 unchanged=65
+[05b]   …125/477 upgraded=47 none=0 unchanged=78
+[05b]   …150/477 upgraded=54 none=0 unchanged=96
+[05b]   …175/477 upgraded=64 none=0 unchanged=111
+[05b]   …200/477 upgraded=75 none=0 unchanged=125
+[05b] ✓ upgraded=83 confirmedNone=0 unchanged=128
+[05b]   match-map.json now has 207 / 628 high-confidence matches.
+
+[21:07:12] STAGE 3 — Collapse Odoo variants under canonical parents
+[09] ✓ 97 parent families covering 215 SKUs
+[09]   collapsed 118 variants under parents (2.8% of catalog)
+[09]   singleton products (no variants): 3705
+[09]   → /Users/joshuasemolik/Desktop/_PROJECTS/counter-cultures/app/lib/product-families.json
+
+[21:07:14] STAGE 4.1 — California Faucets (~1,062 SKUs)
+[CF] 1028 California Faucets SKUs to probe (concurrency=3)

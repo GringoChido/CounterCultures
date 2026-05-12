@@ -21,6 +21,7 @@ import {
   getOdooStockQuants,
   getOdooStockLocations,
 } from "./odoo-sheets";
+import { getProductContent } from "./product-content";
 
 const SHEET_ID = process.env.GOOGLE_SHEETS_ID_PRODUCTS_FULL ?? "";
 const TAB = "Products";
@@ -103,6 +104,21 @@ export interface ProductFull {
   imageSrc?: string;
   /** SAT product/service code (clave de producto/servicio) for CFDI. */
   satCode?: string;
+  /** Spanish marketing description from countercultures.com.mx scrape.
+   *  Populated by scripts/scrape/06-build-product-content.ts. */
+  descriptionEs?: string;
+  /** English description from partner-site scrape. */
+  descriptionEn?: string;
+  /** Bulleted features (CARACTERÍSTICAS) from legacy site. */
+  features?: string[];
+  /** Hi-res gallery images keyed under /products/odoo-gallery/<id>/. */
+  gallery?: string[];
+  /** Variant labels (Color: dropdown). */
+  variantLabels?: string[];
+  /** Manufacturer spec sheet PDF (remote URL). */
+  specSheetUrl?: string;
+  /** Locally mirrored spec sheet at /specs/odoo/<id>.pdf. */
+  specSheetLocal?: string;
 }
 
 interface IndexedProduct extends ProductFull {
@@ -196,9 +212,19 @@ const load = async (): Promise<Cache> => {
     const category = normalizeCategory((row[iCat] ?? "").toString());
     const id = (row[iId] ?? "").toString();
     const stockQty = stockMap.get(id) ?? 0;
+    // Side-car content from the legacy CC.mx scrape (Spanish copy, gallery,
+    // spec sheet). Merged here so downstream search + detail views can read
+    // a unified ProductFull without each consumer hitting product-content.
+    const content = getProductContent(id);
+    // imageSrc resolution priority:
+    //   1. Canonical Odoo thumbnail at /products/odoo/<id>.jpg (manifest is
+    //      regenerated from disk — guaranteed to exist when in the set).
+    //   2. First gallery image when no thumbnail is bundled (scraped
+    //      products that only have hi-res gallery shots).
+    //   3. undefined — UI falls back to typography placeholder.
     const imageSrc = productImageIds.has(id)
       ? `/products/odoo/${id}.jpg`
-      : undefined;
+      : content?.gallery?.[0];
     const p: IndexedProduct = {
       id,
       name,
@@ -211,6 +237,13 @@ const load = async (): Promise<Cache> => {
       active: (row[iActive] ?? "").toString() === "true",
       saleOk: (row[iSaleOk] ?? "").toString() === "true",
       satCode: iSatCode >= 0 ? (row[iSatCode] ?? "").toString() || undefined : undefined,
+      descriptionEs: content?.descriptionEs || undefined,
+      descriptionEn: content?.descriptionEn || undefined,
+      features: content?.features?.length ? content.features : undefined,
+      gallery: content?.gallery?.length ? content.gallery : undefined,
+      variantLabels: content?.variants?.length ? content.variants : undefined,
+      specSheetUrl: content?.specSheetUrl || undefined,
+      specSheetLocal: content?.specSheetLocal || undefined,
       stockQty,
       inStock: stockQty > 0,
       imageSrc,
@@ -335,6 +368,13 @@ const stripIndex = (p: IndexedProduct): ProductFull => ({
   satCode: p.satCode,
   stockQty: p.stockQty,
   inStock: p.inStock,
+  descriptionEs: p.descriptionEs,
+  descriptionEn: p.descriptionEn,
+  features: p.features,
+  gallery: p.gallery,
+  variantLabels: p.variantLabels,
+  specSheetUrl: p.specSheetUrl,
+  specSheetLocal: p.specSheetLocal,
   imageSrc: p.imageSrc,
 });
 
@@ -726,25 +766,38 @@ import type { Product } from "./types";
 
 const slugFor = (id: string) => `p-${id}`;
 
-const toQuoteProduct = (p: ProductFull): Product => ({
-  id: p.id,
-  sku: p.sku || `ODOO-${p.id}`,
-  brand: p.brand,
-  name: p.name || p.sku || `Product ${p.id}`,
-  nameEn: p.name || p.sku || `Product ${p.id}`,
-  category: p.category,
-  subcategory: "",
-  price: 0,
-  currency: (p.currency === "USD" ? "USD" : "MXN") as "MXN" | "USD",
-  finishes: [],
-  images: [],
-  artisanal: false,
-  description: "",
-  descriptionEn: "",
-  availability: "quote_only" as const,
-  slug: slugFor(p.id),
-  satCode: p.satCode,
-});
+const toQuoteProduct = (p: ProductFull): Product => {
+  // Pull side-car content (scraped Spanish desc + features + gallery + spec sheet)
+  // when available. Falls back to lean fields if nothing has been staged yet.
+  const content = getProductContent(p.id);
+  const images = content?.gallery?.length
+    ? content.gallery
+    : p.imageSrc
+      ? [p.imageSrc]
+      : [];
+  return {
+    id: p.id,
+    sku: p.sku || `ODOO-${p.id}`,
+    brand: p.brand,
+    name: content?.title || p.name || p.sku || `Product ${p.id}`,
+    nameEn: p.name || p.sku || `Product ${p.id}`,
+    category: p.category,
+    subcategory: content?.breadcrumb?.[1] ?? "",
+    price: content?.price ?? 0,
+    currency: (p.currency === "USD" ? "USD" : "MXN") as "MXN" | "USD",
+    finishes: content?.variants ?? [],
+    images,
+    artisanal: false,
+    description: content?.descriptionEs ?? "",
+    descriptionEn: content?.descriptionEn ?? "",
+    specifications: content?.specSheetUrl
+      ? { specSheetUrl: content.specSheetUrl, ...(content.specSheetLocal ? { specSheetLocal: content.specSheetLocal } : {}) }
+      : undefined,
+    availability: "quote_only" as const,
+    slug: slugFor(p.id),
+    satCode: p.satCode,
+  };
+};
 
 export interface QuoteCatalogSearchOptions {
   q?: string;

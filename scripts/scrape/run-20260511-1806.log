@@ -1,0 +1,211 @@
+
+[18:06:09] STAGE 1.1 — Discover product URLs on countercultures.com.mx
+Need to install the following packages:
+tsx@4.21.0
+Ok to proceed? (y) 
+[01] sitemap already discovered (/Users/joshuasemolik/Desktop/_PROJECTS/counter-cultures/staging/cc-mx/sitemap.json); pass --force to redo.
+
+[18:06:18] STAGE 1.2 — Scrape every legacy product page (Spanish copy + image URLs)
+Need to install the following packages:
+tsx@4.21.0
+Ok to proceed? (y) 
+[02] Scraping 633 products (concurrency=4, refresh=false)…
+[02] ✓ scraped=0 skipped=633 failed=0 (total=633)
+
+[18:06:22] STAGE 1.3 — Download gallery images (hi-res)
+Need to install the following packages:
+tsx@4.21.0
+Ok to proceed? (y) 
+[03] Found 628 product JSON files. Downloading images (concurrency=5, max-per=12)…
+[03] Total image jobs: 6563
+[03]   …downloaded=56 skipped=44 failed=0
+[03]   …downloaded=90 skipped=60 failed=0
+[03]   …downloaded=150 skipped=100 failed=0
+[03]   …downloaded=180 skipped=120 failed=0
+[03]   …downloaded=230 skipped=120 failed=0
+[03]   …downloaded=280 skipped=120 failed=0
+[03]   …downloaded=330 skipped=120 failed=0
+[03]   …downloaded=380 skipped=120 failed=0
+[03]   …downloaded=430 skipped=120 failed=0
+[03]   …downloaded=480 skipped=120 failed=0
+[03]   …downloaded=530 skipped=120 failed=0
+[03]   …downloaded=580 skipped=120 failed=0
+[03]   …downloaded=630 skipped=120 failed=0
+[03]   …downloaded=680 skipped=120 failed=0
+[03]   …downloaded=730 skipped=120 failed=0
+[03]   …downloaded=780 skipped=120 failed=0
+[03]   …downloaded=830 skipped=120 failed=0
+[03]   …downloaded=880 skipped=120 failed=0
+[03]   …downloaded=930 skipped=120 failed=0
+[03]   …downloaded=980 skipped=120 failed=0
+[03]   …downloaded=1030 skipped=120 failed=0
+[03]   …downloaded=1080 skipped=120 failed=0
+[03]   …downloaded=1130 skipped=120 failed=0
+[03]   …downloaded=1180 skipped=120 failed=0
+[03]   …downloaded=1230 skipped=120 failed=0
+[03]   …downloaded=1280 skipped=120 failed=0
+[03]   …downloaded=1330 skipped=120 failed=0
+[03]   …downloaded=1380 skipped=120 failed=0
+[03]   …downloaded=1430 skipped=120 failed=0
+[03]   …downloaded=1480 skipped=120 failed=0
+[03]   …downloaded=1530 skipped=120 failed=0
+[03]   …downloaded=1580 skipped=120 failed=0
+[03]   …downloaded=1630 skipped=120 failed=0
+[03]   …downloaded=1680 skipped=120 failed=0
+[03]   …downloaded=1730 skipped=120 failed=0
+[03]   …downloaded=1780 skipped=120 failed=0
+[03]   …downloaded=1830 skipped=120 failed=0
+[03]   …downloaded=1880 skipped=120 failed=0
+[03]   …downloaded=1930 skipped=120 failed=0
+[03]   …downloaded=1980 skipped=120 failed=0
+[03]   …downloaded=2030 skipped=120 failed=0
+[03]   …downloaded=2080 skipped=120 failed=0
+[03]   …downloaded=2130 skipped=120 failed=0
+[03]   …downloaded=2180 skipped=120 failed=0
+[03]   …downloaded=2230 skipped=120 failed=0
+[03]   …downloaded=2280 skipped=120 failed=0
+[03]   …downloaded=2330 skipped=120 failed=0
+[03]   …downloaded=2380 skipped=120 failed=0
+[03]   …downloaded=2430 skipped=120 failed=0
+[03]   …downloaded=2480 skipped=120 failed=0
+[03]   …downloaded=2530 skipped=120 failed=0
+[03]   …downloaded=2580 skipped=120 failed=0
+[03]   …downloaded=2630 skipped=120 failed=0
+[03]   …downloaded=2680 skipped=120 failed=0
+[03]   …downloaded=2730 skipped=120 failed=0
+[03]   …downloaded=2780 skipped=120 failed=0
+[03]   …downloaded=2830 skipped=120 failed=0
+[03]   …downloaded=2880 skipped=120 failed=0
+[03]   …downloaded=2930 skipped=120 failed=0
+[03]   …downloaded=2980 skipped=120 failed=0
+[03]   …downloaded=3030 skipped=120 failed=0
+[03]   …downloaded=3080 skipped=120 failed=0
+[03]   …downloaded=3130 skipped=120 failed=0
+[03]   …downloaded=3180 skipped=120 failed=0
+[03]   …downloaded=3230 skipped=120 failed=0
+[03]   …downloaded=3280 skipped=120 failed=0
+[03]   …downloaded=3330 skipped=120 failed=0
+[03]   …downloaded=3380 skipped=120 failed=0
+[03]   …downloaded=3430 skipped=120 failed=0
+[03]   …downloaded=3480 skipped=120 failed=0
+[03]   …downloaded=3530 skipped=120 failed=0
+[03]   …downloaded=3580 skipped=120 failed=0
+[03]   …downloaded=3630 skipped=120 failed=0
+[03]   …downloaded=3680 skipped=120 failed=0
+[03]   …downloaded=3730 skipped=120 failed=0
+[03]   …downloaded=3780 skipped=120 failed=0
+[03]   …downloaded=3830 skipped=120 failed=0
+[03]   …downloaded=3880 skipped=120 failed=0
+[03]   …downloaded=3930 skipped=120 failed=0
+[03]   …downloaded=3980 skipped=120 failed=0
+[03]   …downloaded=4030 skipped=120 failed=0
+[03]   …downloaded=4080 skipped=120 failed=0
+[03]   …downloaded=4130 skipped=120 failed=0
+[03]   …downloaded=4180 skipped=120 failed=0
+[03]   …downloaded=4230 skipped=120 failed=0
+[03]   …downloaded=4280 skipped=120 failed=0
+[03]   …downloaded=4330 skipped=120 failed=0
+[03]   …downloaded=4380 skipped=120 failed=0
+[03]   …downloaded=4430 skipped=120 failed=0
+[03]   …downloaded=4480 skipped=120 failed=0
+[03]   …downloaded=4530 skipped=120 failed=0
+[03]   …downloaded=4580 skipped=120 failed=0
+[03]   …downloaded=4630 skipped=120 failed=0
+[03]   …downloaded=4680 skipped=120 failed=0
+[03]   …downloaded=4730 skipped=120 failed=0
+[03]   …downloaded=4780 skipped=120 failed=0
+[03]   …downloaded=4830 skipped=120 failed=0
+[03]   …downloaded=4880 skipped=120 failed=0
+[03]   …downloaded=4930 skipped=120 failed=0
+[03]   …downloaded=4980 skipped=120 failed=0
+[03]   …downloaded=5030 skipped=120 failed=0
+[03]   …downloaded=5080 skipped=120 failed=0
+[03]   …downloaded=5130 skipped=120 failed=0
+[03]   …downloaded=5180 skipped=120 failed=0
+[03]   …downloaded=5230 skipped=120 failed=0
+[03]   …downloaded=5280 skipped=120 failed=0
+[03]   …downloaded=5330 skipped=120 failed=0
+[03]   …downloaded=5380 skipped=120 failed=0
+[03]   …downloaded=5430 skipped=120 failed=0
+[03]   …downloaded=5480 skipped=120 failed=0
+[03]   …downloaded=5530 skipped=120 failed=0
+[03]   …downloaded=5580 skipped=120 failed=0
+[03]   …downloaded=5630 skipped=120 failed=0
+[03]   …downloaded=5680 skipped=120 failed=0
+[03]   …downloaded=5730 skipped=120 failed=0
+[03]   …downloaded=5780 skipped=120 failed=0
+[03]   …downloaded=5830 skipped=120 failed=0
+[03]   …downloaded=5880 skipped=120 failed=0
+[03]   …downloaded=5930 skipped=120 failed=0
+[03]   …downloaded=5980 skipped=120 failed=0
+[03]   …downloaded=6030 skipped=120 failed=0
+[03]   …downloaded=6080 skipped=120 failed=0
+[03]   …downloaded=6130 skipped=120 failed=0
+[03]   …downloaded=6180 skipped=120 failed=0
+[03]   …downloaded=6230 skipped=120 failed=0
+[03]   …downloaded=6280 skipped=120 failed=0
+[03]   …downloaded=6330 skipped=120 failed=0
+[03]   …downloaded=6380 skipped=120 failed=0
+[03]   …downloaded=6430 skipped=120 failed=0
+[03] ✓ downloaded=6443 skipped=120 failed=0 (total=6563)
+
+[18:08:29] STAGE 1.4 — Extract spec-sheet URLs from Odoo descriptions + download PDFs
+Need to install the following packages:
+tsx@4.21.0
+Ok to proceed? (y) 
+[04] Parsed 4236 rows from products-odoo.csv
+[04] 609 products carry a spec URL.
+[04]   …downloaded=12 skipped=69 failed=94
+[04]   …downloaded=24 skipped=69 failed=107
+[04]   …downloaded=109 skipped=69 failed=322
+[04]   …downloaded=133 skipped=69 failed=398
+[04] ✓ downloaded=134 skipped=69 failed=406 (total=609)
+
+[18:47:55] STAGE 1.5 — Brizo/Delta spec PDFs by URL pattern
+Need to install the following packages:
+tsx@4.21.0
+Ok to proceed? (y) 
+[brizo/delta] 265 targets (Brizo/Delta SKUs without an existing spec URL)
+[brizo/delta] ✓ found=265 / 265 (results in staging/specs-by-pattern.json)
+
+[20:40:52] STAGE 2.1 — Fuzzy match scraped slugs ↔ Odoo SKUs
+Need to install the following packages:
+tsx@4.21.0
+Ok to proceed? (y) 
+[05] Odoo rows: 4236
+[05] Scraped products: 628
+[05] ✓ high=124 low=477 no-match=27 → /Users/joshuasemolik/Desktop/_PROJECTS/counter-cultures/staging/cc-mx/match-map.json
+[05]   Manual review needed for 504 matches.
+
+[20:40:59] STAGE 2.2 — LLM-assisted matching for low-confidence rows (Haiku, ~5 min)
+Need to install the following packages:
+tsx@4.21.0
+Ok to proceed? (y) 
+◇ injected env (24) from .env.local // tip: ⌘ suppress logs { quiet: true }
+[05b] Loaded 4236 Odoo names for candidate enrichment.
+[05b] LLM matching 477 rows (model=claude-haiku-4-5-20251001, concurrency=6, threshold=0.45)
+[05b]   …25/477 upgraded=10 none=0 unchanged=15
+[05b]   …50/477 upgraded=14 none=0 unchanged=36
+[05b]   …75/477 upgraded=26 none=0 unchanged=49
+[05b]   …100/477 upgraded=37 none=0 unchanged=63
+[05b]   …125/477 upgraded=43 none=0 unchanged=82
+[05b]   …150/477 upgraded=49 none=0 unchanged=101
+[05b]   …175/477 upgraded=59 none=0 unchanged=116
+[05b]   …200/477 upgraded=74 none=0 unchanged=126
+[05b] ✓ upgraded=82 confirmedNone=0 unchanged=129
+[05b]   match-map.json now has 206 / 628 high-confidence matches.
+
+[20:46:45] STAGE 3 — Collapse Odoo variants under canonical parents
+Need to install the following packages:
+tsx@4.21.0
+Ok to proceed? (y) 
+[09] ✓ 97 parent families covering 215 SKUs
+[09]   collapsed 118 variants under parents (2.8% of catalog)
+[09]   singleton products (no variants): 3705
+[09]   → /Users/joshuasemolik/Desktop/_PROJECTS/counter-cultures/app/lib/product-families.json
+
+[20:50:13] STAGE 4.1 — California Faucets (~1,062 SKUs)
+Need to install the following packages:
+tsx@4.21.0
+Ok to proceed? (y) 
+[CF] 1028 California Faucets SKUs to probe (concurrency=3)

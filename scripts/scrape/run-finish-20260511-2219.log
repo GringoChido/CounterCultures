@@ -1,0 +1,28 @@
+
+[22:19:35] STAGE 4b — Merge any partner outputs already on disk
+
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+Error: Transform failed with 1 error:
+/Users/joshuasemolik/Desktop/_PROJECTS/counter-cultures/scripts/scrape/11-merge-partner-content.ts:4:53: ERROR: Unexpected "."
+    at failureErrorWithLog (/private/tmp/npm-cache-tia/_npx/fd45a72a545557e9/node_modules/esbuild/lib/main.js:1748:15)
+    at /private/tmp/npm-cache-tia/_npx/fd45a72a545557e9/node_modules/esbuild/lib/main.js:1017:50
+    at responseCallbacks.<computed> (/private/tmp/npm-cache-tia/_npx/fd45a72a545557e9/node_modules/esbuild/lib/main.js:884:9)
+    at handleIncomingPacket (/private/tmp/npm-cache-tia/_npx/fd45a72a545557e9/node_modules/esbuild/lib/main.js:939:12)
+    at Socket.readFromStdout (/private/tmp/npm-cache-tia/_npx/fd45a72a545557e9/node_modules/esbuild/lib/main.js:862:7)
+    at Socket.emit (node:events:508:28)
+    at addChunk (node:internal/streams/readable:559:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+    at Readable.push (node:internal/streams/readable:390:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) {
+  name: 'TransformError'
+}
+
+Node.js v24.13.0
+
+[22:19:38] STAGE 5.1 — Compose content + COPY 6,443 GALLERY IMAGES into public/
+[06] ✓ 705 entries → /Users/joshuasemolik/Desktop/_PROJECTS/counter-cultures/app/lib/product-content.json
+[06]   kept=207 skipped=421 (min-confidence=0.45)
+[06] ✓ regenerated /Users/joshuasemolik/Desktop/_PROJECTS/counter-cultures/app/lib/product-image-manifest.json with 4237 ids
+./scripts/scrape/run-finish.sh: line 18: $1: unbound variable

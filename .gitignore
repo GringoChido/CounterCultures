@@ -62,3 +62,9 @@ CC-*.md
 # Raw image sources awaiting migration to public/images/ — kept local only
 /public/Assets/home-page/
 public/Assets/BRANDS/staging/
+
+# Asset migration scrape staging — large, regenerable
+# staging/ holds raw scraped JSON/HTML/images; only the curated outputs
+# (app/lib/product-content.json + public/products/odoo-gallery/ +
+# public/specs/odoo/) are checked in.
+/staging/

@@ -1,0 +1,1019 @@
+{
+  "parents": {
+    "764586": {
+      "children": [
+        "764585"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-86276",
+      "sampleName": "Mortise & Tenon Pull, 6\" C-C, US15",
+      "reason": "family of 2, cohesion=0.80"
+    },
+    "1579993": {
+      "children": [
+        "1579994"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-2124",
+      "sampleName": "Passage, Sandcast Bronze, Rustic Modern Rectangular Pocket Door Mortise Lock, FB",
+      "reason": "family of 2, cohesion=0.90"
+    },
+    "1579996": {
+      "children": [
+        "1579997"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-2125",
+      "sampleName": "Privacy, Sandcast Bronze, Rustic Modern Rectangular Pocket Door Mortise Lock, FB",
+      "reason": "family of 2, cohesion=0.90"
+    },
+    "1580079": {
+      "children": [
+        "1580080"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-2155",
+      "sampleName": "Privacy, Narrow Modern Rectangular Pocket Door Mortise Lock, US19",
+      "reason": "family of 2, cohesion=0.89"
+    },
+    "1599513": {
+      "children": [
+        "1599522"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-4213ME",
+      "sampleName": "Sgl Cyl, Hamden Tub Ent, Merrimack Lever, LH, US10B",
+      "reason": "family of 2, cohesion=0.89"
+    },
+    "1719112": {
+      "children": [
+        "1719119"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-5109HLO",
+      "sampleName": "Passage, Disk Rosette, Helios Lever, LH, US10B",
+      "reason": "family of 2, cohesion=0.86"
+    },
+    "1719828": {
+      "children": [
+        "1719838"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-5110ACEKN",
+      "sampleName": "Passage, Square Rosette, The Ace Knurled Knob, US19",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "1720064": {
+      "children": [
+        "1720071"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-5110HLO",
+      "sampleName": "Passage, Square Rosette, Helios Lever, LH, US19",
+      "reason": "family of 2, cohesion=0.86"
+    },
+    "1721683": {
+      "children": [
+        "1721673",
+        "1721680"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-5112HLO",
+      "sampleName": "Passage, Modern Rectangular Rosette, Helios Lever, RH, US19",
+      "reason": "family of 3, cohesion=0.75"
+    },
+    "1722512": {
+      "children": [
+        "1722519",
+        "1722516"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-5123HLO",
+      "sampleName": "KIL Helios Lever, Modern Rectangular Rosette, LH, US19",
+      "reason": "family of 3, cohesion=0.75"
+    },
+    "1723981": {
+      "children": [
+        "1723988",
+        "1723979",
+        "1723986"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-5209HLO",
+      "sampleName": "Privacy, Disk Rosette, Helios Lever, LH, US15",
+      "reason": "family of 4, cohesion=0.71"
+    },
+    "1724493": {
+      "children": [
+        "1724494"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-5209US19.LSUS19.HAUS19.",
+      "sampleName": "Select Privacy, Disk Rosette US19, L-Square Stem US19, Hammered Handle US19 LH",
+      "reason": "family of 2, cohesion=0.91"
+    },
+    "1724765": {
+      "children": [
+        "1724772"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-5210BA",
+      "sampleName": "Privacy, Square Rosette, Basel Lever, LH, US10B",
+      "reason": "family of 2, cohesion=0.86"
+    },
+    "1724907": {
+      "children": [
+        "1724914"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-5210HEC",
+      "sampleName": "Privacy, Square Rosette, Hercules Lever, LH, US10B",
+      "reason": "family of 2, cohesion=0.86"
+    },
+    "1724938": {
+      "children": [
+        "1724945",
+        "1724935",
+        "1724942"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-5210HLO",
+      "sampleName": "Privacy, Square Rosette, Helios Lever, LH, US19",
+      "reason": "family of 4, cohesion=0.71"
+    },
+    "1726280": {
+      "children": [
+        "1726281"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-5211US3NL.TAUS3NL.HAUS3NL.",
+      "sampleName": "Select Privacy, Neos Rosette US3NL, T-Bar Stem US3NL, Hammered Handle US3NL LH",
+      "reason": "family of 2, cohesion=0.91"
+    },
+    "1726564": {
+      "children": [
+        "1726566",
+        "1726571",
+        "1726573",
+        "1726570"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-5212HLO",
+      "sampleName": "Privacy, Modern Rectangular Rosette, Helios Lever, LH, US14",
+      "reason": "family of 5, cohesion=0.75"
+    },
+    "1734945": {
+      "children": [
+        "1734946"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-71015OCK",
+      "sampleName": "Passage, #15 Rosette, Bronze Octagon Knob, FB",
+      "reason": "family of 2, cohesion=0.83"
+    },
+    "1735228": {
+      "children": [
+        "1735229"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-7106BZEG",
+      "sampleName": "Passage, #2 Rosette, Bronze Egg Knob, FB",
+      "reason": "family of 2, cohesion=0.80"
+    },
+    "1736454": {
+      "children": [
+        "1736455"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-7206BZEG",
+      "sampleName": "Privacy, #2 Rosette, Bronze Egg Knob, FB",
+      "reason": "family of 2, cohesion=0.80"
+    },
+    "1745820": {
+      "children": [
+        "1745825"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-8041HLO",
+      "sampleName": "Dum,Stretto,10\" Plt, Helios Lvr, LH, US19",
+      "reason": "family of 2, cohesion=0.86"
+    },
+    "1758534": {
+      "children": [
+        "1758530"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-8108C",
+      "sampleName": "Passage, #8 Rosette, Cortina Lever, RH, US19",
+      "reason": "family of 2, cohesion=0.83"
+    },
+    "1762656": {
+      "children": [
+        "1762666"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-8121ME",
+      "sampleName": "Passage, Rectangular Rosette, Merrimack Lever, LH, US10B",
+      "reason": "family of 2, cohesion=0.86"
+    },
+    "1763563": {
+      "children": [
+        "1763569"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-8131SIO",
+      "sampleName": "Passage, Quincy Rosette, Sion Lever, LH, US10B",
+      "reason": "family of 2, cohesion=0.86"
+    },
+    "1765047": {
+      "children": [
+        "1765054"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-8141HLO",
+      "sampleName": "Passage, Stretto, 10\" Plate, Helios Lever, LH, US19",
+      "reason": "family of 2, cohesion=0.86"
+    },
+    "1766485": {
+      "children": [
+        "1766481"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-8161M",
+      "sampleName": "Passage, Wilshire Rosette, Milano Lever, RH, US19",
+      "reason": "family of 2, cohesion=0.86"
+    },
+    "1770981": {
+      "children": [
+        "1770977"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-8208C",
+      "sampleName": "Privacy, #8 Rosette, Cortina Lever, RH, US19",
+      "reason": "family of 2, cohesion=0.83"
+    },
+    "1775095": {
+      "children": [
+        "1775105"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-8221ME",
+      "sampleName": "Privacy, Rectangular Rosette, Merrimack Lever, LH, US10B",
+      "reason": "family of 2, cohesion=0.86"
+    },
+    "1845318": {
+      "children": [
+        "1845325"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-8241HLO",
+      "sampleName": "Thumbturn Privacy, Stretto, 10\" Plate, Helios Lever, LH, US19",
+      "reason": "family of 2, cohesion=0.88"
+    },
+    "1846824": {
+      "children": [
+        "1846821"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-8369",
+      "sampleName": "Square Deadbolt, Dbl, US19",
+      "reason": "family of 2, cohesion=0.75"
+    },
+    "1847673": {
+      "children": [
+        "1847669",
+        "1847670",
+        "1847667"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-8423",
+      "sampleName": "Modern Disc Deadbolt, Sgl, US4",
+      "reason": "family of 4, cohesion=0.80"
+    },
+    "1847713": {
+      "children": [
+        "1847719"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-8442HLO",
+      "sampleName": "Entry KyOS,Stretto,10\" Plt, HeliosLvr,LH, US19",
+      "reason": "family of 2, cohesion=0.86"
+    },
+    "1847937": {
+      "children": [
+        "1847933"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-8468",
+      "sampleName": "Brass Rect Deadbolt, Sgl, US19",
+      "reason": "family of 2, cohesion=0.75"
+    },
+    "1847946": {
+      "children": [
+        "1847945",
+        "1847943"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-8469",
+      "sampleName": "Square Deadbolt, Sgl, US19",
+      "reason": "family of 3, cohesion=0.75"
+    },
+    "1847981": {
+      "children": [
+        "1847979"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-8479",
+      "sampleName": "Wilshire  Deadbolt, Single Cylinder, US15",
+      "reason": "family of 2, cohesion=0.80"
+    },
+    "1885849": {
+      "children": [
+        "1885847"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-EMP0103AG",
+      "sampleName": "Electronic EMPowered Motorized Touchscreen Keypad Entry Set with Baden Grip, Argos Lever, LH, US15",
+      "reason": "family of 2, cohesion=0.93"
+    },
+    "1893123": {
+      "children": [
+        "1893128"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-EMP4820HLO",
+      "sampleName": "EMPowered Upgrade, Sgl Cyl, Baden Tub Ent, Helios Lever, LH, US10B",
+      "reason": "family of 2, cohesion=0.91"
+    },
+    "1937414": {
+      "children": [
+        "1937420",
+        "1937418"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-F20331250HLO",
+      "sampleName": "Entryset, F20, Adelaide Narrow Mortise, 2-1/2 Backset, Helios Lever, LH, US19",
+      "reason": "family of 3, cohesion=0.82"
+    },
+    "2011924": {
+      "children": [
+        "2011926"
+      ],
+      "brand": "Brizo",
+      "skuRoot": "BRI-62820LF",
+      "sampleName": "Brizo Brizo European: Wall Mount Pot Filler Faucet Chrome",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "2015282": {
+      "children": [
+        "2015284"
+      ],
+      "brand": "Brizo",
+      "skuRoot": "BRI-63063LF",
+      "sampleName": "Brizo Litze®: Pull-Down Faucet with Angled Spout and Knurled Handle Luxe Gold",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "2015302": {
+      "children": [
+        "2015304"
+      ],
+      "brand": "Brizo",
+      "skuRoot": "BRI-63053LF",
+      "sampleName": "Brizo Litze®: Pull-Down Faucet with Square Spout and Knurled Handle Luxe Gold",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "2015457": {
+      "children": [
+        "2015460"
+      ],
+      "brand": "Brizo",
+      "skuRoot": "BRI-65035LF",
+      "sampleName": "Brizo Litze®: Single-Handle Lavatory Faucet  Luxe Gold",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "2015536": {
+      "children": [
+        "2046525"
+      ],
+      "brand": "Brizo",
+      "skuRoot": "BRI-64043LF",
+      "sampleName": "Brizo Litze®: SmartTouch® Pull-Down Faucet with Arc Spout and Knurled Handle Luxe Gold",
+      "reason": "family of 2, cohesion=0.08"
+    },
+    "2015987": {
+      "children": [
+        "2015988"
+      ],
+      "brand": "Brizo",
+      "skuRoot": "BRI-HLK175",
+      "sampleName": "Brizo Odin®: Pull-Down Faucet Lever Handle Matte Black",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "2016076": {
+      "children": [
+        "2016077"
+      ],
+      "brand": "Brizo",
+      "skuRoot": "BRI-693575",
+      "sampleName": "Brizo Odin®: Single Robe Hook Luxe Gold",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "2016084": {
+      "children": [
+        "2016086"
+      ],
+      "brand": "Brizo",
+      "skuRoot": "BRI-T70175",
+      "sampleName": "Brizo Odin®: Single-Handle Freestanding Tub Filler Brushed Nickel",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "2016175": {
+      "children": [
+        "2016173",
+        "2016176"
+      ],
+      "brand": "Brizo",
+      "skuRoot": "BRI-695075",
+      "sampleName": "Brizo Odin®: Tissue Holder Chrome",
+      "reason": "family of 3, cohesion=1.00"
+    },
+    "2016207": {
+      "children": [
+        "2016208",
+        "2016209"
+      ],
+      "brand": "Brizo",
+      "skuRoot": "BRI-HL5875",
+      "sampleName": "Brizo Odin®: Wall Mount Lavatory Lever Handles Brushed Nickel",
+      "reason": "family of 3, cohesion=1.00"
+    },
+    "2016807": {
+      "children": [
+        "2016809",
+        "2016811"
+      ],
+      "brand": "Brizo",
+      "skuRoot": "BRI-RP72413",
+      "sampleName": "Brizo Other: Push Button Pop-Up Without Overflow Matte Black",
+      "reason": "family of 3, cohesion=1.00"
+    },
+    "2019309": {
+      "children": [
+        "2019308"
+      ],
+      "brand": "Brizo",
+      "skuRoot": "BRI-T70130",
+      "sampleName": "Brizo Virage®: Single-Handle Freestanding Tub Filler Chrome",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "2022039": {
+      "children": [
+        "2022040"
+      ],
+      "brand": "Delta",
+      "skuRoot": "BRI-79735",
+      "sampleName": "Delta Cassidy™: Double Robe Hook Venetian Bronze",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "2022135": {
+      "children": [
+        "2022136"
+      ],
+      "brand": "Delta",
+      "skuRoot": "BRI-H795",
+      "sampleName": "Delta Cassidy™: Metal Cross Handle Kit - 14 Series Venetian Bronze",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "2022470": {
+      "children": [
+        "2022471"
+      ],
+      "brand": "Delta",
+      "skuRoot": "BRI-79750",
+      "sampleName": "Delta Cassidy™: Tissue Holder Venetian Bronze",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "2026394": {
+      "children": [
+        "2026397",
+        "2026399"
+      ],
+      "brand": "Delta",
+      "skuRoot": "BRI-RP101632",
+      "sampleName": "Delta Other: Metal Push-Pop Without Overflow Matte Black",
+      "reason": "family of 3, cohesion=1.00"
+    },
+    "2029794": {
+      "children": [
+        "2029796"
+      ],
+      "brand": "Delta",
+      "skuRoot": "BRI-1959LF",
+      "sampleName": "Delta Trinsic®: True Bar Limited Swivel Chrome",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "2042567": {
+      "children": [
+        "2042569"
+      ],
+      "brand": "California Faucets",
+      "skuRoot": "CF-K50-100-B",
+      "sampleName": "Poetto  Pull-Down Kitchen Faucet - High Arc Spout",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "2042795": {
+      "children": [
+        "2048248"
+      ],
+      "brand": "California Faucets",
+      "skuRoot": "CF-3109XK-1",
+      "sampleName": "Descanso Single Hole Lavatory/Bar/Prep Faucet - Low Spout",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "2044439": {
+      "children": [
+        "2048336"
+      ],
+      "brand": "California Faucets",
+      "skuRoot": "CF-9152",
+      "sampleName": "Shower Columns Exposed Shower Column with Diverter and Sliding Bracket - Round Base",
+      "reason": "family of 2, cohesion=0.91"
+    },
+    "2045212": {
+      "children": [
+        "2048249"
+      ],
+      "brand": "California Faucets",
+      "skuRoot": "CF-9050L",
+      "sampleName": "Lavatory Drains & Traps Touch Style Pop-Up Drain",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "2045842": {
+      "children": [
+        "2046359"
+      ],
+      "brand": "AQUASPA",
+      "skuRoot": "90-02",
+      "sampleName": "Edition 90-02 ",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "2045853": {
+      "children": [
+        "2044393"
+      ],
+      "brand": "California Faucets",
+      "skuRoot": "CF-9100",
+      "sampleName": "Shower Arm Flange",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "2045858": {
+      "children": [
+        "2046066"
+      ],
+      "brand": "California Faucets",
+      "skuRoot": "BTB",
+      "sampleName": "Bella Terra Bronce",
+      "reason": "family of 2, cohesion=0.67"
+    },
+    "2045860": {
+      "children": [
+        "2047398"
+      ],
+      "brand": "Delta",
+      "skuRoot": "142749",
+      "sampleName": "Monitor® 14 Series H2Okinetic® Shower In Matte Black",
+      "reason": "family of 2, cohesion=0.00"
+    },
+    "2045946": {
+      "children": [
+        "2046275"
+      ],
+      "brand": "California Faucets",
+      "skuRoot": "CF-SN",
+      "sampleName": "Satin Nickel - Brushed Nickel Finish",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "2046000": {
+      "children": [
+        "2047560"
+      ],
+      "brand": "MISENO",
+      "skuRoot": "MNO194A",
+      "sampleName": "Miseno Floor Mounted Tub Filler with Integrated Valve and Diverter - Includes Hand Shower",
+      "reason": "family of 2, cohesion=0.83"
+    },
+    "2046024": {
+      "children": [
+        "2046026"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "",
+      "sampleName": "Medium Bronze Finish",
+      "reason": "family of 2, cohesion=0.50"
+    },
+    "2046065": {
+      "children": [
+        "2046282"
+      ],
+      "brand": "Baldwin",
+      "skuRoot": "8632.102",
+      "sampleName": "8632.102",
+      "reason": "family of 2, cohesion=0.00"
+    },
+    "2046214": {
+      "children": [
+        "2047435"
+      ],
+      "brand": "MISENO",
+      "skuRoot": "MNO191L",
+      "sampleName": "Miseno 1.8 GPM Pull Down Kitchen Faucet",
+      "reason": "family of 2, cohesion=0.00"
+    },
+    "2046407": {
+      "children": [
+        "2046147"
+      ],
+      "brand": "AQUASPA",
+      "skuRoot": "OASIS",
+      "sampleName": "Aquaspa Oasis 5 Adultos",
+      "reason": "family of 2, cohesion=0.50"
+    },
+    "2046481": {
+      "children": [
+        "2044402"
+      ],
+      "brand": "California Faucets",
+      "skuRoot": "CF-9113-65",
+      "sampleName": "CF-9113-65",
+      "reason": "family of 2, cohesion=0.00"
+    },
+    "2046686": {
+      "children": [
+        "2046628"
+      ],
+      "brand": "Toto",
+      "skuRoot": "MW6243056CEFGA#01",
+      "sampleName": "LEGATO - WASHLET+ S500E ONE-PIECE TOILET - 1.28 GPF",
+      "reason": "family of 2, cohesion=0.83"
+    },
+    "2046875": {
+      "children": [
+        "2046877"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-5122HEC",
+      "sampleName": "EMTEK- 5122HECLHUS10B",
+      "reason": "family of 2, cohesion=0.50"
+    },
+    "2046879": {
+      "children": [
+        "2046558"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-852810B",
+      "sampleName": "Pasador para Puerta de 6 pulgadas",
+      "reason": "family of 2, cohesion=0.00"
+    },
+    "2046973": {
+      "children": [
+        "2011660"
+      ],
+      "brand": "Brizo",
+      "skuRoot": "BRI-62525LF",
+      "sampleName": "BRI-62525LF-PN ARTESSO® Bridge Faucet with Side Sprayer",
+      "reason": "family of 2, cohesion=0.86"
+    },
+    "2046975": {
+      "children": [
+        "2011632"
+      ],
+      "brand": "Brizo",
+      "skuRoot": "BRI-62825LF",
+      "sampleName": "BRI-62825LF-PN ARTESSO® Wall Mount Pot Filler",
+      "reason": "family of 2, cohesion=0.83"
+    },
+    "2046976": {
+      "children": [
+        "2011726"
+      ],
+      "brand": "Brizo",
+      "skuRoot": "BRI-63025LF",
+      "sampleName": "BRI-63025LF-PN  Artesso 1.8 GPM Single Hole Pull Down Kitchen Faucet",
+      "reason": "family of 2, cohesion=0.75"
+    },
+    "2046978": {
+      "children": [
+        "2016677"
+      ],
+      "brand": "Brizo",
+      "skuRoot": "BRI-69052",
+      "sampleName": "BRI-69052-PN  Kitchen Sink Flange with Strainer",
+      "reason": "family of 2, cohesion=0.50"
+    },
+    "2046996": {
+      "children": [
+        "2048816"
+      ],
+      "brand": "Kohler",
+      "skuRoot": "K-26307-2",
+      "sampleName": "K-26307-2MB",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "2047059": {
+      "children": [
+        "1720239"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-5110OR",
+      "sampleName": "EMTEK-5110ORUS15 ModernClassic Brass Knobset",
+      "reason": "family of 2, cohesion=0.00"
+    },
+    "2047091": {
+      "children": [
+        "2048398"
+      ],
+      "brand": "Kingston Brass",
+      "skuRoot": "K111B",
+      "sampleName": "K111B",
+      "reason": "family of 2, cohesion=0.00"
+    },
+    "2047263": {
+      "children": [
+        "2017634"
+      ],
+      "brand": "Brizo",
+      "skuRoot": "BRI-695061",
+      "sampleName": "BRI-695061-PC",
+      "reason": "family of 2, cohesion=0.00"
+    },
+    "2047317": {
+      "children": [
+        "2047323"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "5115US19.KLSUS19.HAUS19.",
+      "sampleName": "5115US19.KLSUS19.HAUS19.RH",
+      "reason": "family of 2, cohesion=0.75"
+    },
+    "2047521": {
+      "children": [
+        "1722470"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "EMTEK-5122HLO",
+      "sampleName": "KIL Helios Lever, Square Rosette, LH, US19",
+      "reason": "family of 2, cohesion=0.86"
+    },
+    "2047577": {
+      "children": [
+        "2047578"
+      ],
+      "brand": "Sun Valley Bronze",
+      "skuRoot": "CS-SFP-58-2002IML",
+      "sampleName": "CS-SFP-58-2002IML-LH",
+      "reason": "family of 2, cohesion=0.80"
+    },
+    "2047579": {
+      "children": [
+        "2047580"
+      ],
+      "brand": "Sun Valley Bronze",
+      "skuRoot": "GH-GAZELLE",
+      "sampleName": "GH-GAZELLE-LH SUN VALLEY BRONZE GAZELLE GRIP HANDLES",
+      "reason": "family of 2, cohesion=0.67"
+    },
+    "2047692": {
+      "children": [
+        "2048094"
+      ],
+      "brand": "Kohler",
+      "skuRoot": "K-TS14423-4",
+      "sampleName": "K-TS14423-4-BL  Purist™ Rite-Temp® valve trim with lever handle",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "2047703": {
+      "children": [
+        "2047300"
+      ],
+      "brand": "Kohler",
+      "skuRoot": "K-9514",
+      "sampleName": "K-9514-BL  MasterShower™ 60\" metal shower hose",
+      "reason": "family of 2, cohesion=0.67"
+    },
+    "2047862": {
+      "children": [
+        "2047861"
+      ],
+      "brand": "Kohler",
+      "skuRoot": "K-TS396-4",
+      "sampleName": "Kohler Devonshire Rite-Temp Pressure-Balancing Shower Faucet Trim with Lever Handle",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "2047877": {
+      "children": [
+        "2047880"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "5109TRT",
+      "sampleName": "5109TRTUS19",
+      "reason": "family of 2, cohesion=0.00"
+    },
+    "2047878": {
+      "children": [
+        "2047881"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "5209TRT",
+      "sampleName": "5209TRTUS19",
+      "reason": "family of 2, cohesion=0.00"
+    },
+    "2047979": {
+      "children": [
+        "2047980"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "8444STUUS19",
+      "sampleName": "8444STUUS19RH",
+      "reason": "family of 2, cohesion=0.00"
+    },
+    "2047982": {
+      "children": [
+        "2047981"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "8243STUUS19",
+      "sampleName": "8243STUUS19RH",
+      "reason": "family of 2, cohesion=0.00"
+    },
+    "2048162": {
+      "children": [
+        "2046500",
+        "2047817",
+        "2046573"
+      ],
+      "brand": "California Faucets",
+      "skuRoot": "CF-9651",
+      "sampleName": "CF-9651 Heavy Duty Post Type Basket Strainer",
+      "reason": "family of 4, cohesion=0.86"
+    },
+    "2048192": {
+      "children": [
+        "2046919",
+        "2046495",
+        "2045258"
+      ],
+      "brand": "California Faucets",
+      "skuRoot": "CF-9239",
+      "sampleName": "CF-9239 Toe Activated Umbrella Tub Drain",
+      "reason": "family of 4, cohesion=0.71"
+    },
+    "2048362": {
+      "children": [
+        "2048490"
+      ],
+      "brand": "Kohler",
+      "skuRoot": "K-7397",
+      "sampleName": "K-7397-CP 7-1/2\" Wall Mounted Shower Arm and Flange",
+      "reason": "family of 2, cohesion=0.71"
+    },
+    "2048578": {
+      "children": [
+        "2048579"
+      ],
+      "brand": "AQUASPA",
+      "skuRoot": "AQUASPACABO",
+      "sampleName": "Aquaspa Cabo",
+      "reason": "family of 2, cohesion=1.00"
+    },
+    "2048851": {
+      "children": [
+        "2048891"
+      ],
+      "brand": "Emtek",
+      "skuRoot": "5123US4.KLSUS4.KNUS4.",
+      "sampleName": "5123US4.KLSUS4.KNUS4.RH - Select Key in Lever , Keyed , Modern Rectangular Rosette , Key in L-Square Stem , Knurled Handle , RH",
+      "reason": "family of 2, cohesion=1.00"
+    }
+  },
+  "childToParent": {
+    "764585": "764586",
+    "1579994": "1579993",
+    "1579997": "1579996",
+    "1580080": "1580079",
+    "1599522": "1599513",
+    "1719119": "1719112",
+    "1719838": "1719828",
+    "1720071": "1720064",
+    "1720239": "2047059",
+    "1721673": "1721683",
+    "1721680": "1721683",
+    "1722470": "2047521",
+    "1722516": "1722512",
+    "1722519": "1722512",
+    "1723979": "1723981",
+    "1723986": "1723981",
+    "1723988": "1723981",
+    "1724494": "1724493",
+    "1724772": "1724765",
+    "1724914": "1724907",
+    "1724935": "1724938",
+    "1724942": "1724938",
+    "1724945": "1724938",
+    "1726281": "1726280",
+    "1726566": "1726564",
+    "1726570": "1726564",
+    "1726571": "1726564",
+    "1726573": "1726564",
+    "1734946": "1734945",
+    "1735229": "1735228",
+    "1736455": "1736454",
+    "1745825": "1745820",
+    "1758530": "1758534",
+    "1762666": "1762656",
+    "1763569": "1763563",
+    "1765054": "1765047",
+    "1766481": "1766485",
+    "1770977": "1770981",
+    "1775105": "1775095",
+    "1845325": "1845318",
+    "1846821": "1846824",
+    "1847667": "1847673",
+    "1847669": "1847673",
+    "1847670": "1847673",
+    "1847719": "1847713",
+    "1847933": "1847937",
+    "1847943": "1847946",
+    "1847945": "1847946",
+    "1847979": "1847981",
+    "1885847": "1885849",
+    "1893128": "1893123",
+    "1937418": "1937414",
+    "1937420": "1937414",
+    "2011632": "2046975",
+    "2011660": "2046973",
+    "2011726": "2046976",
+    "2011926": "2011924",
+    "2015284": "2015282",
+    "2015304": "2015302",
+    "2015460": "2015457",
+    "2015988": "2015987",
+    "2016077": "2016076",
+    "2016086": "2016084",
+    "2016173": "2016175",
+    "2016176": "2016175",
+    "2016208": "2016207",
+    "2016209": "2016207",
+    "2016677": "2046978",
+    "2016809": "2016807",
+    "2016811": "2016807",
+    "2017634": "2047263",
+    "2019308": "2019309",
+    "2022040": "2022039",
+    "2022136": "2022135",
+    "2022471": "2022470",
+    "2026397": "2026394",
+    "2026399": "2026394",
+    "2029796": "2029794",
+    "2042569": "2042567",
+    "2044393": "2045853",
+    "2044402": "2046481",
+    "2045258": "2048192",
+    "2046026": "2046024",
+    "2046066": "2045858",
+    "2046147": "2046407",
+    "2046275": "2045946",
+    "2046282": "2046065",
+    "2046359": "2045842",
+    "2046495": "2048192",
+    "2046500": "2048162",
+    "2046525": "2015536",
+    "2046558": "2046879",
+    "2046573": "2048162",
+    "2046628": "2046686",
+    "2046877": "2046875",
+    "2046919": "2048192",
+    "2047300": "2047703",
+    "2047323": "2047317",
+    "2047398": "2045860",
+    "2047435": "2046214",
+    "2047560": "2046000",
+    "2047578": "2047577",
+    "2047580": "2047579",
+    "2047817": "2048162",
+    "2047861": "2047862",
+    "2047880": "2047877",
+    "2047881": "2047878",
+    "2047980": "2047979",
+    "2047981": "2047982",
+    "2048094": "2047692",
+    "2048248": "2042795",
+    "2048249": "2045212",
+    "2048336": "2044439",
+    "2048398": "2047091",
+    "2048490": "2048362",
+    "2048579": "2048578",
+    "2048816": "2046996",
+    "2048891": "2048851"
+  },
+  "generatedAt": "2026-05-12T03:07:14.761Z"
+}
