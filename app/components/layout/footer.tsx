@@ -212,7 +212,7 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
               href="/dashboard/login"
               className="font-body text-xs text-dash-text-secondary/50 hover:text-dash-text-secondary transition-colors"
             >
-              {lang === "es" ? "Equipo" : "Staff"}
+              {lang === "es" ? "Portal del Equipo" : "Team Portal"}
             </Link>
           </div>
         </div>

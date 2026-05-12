@@ -256,12 +256,11 @@ export const Week18 = () => {
         </Frame>
 
         <div className="mt-6">
-          <a
-            href="/how-it-works#punch-list"
-            className="font-display italic text-[20px] leading-[1.4] text-[color:var(--color-foreground)] border-b border-[color:var(--color-dash-border-strong)] pb-2 inline-flex items-center gap-3 hover:text-[color:var(--color-brand-copper)] hover:border-[color:var(--color-brand-copper)] transition-colors"
+          <span
+            className="font-display italic text-[20px] leading-[1.4] text-[color:var(--color-dash-text-muted)] pb-2 inline-flex items-center gap-3"
           >
-            Open the full punch list <span aria-hidden="true">→</span>
-          </a>
+            Full punch list — coming soon
+          </span>
         </div>
       </Section>
     </>

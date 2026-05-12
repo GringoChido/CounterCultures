@@ -20,19 +20,17 @@ export const ProcessAtAGlance = () => {
           <p className="font-body font-medium text-[11px] tracking-[0.22em] uppercase text-[color:var(--color-brand-copper)]">
             The process · at a glance
           </p>
-          <a
-            href="/how-it-works"
-            className="font-body text-[12px] text-[color:var(--color-dash-text-secondary)] border-b border-[color:var(--color-dash-border-strong)] hover:text-[color:var(--color-brand-copper)] hover:border-[color:var(--color-brand-copper)] transition-colors"
+          <span
+            className="font-body text-[12px] text-[color:var(--color-dash-text-muted)]"
           >
-            Open the full walkthrough →
-          </a>
+            Full walkthrough — coming soon
+          </span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-11 gap-px bg-[color:var(--color-dash-border)]">
           {STAGES.map((s, i) => (
-            <a
+            <div
               key={s.n}
-              href={`/how-it-works#stage-${i + 1}`}
               className="group bg-[color:var(--color-background)] hover:bg-white p-4 transition-colors block"
             >
               <div className="font-mono text-[10px] tracking-[0.08em] text-[color:var(--color-dash-text-muted)] group-hover:text-[color:var(--color-brand-copper)] transition-colors">
@@ -44,7 +42,7 @@ export const ProcessAtAGlance = () => {
               <div className="font-body text-[11px] mt-1 text-[color:var(--color-dash-text-secondary)] leading-snug">
                 {s.note}
               </div>
-            </a>
+            </div>
           ))}
         </div>
       </div>
