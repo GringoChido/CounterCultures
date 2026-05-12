@@ -142,6 +142,7 @@ interface Cache {
 
 let cache: Cache | null = null;
 let loading: Promise<Cache> | null = null;
+let warnedNoSheetId = false;
 
 const EMPTY_CACHE: Cache = {
   products: [],
@@ -176,7 +177,8 @@ const load = async (): Promise<Cache> => {
   });
   const rows = res.data.values;
   if (!rows || rows.length < 2) {
-    throw new Error(`CC_Products_Full returned no data`);
+    console.warn("[products] CC_Products_Full returned no data — check GOOGLE_SHEETS_ID_PRODUCTS_FULL and service account permissions.");
+    return EMPTY_CACHE;
   }
 
   const [header, ...data] = rows;
@@ -312,7 +314,13 @@ const getCache = async (): Promise<Cache> => {
     }
     return cache;
   }
-  if (!SHEET_ID) return EMPTY_CACHE;
+  if (!SHEET_ID) {
+    if (!warnedNoSheetId) {
+      console.warn("[products] GOOGLE_SHEETS_ID_PRODUCTS_FULL not set — catalog will be empty");
+      warnedNoSheetId = true;
+    }
+    return EMPTY_CACHE;
+  }
   return beginLoad();
 };
 
@@ -788,6 +796,7 @@ const toQuoteProduct = (p: ProductFull): Product => {
     finishes: content?.variants ?? [],
     images,
     artisanal: false,
+    features: content?.features?.length ? content.features : undefined,
     description: content?.descriptionEs ?? "",
     descriptionEn: content?.descriptionEn ?? "",
     specifications: content?.specSheetUrl
