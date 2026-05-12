@@ -23,6 +23,7 @@ import {
   Clock,
   User,
   Briefcase,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -63,6 +64,7 @@ const pageItems: PaletteItem[] = [
   { id: "page-social", type: "page", title: "Social Hub", subtitle: "Calendar, feed, create, comments, analytics", href: "/dashboard/social", icon: Share2 },
   { id: "page-email", type: "page", title: "Email Campaigns", subtitle: "Manage email campaigns", href: "/dashboard/email-campaigns", icon: Mail },
   { id: "page-blog", type: "page", title: "Blog Manager", subtitle: "Blog posts & content", href: "/dashboard/blog-manager", icon: FileText },
+  { id: "page-ap", type: "page", title: "Accounts Payable", subtitle: "Vendor queue, open bills, terms", href: "/dashboard/accounts-payable", icon: Wallet },
   { id: "page-sales-analytics", type: "page", title: "Pipeline & Sales", subtitle: "Revenue & deal metrics", href: "/dashboard/sales-analytics", icon: TrendingUp },
   { id: "page-marketing-analytics", type: "page", title: "Marketing & Traffic", subtitle: "Traffic, sources, pages, campaigns, funnel", href: "/dashboard/marketing-analytics", icon: BarChart3 },
   { id: "page-notifications", type: "page", title: "Notifications", subtitle: "Alert history & ack queue", href: "/dashboard/notifications", icon: Clock },
