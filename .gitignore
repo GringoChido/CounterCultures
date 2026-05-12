@@ -68,3 +68,11 @@ public/Assets/BRANDS/staging/
 # (app/lib/product-content.json + public/products/odoo-gallery/ +
 # public/specs/odoo/) are checked in.
 /staging/
+
+# Claude Code session artifacts
+.claude/worktrees/
+.ts-check.json
+CLAUDE-CODE-*.md
+
+# LibreOffice lock files
+.~lock.*
