@@ -60,7 +60,11 @@ const COPY = {
 
 const MIN_QUERY = 2;
 
-const buildMiniSearch = (docs: SearchDoc[]): MiniSearch<SearchDoc> => {
+const buildMiniSearch = (
+  docs: SearchDoc[],
+  locale: "en" | "es"
+): MiniSearch<SearchDoc> => {
+  const isEs = locale === "es";
   const ms = new MiniSearch<SearchDoc>({
     fields: [
       "nameEn",
@@ -82,8 +86,10 @@ const buildMiniSearch = (docs: SearchDoc[]): MiniSearch<SearchDoc> => {
       "external",
     ],
     searchOptions: {
-      boost: { nameEn: 4, nameEs: 4, subtitleEn: 2, subtitleEs: 2 },
-      fuzzy: 0.2,
+      boost: isEs
+        ? { nameEs: 5, nameEn: 2, subtitleEs: 2, subtitleEn: 1 }
+        : { nameEn: 5, nameEs: 2, subtitleEn: 2, subtitleEs: 1 },
+      fuzzy: 0.15,
       prefix: true,
     },
   });
@@ -105,20 +111,27 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const resultsRef = useRef<HTMLDivElement | null>(null);
 
+  const [indexError, setIndexError] = useState<string | null>(null);
+  const [retryToken, setRetryToken] = useState(0);
   useEffect(() => {
     if (!open || hasFetched) return;
     setLoading(true);
+    setIndexError(null);
     fetch("/api/search-index")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
       .then((payload: SearchIndexPayload) => {
-        setIndex(buildMiniSearch(payload.documents));
+        setIndex(buildMiniSearch(payload.documents, locale));
         setHasFetched(true);
       })
       .catch((err) => {
         console.error("[SearchPalette] failed to load index", err);
+        setIndexError(err instanceof Error ? err.message : "Failed to load search");
       })
       .finally(() => setLoading(false));
-  }, [open, hasFetched]);
+  }, [open, hasFetched, retryToken, locale]);
 
   // Live product search — debounced fetch to the catalog API
   useEffect(() => {
@@ -191,18 +204,19 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
       });
   }, [index, query, isEs]);
 
-  // Merge all results into a single navigable list: products first, then brands, then articles
   const allResults = useMemo<DisplayResult[]>(() => {
-    const productDisplayResults: DisplayResult[] = productResults.map((p) => ({
+    const productDisplayResults: DisplayResult[] = productResults.map((p, idx) => ({
       id: `product:${p.id}`,
       type: "product" as const,
       slug: p.id,
       name: p.name || p.sku,
       subtitle: `${p.brand} · ${p.sku}`,
       hrefSuffix: `/shop/catalog?q=${encodeURIComponent(p.sku || p.name)}`,
-      score: 0,
+      score: Math.max(0.5, 5 - idx * 0.6),
     }));
-    return [...productDisplayResults, ...brandArticleResults];
+    return [...productDisplayResults, ...brandArticleResults].sort(
+      (a, b) => b.score - a.score
+    );
   }, [productResults, brandArticleResults]);
 
   const totalCount = allResults.length;
@@ -317,6 +331,24 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
 
         {/* Results */}
         <div ref={resultsRef} className="max-h-[60vh] overflow-y-auto">
+          {indexError && (
+            <div
+              role="alert"
+              className="m-3 px-3 py-2 text-[11px] rounded border border-red-500/40 bg-red-500/10 text-red-700 flex items-center justify-between gap-3"
+            >
+              <span>Search index failed to load: {indexError}</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setHasFetched(false);
+                  setRetryToken((t) => t + 1);
+                }}
+                className="px-2 py-0.5 text-[10px] font-medium border border-red-500/40 rounded hover:bg-red-500/10 cursor-pointer"
+              >
+                Retry
+              </button>
+            </div>
+          )}
           {!hasQuery ? (
             <div className="px-5 py-8 text-center">
               <p className="font-body text-sm text-dash-text-secondary/70">

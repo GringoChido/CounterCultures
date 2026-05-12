@@ -10,6 +10,7 @@
  */
 
 import { articles } from "./articles";
+import { cachedFetch, scoreTokens } from "./search-utils";
 
 export type SearchResultType =
   | "lead"
@@ -51,38 +52,7 @@ export interface SearchResult {
   productData?: SearchProductData;
 }
 
-const CACHE_TTL_MS = 60_000;
-type CacheEntry<T> = { at: number; data: T };
-const cache: Record<string, CacheEntry<unknown>> = {};
 
-const cachedFetch = async <T>(key: string, url: string): Promise<T> => {
-  const hit = cache[key];
-  if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.data as T;
-  const res = await fetch(url, { credentials: "same-origin" });
-  if (!res.ok) throw new Error(`${url} → ${res.status}`);
-  const data = (await res.json()) as T;
-  cache[key] = { at: Date.now(), data };
-  return data;
-};
-
-/**
- * Score a query against ordered fields. Earlier fields weigh more.
- * Exact match > prefix > substring. Returns 0 for no match in any field.
- */
-export const score = (query: string, ...fields: (string | undefined)[]): number => {
-  const ql = query.trim().toLowerCase();
-  if (!ql) return 0;
-  let total = 0;
-  fields.forEach((f, i) => {
-    if (!f) return;
-    const fl = f.toLowerCase();
-    const positionWeight = Math.max(1, 5 - i);
-    if (fl === ql) total += 10 * positionWeight;
-    else if (fl.startsWith(ql)) total += 5 * positionWeight;
-    else if (fl.includes(ql)) total += 2 * positionWeight;
-  });
-  return total;
-};
 
 export const rankResults = (results: SearchResult[]): SearchResult[] => {
   const seen = new Set<string>();
@@ -112,25 +82,21 @@ interface LeadRow extends Record<string, string> {
 }
 
 const searchLeads = async (q: string): Promise<SearchResult[]> => {
-  try {
-    const data = await cachedFetch<{ leads?: LeadRow[] }>("leads", "/api/dashboard/leads");
-    return (data.leads ?? [])
-      .map<SearchResult | null>((l) => {
-        const s = score(q, l.name, l.email, l.id, l.phone, l.brand_slugs);
-        if (s === 0) return null;
-        return {
-          id: `lead-${l.id}`,
-          type: "lead",
-          title: l.name || l.email || l.id,
-          subtitle: [l.status, l.source, l.email].filter(Boolean).join(" · "),
-          href: "/dashboard/leads",
-          score: s,
-        };
-      })
-      .filter((x): x is SearchResult => x !== null);
-  } catch {
-    return [];
-  }
+  const data = await cachedFetch<{ leads?: LeadRow[] }>("/api/dashboard/leads");
+  return (data.leads ?? [])
+    .map<SearchResult | null>((l) => {
+      const s = scoreTokens(q, [l.name, l.email, l.id, l.phone, l.brand_slugs], { weights: [4, 3, 3, 2, 1] });
+      if (s === 0) return null;
+      return {
+        id: `lead-${l.id}`,
+        type: "lead",
+        title: l.name || l.email || l.id,
+        subtitle: [l.status, l.source, l.email].filter(Boolean).join(" · "),
+        href: "/dashboard/leads",
+        score: s,
+      };
+    })
+    .filter((x): x is SearchResult => x !== null);
 };
 
 interface DealRow extends Record<string, string> {
@@ -144,29 +110,25 @@ interface DealRow extends Record<string, string> {
 }
 
 const searchDeals = async (q: string): Promise<SearchResult[]> => {
-  try {
-    const data = await cachedFetch<{ deals?: DealRow[] }>("deals", "/api/dashboard/pipeline");
-    return (data.deals ?? [])
-      .map<SearchResult | null>((d) => {
-        const s = score(q, d.name, d.id, d.company, d.brand_slugs, d.owner);
-        if (s === 0) return null;
-        const valueNum = Number(d.value);
-        const valueStr = !Number.isNaN(valueNum) && valueNum > 0
-          ? `$${(valueNum / 1000).toFixed(0)}K`
-          : "";
-        return {
-          id: `deal-${d.id}`,
-          type: "deal",
-          title: d.name || d.id,
-          subtitle: [d.stage, valueStr, d.company].filter(Boolean).join(" · "),
-          href: `/dashboard/pipeline?deal=${d.id}`,
-          score: s,
-        };
-      })
-      .filter((x): x is SearchResult => x !== null);
-  } catch {
-    return [];
-  }
+  const data = await cachedFetch<{ deals?: DealRow[] }>("/api/dashboard/pipeline");
+  return (data.deals ?? [])
+    .map<SearchResult | null>((d) => {
+      const s = scoreTokens(q, [d.name, d.id, d.company, d.brand_slugs, d.owner], { weights: [4, 3, 3, 1, 1] });
+      if (s === 0) return null;
+      const valueNum = Number(d.value);
+      const valueStr = !Number.isNaN(valueNum) && valueNum > 0
+        ? `$${(valueNum / 1000).toFixed(0)}K`
+        : "";
+      return {
+        id: `deal-${d.id}`,
+        type: "deal",
+        title: d.name || d.id,
+        subtitle: [d.stage, valueStr, d.company].filter(Boolean).join(" · "),
+        href: `/dashboard/pipeline?deal=${d.id}`,
+        score: s,
+      };
+    })
+    .filter((x): x is SearchResult => x !== null);
 };
 
 interface TraficoRow extends Record<string, string> {
@@ -178,35 +140,27 @@ interface TraficoRow extends Record<string, string> {
 }
 
 const searchTraficos = async (q: string): Promise<SearchResult[]> => {
-  try {
-    const data = await cachedFetch<{ traficos?: TraficoRow[] }>(
-      "traficos",
-      "/api/dashboard/traficos"
-    );
-    return (data.traficos ?? [])
-      .map<SearchResult | null>((t) => {
-        const s = score(
-          q,
-          t.Trafico_Number,
-          t.TRF_ID,
-          t.Pedimento_Number,
-          t.Broker_Name,
-          t.Status
-        );
-        if (s === 0) return null;
-        return {
-          id: `trafico-${t.TRF_ID}`,
-          type: "trafico",
-          title: t.Trafico_Number || t.TRF_ID,
-          subtitle: [t.Status, t.Pedimento_Number, t.Broker_Name].filter(Boolean).join(" · "),
-          href: `/dashboard/shipments?trafico=${t.TRF_ID}`,
-          score: s,
-        };
-      })
-      .filter((x): x is SearchResult => x !== null);
-  } catch {
-    return [];
-  }
+  const data = await cachedFetch<{ traficos?: TraficoRow[] }>(
+    "/api/dashboard/traficos"
+  );
+  return (data.traficos ?? [])
+    .map<SearchResult | null>((t) => {
+      const s = scoreTokens(
+        q,
+        [t.Trafico_Number, t.TRF_ID, t.Pedimento_Number, t.Broker_Name, t.Status],
+        { weights: [4, 4, 3, 2, 1] }
+      );
+      if (s === 0) return null;
+      return {
+        id: `trafico-${t.TRF_ID}`,
+        type: "trafico",
+        title: t.Trafico_Number || t.TRF_ID,
+        subtitle: [t.Status, t.Pedimento_Number, t.Broker_Name].filter(Boolean).join(" · "),
+        href: `/dashboard/shipments?trafico=${t.TRF_ID}`,
+        score: s,
+      };
+    })
+    .filter((x): x is SearchResult => x !== null);
 };
 
 interface ShipmentRow extends Record<string, string> {
@@ -219,35 +173,27 @@ interface ShipmentRow extends Record<string, string> {
 }
 
 const searchShipments = async (q: string): Promise<SearchResult[]> => {
-  try {
-    const data = await cachedFetch<{ shipments?: ShipmentRow[] }>(
-      "shipments",
-      "/api/dashboard/shipments"
-    );
-    return (data.shipments ?? [])
-      .map<SearchResult | null>((sh) => {
-        const s = score(
-          q,
-          sh.Shipment_ID,
-          sh.Tracking,
-          sh.Brand,
-          sh.Carrier,
-          sh.Destination
-        );
-        if (s === 0) return null;
-        return {
-          id: `shipment-${sh.Shipment_ID}`,
-          type: "shipment",
-          title: sh.Shipment_ID,
-          subtitle: [sh.Carrier, sh.Tracking, sh.Status].filter(Boolean).join(" · "),
-          href: "/dashboard/shipments",
-          score: s,
-        };
-      })
-      .filter((x): x is SearchResult => x !== null);
-  } catch {
-    return [];
-  }
+  const data = await cachedFetch<{ shipments?: ShipmentRow[] }>(
+    "/api/dashboard/shipments"
+  );
+  return (data.shipments ?? [])
+    .map<SearchResult | null>((sh) => {
+      const s = scoreTokens(
+        q,
+        [sh.Shipment_ID, sh.Tracking, sh.Brand, sh.Carrier, sh.Destination],
+        { weights: [4, 4, 2, 1, 2] }
+      );
+      if (s === 0) return null;
+      return {
+        id: `shipment-${sh.Shipment_ID}`,
+        type: "shipment",
+        title: sh.Shipment_ID,
+        subtitle: [sh.Carrier, sh.Tracking, sh.Status].filter(Boolean).join(" · "),
+        href: "/dashboard/shipments",
+        score: s,
+      };
+    })
+    .filter((x): x is SearchResult => x !== null);
 };
 
 interface BrandRow {
@@ -260,106 +206,93 @@ interface BrandRow {
 }
 
 const searchBrands = async (q: string): Promise<SearchResult[]> => {
-  try {
-    const data = await cachedFetch<{ brands?: BrandRow[] }>("brands", "/api/dashboard/brands");
-    return (data.brands ?? [])
-      .map<SearchResult | null>((b) => {
-        const s = score(q, b.name, b.slug, b.taglineEn, b.taglineEs);
-        if (s === 0) return null;
-        const subtitle = [
-          b.taglineEn || b.taglineEs,
-          b.categories?.slice(0, 2).join(", "),
-        ]
-          .filter(Boolean)
-          .join(" · ");
-        return {
-          id: `brand-${b.slug}`,
-          type: "brand",
-          title: b.name,
-          subtitle,
-          href: `/dashboard/brands/${b.slug}`,
-          score: s,
-        };
-      })
-      .filter((x): x is SearchResult => x !== null);
-  } catch {
-    return [];
-  }
+  const data = await cachedFetch<{ brands?: BrandRow[] }>("/api/dashboard/brands");
+  return (data.brands ?? [])
+    .map<SearchResult | null>((b) => {
+      const s = scoreTokens(q, [b.name, b.slug, b.taglineEn, b.taglineEs], { weights: [4, 3, 1, 1] });
+      if (s === 0) return null;
+      const subtitle = [
+        b.taglineEn || b.taglineEs,
+        b.categories?.slice(0, 2).join(", "),
+      ]
+        .filter(Boolean)
+        .join(" · ");
+      return {
+        id: `brand-${b.slug}`,
+        type: "brand",
+        title: b.name,
+        subtitle,
+        href: `/dashboard/brands/${b.slug}`,
+        score: s,
+      };
+    })
+    .filter((x): x is SearchResult => x !== null);
 };
 
-interface ProductRow extends Record<string, string> {
+interface FullProductRow {
+  id: string;
   sku: string;
   brand: string;
   name: string;
-  nameEn: string;
-  price: string;
-  tradePrice: string;
-  currency: string;
-  images: string;
-  finishes: string;
   category: string;
-  subcategory: string;
-  availability: string;
-  slug: string;
-  description: string;
-  descriptionEn: string;
-  artisanal: string;
-  id: string;
-  featured: string;
+  listPrice: number;
+  currency: string;
+  imageSrc?: string;
+  inStock?: boolean;
+  stockQty?: number;
 }
 
-const productRowToData = (p: ProductRow): SearchProductData => ({
+interface FullProductSearchResponse {
+  items?: FullProductRow[];
+  total?: number;
+}
+
+const fullProductToData = (p: FullProductRow): SearchProductData => ({
   sku: p.sku,
   brand: p.brand,
   name: p.name,
-  nameEn: p.nameEn,
-  price: parseFloat(p.price) || 0,
-  tradePrice: p.tradePrice ? parseFloat(p.tradePrice) : undefined,
+  nameEn: p.name,
+  price: p.listPrice || 0,
+  tradePrice: undefined,
   currency: p.currency || "MXN",
-  images: p.images ? p.images.split(",").map((u) => u.trim()) : [],
-  finishes: p.finishes ? p.finishes.split(",").map((f) => f.trim()) : [],
+  images: p.imageSrc ? [p.imageSrc] : [],
+  finishes: [],
   category: p.category,
-  subcategory: p.subcategory,
-  availability: p.availability || "in-stock",
-  slug: p.slug,
-  description: p.description || "",
-  descriptionEn: p.descriptionEn || "",
-  artisanal: p.artisanal === "true",
+  subcategory: "",
+  availability: p.inStock ? "in-stock" : "quote-only",
+  slug: `p-${p.id}`,
+  description: "",
+  descriptionEn: "",
+  artisanal: false,
   id: p.id,
-  featured: p.featured === "true",
+  featured: false,
 });
 
 const searchProducts = async (q: string): Promise<SearchResult[]> => {
-  try {
-    const url = `/api/dashboard/products?q=${encodeURIComponent(q)}&limit=8`;
-    const data = await cachedFetch<{ products?: ProductRow[] }>(`products:${q}`, url);
-    return (data.products ?? []).map<SearchResult>((p) => {
-      const productData = productRowToData(p);
-      const priceNum = parseFloat(p.price);
-      const priceStr = !Number.isNaN(priceNum) && priceNum > 0
-        ? `$${priceNum.toLocaleString()} ${p.currency || "MXN"}`
-        : "";
-      return {
-        id: `product-${p.slug || p.sku}`,
-        type: "product",
-        title: p.name || p.sku,
-        subtitle: [p.brand, `${p.category}/${p.subcategory.replace(/-/g, " ")}`, priceStr]
-          .filter(Boolean)
-          .join(" · "),
-        href: "#",
-        score: 100, // server already filtered, treat all hits as relevant
-        productData,
-      };
-    });
-  } catch {
-    return [];
-  }
+  const url = `/api/dashboard/products/search?q=${encodeURIComponent(q)}&limit=8`;
+  const data = await cachedFetch<FullProductSearchResponse>(url);
+  return (data.items ?? []).map<SearchResult>((p, idx) => {
+    const productData = fullProductToData(p);
+    const priceStr = p.listPrice > 0
+      ? `$${p.listPrice.toLocaleString()} ${p.currency || "MXN"}`
+      : "";
+    const positionScore = Math.max(10, 50 - idx * 4);
+    return {
+      id: `product-${p.id}`,
+      type: "product",
+      title: p.name || p.sku,
+      subtitle: [p.brand, p.category, priceStr].filter(Boolean).join(" · "),
+      href: `/dashboard/products?selected=${encodeURIComponent(p.id)}`,
+      score: positionScore,
+      productData,
+    };
+  });
 };
 
 const searchBlogPosts = async (q: string): Promise<SearchResult[]> => {
   return articles
     .map<SearchResult | null>((a) => {
-      const s = score(q, a.title.en, a.title.es, a.slug, a.excerpt.en);
+      const s = scoreTokens(q, [a.title.en, a.title.es, a.slug, a.excerpt.en], { weights: [4, 4, 2, 1] });
       if (s === 0) return null;
       return {
         id: `blog-${a.slug}`,
@@ -377,16 +310,38 @@ const searchBlogPosts = async (q: string): Promise<SearchResult[]> => {
 // Public entry point
 // ---------------------------------------------------------------------------
 
-export const searchAllEntities = async (query: string): Promise<SearchResult[]> => {
-  if (query.trim().length < 2) return [];
+export interface SearchAllResult {
+  results: SearchResult[];
+  errors: Array<{ entity: SearchResultType; message: string }>;
+}
+
+const safeSearch = async <T extends SearchResultType>(
+  entity: T,
+  fn: () => Promise<SearchResult[]>
+): Promise<{ results: SearchResult[]; error: { entity: T; message: string } | null }> => {
+  try {
+    return { results: await fn(), error: null };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Unknown error";
+    console.error(`[search] ${entity} failed:`, message);
+    return { results: [], error: { entity, message } };
+  }
+};
+
+export const searchAllEntities = async (query: string): Promise<SearchAllResult> => {
+  if (query.trim().length < 2) return { results: [], errors: [] };
   const groups = await Promise.all([
-    searchLeads(query),
-    searchDeals(query),
-    searchTraficos(query),
-    searchShipments(query),
-    searchBrands(query),
-    searchProducts(query),
-    searchBlogPosts(query),
+    safeSearch("lead", () => searchLeads(query)),
+    safeSearch("deal", () => searchDeals(query)),
+    safeSearch("trafico", () => searchTraficos(query)),
+    safeSearch("shipment", () => searchShipments(query)),
+    safeSearch("brand", () => searchBrands(query)),
+    safeSearch("product", () => searchProducts(query)),
+    safeSearch("blog", () => searchBlogPosts(query)),
   ]);
-  return rankResults(groups.flat());
+  const errors = groups
+    .map((g) => g.error)
+    .filter((e): e is { entity: SearchResultType; message: string } => e !== null);
+  const results = rankResults(groups.flatMap((g) => g.results));
+  return { results, errors };
 };

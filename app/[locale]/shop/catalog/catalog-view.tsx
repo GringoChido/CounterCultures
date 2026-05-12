@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useTransition, useCallback } from "react";
+import { useState, useEffect, useMemo, useTransition, useCallback, useRef } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import {
   Search,
@@ -209,6 +209,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
   const [selected, setSelected] = useState<ProductFull | null>(null);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [visualSearchOpen, setVisualSearchOpen] = useState(false);
+  const reqIdRef = useRef(0);
 
   // Sync filters → URL (shallow)
   useEffect(() => {
@@ -222,17 +223,19 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
     if (inStockOnly) params.set("inStock", "true");
     const qs = params.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
-  }, [query, brand, category, sortKey, viewMode, offset, router, pathname]);
+  }, [query, brand, category, sortKey, viewMode, offset, inStockOnly, router, pathname]);
 
   // Reset pagination when filters change
   useEffect(() => {
     setOffset(0);
-  }, [query, brand, category, sortKey]);
+  }, [query, brand, category, sortKey, inStockOnly]);
 
   // Fetch — always loads, even with no filters (defaults to most-specified
   // products so the page never renders as a confusing empty state).
+  const [fetchError, setFetchError] = useState<string | null>(null);
   useEffect(() => {
     const id = setTimeout(() => {
+      const myReq = ++reqIdRef.current;
       startTransition(async () => {
         const p = new URLSearchParams();
         if (query.trim().length >= MIN_QUERY) p.set("q", query.trim());
@@ -242,15 +245,28 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
         p.set("sort", sortKey);
         p.set("limit", String(PAGE_SIZE));
         p.set("offset", String(offset));
-        const res = await fetch(`/api/products/search?${p}`);
-        if (res.status === 401) {
-          setNeedsAccess(true);
-          setResult(null);
-          return;
+        try {
+          const res = await fetch(`/api/products/search?${p}`);
+          if (myReq !== reqIdRef.current) return;
+          if (res.status === 401) {
+            setNeedsAccess(true);
+            setResult(null);
+            setFetchError(null);
+            return;
+          }
+          if (!res.ok) {
+            setFetchError(`Catalog search failed (HTTP ${res.status}). Retry below.`);
+            return;
+          }
+          setNeedsAccess(false);
+          setFetchError(null);
+          setResult(await res.json());
+        } catch (e) {
+          if (myReq !== reqIdRef.current) return;
+          setFetchError(
+            e instanceof Error ? e.message : "Catalog search failed. Retry below."
+          );
         }
-        if (!res.ok) return;
-        setNeedsAccess(false);
-        setResult(await res.json());
       });
     }, 180);
     return () => clearTimeout(id);
@@ -613,6 +629,24 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
               </button>
             </div>
 
+            {fetchError && (
+              <div
+                role="alert"
+                className="px-4 py-3 rounded border border-red-500/40 bg-red-500/10 text-red-700 text-sm flex items-center justify-between gap-3"
+              >
+                <span>{fetchError}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOffset((o) => o);
+                    setFetchError(null);
+                  }}
+                  className="px-3 py-1 text-xs font-medium border border-red-500/40 rounded hover:bg-red-500/10 cursor-pointer"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
             {/* Grid or table */}
             {result && sortedItems.length > 0 && viewMode === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

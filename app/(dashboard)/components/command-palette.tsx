@@ -30,6 +30,7 @@ import {
   type SearchResult,
   type SearchResultType,
   type SearchProductData,
+  type SearchAllResult,
 } from "@/app/lib/search";
 import type { Product } from "@/app/lib/types";
 
@@ -196,11 +197,16 @@ export function CommandPalette({
     setRecent(getRecent());
   }, [open]);
 
+  const [searchErrors, setSearchErrors] = useState<
+    Array<{ entity: string; message: string }>
+  >([]);
+
   useEffect(() => {
     if (!open) return;
     const q = query.trim();
     if (q.length < 2) {
       setResults([]);
+      setSearchErrors([]);
       setLoading(false);
       return;
     }
@@ -208,9 +214,13 @@ export function CommandPalette({
     const timer = setTimeout(async () => {
       try {
         const live = await searchAllEntities(q);
-        setResults(live.map(searchResultToPalette));
-      } catch {
+        setResults(live.results.map(searchResultToPalette));
+        setSearchErrors(live.errors);
+      } catch (e) {
         setResults([]);
+        setSearchErrors([
+          { entity: "all", message: e instanceof Error ? e.message : "Search failed" },
+        ]);
       } finally {
         setLoading(false);
       }
@@ -243,6 +253,12 @@ export function CommandPalette({
     }
     return flat;
   }, [query, grouped, recent]);
+
+  useEffect(() => {
+    if (selectedIndex >= flatList.length) {
+      setSelectedIndex(Math.max(0, flatList.length - 1));
+    }
+  }, [flatList.length, selectedIndex]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -402,6 +418,15 @@ export function CommandPalette({
           </div>
 
           <div ref={listRef} className="max-h-[55vh] overflow-y-auto p-2">
+            {searchErrors.length > 0 && (
+              <div
+                role="alert"
+                className="mx-2 my-2 px-3 py-2 text-[11px] rounded border border-amber-500/40 bg-amber-500/10 text-amber-700"
+              >
+                Search partially unavailable: {searchErrors.map((e) => e.entity).join(", ")}.
+                Results below may be incomplete.
+              </div>
+            )}
             {showRecent && renderSection("Recent", recent.slice(0, RECENT_RENDER_LIMIT))}
 
             {!query.trim() && renderSection("Pages", pageItems)}

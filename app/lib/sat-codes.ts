@@ -96,12 +96,19 @@ export const SAT_CODES: SATCode[] = [
   { code: "80141611", description: "Servicios de personalización de obsequios o productos" },
 ];
 
+import { scoreTokens } from "./search-utils";
+
 export const searchSATCodes = (query: string, limit = 20): SATCode[] => {
   if (!query) return SAT_CODES.slice(0, limit);
-  const q = query.toLowerCase();
-  return SAT_CODES.filter(
-    (c) => c.code.includes(q) || c.description.toLowerCase().includes(q)
-  ).slice(0, limit);
+  const scored = SAT_CODES.map((c) => ({
+    c,
+    s: scoreTokens(query, [c.code, c.description], { weights: [5, 1] }),
+  }));
+  return scored
+    .filter((x) => x.s > 0)
+    .sort((a, b) => b.s - a.s)
+    .slice(0, limit)
+    .map((x) => x.c);
 };
 
 export const findSATCode = (code: string): SATCode | undefined =>

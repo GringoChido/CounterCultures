@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Loader2, Check, UserPlus } from "lucide-react";
+import { useDebouncedFetch } from "@/app/lib/use-debounced-fetch";
 
 interface CustomerHit {
   id: string;
@@ -35,35 +36,19 @@ const CustomerCombobox = ({
   className = "",
 }: CustomerComboboxProps) => {
   const [open, setOpen] = useState(false);
-  const [hits, setHits] = useState<CustomerHit[]>([]);
-  const [loading, setLoading] = useState(false);
   const [matchedId, setMatchedId] = useState<string | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  // Debounced search
-  useEffect(() => {
-    if (!open) return;
-    const q = value.trim();
-    if (q.length < 2) {
-      setHits([]);
-      return;
-    }
-    const h = setTimeout(() => {
-      setLoading(true);
-      fetch(
-        `/api/dashboard/customers?q=${encodeURIComponent(q)}&limit=8&sort=name&type=customer`,
-        { cache: "no-store" }
-      )
-        .then((r) => (r.ok ? r.json() : { customers: [] }))
-        .then((d) => {
-          const rows = (d.customers ?? d.rows ?? []) as CustomerHit[];
-          setHits(rows.slice(0, 8));
-        })
-        .catch(() => setHits([]))
-        .finally(() => setLoading(false));
-    }, 200);
-    return () => clearTimeout(h);
-  }, [value, open]);
+  const trimmed = value.trim();
+  const fetchUrl =
+    open && trimmed.length >= 2
+      ? `/api/dashboard/customers?q=${encodeURIComponent(trimmed)}&limit=8&sort=name&type=customer`
+      : null;
+  const { data: hitsResponse, loading } = useDebouncedFetch<{
+    customers?: CustomerHit[];
+    rows?: CustomerHit[];
+  }>(fetchUrl, 200);
+  const hits: CustomerHit[] = (hitsResponse?.customers ?? hitsResponse?.rows ?? []).slice(0, 8);
 
   // Click outside to close
   useEffect(() => {

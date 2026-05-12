@@ -16,6 +16,7 @@
 import { GoogleAuth } from "google-auth-library";
 import { sheets as sheetsApi } from "@googleapis/sheets";
 import { getGooglePrivateKey } from "./google-private-key";
+import { normalize, scoreTokens } from "./search-utils";
 import productImageManifest from "./product-image-manifest.json";
 import {
   getOdooStockQuants,
@@ -247,9 +248,9 @@ const load = async (): Promise<Cache> => {
       stockQty,
       inStock: stockQty > 0,
       imageSrc,
-      _sku: sku.toLowerCase(),
-      _name: name.toLowerCase(),
-      _brand: brand.toLowerCase(),
+      _sku: normalize(sku),
+      _name: normalize(name),
+      _brand: normalize(brand),
     };
     products.push(p);
     brandAgg.set(brand, (brandAgg.get(brand) ?? 0) + 1);
@@ -388,15 +389,8 @@ const stripIndex = (p: IndexedProduct): ProductFull => ({
 //   0: no match
 const hasImage = (p: IndexedProduct) => (p.imageSrc ? 1 : 0);
 
-const scoreRow = (p: IndexedProduct, q: string): number => {
-  if (p._sku === q) return 100;
-  if (p._sku.startsWith(q)) return 80;
-  if (p._name.startsWith(q)) return 60;
-  if (p._sku.includes(q)) return 40;
-  if (p._name.includes(q)) return 30;
-  if (p._brand.includes(q)) return 20;
-  return 0;
-};
+const scoreRow = (p: IndexedProduct, q: string): number =>
+  scoreTokens(q, [p._sku, p._name, p._brand], { weights: [4, 3, 1] });
 
 export const searchProducts = async (
   opts: SearchOptions = {}
@@ -417,7 +411,7 @@ export const searchProducts = async (
   } = opts;
 
   const c = await getCache();
-  const query = q.trim().toLowerCase();
+  const query = normalize(q);
 
   // Pick candidate pool: brand-filtered if a brand is specified.
   const pool =
