@@ -1,0 +1,275 @@
+"use client";
+
+import { Tag } from "lucide-react";
+import { useCartStore, type CartItem } from "@/app/lib/stores/cart-store";
+import { useDisplayedMoney } from "@/app/lib/currency";
+import { FinishSwatch } from "./finish-swatch";
+
+interface OrderSummaryProps {
+  locale: "en" | "es";
+  /**
+   * Show the IVA line. The cart page renders before ship-to is captured,
+   * so it shows IVA as "calculated at checkout". The checkout review
+   * passes `isMxShipTo` so we can show the actual amount.
+   */
+  showIva?: boolean;
+  isMxShipTo?: boolean;
+  ivaAmount?: number;
+  /**
+   * "panel"  — bordered surface card (used as a sticky sidebar)
+   * "inline" — no chrome (used inside the review step which already
+   *            sits in a card)
+   */
+  variant?: "panel" | "inline";
+  /** Show full thumbnails + qty controls vs compact text-only line items. */
+  density?: "full" | "compact";
+}
+
+const T = {
+  en: {
+    summary: "Order Summary",
+    items: (n: number) => `${n} ${n === 1 ? "item" : "items"}`,
+    subtotal: "Subtotal",
+    iva: "IVA (16%)",
+    ivaPending: "Calculated at checkout",
+    ivaApplied: "Mexico delivery",
+    shipping: "Shipping",
+    shippingNote: "Quoted after order review",
+    total: "Estimated Total",
+    tradeApplied: "Trade pricing active",
+    each: "each",
+    finish: "Finish",
+    quoteOnly: "Quote",
+  },
+  es: {
+    summary: "Resumen del Pedido",
+    items: (n: number) => `${n} ${n === 1 ? "artículo" : "artículos"}`,
+    subtotal: "Subtotal",
+    iva: "IVA (16%)",
+    ivaPending: "Calculado al pagar",
+    ivaApplied: "Envío a México",
+    shipping: "Envío",
+    shippingNote: "Cotizado tras revisión",
+    total: "Total Estimado",
+    tradeApplied: "Precio trade activo",
+    each: "c/u",
+    finish: "Acabado",
+    quoteOnly: "Cotización",
+  },
+};
+
+export const OrderSummary = ({
+  locale,
+  showIva = true,
+  isMxShipTo = false,
+  ivaAmount = 0,
+  variant = "panel",
+  density = "compact",
+}: OrderSummaryProps) => {
+  const t = T[locale];
+  const items = useCartStore((s) => s.items);
+  const subtotal = useCartStore((s) => s.subtotal());
+  const tradeCode = useCartStore((s) => s.tradeCode);
+  const tradePartnerName = useCartStore((s) => s.tradePartnerName);
+
+  const sourceCurrency = items[0]?.currency ?? "MXN";
+  const { format: formatted, converted, fxNote } = useDisplayedMoney({
+    sourceCurrency,
+    locale,
+  });
+
+  const total = subtotal + (isMxShipTo ? ivaAmount : 0);
+  const itemCount = items.reduce((acc, i) => acc + i.quantity, 0);
+
+  const wrapperClass =
+    variant === "panel"
+      ? "cc-surface-card p-6 lg:p-7"
+      : "";
+
+  return (
+    <div className={wrapperClass}>
+      {variant === "panel" && (
+        <div className="flex items-baseline justify-between mb-5">
+          <h2 className="font-display text-lg font-light tracking-wide text-brand-charcoal">
+            {t.summary}
+          </h2>
+          <span className="font-body text-xs uppercase tracking-[0.18em] text-brand-stone">
+            {t.items(itemCount)}
+          </span>
+        </div>
+      )}
+
+      {/* Trade applied badge */}
+      {tradeCode && (
+        <div className="flex items-center gap-2 px-3 py-2 mb-5 bg-brand-sage/10 border-l-2 border-brand-sage">
+          <Tag className="w-3.5 h-3.5 text-brand-sage shrink-0" />
+          <span className="font-body text-xs text-brand-charcoal">
+            {t.tradeApplied}
+            {tradePartnerName && ` · ${tradePartnerName}`}
+          </span>
+        </div>
+      )}
+
+      {/* Line items */}
+      <ul className="space-y-3.5">
+        {items.map((item) => (
+          <SummaryRow
+            key={item.id}
+            item={item}
+            density={density}
+            formatted={formatted}
+            eachLabel={t.each}
+            quoteLabel={t.quoteOnly}
+          />
+        ))}
+      </ul>
+
+      {/* Hairline */}
+      <div className="cc-rule-copper my-5" />
+
+      {/* Totals */}
+      <dl className="space-y-2.5">
+        <div className="flex items-baseline justify-between">
+          <dt className="font-body text-sm text-dash-text-secondary">
+            {t.subtotal}
+          </dt>
+          <dd className="font-mono text-sm text-brand-charcoal tabular-nums">
+            {formatted(subtotal)}
+          </dd>
+        </div>
+
+        {showIva && (
+          <div className="flex items-baseline justify-between">
+            <dt className="font-body text-sm text-dash-text-secondary">
+              {t.iva}
+            </dt>
+            <dd
+              className={`tabular-nums ${
+                isMxShipTo
+                  ? "font-mono text-sm text-brand-charcoal"
+                  : "font-body text-xs text-dash-text-secondary/70"
+              }`}
+            >
+              {isMxShipTo ? formatted(ivaAmount) : t.ivaPending}
+            </dd>
+          </div>
+        )}
+
+        <div className="flex items-baseline justify-between">
+          <dt className="font-body text-sm text-dash-text-secondary">
+            {t.shipping}
+          </dt>
+          <dd className="font-body text-xs text-dash-text-secondary/70">
+            {t.shippingNote}
+          </dd>
+        </div>
+
+        <div className="cc-rule-stone my-2" />
+
+        <div className="flex items-baseline justify-between pt-1">
+          <dt className="font-display text-base font-light text-brand-charcoal tracking-wide">
+            {t.total}
+          </dt>
+          <dd className="font-display text-2xl font-light text-brand-charcoal tabular-nums">
+            {formatted(total)}
+          </dd>
+        </div>
+
+        {converted && (
+          <p className="pt-2 font-body text-[11px] text-dash-text-secondary/70 italic text-right">
+            {fxNote}
+          </p>
+        )}
+      </dl>
+    </div>
+  );
+};
+
+interface SummaryRowProps {
+  item: CartItem;
+  density: "full" | "compact";
+  formatted: (n: number) => string;
+  eachLabel: string;
+  quoteLabel: string;
+}
+
+const SummaryRow = ({
+  item,
+  density,
+  formatted,
+  eachLabel,
+  quoteLabel,
+}: SummaryRowProps) => {
+  const isQuoteOnly = item.availability === "quote_only" || !item.buyable;
+
+  if (density === "full") {
+    return (
+      <li className="flex gap-3 cc-item-in">
+        {item.imageSrc ? (
+          <div className="w-14 h-14 shrink-0 bg-brand-stone/5 overflow-hidden">
+            <img
+              src={item.imageSrc}
+              alt=""
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ) : (
+          <div className="w-14 h-14 shrink-0 bg-brand-stone/8" />
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="font-body text-sm text-brand-charcoal leading-tight truncate">
+            {item.name}
+          </p>
+          <div className="mt-1 flex items-center gap-2 text-xs text-dash-text-secondary">
+            <span className="truncate">{item.brand}</span>
+            {item.selectedFinish && (
+              <>
+                <span className="text-brand-stone/40">·</span>
+                <FinishSwatch finish={item.selectedFinish} />
+                <span className="truncate">{item.selectedFinish}</span>
+              </>
+            )}
+          </div>
+          <div className="mt-1.5 flex items-baseline justify-between gap-2">
+            <span className="font-mono text-xs text-dash-text-secondary tabular-nums">
+              ×{item.quantity}
+              {item.quantity > 1 && (
+                <span className="text-brand-stone/60"> · {formatted(item.listPrice)} {eachLabel}</span>
+              )}
+            </span>
+            <span className="font-mono text-sm text-brand-charcoal tabular-nums">
+              {isQuoteOnly ? quoteLabel : formatted(item.listPrice * item.quantity)}
+            </span>
+          </div>
+        </div>
+      </li>
+    );
+  }
+
+  // compact
+  return (
+    <li className="flex items-baseline justify-between gap-3 cc-item-in">
+      <div className="min-w-0 flex-1">
+        <p className="font-body text-sm text-brand-charcoal leading-snug">
+          {item.name}
+          <span className="font-mono text-xs text-dash-text-secondary ml-1.5">
+            ×{item.quantity}
+          </span>
+        </p>
+        <div className="mt-0.5 flex items-center gap-1.5 text-xs text-dash-text-secondary">
+          <span>{item.brand}</span>
+          {item.selectedFinish && (
+            <>
+              <span className="text-brand-stone/40">·</span>
+              <FinishSwatch finish={item.selectedFinish} />
+              <span className="truncate">{item.selectedFinish}</span>
+            </>
+          )}
+        </div>
+      </div>
+      <span className="font-mono text-sm text-brand-charcoal tabular-nums shrink-0">
+        {isQuoteOnly ? quoteLabel : formatted(item.listPrice * item.quantity)}
+      </span>
+    </li>
+  );
+};

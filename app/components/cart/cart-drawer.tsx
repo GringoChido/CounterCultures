@@ -6,6 +6,9 @@ import { X, Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import NextLink from "next/link";
 import { useCartStore } from "@/app/lib/stores/cart-store";
 import { useUiStore } from "@/app/lib/stores/ui-store";
+import { useDisplayedMoney } from "@/app/lib/currency";
+import { FinishSwatch } from "./finish-swatch";
+import { CurrencyToggle } from "./currency-toggle";
 
 const T = {
   en: {
@@ -74,14 +77,11 @@ export const CartDrawer = ({ locale = "en" }: { locale?: "en" | "es" }) => {
     };
   }, [cartOpen, closeCart]);
 
-  const currency = items[0]?.currency ?? "MXN";
-  const formatted = (amount: number) =>
-    new Intl.NumberFormat(locale === "es" ? "es-MX" : "en-US", {
-      style: "currency",
-      currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
+  const sourceCurrency = items[0]?.currency ?? "MXN";
+  const { format: formatted, converted, fxNote } = useDisplayedMoney({
+    sourceCurrency,
+    locale,
+  });
 
   return (
     <AnimatePresence>
@@ -115,14 +115,17 @@ export const CartDrawer = ({ locale = "en" }: { locale?: "en" | "es" }) => {
               <h2 className="font-display text-xl font-light tracking-wide text-brand-charcoal">
                 {t.title}
               </h2>
-              <button
-                type="button"
-                onClick={closeCart}
-                className="flex items-center justify-center w-10 h-10 text-brand-stone hover:text-brand-charcoal transition-colors cursor-pointer"
-                aria-label="Close"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                {items.length > 0 && <CurrencyToggle />}
+                <button
+                  type="button"
+                  onClick={closeCart}
+                  className="flex items-center justify-center w-10 h-10 text-brand-stone hover:text-brand-charcoal transition-colors cursor-pointer"
+                  aria-label="Close"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             {/* Body */}
@@ -176,10 +179,18 @@ export const CartDrawer = ({ locale = "en" }: { locale?: "en" | "es" }) => {
                         <p className="font-body text-sm font-medium text-brand-charcoal truncate">
                           {item.name}
                         </p>
-                        <p className="font-body text-xs text-brand-stone mt-0.5">
-                          {item.brand}
-                          {item.selectedFinish && ` · ${item.selectedFinish}`}
-                        </p>
+                        <div className="mt-0.5 flex items-center gap-1.5 font-body text-xs text-brand-stone">
+                          <span className="truncate">{item.brand}</span>
+                          {item.selectedFinish && (
+                            <>
+                              <span className="text-brand-stone/40">·</span>
+                              <FinishSwatch finish={item.selectedFinish} />
+                              <span className="truncate">
+                                {item.selectedFinish}
+                              </span>
+                            </>
+                          )}
+                        </div>
                         {item.notes && (
                           <p className="font-body text-xs text-brand-stone/70 mt-0.5 truncate">
                             {t.notes}: {item.notes}
@@ -228,9 +239,16 @@ export const CartDrawer = ({ locale = "en" }: { locale?: "en" | "es" }) => {
 
                 {/* Footer */}
                 <div className="border-t border-brand-stone/10 bg-brand-linen px-6 py-5 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="font-body text-sm text-brand-stone">{t.subtotal}</span>
-                    <span className="font-display text-xl font-light text-brand-charcoal">{formatted(subtotal)}</span>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="font-body text-sm text-brand-stone">{t.subtotal}</span>
+                      <span className="font-display text-xl font-light text-brand-charcoal tabular-nums">{formatted(subtotal)}</span>
+                    </div>
+                    {converted && (
+                      <p className="mt-1 font-body text-[11px] text-dash-text-secondary/70 italic text-right">
+                        {fxNote}
+                      </p>
+                    )}
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <NextLink

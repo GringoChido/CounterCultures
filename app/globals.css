@@ -247,3 +247,67 @@ html {
     animation: none;
   }
 }
+
+/* ──────────────────────────────────────────────────────────────────
+   Cart + Checkout shared surfaces
+   ─────────────────────────────────────────────────────────────── */
+
+/* Paper texture — subtle SVG-based grain layered over the linen ground.
+   Used on cart, checkout, and submitted pages so the surface reads as
+   warm card stock, not screen white. ~3% opacity, no DOM cost. */
+.cc-paper {
+  background-color: var(--color-brand-linen);
+  background-image:
+    radial-gradient(at 20% 20%, rgba(184, 115, 51, 0.04) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, rgba(196, 114, 90, 0.03) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(168, 159, 145, 0.05) 0px, transparent 50%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.4  0 0 0 0 0.35  0 0 0 0 0.3  0 0 0 0.05 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-attachment: fixed;
+}
+
+/* Soft elevated panel — used as the form/card container on checkout.
+   Two surfaces beats one for depth without resorting to heavy borders. */
+.cc-surface-card {
+  background-color: #FEFCF9;
+  border: 1px solid rgba(168, 159, 145, 0.18);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 1px 2px rgba(26, 26, 26, 0.04),
+    0 12px 32px -16px rgba(26, 26, 26, 0.08),
+    0 32px 64px -32px rgba(184, 115, 51, 0.08);
+}
+
+/* Copper hairline — the only horizontal divider you should reach for
+   inside cart/checkout panels. It punctuates without adding boxes. */
+.cc-rule-copper {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(184, 115, 51, 0.35) 20%,
+    rgba(184, 115, 51, 0.35) 80%,
+    transparent 100%
+  );
+  border: none;
+}
+
+/* Stone-tinted hairline for less prominent dividers (between line items). */
+.cc-rule-stone {
+  height: 1px;
+  background-color: rgba(168, 159, 145, 0.18);
+  border: none;
+}
+
+/* Subtle item-add fade-up. Applied to new line items. */
+@keyframes cc-item-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.cc-item-in {
+  animation: cc-item-in 220ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-item-in { animation: none; }
+}
