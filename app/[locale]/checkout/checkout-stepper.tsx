@@ -43,11 +43,11 @@ const T = {
     subhead: (step: number) =>
       step === 0
         ? "We'll send your quote and updates by email or WhatsApp — your call."
-        : step === 1
-          ? "We deliver to addresses in Mexico and the United States."
-          : step === 2
-            ? "If your billing address differs from shipping, switch the toggle. Need a CFDI invoice? Toggle factura on below."
-            : "Last look. You won't be charged until you authorize on the next screen.",
+        : step === 2
+          ? "If your billing address differs from shipping, switch the toggle. Need a CFDI invoice? Toggle factura on below."
+          : step === 3
+            ? "Last look. You won't be charged until you authorize on the next screen."
+            : "",
     company: "Company / firm",
     firstName: "First name *",
     lastName: "Last name(s) *",
@@ -124,11 +124,11 @@ const T = {
     subhead: (step: number) =>
       step === 0
         ? "Te enviaremos tu cotización y avisos por correo o WhatsApp — tú eliges."
-        : step === 1
-          ? "Hacemos envíos a direcciones en México y Estados Unidos."
-          : step === 2
-            ? "Si tu dirección de facturación es distinta a la de envío, desactiva el toggle. ¿Necesitas CFDI? Activa la factura abajo."
-            : "Una última revisión. No se cobra nada hasta que autorices en la siguiente pantalla.",
+        : step === 2
+          ? "Si tu dirección de facturación es distinta a la de envío, desactiva el toggle. ¿Necesitas CFDI? Activa la factura abajo."
+          : step === 3
+            ? "Una última revisión. No se cobra nada hasta que autorices en la siguiente pantalla."
+            : "",
     company: "Empresa / despacho",
     firstName: "Nombre(s) *",
     lastName: "Apellido(s) *",
@@ -684,9 +684,11 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
               <h1 className="font-display text-2xl md:text-3xl font-light text-brand-charcoal tracking-wide leading-tight">
                 {t.headline(step)}
               </h1>
-              <p className="mt-2 font-body text-sm text-dash-text-secondary leading-relaxed max-w-md">
-                {t.subhead(step)}
-              </p>
+              {t.subhead(step) && (
+                <p className="mt-2 font-body text-sm text-dash-text-secondary leading-relaxed max-w-md">
+                  {t.subhead(step)}
+                </p>
+              )}
               <div className="cc-rule-copper mt-5" />
             </header>
 
