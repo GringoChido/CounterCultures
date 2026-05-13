@@ -44,7 +44,7 @@ export const customerAuthOptions: AuthOptions = {
     EmailProvider({
       from: FROM,
       maxAge: 24 * 60 * 60,
-      sendVerificationRequest: async ({ identifier: email, url }) => {
+      sendVerificationRequest: async ({ identifier: email, url: rawUrl }) => {
         const key = process.env.RESEND_API_KEY;
         if (!key) {
           console.warn(
@@ -52,6 +52,13 @@ export const customerAuthOptions: AuthOptions = {
           );
           return;
         }
+
+        // NextAuth generates callback URLs using /api/auth/callback/...
+        // but our customer handler lives at /api/auth/customer/callback/...
+        const url = rawUrl.replace(
+          "/api/auth/callback/email",
+          "/api/auth/customer/callback/email"
+        );
 
         const resend = new Resend(key);
         const deliverTo = redirectRecipient(email);
