@@ -7,6 +7,7 @@ import {
   getCustomer,
   backfillPipelineByEmail,
 } from "./customer-sheet";
+import { customerAdapter } from "./customer-adapter";
 
 // Mirror the redirect pattern from app/lib/email.ts exactly.
 const STAGING_EMAIL_REDIRECT = process.env.STAGING_EMAIL_REDIRECT;
@@ -25,6 +26,7 @@ const redirectRecipient = (to: string): string => {
 };
 
 export const customerAuthOptions: AuthOptions = {
+  adapter: customerAdapter,
   session: { strategy: "jwt", maxAge: 60 * 60 * 24 * 30 }, // 30 days
   secret: process.env.NEXTAUTH_CUSTOMER_SECRET,
   cookies: {
