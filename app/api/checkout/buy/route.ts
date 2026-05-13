@@ -18,6 +18,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return NextResponse.json(
+        { error: "Stripe is not configured. Set STRIPE_SECRET_KEY in your environment." },
+        { status: 503 }
+      );
+    }
+
     // Guard: only buyable items allowed on buy path
     const hasQuoteOnly = items.some((i: { buyable: boolean }) => !i.buyable);
     if (hasQuoteOnly) {
@@ -173,7 +180,11 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ stripeUrl: session.url, dealId, payUrl: `/${locale ?? "en"}/checkout/pay/${dealId}` });
   } catch (err) {
-    console.error("[checkout/buy] Error:", err);
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("[checkout/buy] Error:", message, err);
+    return NextResponse.json(
+      { error: message.includes("STRIPE") ? "Stripe is not configured" : "Internal error" },
+      { status: 500 }
+    );
   }
 }

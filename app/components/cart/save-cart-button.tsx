@@ -1,55 +1,37 @@
 "use client";
 
 import { useState } from "react";
-import { Bookmark, Mail, MessageCircle, Link2, Check } from "lucide-react";
+import { Bookmark, Mail, MessageCircle, Link2, Check, Loader2 } from "lucide-react";
 import { useCartStore } from "@/app/lib/stores/cart-store";
-
-/**
- * "Save / Share this cart" — pure client-side share, no backend.
- *
- * MX high-ticket buying is rarely a solo decision. Architects spec for
- * clients, couples consult before committing, and design teams pass
- * options around on WhatsApp. This button gives the customer three
- * lightweight ways to escape the funnel without abandoning the cart:
- *
- *   1. Email it to themselves (mailto: with itemized list)
- *   2. Send via WhatsApp (wa.me with summary text)
- *   3. Copy a shareable link to clipboard
- *
- * Cart contents are encoded into the URL hash so when someone opens the
- * link, the items are reconstituted client-side. No server needed.
- */
 
 const T = {
   en: {
     label: "Save or share",
-    title: "Save this cart",
-    hint: "Send a copy to yourself or a collaborator. The link reopens this exact selection.",
-    email: "Email to me",
+    hint: "Send a branded email to yourself or a collaborator, share via WhatsApp, or copy a link.",
+    emailPlaceholder: "Email address",
+    send: "Send",
+    sent: "Sent!",
+    sending: "Sending...",
+    sendError: "Failed to send. Try again.",
     whatsapp: "Send via WhatsApp",
     copy: "Copy shareable link",
     copied: "Link copied",
-    subject: "My Counter Cultures selection",
-    bodyIntro: "Hi, here's the selection I'm reviewing from Counter Cultures:",
-    bodyOutro: "Reopen the cart:",
     waIntro: "My Counter Cultures cart:",
     each: "each",
-    close: "Close",
   },
   es: {
     label: "Guardar o compartir",
-    title: "Guarda este carrito",
-    hint: "Envíalo a tu correo o a un colaborador. El enlace abre esta misma selección.",
-    email: "Enviar a mi correo",
+    hint: "Envía un correo con diseño a tu correo o a un colaborador, comparte por WhatsApp, o copia un enlace.",
+    emailPlaceholder: "Correo electrónico",
+    send: "Enviar",
+    sent: "Enviado!",
+    sending: "Enviando...",
+    sendError: "Error al enviar. Intenta de nuevo.",
     whatsapp: "Enviar por WhatsApp",
     copy: "Copiar enlace para compartir",
     copied: "Enlace copiado",
-    subject: "Mi selección de Counter Cultures",
-    bodyIntro: "Hola, esta es la selección que estoy revisando de Counter Cultures:",
-    bodyOutro: "Volver a abrir el carrito:",
     waIntro: "Mi carrito de Counter Cultures:",
     each: "c/u",
-    close: "Cerrar",
   },
 };
 
@@ -64,6 +46,8 @@ export const SaveCartButton = ({ locale }: SaveCartButtonProps) => {
   const tradeCode = useCartStore((s) => s.tradeCode);
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [emailTo, setEmailTo] = useState("");
+  const [emailState, setEmailState] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   const currency = items[0]?.currency ?? "MXN";
   const formatted = (amount: number) =>
@@ -76,7 +60,6 @@ export const SaveCartButton = ({ locale }: SaveCartButtonProps) => {
 
   if (items.length === 0) return null;
 
-  // Compose share artifacts.
   const shareUrl = (() => {
     if (typeof window === "undefined") return "";
     const payload = {
@@ -102,15 +85,51 @@ export const SaveCartButton = ({ locale }: SaveCartButtonProps) => {
     })
     .join("\n");
 
-  const totalLine = `\n${locale === "es" ? "Subtotal" : "Subtotal"}: ${formatted(subtotal)}`;
-
-  const emailHref = `mailto:?subject=${encodeURIComponent(t.subject)}&body=${encodeURIComponent(
-    `${t.bodyIntro}\n\n${itemList}${totalLine}\n\n${t.bodyOutro}\n${shareUrl}`
-  )}`;
+  const totalLine = `\nSubtotal: ${formatted(subtotal)}`;
 
   const whatsappHref = `https://wa.me/?text=${encodeURIComponent(
     `${t.waIntro}\n\n${itemList}${totalLine}\n\n${shareUrl}`
   )}`;
+
+  const handleSendEmail = async () => {
+    const trimmed = emailTo.trim();
+    if (!trimmed) return;
+    setEmailState("sending");
+    try {
+      const res = await fetch("/api/cart/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: trimmed,
+          locale,
+          items: items.map((i) => ({
+            name: i.name,
+            brand: i.brand,
+            sku: i.sku,
+            quantity: i.quantity,
+            unitPrice: i.tradePrice && i.tradePrice > 0 ? i.tradePrice : i.listPrice,
+            currency: i.currency,
+            imageSrc: i.imageSrc,
+            selectedFinish: i.selectedFinish,
+          })),
+          subtotal,
+          currency,
+          shareUrl,
+        }),
+      });
+      if (res.ok) {
+        setEmailState("sent");
+        setTimeout(() => {
+          setEmailState("idle");
+          setEmailTo("");
+        }, 3000);
+      } else {
+        setEmailState("error");
+      }
+    } catch {
+      setEmailState("error");
+    }
+  };
 
   const handleCopy = async () => {
     try {
@@ -118,7 +137,6 @@ export const SaveCartButton = ({ locale }: SaveCartButtonProps) => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2200);
     } catch {
-      // Fallback: select-and-prompt
       window.prompt(t.copy, shareUrl);
     }
   };
@@ -149,14 +167,39 @@ export const SaveCartButton = ({ locale }: SaveCartButtonProps) => {
           {t.hint}
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <a
-            href={emailHref}
-            className="flex items-center justify-center gap-2 px-3 py-2.5 border border-brand-stone/25 hover:border-brand-charcoal/60 transition-colors font-body text-xs font-medium text-brand-charcoal cursor-pointer"
+        {/* Email input + send */}
+        <div className="flex gap-2 mb-3">
+          <div className="relative flex-1">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-brand-copper" />
+            <input
+              type="email"
+              value={emailTo}
+              onChange={(e) => {
+                setEmailTo(e.target.value);
+                if (emailState === "error") setEmailState("idle");
+              }}
+              onKeyDown={(e) => e.key === "Enter" && handleSendEmail()}
+              placeholder={t.emailPlaceholder}
+              className="w-full pl-9 pr-3 py-2.5 border border-brand-stone/25 font-body text-xs text-brand-charcoal placeholder:text-dash-text-secondary/50 focus:outline-none focus:border-brand-copper transition-colors"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={handleSendEmail}
+            disabled={!emailTo.trim() || emailState === "sending" || emailState === "sent"}
+            className="px-4 py-2.5 bg-brand-copper text-white font-body text-xs font-medium hover:bg-brand-copper/90 disabled:opacity-50 transition-colors cursor-pointer disabled:cursor-default flex items-center gap-1.5 shrink-0"
           >
-            <Mail className="w-3.5 h-3.5 text-brand-copper" />
-            {t.email}
-          </a>
+            {emailState === "sending" && <Loader2 className="w-3 h-3 animate-spin" />}
+            {emailState === "sent" && <Check className="w-3 h-3" />}
+            {emailState === "sending" ? t.sending : emailState === "sent" ? t.sent : t.send}
+          </button>
+        </div>
+        {emailState === "error" && (
+          <p className="font-body text-xs text-red-600 mb-3">{t.sendError}</p>
+        )}
+
+        {/* WhatsApp + Copy link */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           <a
             href={whatsappHref}
             target="_blank"
