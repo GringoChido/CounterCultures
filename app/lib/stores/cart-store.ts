@@ -199,9 +199,10 @@ export const useCartStore = create<CartState>()(
       subtotal: () => {
         const state = get();
         return state.items.reduce((sum, item) => {
-          const price = state.tradeDiscountPct && item.tradePrice
-            ? item.tradePrice
-            : item.listPrice;
+          const price =
+            item.tradePrice != null && item.tradePrice > 0
+              ? item.tradePrice
+              : item.listPrice;
           return sum + price * item.quantity;
         }, 0);
       },

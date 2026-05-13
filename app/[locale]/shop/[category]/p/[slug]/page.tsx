@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { getServerSession } from "next-auth";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { ProductDetail } from "./product-detail";
 import { getProducts } from "@/app/lib/sheets";
 import { PRODUCT_CATEGORIES } from "@/app/lib/constants";
 import type { CategoryKey } from "@/app/lib/constants";
+import { customerAuthOptions } from "@/app/lib/customer-auth";
+import { getTradePrice } from "@/app/lib/trade-pricing";
 
 export const revalidate = 300;
 
@@ -65,9 +68,21 @@ const ProductPage = async ({ params }: PDPProps) => {
   const { category, slug, locale } = await params;
   const lang = (locale as "en" | "es") || "en";
   const allProducts = await getProducts();
-  const product = allProducts.find((p) => p.slug === slug) ?? null;
+  const found = allProducts.find((p) => p.slug === slug) ?? null;
 
-  if (!product) notFound();
+  if (!found) notFound();
+
+  // Hydrate trade price for logged-in trade customers
+  const session = await getServerSession(customerAuthOptions);
+  const customerUser = session?.user as
+    | { isTrade?: boolean; tradeTier?: string }
+    | undefined;
+  let product = found;
+  if (customerUser?.isTrade) {
+    const tier = customerUser.tradeTier ?? "default";
+    const tp = await getTradePrice(product.id, tier);
+    if (tp != null) product = { ...product, tradePrice: tp };
+  }
 
   // Cross-sells from the single fetch: same subcategory first, then same category
   const sameSubcategory = allProducts.filter(
