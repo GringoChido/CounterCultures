@@ -190,12 +190,36 @@ const ProductDetail = ({
 
               {/* Price */}
               <div className="mt-6">
-                <span className="font-mono text-2xl text-brand-charcoal">
-                  {new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(product.price)}
-                </span>
-                <span className="font-mono text-sm text-dash-text-secondary ml-2">
-                  {product.currency}
-                </span>
+                {product.tradePrice != null && product.tradePrice > 0 ? (
+                  <>
+                    <span className="font-mono text-2xl text-brand-copper">
+                      {new Intl.NumberFormat("es-MX", { style: "currency", currency: product.currency }).format(product.tradePrice)}
+                    </span>
+                    <span className="font-mono text-sm text-dash-text-secondary ml-2">
+                      {product.currency}
+                    </span>
+                    <span className="ml-3 font-body text-[10px] tracking-[0.15em] uppercase bg-brand-copper/10 text-brand-copper px-2 py-0.5 font-semibold">
+                      {locale === "es" ? "Precio Trade" : "Trade Price"}
+                    </span>
+                    <div className="mt-1">
+                      <span className="font-mono text-sm text-dash-text-secondary line-through">
+                        {new Intl.NumberFormat("es-MX", { style: "currency", currency: product.currency }).format(product.price)}
+                      </span>
+                      <span className="font-mono text-xs text-dash-text-secondary ml-1">
+                        {locale === "es" ? "precio lista" : "list price"}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-mono text-2xl text-brand-charcoal">
+                      {new Intl.NumberFormat("es-MX", { style: "currency", currency: product.currency }).format(product.price)}
+                    </span>
+                    <span className="font-mono text-sm text-dash-text-secondary ml-2">
+                      {product.currency}
+                    </span>
+                  </>
+                )}
               </div>
 
               {/* Description */}
