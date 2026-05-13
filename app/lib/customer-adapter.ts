@@ -1,4 +1,4 @@
-import type { Adapter, VerificationToken } from "next-auth/adapters";
+import type { Adapter, AdapterUser, VerificationToken } from "next-auth/adapters";
 import {
   readSheet,
   appendRowByHeader,
@@ -47,12 +47,36 @@ export const customerAdapter: Adapter = {
     };
   },
 
-  // Stubs — not used with JWT strategy, but NextAuth requires the shape.
-  async createUser() { return { id: "", email: "", emailVerified: null }; },
-  async getUser() { return null; },
-  async getUserByEmail() { return null; },
+  // User-management methods. With JWT strategy we don't persist users in a
+  // separate users table — the Customers sheet IS the user store, looked up
+  // by email in customer-auth.ts callbacks. These methods must still
+  // propagate the email so NextAuth's EmailProvider flow can hand it off
+  // to the jwt/session callbacks.
+  //
+  // BUG FIX (2026-05-13): the previous stubs returned empty strings here,
+  // which caused NextAuth to mint sessions with `user.email = ""`. That
+  // broke the entire customer-auth pipeline silently: the jwt callback
+  // would skip the customer lookup (no email), `isTrade` stayed false,
+  // and trade pricing never hydrated on PDPs.
+  async createUser(user: Omit<AdapterUser, "id">) {
+    const email = (user.email ?? "").toLowerCase();
+    return { id: email, email, emailVerified: user.emailVerified ?? null };
+  },
+  async getUser(id) {
+    if (!id) return null;
+    const email = id.toLowerCase();
+    return { id: email, email, emailVerified: null };
+  },
+  async getUserByEmail(email) {
+    if (!email) return null;
+    const e = email.toLowerCase();
+    return { id: e, email: e, emailVerified: null };
+  },
   async getUserByAccount() { return null; },
-  async updateUser(u) { return { id: u.id ?? "", email: "", emailVerified: null }; },
+  async updateUser(u) {
+    const email = (u.email ?? u.id ?? "").toLowerCase();
+    return { id: email, email, emailVerified: u.emailVerified ?? null };
+  },
   async linkAccount() { return undefined as never; },
   async createSession() { return { sessionToken: "", userId: "", expires: new Date() }; },
   async getSessionAndUser() { return null; },
