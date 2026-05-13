@@ -120,7 +120,7 @@ For background and evidence behind any fix, see `docs/baseline/` (the read-mostl
 
 ## Roger feedback batch — 2026-05-13
 
-Confirmed with Joshua + Roger on 2026-05-13. PR [#TBD](https://github.com/GringoChido/CounterCultures/pull/TBD).
+Confirmed with Joshua + Roger on 2026-05-13. PR [#47](https://github.com/GringoChido/CounterCultures/pull/47).
 
 | # | Fix | Status |
 |---|-----|--------|
