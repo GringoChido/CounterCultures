@@ -44,7 +44,7 @@ const T = {
       step === 0
         ? "We'll send your quote and updates by email or WhatsApp — your call."
         : step === 1
-          ? "All prices are net — IVA (16%) is included. At checkout we itemize the IVA component for transparency. Shipping is quoted after order review."
+          ? "We deliver to addresses in Mexico and the United States."
           : step === 2
             ? "If your billing address differs from shipping, switch the toggle. Need a CFDI invoice? Toggle factura on below."
             : "Last look. You won't be charged until you authorize on the next screen.",
@@ -54,7 +54,9 @@ const T = {
     email: "Email *",
     phone: "Phone / WhatsApp",
     waOptIn: "Send order updates via WhatsApp on this number",
-    waOptInHint: "We'll only message about your quote and order — never marketing.",
+    waOptInHint:
+      "Share updates via WhatsApp — we may also send you occasional offers and product news. Uncheck below if you'd prefer order-only messages.",
+    marketingOptIn: "Send me special offers and updates",
     line1: "Address line 1 *",
     line2: "Address line 2",
     colonia: "Colonia",
@@ -123,7 +125,7 @@ const T = {
       step === 0
         ? "Te enviaremos tu cotización y avisos por correo o WhatsApp — tú eliges."
         : step === 1
-          ? "Todos los precios son netos — el IVA (16%) está incluido. Al pagar desglosamos el IVA para transparencia. El envío se cotiza tras revisión."
+          ? "Hacemos envíos a direcciones en México y Estados Unidos."
           : step === 2
             ? "Si tu dirección de facturación es distinta a la de envío, desactiva el toggle. ¿Necesitas CFDI? Activa la factura abajo."
             : "Una última revisión. No se cobra nada hasta que autorices en la siguiente pantalla.",
@@ -133,7 +135,9 @@ const T = {
     email: "Correo electrónico *",
     phone: "Teléfono / WhatsApp",
     waOptIn: "Enviar avisos del pedido por WhatsApp a este número",
-    waOptInHint: "Sólo te escribiremos sobre tu cotización y pedido — nunca marketing.",
+    waOptInHint:
+      "Compartiremos novedades por WhatsApp — también podríamos enviarte ofertas y noticias de productos. Desmarca abajo si prefieres solo mensajes del pedido.",
+    marketingOptIn: "Envíame ofertas especiales y novedades",
     line1: "Dirección línea 1 *",
     line2: "Dirección línea 2",
     colonia: "Colonia",
@@ -247,6 +251,7 @@ interface ContactForm {
   // We derive the legacy `channelPreference` ("email" | "whatsapp" | "both")
   // at submit-time so the API stays unchanged.
   whatsappOptIn: boolean;
+  marketingOptIn: boolean;
 }
 
 interface AddressForm {
@@ -298,6 +303,7 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
     phone: locale === "es" ? "+52 " : "",
     company: "",
     whatsappOptIn: true,
+    marketingOptIn: true,
   });
 
   const [address, setAddress] = useState<AddressForm>({
@@ -475,6 +481,7 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
         company: contact.company,
         channelPreference,
         whatsappOptIn: contact.whatsappOptIn,
+        marketingOptIn: contact.marketingOptIn,
         commLocale: locale,
       },
       address: {
@@ -750,6 +757,22 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
                         <span className="block mt-0.5 font-body text-xs text-dash-text-secondary">
                           {t.waOptInHint}
                         </span>
+                      </span>
+                    </label>
+                    <label className="mt-1 flex items-start gap-2.5 cursor-pointer p-2.5 -mx-1 hover:bg-brand-linen/40 transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={contact.marketingOptIn}
+                        onChange={(e) =>
+                          setContact({
+                            ...contact,
+                            marketingOptIn: e.target.checked,
+                          })
+                        }
+                        className="w-4 h-4 mt-0.5 accent-brand-terracotta shrink-0"
+                      />
+                      <span className="font-body text-sm text-brand-charcoal leading-snug">
+                        {t.marketingOptIn}
                       </span>
                     </label>
                   </div>
