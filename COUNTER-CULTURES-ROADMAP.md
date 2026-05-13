@@ -118,6 +118,22 @@ For background and evidence behind any fix, see `docs/baseline/` (the read-mostl
 
 ---
 
+## Roger feedback batch — 2026-05-13
+
+Confirmed with Joshua + Roger on 2026-05-13. PR [#TBD](https://github.com/GringoChido/CounterCultures/pull/TBD).
+
+| # | Fix | Status |
+|---|-----|--------|
+| RF-1 | **Multi-project system** — PDP Save-to-Project CTA, project store, 5 API routes, account pages, $100K progress bar + special pricing CTA | ✅ DONE |
+| RF-2 | **Cart IVA breakout** — Subtotal (neto) / IVA 16% / Total in cart + checkout | ✅ DONE |
+| RF-3 | **PDP net-price caption** — "Precio neto · IVA al finalizar la compra" under every PDP price | ✅ DONE |
+| RF-4 | **Discount code rename** — Already uses "Trade code" / no "promo code" strings found — no changes needed | ✅ DONE (no-op) |
+| RF-5 | **WhatsApp marketing opt-in** — Unchecked checkbox at signup, toggle in settings, LFPDPPP compliant | ✅ DONE |
+| RF-6 | **Cart-share email v2** — Branded redesign with hero image, itemized table, 3-line IVA totals | ✅ DONE |
+| RF-7 | **Search quick-add CTAs** — + Cart buttons on search palette product results | ✅ DONE |
+
+---
+
 ## Sprint suggestion (your first week)
 
 **Day 1 — Security pass (P0 cluster):** Knock out P0.1 → P0.5 in one focused session (~1.5 hrs).
