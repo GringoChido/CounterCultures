@@ -11,8 +11,6 @@ import {
   ChevronDown,
   LayoutGrid,
   List,
-  MapPin,
-  TrendingUp,
   Camera,
 } from "lucide-react";
 import type { ProductFull, ProductFullWithSignals, BrandCount } from "@/app/lib/products-full";
@@ -78,10 +76,7 @@ const T = {
     sortAlpha: "Name A–Z",
     sortPriceAsc: "Price low → high",
     sortPriceDesc: "Price high → low",
-    inShowroom: "In Showroom",
-    inStock: "In stock",
     inStockOnly: "In stock only",
-    specifiedCount: (n: number) => `${n} project${n === 1 ? "" : "s"}`,
     visualSearch: "Find by photo",
     searchPlaceholder: "Search by brand, model, or name…",
     typeHint: (min: number) =>
@@ -127,10 +122,7 @@ const T = {
     sortAlpha: "Nombre A–Z",
     sortPriceAsc: "Precio menor → mayor",
     sortPriceDesc: "Precio mayor → menor",
-    inShowroom: "En showroom",
-    inStock: "En stock",
     inStockOnly: "Solo en stock",
-    specifiedCount: (n: number) => `${n} proyecto${n === 1 ? "" : "s"}`,
     visualSearch: "Buscar por foto",
     searchPlaceholder: "Busca por marca, modelo o nombre…",
     typeHint: (min: number) =>
@@ -943,25 +935,6 @@ const ProductCard = ({ product, locale, onOpen, t }: ProductCardProps) => {
           size="card"
           className="group-hover:[&>img]:scale-[1.02] [&>img]:transition-transform [&>img]:duration-500"
         />
-        {product.inShowroom && (
-          <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-1 bg-brand-charcoal/90 text-white font-body text-[10px] tracking-[0.1em] uppercase backdrop-blur-sm">
-            <MapPin className="w-3 h-3" />
-            {t.inShowroom}
-          </span>
-        )}
-        {product.inStock && (
-          <span
-            className={`absolute ${product.inShowroom ? "top-9" : "top-2"} left-2 inline-flex items-center gap-1 px-2 py-1 bg-brand-sage/95 text-white font-body text-[10px] tracking-[0.1em] uppercase backdrop-blur-sm`}
-          >
-            {t.inStock}
-          </span>
-        )}
-        {product.projectCount && product.projectCount > 1 ? (
-          <span className="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-1 bg-brand-copper/95 text-white font-body text-[10px] tracking-[0.1em] uppercase backdrop-blur-sm">
-            <TrendingUp className="w-3 h-3" />
-            {t.specifiedCount(product.projectCount)}
-          </span>
-        ) : null}
       </button>
       <div className="p-4 flex flex-col flex-1">
         <div className="flex items-start justify-between gap-2 mb-1">
@@ -1047,18 +1020,6 @@ const ProductTable = ({ items, locale, onOpen, t }: ProductTableProps) => (
               <td className="px-4 py-3">
                 <div className="flex items-center gap-2 font-body text-[10px] text-brand-copper uppercase tracking-[0.15em]">
                   <span>{p.brand || "—"} · {p.category}</span>
-                  {p.inShowroom && (
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-brand-charcoal text-white tracking-[0.1em]">
-                      <MapPin className="w-2.5 h-2.5" />
-                      {t.inShowroom}
-                    </span>
-                  )}
-                  {p.projectCount && p.projectCount > 1 ? (
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-brand-copper/10 text-brand-copper tracking-[0.1em]">
-                      <TrendingUp className="w-2.5 h-2.5" />
-                      {t.specifiedCount(p.projectCount)}
-                    </span>
-                  ) : null}
                 </div>
                 <div className="font-body text-sm text-brand-charcoal mt-0.5 line-clamp-1">
                   {p.name || p.sku}
