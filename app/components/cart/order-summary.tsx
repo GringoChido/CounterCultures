@@ -29,7 +29,7 @@ const T = {
   en: {
     summary: "Order Summary",
     items: (n: number) => `${n} ${n === 1 ? "item" : "items"}`,
-    subtotal: "Subtotal",
+    subtotal: "Subtotal (net)",
     iva: "IVA (16%)",
     ivaPending: "Calculated at checkout",
     ivaApplied: "Mexico delivery",
@@ -44,7 +44,7 @@ const T = {
   es: {
     summary: "Resumen del Pedido",
     items: (n: number) => `${n} ${n === 1 ? "artículo" : "artículos"}`,
-    subtotal: "Subtotal",
+    subtotal: "Subtotal (neto)",
     iva: "IVA (16%)",
     ivaPending: "Calculado al pagar",
     ivaApplied: "Envío a México",
@@ -202,6 +202,8 @@ const SummaryRow = ({
 }: SummaryRowProps) => {
   const isQuoteOnly = item.availability === "quote_only" || !item.buyable;
 
+  const unitPrice = item.tradePrice != null && item.tradePrice > 0 ? item.tradePrice : item.listPrice;
+
   if (density === "full") {
     return (
       <li className="flex gap-3 cc-item-in">
@@ -234,11 +236,11 @@ const SummaryRow = ({
             <span className="font-mono text-xs text-dash-text-secondary tabular-nums">
               ×{item.quantity}
               {item.quantity > 1 && (
-                <span className="text-brand-stone/60"> · {formatted(item.listPrice)} {eachLabel}</span>
+                <span className="text-brand-stone/60"> · {formatted(unitPrice)} {eachLabel}</span>
               )}
             </span>
             <span className="font-mono text-sm text-brand-charcoal tabular-nums">
-              {isQuoteOnly ? quoteLabel : formatted(item.listPrice * item.quantity)}
+              {isQuoteOnly ? quoteLabel : formatted(unitPrice * item.quantity)}
             </span>
           </div>
         </div>
@@ -268,7 +270,7 @@ const SummaryRow = ({
         </div>
       </div>
       <span className="font-mono text-sm text-brand-charcoal tabular-nums shrink-0">
-        {isQuoteOnly ? quoteLabel : formatted(item.listPrice * item.quantity)}
+        {isQuoteOnly ? quoteLabel : formatted(unitPrice * item.quantity)}
       </span>
     </li>
   );
