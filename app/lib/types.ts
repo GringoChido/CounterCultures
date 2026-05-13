@@ -20,6 +20,10 @@ export interface Product {
   featured?: boolean;
   slug: string;
   satCode?: string;
+  inShowroom?: boolean;
+  inStock?: boolean;
+  stockQty?: number;
+  projectCount?: number;
 }
 
 export interface Lead {

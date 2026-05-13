@@ -3,8 +3,9 @@ import { BRANDS, PRODUCT_CATEGORIES } from "@/app/lib/constants";
 import { articles } from "@/app/lib/articles";
 import { PROJECTS } from "@/app/lib/projects";
 import { getProducts } from "@/app/lib/sheets";
-import { getBrandCategoryCombos } from "@/app/lib/products-full";
+import { getBrandCategoryCombos, getProductById, getProductSlug } from "@/app/lib/products-full";
 import { getBrands } from "@/app/lib/brand-kit-sheets";
+import { getStagedIds } from "@/app/lib/product-content";
 
 // Regenerate hourly so the brand × category combos pick up Roger's catalog
 // edits. Build-time generation was returning 0 combos (catalog cache loads
@@ -94,7 +95,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     localizedEntry(`/inspiration/${slug}`, "monthly", 0.7)
   );
 
-  // Product detail pages
+  // Product detail pages — curated products from the CRM sheet
   const products = await getProducts();
   const productRoutes: MetadataRoute.Sitemap = products.flatMap((product) =>
     localizedEntry(
@@ -104,12 +105,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     )
   );
 
+  // Full-catalog PDPs — products with rich sidecar content (scraped descriptions,
+  // galleries) get sitemap entries. Products without content are still reachable via
+  // ISR but aren't worth indexing until they have copy.
+  const stagedIds = getStagedIds();
+  const fullCatalogSlugs = new Set(products.map((p) => p.slug));
+  const fullCatalogRoutes: MetadataRoute.Sitemap = [];
+  for (const id of stagedIds.slice(0, 5000)) {
+    const p = await getProductById(id);
+    if (!p || !p.saleOk || !p.active) continue;
+    const slug = getProductSlug(p);
+    if (fullCatalogSlugs.has(slug)) continue;
+    fullCatalogSlugs.add(slug);
+    fullCatalogRoutes.push(
+      ...localizedEntry(`/shop/${p.category}/p/${slug}`, "monthly", 0.5)
+    );
+  }
+
   return [
     ...staticRoutes,
     ...brandRoutes,
     ...brandCategoryRoutes,
     ...subcategoryRoutes,
     ...productRoutes,
+    ...fullCatalogRoutes,
     ...articleRoutes,
     ...projectRoutes,
   ];
