@@ -8,6 +8,7 @@ import { ChevronRight, MessageCircle, ChevronDown, Download, Sparkles } from "lu
 import { ProductCard, formatPrice } from "@/app/components/ui/product-card";
 import { SafeProductImage } from "@/app/components/safe-product-image";
 import { AddToCartButton } from "@/app/components/cart/add-to-cart-button";
+import { SaveToProjectButton } from "@/app/components/pdp/save-to-project-button";
 import type { Product } from "@/app/lib/types";
 import { SITE_CONFIG } from "@/app/lib/constants";
 
@@ -38,6 +39,7 @@ const t = (locale: "en" | "es", key: string) => {
     relatedProducts: { en: "You May Also Like", es: "También Te Puede Interesar" },
     home: { en: "Home", es: "Inicio" },
     shop: { en: "Shop", es: "Tienda" },
+    netPriceCaption: { en: "Net price · IVA calculated at checkout", es: "Precio neto · IVA se calcula al finalizar la compra" },
   };
   return translations[key]?.[locale] || key;
 };
@@ -220,6 +222,9 @@ const ProductDetail = ({
                     </span>
                   </>
                 )}
+                <p className="mt-2 font-body text-xs text-dash-text-secondary/70">
+                  {t(locale, "netPriceCaption")}
+                </p>
               </div>
 
               {/* Description */}
@@ -277,6 +282,11 @@ const ProductDetail = ({
                     {t(locale, "specSheet")}
                   </button>
                 <AddToCartButton
+                  product={product}
+                  locale={locale}
+                  selectedFinish={selectedFinish}
+                />
+                <SaveToProjectButton
                   product={product}
                   locale={locale}
                   selectedFinish={selectedFinish}

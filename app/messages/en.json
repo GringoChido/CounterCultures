@@ -141,7 +141,8 @@
     "specialOrder": "Special Order",
     "artisanBadge": "Handcrafted by Mexican Artisans",
     "relatedProducts": "You May Also Like",
-    "whatsappMessage": "Hi, I'm interested in {product} (SKU: {sku}). Could you provide more information?"
+    "whatsappMessage": "Hi, I'm interested in {product} (SKU: {sku}). Could you provide more information?",
+    "netPriceCaption": "Net price · IVA calculated at checkout"
   },
   "common": {
     "exploreCollection": "Explore the Collection",

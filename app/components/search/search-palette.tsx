@@ -3,8 +3,10 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import MiniSearch from "minisearch";
 import NextLink from "next/link";
-import { Search, ArrowUpRight, FileText, Tag, Package, X, Loader2 } from "lucide-react";
+import { Search, ArrowUpRight, FileText, Tag, Package, X, Loader2, ShoppingBag, Check } from "lucide-react";
 import type { SearchDoc, SearchIndexPayload } from "@/app/lib/search-index";
+import { useCartStore } from "@/app/lib/stores/cart-store";
+import { useUiStore } from "@/app/lib/stores/ui-store";
 
 interface SearchPaletteProps {
   locale: "en" | "es";
@@ -31,6 +33,8 @@ interface ProductHit {
   category: string;
   listPrice: number;
   currency: string;
+  imageSrc?: string;
+  slug?: string;
 }
 
 const COPY = {
@@ -97,6 +101,59 @@ const buildMiniSearch = (
   return ms;
 };
 
+const QuickCartButton = ({
+  product,
+  locale,
+  onClose,
+}: {
+  product: ProductHit;
+  locale: "en" | "es";
+  onClose: () => void;
+}) => {
+  const add = useCartStore((s) => s.add);
+  const openCart = useUiStore((s) => s.openCart);
+  const [added, setAdded] = useState(false);
+
+  const handleAdd = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    add({
+      id: product.id,
+      sku: product.sku,
+      name: product.name,
+      brand: product.brand,
+      category: product.category,
+      currency: product.currency as "MXN" | "USD",
+      listPrice: product.listPrice,
+      quantity: 1,
+      imageSrc: product.imageSrc,
+      productHref: `/${locale}/shop/${product.category}/p/${product.slug || product.sku}`,
+      availability: "made-to-order",
+      buyable: true,
+    });
+
+    setAdded(true);
+    setTimeout(() => {
+      onClose();
+      openCart();
+      setAdded(false);
+    }, 400);
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleAdd}
+      className="shrink-0 flex items-center gap-1 px-2 py-1 text-[10px] font-medium tracking-wide uppercase bg-brand-terracotta/10 text-brand-terracotta hover:bg-brand-terracotta hover:text-white transition-colors rounded-sm cursor-pointer"
+      title={locale === "es" ? "Agregar al carrito" : "Add to cart"}
+    >
+      {added ? <Check className="w-3 h-3" /> : <ShoppingBag className="w-3 h-3" />}
+      <span className="hidden sm:inline">{added ? (locale === "es" ? "Listo" : "Added") : "+ Cart"}</span>
+    </button>
+  );
+};
+
 const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
   const isEs = locale === "es";
   const t = COPY[locale];
@@ -153,7 +210,8 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
         }
         const data = await res.json();
         setProductResults(
-          (data.items ?? []).slice(0, 6).map((item: ProductHit) => ({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (data.items ?? []).slice(0, 6).map((item: any) => ({
             id: item.id,
             name: item.name,
             sku: item.sku,
@@ -161,6 +219,8 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
             category: item.category,
             listPrice: item.listPrice,
             currency: item.currency,
+            imageSrc: item.imageSrc,
+            slug: item.slug,
           }))
         );
       } catch {
@@ -427,6 +487,14 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
                                 {r.external && (
                                   <ArrowUpRight className="w-3.5 h-3.5 text-dash-text-secondary/45 shrink-0" />
                                 )}
+                                {r.type === "product" && (() => {
+                                  const rawId = r.id.replace("product:", "");
+                                  const hit = productResults.find((p) => p.id === rawId);
+                                  if (!hit || hit.listPrice <= 0) return null;
+                                  return (
+                                    <QuickCartButton product={hit} locale={locale} onClose={onClose} />
+                                  );
+                                })()}
                               </div>
                             </NextLink>
                           </li>

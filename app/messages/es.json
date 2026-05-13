@@ -141,7 +141,8 @@
     "specialOrder": "Pedido Especial",
     "artisanBadge": "Hecho a Mano por Artesanos Mexicanos",
     "relatedProducts": "También Te Puede Interesar",
-    "whatsappMessage": "Hola, me interesa {product} (SKU: {sku}). ¿Me pueden dar más información?"
+    "whatsappMessage": "Hola, me interesa {product} (SKU: {sku}). ¿Me pueden dar más información?",
+    "netPriceCaption": "Precio neto · IVA se calcula al finalizar la compra"
   },
   "common": {
     "exploreCollection": "Explorar la Colección",

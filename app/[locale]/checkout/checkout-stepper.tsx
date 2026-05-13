@@ -44,7 +44,7 @@ const T = {
       step === 0
         ? "We'll send your quote and updates by email or WhatsApp — your call."
         : step === 1
-          ? "Mexico delivery includes IVA. Shipping is quoted after we review the order."
+          ? "All prices are net. IVA (16%) is added at checkout for Mexico delivery. Shipping is quoted after order review."
           : step === 2
             ? "If your billing address differs from shipping, switch the toggle. Need a CFDI invoice? Toggle factura on below."
             : "Last look. You won't be charged until you authorize on the next screen.",
@@ -123,7 +123,7 @@ const T = {
       step === 0
         ? "Te enviaremos tu cotización y avisos por correo o WhatsApp — tú eliges."
         : step === 1
-          ? "Los envíos a México incluyen IVA. El envío se cotiza tras revisar el pedido."
+          ? "Todos los precios son netos. El IVA (16%) se agrega al pagar para envíos a México. El envío se cotiza tras revisión."
           : step === 2
             ? "Si tu dirección de facturación es distinta a la de envío, desactiva el toggle. ¿Necesitas CFDI? Activa la factura abajo."
             : "Una última revisión. No se cobra nada hasta que autorices en la siguiente pantalla.",

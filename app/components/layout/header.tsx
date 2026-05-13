@@ -17,6 +17,7 @@ import { NAV_LINKS, SITE_CONFIG, PRODUCT_CATEGORIES } from "@/app/lib/constants"
 import { SearchPalette } from "@/app/components/search/search-palette";
 import { CartIconButton } from "@/app/components/cart/cart-icon-button";
 import { CartDrawer } from "@/app/components/cart/cart-drawer";
+import { MyProjectsDropdown } from "@/app/components/nav/my-projects-dropdown";
 
 const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
   const locale = localeProp as "en" | "es";
@@ -124,6 +125,8 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
             >
               <MessageCircle className="w-5 h-5" />
             </a>
+
+            <MyProjectsDropdown locale={lang} />
 
             <CartIconButton />
 
