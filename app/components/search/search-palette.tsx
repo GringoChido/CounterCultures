@@ -216,6 +216,7 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
       slug: p.id,
       name: p.name || p.sku,
       subtitle: `${p.brand} · ${p.sku}`,
+
       hrefSuffix: `/shop/${p.category}/p/${p.slug || p.sku}`,
       score: Math.max(0.5, 5 - idx * 0.6),
     }));

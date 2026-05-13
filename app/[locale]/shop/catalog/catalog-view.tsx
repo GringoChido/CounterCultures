@@ -17,7 +17,6 @@ import type { ProductFull, ProductFullWithSignals, BrandCount } from "@/app/lib/
 import { ProductVisual } from "@/app/components/product-visual";
 import { VisualSearchModal } from "@/app/components/visual-search-modal";
 import { brandTheme } from "@/app/lib/product-visuals";
-import { ProductDrawer } from "./product-drawer";
 
 // Color-coded finish swatches — architects scan finish codes (MB/PC/BG/etc.)
 // at a glance on SKU sheets. This turns code-scanning into color-scanning
@@ -198,10 +197,14 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
   const [result, setResult] = useState<SearchResponse | null>(initialResult ?? null);
   const [needsAccess, setNeedsAccess] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [selected, setSelected] = useState<ProductFull | null>(null);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [visualSearchOpen, setVisualSearchOpen] = useState(false);
   const reqIdRef = useRef(0);
+
+  const openProduct = useCallback(
+    (p: ProductFull) => router.push(`/${locale}/shop/${p.category}/p/${p.slug || p.sku}`),
+    [router, locale],
+  );
 
   // Sync filters → URL (shallow)
   useEffect(() => {
@@ -647,7 +650,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
                     key={p.id}
                     product={p}
                     locale={locale}
-                    onOpen={() => setSelected(p)}
+                    onOpen={() => openProduct(p)}
                     t={t}
                   />
                 ))}
@@ -656,7 +659,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
               <ProductTable
                 items={sortedItems}
                 locale={locale}
-                onOpen={(p) => setSelected(p)}
+                onOpen={(p) => openProduct(p)}
                 t={t}
               />
             ) : result && sortedItems.length === 0 && !isPending ? (
@@ -883,23 +886,13 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
         </div>
       )}
 
-      {/* Detail drawer */}
-      {selected && (
-        <ProductDrawer
-          product={selected}
-          locale={locale}
-          onClose={() => setSelected(null)}
-          onPickProduct={(p) => setSelected(p)}
-        />
-      )}
-
       <VisualSearchModal
         open={visualSearchOpen}
         onClose={() => setVisualSearchOpen(false)}
         locale={locale}
         onSelect={(p) => {
           setVisualSearchOpen(false);
-          setSelected(p);
+          openProduct(p);
         }}
       />
     </section>
