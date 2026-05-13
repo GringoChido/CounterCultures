@@ -18,10 +18,19 @@ import { SearchPalette } from "@/app/components/search/search-palette";
 import { CartIconButton } from "@/app/components/cart/cart-icon-button";
 import { CartDrawer } from "@/app/components/cart/cart-drawer";
 
-const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
+const Header = ({ locale: localeProp = "en", transparent = false }: { locale?: string; transparent?: boolean }) => {
   const locale = localeProp as "en" | "es";
   const [mobileOpen, setMobileOpen] = useState(false);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    if (!transparent) return;
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [transparent]);
   const [mobileCategoryOpen, setMobileCategoryOpen] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const lang = locale as "en" | "es";
@@ -43,18 +52,23 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
   const localizedHref = (path: string) => `/${locale}${path}`;
 
   const categories = Object.entries(PRODUCT_CATEGORIES);
+  const isTransparent = transparent && !scrolled && !mobileOpen && !megaMenuOpen;
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-brand-linen/95 backdrop-blur-sm border-b border-brand-stone/10">
+      <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isTransparent
+          ? "bg-transparent border-b border-transparent"
+          : "bg-brand-linen/95 backdrop-blur-sm border-b border-brand-stone/10"
+      }`}>
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <NextLink href={localizedHref("/")} className="flex flex-col leading-none shrink-0">
-            <span className="font-display text-xl md:text-2xl font-light tracking-wider text-brand-charcoal whitespace-nowrap">
+            <span className={`font-display text-xl md:text-2xl font-light tracking-wider whitespace-nowrap transition-colors duration-300 ${isTransparent ? "text-white" : "text-brand-charcoal"}`}>
               Counter Cultures
             </span>
-            <span className="hidden sm:block font-body text-[10px] md:text-[11px] tracking-[0.2em] text-brand-copper uppercase mt-0.5">
+            <span className={`hidden sm:block font-body text-[10px] md:text-[11px] tracking-[0.2em] uppercase mt-0.5 transition-colors duration-300 ${isTransparent ? "text-white/70" : "text-brand-copper"}`}>
               San Miguel de Allende, MX
             </span>
           </NextLink>
@@ -74,7 +88,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                   >
                     <NextLink
                       href={localizedHref(link.href)}
-                      className="font-body text-sm font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors duration-300 flex items-center gap-1 py-2"
+                      className={`font-body text-sm font-medium transition-colors duration-300 flex items-center gap-1 py-2 ${isTransparent ? "text-white hover:text-white/70" : "text-brand-charcoal hover:text-brand-terracotta"}`}
                     >
                       {link.label[lang]}
                       <ChevronDown className={`w-3 h-3 transition-transform ${megaMenuOpen ? "rotate-180" : ""}`} />
@@ -87,7 +101,7 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
                 <NextLink
                   key={link.href}
                   href={localizedHref(link.href)}
-                  className="font-body text-sm font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors duration-300 py-2"
+                  className={`font-body text-sm font-medium transition-colors duration-300 py-2 ${isTransparent ? "text-white hover:text-white/70" : "text-brand-charcoal hover:text-brand-terracotta"}`}
                 >
                   {link.label[lang]}
                 </NextLink>
@@ -101,9 +115,11 @@ const Header = ({ locale: localeProp = "en" }: { locale?: string }) => {
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
-              className="flex items-center gap-2 h-9 text-brand-charcoal hover:text-brand-terracotta transition-colors cursor-pointer
-                         w-9 justify-center
-                         md:w-auto md:justify-start md:px-3.5 md:border md:border-brand-stone/25 md:rounded-full md:bg-white/60 md:hover:border-brand-stone/40"
+              className={`flex items-center gap-2 h-9 transition-colors cursor-pointer w-9 justify-center md:w-auto md:justify-start md:px-3.5 md:border md:rounded-full ${
+                isTransparent
+                  ? "text-white hover:text-white/70 md:border-white/25 md:bg-white/10 md:hover:border-white/40"
+                  : "text-brand-charcoal hover:text-brand-terracotta md:border-brand-stone/25 md:bg-white/60 md:hover:border-brand-stone/40"
+              }`}
               aria-label={lang === "es" ? "Buscar (⌘K)" : "Search (⌘K)"}
             >
               <Search className="w-4 h-4 shrink-0" />

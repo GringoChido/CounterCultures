@@ -160,7 +160,7 @@ const SubcategoryPage = async ({ params }: SubcategoryPageProps) => {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
       />
-      <Header locale={lang} />
+      <Header locale={lang} transparent />
       <main id="main" tabIndex={-1}>
         {(() => {
           const heroEyebrow =
