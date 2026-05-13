@@ -17,6 +17,7 @@ const isProtectedApi = (pathname: string) =>
   PROTECTED_API_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 
 const isDashboardPath = (pathname: string) => pathname.startsWith("/dashboard");
+const isAccountPath = (pathname: string) => pathname.startsWith("/account");
 
 // Public dashboard paths (login, NextAuth's own callbacks/error pages live
 // under /api/auth which is exempt below).
@@ -37,7 +38,12 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // NextAuth's own routes must always be reachable.
+  // Customer account pages bypass next-intl (separate from [locale])
+  if (isAccountPath(pathname)) {
+    return NextResponse.next();
+  }
+
+  // NextAuth's own routes must always be reachable (staff + customer).
   if (pathname.startsWith("/api/auth/")) {
     return NextResponse.next();
   }

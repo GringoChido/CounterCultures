@@ -53,7 +53,7 @@ The 5 P0 fixes are all "set the right thing, redeploy, verify" — combine them.
 
 ---
 
-### 🟡 Session 3 — Customer accounts (magic-link + Google OAuth) · ⏱️ ~2 days · IN PROGRESS
+### 🟢 Session 3 — Customer accounts (magic-link + Google OAuth) · ⏱️ ~2 days · DONE 2026-05-12
 
 The foundational v1 customer account system. Scope grew to include the `STAGING_EMAIL_REDIRECT` pattern (custom `sendVerificationRequest` that rewrites magic-link recipients to admin@ in staging while the Customers sheet row keeps the originally-submitted email).
 
@@ -61,7 +61,7 @@ The foundational v1 customer account system. Scope grew to include the `STAGING_
 
 > Read AGENTS.md and docs/fixes/p1-customer-accounts.md, then execute. STAGING NOTE: Resend sandbox only delivers to admin@countercultures.com.mx. Implement EmailProvider with a custom `sendVerificationRequest` that respects `STAGING_EMAIL_REDIRECT` env var (already set on Netlify). Customers sheet rows store the originally-submitted email; only SMTP delivery gets rewritten.
 
-**Dependencies:** Session 2 ✅ · **Status:** 🟡 IN PROGRESS 2026-05-12
+**Dependencies:** Session 2 ✅ · **Status:** 🟢 DONE — PR [#40](https://github.com/GringoChido/CounterCultures/pull/40). Google OAuth client creation in GCP is a manual step.
 
 ---
 
