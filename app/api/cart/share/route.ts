@@ -210,13 +210,25 @@ export const POST = async (req: Request) => {
         ? "Tu selección de Counter Cultures"
         : "Your Counter Cultures selection";
 
-    await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: FROM,
       to: redirectRecipient(payload.to),
       subject,
       html: buildHtml(payload),
       text: buildPlainText(payload),
     });
+
+    if (error) {
+      console.error("[cart/share] Resend API error:", {
+        recipient: payload.to,
+        code: error.name,
+        message: error.message,
+      });
+      return NextResponse.json(
+        { ok: false, error: "Email delivery failed" },
+        { status: 502 }
+      );
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err) {
