@@ -39,7 +39,7 @@ const t = (locale: "en" | "es", key: string) => {
     relatedProducts: { en: "You May Also Like", es: "También Te Puede Interesar" },
     home: { en: "Home", es: "Inicio" },
     shop: { en: "Shop", es: "Tienda" },
-    netPriceCaption: { en: "Net price · IVA calculated at checkout", es: "Precio neto · IVA se calcula al finalizar la compra" },
+    netPriceCaption: { en: "Net price · IVA included", es: "Precio neto · IVA incluido" },
   };
   return translations[key]?.[locale] || key;
 };

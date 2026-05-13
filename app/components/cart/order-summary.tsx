@@ -9,8 +9,8 @@ interface OrderSummaryProps {
   locale: "en" | "es";
   /**
    * Show the IVA line. The cart page renders before ship-to is captured,
-   * so it shows IVA as "calculated at checkout". The checkout review
-   * passes `isMxShipTo` so we can show the actual amount.
+   * so it shows IVA as "included in price". The checkout review
+   * passes `isMxShipTo` so we can show the itemized amount.
    */
   showIva?: boolean;
   isMxShipTo?: boolean;
@@ -31,7 +31,7 @@ const T = {
     items: (n: number) => `${n} ${n === 1 ? "item" : "items"}`,
     subtotal: "Subtotal (net)",
     iva: "IVA (16%)",
-    ivaPending: "Calculated at checkout",
+    ivaPending: "Included in price",
     ivaApplied: "Mexico delivery",
     shipping: "Shipping",
     shippingNote: "Quoted after order review",
@@ -46,7 +46,7 @@ const T = {
     items: (n: number) => `${n} ${n === 1 ? "artículo" : "artículos"}`,
     subtotal: "Subtotal (neto)",
     iva: "IVA (16%)",
-    ivaPending: "Calculado al pagar",
+    ivaPending: "Incluido en el precio",
     ivaApplied: "Envío a México",
     shipping: "Envío",
     shippingNote: "Cotizado tras revisión",

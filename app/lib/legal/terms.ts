@@ -12,7 +12,7 @@ All products are described as accurately as possible. Colors may vary due to mon
 Placing an order constitutes an offer to purchase. We reserve the right to accept or decline any order. Many items are made-to-order or sourced from artisan workshops; lead times vary by product and will be communicated after order confirmation. Stock availability shown on the website is informational and does not constitute a reservation.
 
 4. PAYMENT
-Payment is processed securely via Stripe. We accept major credit and debit cards. For orders shipping to Mexico, IVA (16%) is calculated and added at checkout. Full payment is required before production or shipment begins unless a deposit arrangement has been agreed upon in writing.
+Payment is processed securely via Stripe. We accept major credit and debit cards. All prices displayed are net prices with IVA (16%) included for orders shipping to Mexico, as required by Mexican law. At checkout, the IVA component is itemized for transparency. Full payment is required before production or shipment begins unless a deposit arrangement has been agreed upon in writing.
 
 5. SHIPPING AND DELIVERY
 Shipping rates are calculated based on destination, weight, and dimensions. Delivery timelines are estimates and may vary due to customs processing, carrier delays, or force majeure. Risk of loss transfers to the buyer upon delivery to the carrier. For international shipments, the buyer is responsible for any import duties, customs fees, or additional taxes imposed by the destination country.
@@ -55,7 +55,7 @@ Todos los productos se describen con la mayor precision posible. Los colores pue
 Realizar un pedido constituye una oferta de compra. Nos reservamos el derecho de aceptar o rechazar cualquier pedido. Muchos articulos son hechos por pedido o provienen de talleres artesanales; los tiempos de entrega varian por producto y seran comunicados despues de la confirmacion del pedido. La disponibilidad mostrada en el sitio web es informativa y no constituye una reserva.
 
 4. PAGO
-El pago se procesa de forma segura a traves de Stripe. Aceptamos las principales tarjetas de credito y debito. Para pedidos con envio a Mexico, el IVA (16%) se calcula y agrega al momento del pago. El pago completo es requerido antes de que la produccion o el envio comience, a menos que se haya acordado un deposito por escrito.
+El pago se procesa de forma segura a traves de Stripe. Aceptamos las principales tarjetas de credito y debito. Todos los precios mostrados son precios netos con IVA (16%) incluido para pedidos con envio a Mexico, conforme a la ley mexicana. Al momento del pago, el componente de IVA se desglosa para transparencia. El pago completo es requerido antes de que la produccion o el envio comience, a menos que se haya acordado un deposito por escrito.
 
 5. ENVIO Y ENTREGA
 Las tarifas de envio se calculan segun destino, peso y dimensiones. Los tiempos de entrega son estimados y pueden variar debido al procesamiento aduanal, retrasos del transportista o fuerza mayor. El riesgo de perdida se transfiere al comprador al momento de la entrega al transportista. Para envios internacionales, el comprador es responsable de cualquier derecho de importacion, aranceles aduaneros o impuestos adicionales impuestos por el pais de destino.
