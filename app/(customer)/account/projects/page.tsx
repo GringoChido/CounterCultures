@@ -104,7 +104,7 @@ const ProjectsPage = () => {
               return (
                 <Link
                   key={project.id}
-                  href={`/en/account/projects/${project.id}`}
+                  href={`/account/projects/${project.id}`}
                   className="block bg-white rounded-xl border border-[#E5E0DB] p-5 hover:border-[#B87333]/30 transition-colors group"
                 >
                   <div className="flex items-start justify-between">

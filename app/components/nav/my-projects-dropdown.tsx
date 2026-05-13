@@ -92,7 +92,7 @@ export const MyProjectsDropdown = ({ locale }: { locale: "en" | "es" }) => {
                 return (
                   <Link
                     key={project.id}
-                    href={`/${locale}/account/projects/${project.id}`}
+                    href={`/account/projects/${project.id}`}
                     onClick={() => setOpen(false)}
                     className="block px-4 py-3 hover:bg-brand-linen transition-colors border-b border-brand-stone/5 last:border-0"
                   >
@@ -120,7 +120,7 @@ export const MyProjectsDropdown = ({ locale }: { locale: "en" | "es" }) => {
 
             <div className="px-4 py-3 border-t border-brand-stone/10 flex items-center justify-between">
               <Link
-                href={`/${locale}/account/projects`}
+                href="/account/projects"
                 onClick={() => setOpen(false)}
                 className="font-body text-xs font-medium text-brand-copper hover:text-brand-copper/80 transition-colors"
               >
