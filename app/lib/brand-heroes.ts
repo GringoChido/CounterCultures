@@ -26,11 +26,6 @@ export const BRAND_HERO_IMAGES: Record<string, string> = {
   bluestar: "/Assets/BRANDS/bluestar-hero.webp",
   baldwin: "/Assets/BRANDS/baldwin-hero.webp",
 
-  // Artisan makers (not in the import-list batches but routed via the
-  // resources hub Brand Index; pages still need to render).
-  bante: "/Assets/BRANDS/bante-hero.avif",
-  mistoa: "/Assets/BRANDS/mistoa-hero.webp",
-
   // Batch 2 — Phase A (auto-downloaded)
   hansgrohe: "/Assets/BRANDS/hansgrohe-hero.webp",
   dornbracht: "/Assets/BRANDS/dornbracht-hero.webp",
@@ -128,7 +123,7 @@ export const BRAND_HERO_IMAGES: Record<string, string> = {
   // Batch 11 (second-attempt pass)
   sterling: "/Assets/BRANDS/sterling-hero.webp",
   "chicago-faucets": "/Assets/BRANDS/chicago-faucets-hero.webp",
-  bereson: "/Assets/BRANDS/bereson-hero.webp",
+  berenson: "/Assets/BRANDS/berenson-hero.webp",
   ginger: "/Assets/BRANDS/ginger-hero.webp",
   samsung: "/Assets/BRANDS/samsung-hero.webp",
 

@@ -7,7 +7,6 @@ import type { Brand } from "@/app/lib/brand-kit-types";
 export const FLAGSHIP_SLUGS = [
   "california-faucets",
   "toto",
-  "bante",
   "badeloft",
   "emtek",
   "sun-valley-bronze",
@@ -18,7 +17,6 @@ export const FLAGSHIP_SLUGS = [
 const PRE_STAGED_HEROES: Record<string, string | undefined> = {
   "california-faucets": "/Assets/BRANDS/california-faucets-hero.webp",
   toto: "/Assets/BRANDS/toto-hero.webp",
-  bante: undefined,
   badeloft: "/Assets/BRANDS/badeloft-hero.webp",
   emtek: "/Assets/BRANDS/emtek-hero.avif",
   "sun-valley-bronze": "/Assets/BRANDS/sun-valley-bronze-hero.webp",
@@ -47,7 +45,6 @@ export type FeaturedBrand = Brand & {
 export const FLAGSHIP_FALLBACK: Record<string, { name: string }> = {
   "california-faucets": { name: "California Faucets" },
   toto: { name: "TOTO" },
-  bante: { name: "Banté" },
   badeloft: { name: "Badeloft" },
   emtek: { name: "Emtek" },
   "sun-valley-bronze": { name: "Sun Valley Bronze" },

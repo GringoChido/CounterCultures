@@ -56,7 +56,6 @@ export const NAV_LINKS = [
 export const BRANDS = [
   { name: "California Faucets", slug: "california-faucets" },
   { name: "TOTO", slug: "toto" },
-  { name: "Banté", slug: "bante" },
   { name: "Badeloft", slug: "badeloft" },
   { name: "Emtek", slug: "emtek" },
   { name: "Sun Valley Bronze", slug: "sun-valley-bronze" },
@@ -64,7 +63,6 @@ export const BRANDS = [
   { name: "BLANCO", slug: "blanco" },
   { name: "Kohler", slug: "kohler" },
   { name: "Brizo", slug: "brizo" },
-  { name: "Mistoa", slug: "mistoa" },
   { name: "Villeroy & Boch", slug: "villeroy-boch" },
   { name: "AquaSpa", slug: "aquaspa" },
   { name: "Ebbe", slug: "ebbe" },
