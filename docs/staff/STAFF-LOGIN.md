@@ -4,8 +4,7 @@
 Footer utility row → "Staff" (en) / "Equipo" (es) → `/dashboard/login`
 
 ## Auth method
-NextAuth + Google OAuth, domain-locked to `@countercultures.com.mx`.
-Contractors without that domain are added to `PORTAL_EMAIL_ALLOWLIST` (comma-separated env var).
+NextAuth + Google OAuth, domain-locked to `@countercultures.com.mx`. **No exceptions.** The `PORTAL_EMAIL_ALLOWLIST` env var has been removed from Netlify — do not re-introduce it. Contractors (incl. Joshua / Untold Works) sign in via a `@countercultures.com.mx` Workspace alias (e.g. `admin@countercultures.com.mx`), not an external domain.
 
 ## What NOT to do
 - Do not surface the login button in the main navigation.
