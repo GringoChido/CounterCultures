@@ -68,6 +68,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Create Stripe Checkout Session
+    const isEs = locale === "es";
     const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -83,6 +84,13 @@ export async function POST(req: NextRequest) {
       },
       shipping_address_collection: {
         allowed_countries: ["MX", "US"],
+      },
+      custom_text: {
+        submit: {
+          message: isEs
+            ? "Counter Cultures — Distribuidor autorizado en San Miguel de Allende. Gracias por tu compra. Recibirás confirmación por correo electrónico."
+            : "Counter Cultures — Authorized dealer in San Miguel de Allende. Thank you for your purchase. You'll receive confirmation by email.",
+        },
       },
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://countercultures.mx"}/${locale}/payment-success?session_id={CHECKOUT_SESSION_ID}&deal_id=${dealId}`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://countercultures.mx"}/${locale}/cart`,
