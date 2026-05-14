@@ -102,6 +102,7 @@ For background and evidence behind any fix, see `docs/baseline/` (the read-mostl
 | P2.13 | **Blog Manager analytics — wire views tracking** | [`docs/fixes/p2-blog-analytics.md`](docs/fixes/p2-blog-analytics.md) | 🔴 PENDING | 4 hrs |
 | P2.14 | **WhatsApp Business setup** — currently dry-run mode | [`docs/fixes/p2-whatsapp-setup.md`](docs/fixes/p2-whatsapp-setup.md) | 🔴 PENDING | 1 day |
 | P2.15 | **Race conditions on Sheets writes** — add optimistic locking pattern | [`docs/fixes/p2-sheets-race-conditions.md`](docs/fixes/p2-sheets-race-conditions.md) | 🔴 PENDING | 1 day |
+| P2.16 | **PDP link 404s** — ProductFull missing slug → every catalog card links to `/p/undefined` | [`docs/fixes/p2-pdp-link-404s.md`](docs/fixes/p2-pdp-link-404s.md) | 🟢 DONE 2026-05-14 | 1 hr |
 
 ---
 

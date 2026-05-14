@@ -218,7 +218,7 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
       name: p.name || p.sku,
       subtitle: `${p.brand} · ${p.sku}`,
 
-      hrefSuffix: `/shop/${p.category}/p/${p.slug || p.sku}`,
+      hrefSuffix: `/shop/${p.category}/p/${p.slug || toSlug(p.name, p.sku)}`,
       score: Math.max(0.5, 5 - idx * 0.6),
     }));
     return [...productDisplayResults, ...brandArticleResults].sort(

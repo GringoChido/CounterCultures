@@ -202,7 +202,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
   const reqIdRef = useRef(0);
 
   const openProduct = useCallback(
-    (p: ProductFull) => router.push(`/${locale}/shop/${p.category}/p/${p.slug || p.sku}`),
+    (p: ProductFull) => router.push(`/${locale}/shop/${p.category}/p/${p.slug}`),
     [router, locale],
   );
 

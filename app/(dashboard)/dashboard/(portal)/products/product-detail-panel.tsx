@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { toSlug } from "@/app/lib/slug";
 import {
   X,
   Package,
@@ -623,6 +624,7 @@ const ProductDetailPanel = ({
                             uom: product.uom,
                             active: true,
                             saleOk: true,
+                            slug: toSlug(v.name, v.sku),
                           })
                         }
                         className="flex items-center gap-3 text-left p-2 rounded border border-dash-border hover:border-brand-copper hover:bg-dash-bg transition-colors cursor-pointer"

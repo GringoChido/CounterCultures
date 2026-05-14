@@ -17,6 +17,7 @@ import { GoogleAuth } from "google-auth-library";
 import { sheets as sheetsApi } from "@googleapis/sheets";
 import { getGooglePrivateKey } from "./google-private-key";
 import { normalize, scoreTokens } from "./search-utils";
+import { toSlug } from "./slug";
 import productImageManifest from "./product-image-manifest.json";
 import {
   getOdooStockQuants,
@@ -121,7 +122,7 @@ export interface ProductFull {
   /** Locally mirrored spec sheet at /specs/odoo/<id>.pdf. */
   specSheetLocal?: string;
   tradePrice?: number;
-  slug?: string;
+  slug: string;
 }
 
 interface IndexedProduct extends ProductFull {
@@ -252,6 +253,7 @@ const load = async (): Promise<Cache> => {
       stockQty,
       inStock: stockQty > 0,
       imageSrc,
+      slug: toSlug(name, sku),
       _sku: normalize(sku),
       _name: normalize(name),
       _brand: normalize(brand),
@@ -387,6 +389,7 @@ const stripIndex = (p: IndexedProduct): ProductFull => ({
   specSheetUrl: p.specSheetUrl,
   specSheetLocal: p.specSheetLocal,
   imageSrc: p.imageSrc,
+  slug: p.slug,
 });
 
 // Scored substring match. Higher score = better match.
@@ -886,7 +889,6 @@ export const getQuoteCatalogBrands = async (): Promise<BrandCount[]> => {
 };
 
 // ── PDP slug-based lookup ─────────────────────────────────────────────
-import { toSlug } from "./slug";
 
 let slugIndex: Map<string, string> | null = null;
 let slugIndexTs = 0;
@@ -909,8 +911,16 @@ export const getProductBySlug = async (
 ): Promise<ProductFull | null> => {
   const idx = await ensureSlugIndex();
   const id = idx.get(slug);
-  if (!id) return null;
-  return getProductById(id);
+  if (id) return getProductById(id);
+
+  const c = await getCache();
+  const skuSlug = slug.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  for (const p of c.products) {
+    if (p._sku === skuSlug || p.sku.toLowerCase() === slug.toLowerCase()) {
+      return stripIndex(p);
+    }
+  }
+  return null;
 };
 
 export const getRelatedProducts = async (
