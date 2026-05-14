@@ -48,6 +48,11 @@ interface SheetLead {
   brand_slugs: string;
   assigned_rep: string;
   marketing_segment: string;
+  classifier_brands?: string;
+  classifier_skus?: string;
+  classifier_profession?: string;
+  classifier_confidence?: string;
+  classifier_run_at?: string;
 }
 
 // UI-friendly lead derived from sheet data
@@ -67,7 +72,18 @@ interface Lead {
   brandSlugs: string[];
   assignedRep: string;
   marketingSegment: string;
+  classifierBrands: string[];
+  classifierSkus: string[];
+  classifierProfession: string;
+  classifierConfidence: number;
+  classifierRunAt: string;
 }
+
+const splitPipe = (s: string | undefined): string[] =>
+  (s ?? "")
+    .split("|")
+    .map((x) => x.trim())
+    .filter(Boolean);
 
 const mapSheetLead = (s: SheetLead): Lead => ({
   id: s.id,
@@ -82,13 +98,43 @@ const mapSheetLead = (s: SheetLead): Lead => ({
   createdAt: s.created_at,
   nextFollowUp: s.next_followup,
   lastContactDate: s.last_contact_date,
-  brandSlugs: (s.brand_slugs ?? "")
-    .split("|")
-    .map((x) => x.trim())
-    .filter(Boolean),
+  brandSlugs: splitPipe(s.brand_slugs),
   assignedRep: s.assigned_rep ?? "",
   marketingSegment: s.marketing_segment ?? "",
+  classifierBrands: splitPipe(s.classifier_brands),
+  classifierSkus: splitPipe(s.classifier_skus),
+  classifierProfession: s.classifier_profession ?? "",
+  classifierConfidence: parseFloat(s.classifier_confidence ?? "0") || 0,
+  classifierRunAt: s.classifier_run_at ?? "",
 });
+
+// WhatsApp leads often arrive as a phone number with no name attached
+// (the contact isn't in Roger's physical phone). Roger's spec calls for a
+// redacted-style display: "+52 81 ... 4421" -- country code + first cluster
+// then dots then last four. Falls back to whatever is in the sheet if the
+// phone doesn't fit the expected shape.
+export const formatPhoneOnly = (raw: string): string => {
+  const trimmed = (raw ?? "").trim();
+  if (!trimmed) return "";
+  const digits = trimmed.replace(/[^\d+]/g, "");
+  if (!digits) return trimmed;
+  const startsWithPlus = digits.startsWith("+");
+  const onlyDigits = digits.replace(/\+/g, "");
+  if (onlyDigits.length < 6) return trimmed;
+  const last4 = onlyDigits.slice(-4);
+  const lead = onlyDigits.slice(0, Math.min(onlyDigits.length - 4, 4));
+  if (startsWithPlus && onlyDigits.startsWith("52") && onlyDigits.length === 12) {
+    const area = onlyDigits.slice(2, 4);
+    return `+52 ${area} ··· ${last4}`;
+  }
+  return `${startsWithPlus ? "+" : ""}${lead} ··· ${last4}`;
+};
+
+const isPhoneOnly = (lead: Lead): boolean =>
+  !lead.name.trim() && !!lead.phone.trim();
+
+const displayLeadName = (lead: Lead): string =>
+  isPhoneOnly(lead) ? formatPhoneOnly(lead.phone) : lead.name || "(no name)";
 
 const statusVariants: Record<string, BadgeVariant> = {
   new: "new",
@@ -553,6 +599,154 @@ const BrandChips = ({ slugs }: { slugs: string[] }) => {
   );
 };
 
+// -- Classifier Panel --
+// Runs Claude on the lead's `interest` (message body) and shows brands,
+// SKUs, and a profession guess. Caches results on the Leads sheet via
+// /api/dashboard/leads/classify so re-opening the panel doesn't re-bill.
+
+interface ClassifierResult {
+  brands: string[];
+  skus: string[];
+  profession: string;
+  confidence: number;
+  classifier_run_at: string;
+}
+
+const ClassifierPanel = ({
+  lead,
+  onClassified,
+}: {
+  lead: Lead;
+  onClassified: (c: ClassifierResult) => void;
+}) => {
+  const [running, setRunning] = useState(false);
+  const hasResults =
+    lead.classifierBrands.length > 0 ||
+    lead.classifierSkus.length > 0 ||
+    !!lead.classifierProfession;
+
+  const runClassifier = async () => {
+    if (!lead.interest.trim()) {
+      toast.error("No message body to classify on this lead.");
+      return;
+    }
+    setRunning(true);
+    try {
+      const res = await fetch("/api/dashboard/leads/classify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          leadId: lead.id,
+          message: lead.interest,
+          persist: true,
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = (await res.json()) as ClassifierResult;
+      onClassified(data);
+      toast.success(
+        `Classified · ${data.brands.length} brands, ${data.skus.length} SKUs`,
+      );
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Classifier failed");
+    } finally {
+      setRunning(false);
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-brand-copper" />
+          Claude · classifier
+        </h4>
+        <button
+          type="button"
+          onClick={runClassifier}
+          disabled={running || !lead.interest.trim()}
+          className="text-[11px] text-brand-copper hover:underline disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-1"
+        >
+          {running ? (
+            <>
+              <Loader2 className="w-3 h-3 animate-spin" />
+              Running...
+            </>
+          ) : hasResults ? (
+            "Re-run"
+          ) : (
+            "Run classifier"
+          )}
+        </button>
+      </div>
+
+      {!hasResults && !running && (
+        <p className="text-xs text-dash-text-secondary">
+          {lead.interest.trim()
+            ? "Not yet classified. Run to extract brands, SKUs, and profession."
+            : "No message body on this lead — nothing to classify."}
+        </p>
+      )}
+
+      {hasResults && (
+        <div className="space-y-3 text-sm">
+          {lead.classifierBrands.length > 0 && (
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-dash-text-secondary mb-1.5">
+                Brands
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {lead.classifierBrands.map((b) => (
+                  <span
+                    key={b}
+                    className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-brand-copper/10 text-brand-copper border border-brand-copper/30"
+                  >
+                    {b}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {lead.classifierSkus.length > 0 && (
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-dash-text-secondary mb-1.5">
+                SKUs / models
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {lead.classifierSkus.map((s) => (
+                  <span
+                    key={s}
+                    className="px-2 py-0.5 rounded text-[11px] font-mono bg-dash-bg border border-dash-border text-dash-text"
+                  >
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {lead.classifierProfession && (
+            <p className="text-xs">
+              <span className="text-dash-text-secondary">Profession guess:</span>{" "}
+              <span className="text-dash-text">{lead.classifierProfession}</span>
+              {lead.classifierConfidence > 0 && (
+                <span className="text-dash-text-secondary">
+                  {" "}
+                  · confidence {lead.classifierConfidence.toFixed(2)}
+                </span>
+              )}
+            </p>
+          )}
+          {lead.classifierRunAt && (
+            <p className="text-[10px] text-dash-text-secondary">
+              Last run {format(parseISO(lead.classifierRunAt), "MMM d, HH:mm")}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const columns = [
   columnHelper.display({
     id: "select",
@@ -581,12 +775,24 @@ const columns = [
   }),
   columnHelper.accessor("name", {
     header: "Name",
-    cell: (info) => (
-      <div>
-        <p className="font-medium">{info.getValue()}</p>
-        <p className="text-xs text-dash-text-secondary">{info.row.original.email}</p>
-      </div>
-    ),
+    cell: (info) => {
+      const lead = info.row.original;
+      const phoneOnly = isPhoneOnly(lead);
+      return (
+        <div>
+          <p className="font-medium">
+            {phoneOnly ? formatPhoneOnly(lead.phone) : info.getValue()}
+          </p>
+          {phoneOnly ? (
+            <p className="text-[10px] text-brand-copper uppercase tracking-wider mt-0.5">
+              name pending · phone-only
+            </p>
+          ) : (
+            <p className="text-xs text-dash-text-secondary">{lead.email}</p>
+          )}
+        </div>
+      );
+    },
   }),
   columnHelper.accessor("brandSlugs", {
     header: "Brands",
@@ -1131,28 +1337,44 @@ const LeadsPageInner = () => {
       <SlideOut
         open={!!selectedLead}
         onClose={() => setSelectedLead(null)}
-        title={selectedLead?.name ?? "Lead Detail"}
+        title={selectedLead ? displayLeadName(selectedLead) : "Lead Detail"}
       >
         {selectedLead && (
           <div className="space-y-6">
+            {isPhoneOnly(selectedLead) && (
+              <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-brand-copper/10 border border-brand-copper/30">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-brand-copper">
+                  name pending · phone-only
+                </span>
+              </div>
+            )}
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary mb-3">
                 Contact Information
               </h4>
               <div className="space-y-2 text-sm">
-                <p>
-                  <span className="text-dash-text-secondary">Email:</span>{" "}
-                  <a href={`mailto:${selectedLead.email}`} className="text-brand-copper">
-                    {selectedLead.email}
-                  </a>
-                </p>
+                {selectedLead.email && (
+                  <p>
+                    <span className="text-dash-text-secondary">Email:</span>{" "}
+                    <a href={`mailto:${selectedLead.email}`} className="text-brand-copper">
+                      {selectedLead.email}
+                    </a>
+                  </p>
+                )}
                 <p>
                   <span className="text-dash-text-secondary">Phone:</span>{" "}
                   {selectedLead.phone}
                 </p>
                 <p>
                   <span className="text-dash-text-secondary">Source:</span>{" "}
-                  {selectedLead.source}
+                  {selectedLead.source === "WhatsApp" ? (
+                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-vendor-whatsapp/15 text-vendor-whatsapp-dark border border-vendor-whatsapp/40">
+                      <span className="w-1.5 h-1.5 rounded-full bg-vendor-whatsapp" />
+                      WhatsApp
+                    </span>
+                  ) : (
+                    selectedLead.source
+                  )}
                 </p>
                 {selectedLead.contactType && (
                   <p>
@@ -1180,6 +1402,22 @@ const LeadsPageInner = () => {
                 })()}
               </div>
             </div>
+
+            {/* Claude classifier panel */}
+            <ClassifierPanel
+              lead={selectedLead}
+              onClassified={(c) => {
+                setSelectedLead({
+                  ...selectedLead,
+                  classifierBrands: c.brands,
+                  classifierSkus: c.skus,
+                  classifierProfession: c.profession,
+                  classifierConfidence: c.confidence,
+                  classifierRunAt: c.classifier_run_at,
+                });
+                fetchLeads();
+              }}
+            />
 
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary mb-3">

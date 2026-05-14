@@ -32,6 +32,13 @@ type LeadRecord = {
    * Values: "builder" | "designer" | "end-user" | "" (unset).
    */
   marketing_segment: string;
+  notes: string;
+  source_message_id: string;
+  classifier_brands: string; // pipe-separated, populated by /leads/classify
+  classifier_skus: string; // pipe-separated
+  classifier_profession: string; // Architect | Designer | Builder | Hospitality | Homeowner | Unknown
+  classifier_confidence: string; // string-encoded float 0-1
+  classifier_run_at: string; // ISO timestamp of last classifier run
 };
 
 const LEAD_COLUMNS: (keyof LeadRecord)[] = [
@@ -50,6 +57,13 @@ const LEAD_COLUMNS: (keyof LeadRecord)[] = [
   "brand_slugs",
   "assigned_rep",
   "marketing_segment",
+  "notes",
+  "source_message_id",
+  "classifier_brands",
+  "classifier_skus",
+  "classifier_profession",
+  "classifier_confidence",
+  "classifier_run_at",
 ];
 
 const R4_NOTE_8_COLUMNS = ["marketing_segment"];

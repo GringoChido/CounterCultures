@@ -42,7 +42,6 @@ type SheetTab =
   | "Purchase_Orders"
   | "Shipments"
   | "Deal_Payments"
-  | "Manufacturers"
   | "Traficos"
   | "Trafico_Items"
   | "USMCA_Certificates"
@@ -95,7 +94,8 @@ type SheetTab =
   | "Attachment_Visibility"
   | "Customers"
   | "Customer_Carts"
-  | "Verification_Tokens";
+  | "Verification_Tokens"
+  | "Morning_Briefs";
 
 // In-memory TTL cache. Keyed by tab. Reference tables get a longer TTL
 // because they almost never change; active tables use the short TTL so a
@@ -115,7 +115,6 @@ const REFERENCE_TABS = new Set<SheetTab>([
   "Reps",
   "Settings",
   "Users",
-  "Manufacturers",
 ]);
 
 type CacheEntry = { data: unknown[]; expiresAt: number };

@@ -9,6 +9,7 @@ import { MorningSalesHealth } from "@/app/(dashboard)/components/morning-sales-h
 import { TodayKpiRail } from "@/app/(dashboard)/components/today-kpi-rail";
 import { ActivityFeed } from "@/app/(dashboard)/components/activity-feed";
 import { CommandCenter } from "@/app/(dashboard)/components/command-center";
+import { MorningBrief } from "@/app/(dashboard)/components/morning-brief";
 import { useCurrentUser } from "@/app/lib/use-current-user";
 
 const greetingFor = (date: Date): string => {
@@ -48,6 +49,8 @@ const OverviewPage = () => {
       </div>
 
       <CommandCenter />
+
+      <MorningBrief />
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_220px] gap-6">
         <div className="space-y-4 min-w-0">
