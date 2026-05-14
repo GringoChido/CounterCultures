@@ -16,7 +16,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 const SignInInner = () => {
   const params = useSearchParams();
   const [email, setEmail] = useState("");
-  const [waOptIn, setWaOptIn] = useState(false);
+  const [waOptIn, setWaOptIn] = useState(true);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const errorCode = params.get("error");
@@ -29,15 +29,13 @@ const SignInInner = () => {
     if (!email.trim()) return;
     setLoading(true);
 
-    if (waOptIn) {
-      try {
-        await fetch("/api/account/whatsapp-opt-in", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: email.trim().toLowerCase(), optIn: true }),
-        });
-      } catch { /* best-effort */ }
-    }
+    try {
+      await fetch("/api/account/whatsapp-opt-in", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim().toLowerCase(), optIn: waOptIn }),
+      });
+    } catch { /* best-effort */ }
 
     try {
       const csrfRes = await fetch(`${CUSTOMER_AUTH_BASE}/csrf`);
@@ -139,8 +137,8 @@ const SignInInner = () => {
                 className="mt-0.5 h-4 w-4 rounded border-[#E5E0DB] text-[#B87333] focus:ring-[#B87333]/40 cursor-pointer"
               />
               <span className="text-xs text-[#6B6B6B] leading-relaxed">
-                I&apos;d like to receive WhatsApp messages about new products,
-                promotions, and exclusive events. I can unsubscribe anytime.
+                Receive order updates and important messages via WhatsApp.
+                Uncheck if you&apos;d prefer not to.
               </span>
             </label>
             <button
