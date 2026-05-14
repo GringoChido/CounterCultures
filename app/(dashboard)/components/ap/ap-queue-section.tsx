@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Clock, ShieldAlert } from "lucide-react";
+import { CompanyBadge } from "@/app/(dashboard)/components/company-badge";
 
 export interface APQueueRow {
   label: string;
@@ -16,6 +17,7 @@ export interface APQueueRow {
   vendorKey: string;
   poAmount: number;
   currency: string;
+  company: string;
 }
 
 const fmt = (n: number, cur = "MXN") =>
@@ -57,8 +59,9 @@ const APQueueSection = () => {
         </span>
       </div>
       <div className="bg-dash-surface border border-dash-border rounded overflow-hidden">
-        <div className="grid grid-cols-[1fr_1fr_1fr_0.8fr_0.7fr_auto] gap-px text-[10px] uppercase tracking-wider text-dash-text-secondary px-4 py-2 border-b border-dash-border bg-dash-bg">
+        <div className="grid grid-cols-[1fr_auto_1fr_1fr_0.8fr_0.7fr_auto] gap-px text-[10px] uppercase tracking-wider text-dash-text-secondary px-4 py-2 border-b border-dash-border bg-dash-bg">
           <div>Vendor</div>
+          <div>Entity</div>
           <div>PO</div>
           <div>Trigger</div>
           <div>Amount</div>
@@ -68,11 +71,12 @@ const APQueueSection = () => {
         {rows.map((r, i) => (
           <div
             key={`${r.poId}-${i}`}
-            className={`grid grid-cols-[1fr_1fr_1fr_0.8fr_0.7fr_auto] gap-px px-4 py-2.5 text-sm border-b border-dash-border last:border-b-0 ${
+            className={`grid grid-cols-[1fr_auto_1fr_1fr_0.8fr_0.7fr_auto] gap-px px-4 py-2.5 text-sm border-b border-dash-border last:border-b-0 ${
               r.blocksSend ? "bg-brand-terracotta/5" : ""
             }`}
           >
             <div className="text-dash-text font-medium text-xs">{r.vendorName}</div>
+            <div><CompanyBadge company={r.company} size="xs" /></div>
             <div>
               <Link
                 href={`/dashboard/purchases/${r.poId}`}

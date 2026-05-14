@@ -14,39 +14,14 @@ import {
   getOdooInvoices,
   getOdooInvoiceLines,
   getOdooPayments,
+  detectCompany,
   type OdooInvoice,
   type OdooInvoiceLine,
+  type EntityCompany,
 } from "./odoo-sheets";
 import { getCurrentFXRate } from "./fx";
 
-// ---------------------------------------------------------------------------
-// Company detection
-// ---------------------------------------------------------------------------
-
-type Company = "cc" | "llc";
-
-const JOURNAL_COMPANY_MAP: Record<string, Company> = {
-  santander: "cc",
-  banamex: "cc",
-  banorte: "cc",
-  bbva: "cc",
-  hsbc: "cc",
-  "wells fargo": "llc",
-  "wells": "llc",
-  stripe: "llc",
-  "bank of america": "llc",
-  chase: "llc",
-};
-
-const detectCompany = (invoice: OdooInvoice): Company => {
-  const journal = (invoice.journal_id ?? "").toLowerCase();
-  for (const [key, company] of Object.entries(JOURNAL_COMPANY_MAP)) {
-    if (journal.includes(key)) return company;
-  }
-  const currency = (invoice.currency_id ?? "").toUpperCase();
-  if (currency === "USD") return "llc";
-  return "cc";
-};
+type Company = EntityCompany;
 
 // ---------------------------------------------------------------------------
 // Date helpers

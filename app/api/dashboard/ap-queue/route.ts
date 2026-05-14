@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getPurchaseOrderList } from "@/app/lib/odoo-sheets";
+import { getPurchaseOrderList, type EntityCompany } from "@/app/lib/odoo-sheets";
 import {
   getAllVendorTerms,
   computeQueuedPayments,
@@ -14,6 +14,7 @@ interface APQueueRow extends QueuedPayment {
   vendorKey: string;
   poAmount: number;
   currency: string;
+  company: EntityCompany;
 }
 
 const matchVendor = (
@@ -71,6 +72,7 @@ export const GET = async (): Promise<Response> => {
           vendorKey: terms.vendor,
           poAmount: po.amountTotal,
           currency: po.currency,
+          company: po.company,
         });
       }
     }

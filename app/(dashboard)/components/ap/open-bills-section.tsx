@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { FileText, AlertCircle } from "lucide-react";
+import { CompanyBadge } from "@/app/(dashboard)/components/company-badge";
 
 interface BillRow {
   id: string;
@@ -16,6 +17,7 @@ interface BillRow {
   total: number;
   currency: string;
   paymentState: string;
+  company: string;
 }
 
 const fmt = (n: number, cur = "MXN") =>
@@ -123,9 +125,10 @@ const OpenBillsSection = () => {
         </div>
       ) : (
         <div className="bg-dash-surface border border-dash-border rounded overflow-hidden">
-          <div className="grid grid-cols-[1fr_1.2fr_0.7fr_0.7fr_0.6fr_0.8fr_0.6fr_auto] gap-px text-[10px] uppercase tracking-wider text-dash-text-secondary px-4 py-2 border-b border-dash-border bg-dash-bg">
+          <div className="grid grid-cols-[1fr_1.2fr_auto_0.7fr_0.7fr_0.6fr_0.8fr_0.6fr_auto] gap-px text-[10px] uppercase tracking-wider text-dash-text-secondary px-4 py-2 border-b border-dash-border bg-dash-bg">
             <div>Factura / Bill #</div>
             <div>Proveedor / Vendor</div>
+            <div>Entidad / Entity</div>
             <div>Fecha / Date</div>
             <div>Vencimiento / Due</div>
             <div>Días / Days</div>
@@ -136,7 +139,7 @@ const OpenBillsSection = () => {
           {bills.map((b) => (
             <div
               key={b.id}
-              className={`grid grid-cols-[1fr_1.2fr_0.7fr_0.7fr_0.6fr_0.8fr_0.6fr_auto] gap-px px-4 py-2.5 text-sm border-b border-dash-border last:border-b-0 ${
+              className={`grid grid-cols-[1fr_1.2fr_auto_0.7fr_0.7fr_0.6fr_0.8fr_0.6fr_auto] gap-px px-4 py-2.5 text-sm border-b border-dash-border last:border-b-0 ${
                 b.isOverdue ? "bg-brand-terracotta/5" : ""
               }`}
             >
@@ -149,6 +152,7 @@ const OpenBillsSection = () => {
                 </Link>
               </div>
               <div className="text-xs text-dash-text font-medium truncate">{b.partnerName}</div>
+              <div><CompanyBadge company={b.company} size="xs" /></div>
               <div className="text-xs text-dash-text-secondary">{b.date}</div>
               <div className="text-xs text-dash-text-secondary">{b.dueDate || "—"}</div>
               <div className="text-xs">
