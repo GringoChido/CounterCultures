@@ -11,18 +11,22 @@ import { customerAdapter } from "./customer-adapter";
 
 // Mirror the redirect pattern from app/lib/email.ts exactly.
 const STAGING_EMAIL_REDIRECT = process.env.STAGING_EMAIL_REDIRECT;
+const STAGING_ALLOWLIST = STAGING_EMAIL_REDIRECT
+  ? STAGING_EMAIL_REDIRECT.split(",").map((e) => e.trim().toLowerCase())
+  : [];
 const FROM_ADDRESS =
   process.env.RESEND_FROM_TRANSACTIONAL || "onboarding@resend.dev";
 const FROM = `Counter Cultures <${FROM_ADDRESS}>`;
 
 const redirectRecipient = (to: string): string => {
-  if (!STAGING_EMAIL_REDIRECT) return to;
-  if (to === STAGING_EMAIL_REDIRECT) return to;
+  if (!STAGING_ALLOWLIST.length) return to;
+  if (STAGING_ALLOWLIST.includes(to.toLowerCase())) return to;
+  const fallback = STAGING_ALLOWLIST[0];
   console.info(
     `[Email] STAGING_EMAIL_REDIRECT active — recipient rewritten ` +
-      `(original: ${to}, delivered: ${STAGING_EMAIL_REDIRECT})`
+      `(original: ${to}, delivered: ${fallback})`
   );
-  return STAGING_EMAIL_REDIRECT;
+  return fallback;
 };
 
 export const customerAuthOptions: AuthOptions = {

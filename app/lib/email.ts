@@ -31,21 +31,24 @@ const FROM = `Counter Cultures <${FROM_ADDRESS}>`;
 const ROGER_EMAIL = process.env.NOTIFY_EMAIL || "roger@countercultures.com.mx";
 const WHATSAPP_NUMBER = process.env.WHATSAPP_NOTIFY_NUMBER || "";
 
-// Staging guardrail: when STAGING_EMAIL_REDIRECT is set, every email
-// recipient gets rewritten to that address before send. Unset = production
-// mode (recipients flow through as-is). Removed at Phase 2 cutover once a
-// verified Counter Cultures sender domain is live and any-recipient sending
-// is allowed by Resend.
+// Staging guardrail: when STAGING_EMAIL_REDIRECT is set, only allowlisted
+// recipients receive emails. Others are rewritten to the first address on the
+// list. Supports comma-separated allowlist (e.g. "admin@x.com,roger@x.com").
+// Unset = production mode (recipients flow through as-is).
 const STAGING_EMAIL_REDIRECT = process.env.STAGING_EMAIL_REDIRECT;
+const STAGING_ALLOWLIST = STAGING_EMAIL_REDIRECT
+  ? STAGING_EMAIL_REDIRECT.split(",").map((e) => e.trim().toLowerCase())
+  : [];
 
 const redirectRecipient = (to: string): string => {
-  if (!STAGING_EMAIL_REDIRECT) return to;
-  if (to === STAGING_EMAIL_REDIRECT) return to;
+  if (!STAGING_ALLOWLIST.length) return to;
+  if (STAGING_ALLOWLIST.includes(to.toLowerCase())) return to;
+  const fallback = STAGING_ALLOWLIST[0];
   console.info(
     `[Email] STAGING_EMAIL_REDIRECT active — recipient rewritten ` +
-      `(original: ${to}, delivered: ${STAGING_EMAIL_REDIRECT})`
+      `(original: ${to}, delivered: ${fallback})`
   );
-  return STAGING_EMAIL_REDIRECT;
+  return fallback;
 };
 
 // --- Internal notification to Roger via WhatsApp API ---

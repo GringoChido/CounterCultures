@@ -5,11 +5,14 @@ const FROM_ADDRESS =
   process.env.RESEND_FROM_TRANSACTIONAL || "onboarding@resend.dev";
 const FROM = `Counter Cultures <${FROM_ADDRESS}>`;
 const STAGING_EMAIL_REDIRECT = process.env.STAGING_EMAIL_REDIRECT;
+const STAGING_ALLOWLIST = STAGING_EMAIL_REDIRECT
+  ? STAGING_EMAIL_REDIRECT.split(",").map((e) => e.trim().toLowerCase())
+  : [];
 
 const redirectRecipient = (to: string): string => {
-  if (!STAGING_EMAIL_REDIRECT) return to;
-  if (to === STAGING_EMAIL_REDIRECT) return to;
-  return STAGING_EMAIL_REDIRECT;
+  if (!STAGING_ALLOWLIST.length) return to;
+  if (STAGING_ALLOWLIST.includes(to.toLowerCase())) return to;
+  return STAGING_ALLOWLIST[0];
 };
 
 interface ShareItem {
@@ -210,13 +213,25 @@ export const POST = async (req: Request) => {
         ? "Tu selección de Counter Cultures"
         : "Your Counter Cultures selection";
 
-    await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: FROM,
       to: redirectRecipient(payload.to),
       subject,
       html: buildHtml(payload),
       text: buildPlainText(payload),
     });
+
+    if (error) {
+      console.error("[cart/share] Resend API error:", {
+        recipient: payload.to,
+        code: error.name,
+        message: error.message,
+      });
+      return NextResponse.json(
+        { ok: false, error: "Email delivery failed" },
+        { status: 502 }
+      );
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err) {
