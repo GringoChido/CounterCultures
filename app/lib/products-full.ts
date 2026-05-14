@@ -919,12 +919,26 @@ export const getProductBySlug = async (
   if (id) return getProductById(id);
 
   const c = await getCache();
-  const skuSlug = slug.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const norm = slug.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+  // Fallback 1: match by SKU
   for (const p of c.products) {
-    if (p._sku === skuSlug || p.sku.toLowerCase() === slug.toLowerCase()) {
+    if (p._sku === norm || p.sku.toLowerCase() === slug.toLowerCase()) {
       return stripIndex(p);
     }
   }
+
+  // Fallback 2: slug contains the SKU suffix — check if any product's
+  // toSlug output starts with the same prefix (handles minor slug drift)
+  for (const p of c.products) {
+    if (norm.endsWith(p._sku) && norm.length > p._sku.length) {
+      const computed = toSlug(p.name, p.sku);
+      if (computed === norm || norm.startsWith(computed.slice(0, 20))) {
+        return stripIndex(p);
+      }
+    }
+  }
+
   return null;
 };
 

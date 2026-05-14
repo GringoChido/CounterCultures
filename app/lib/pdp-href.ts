@@ -8,9 +8,12 @@ export interface SlugSource {
 }
 
 const resolveSlug = (product: SlugSource): string => {
-  const slug =
-    product.slug ||
-    (product.name ? toSlug(product.name, product.sku) : product.sku.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""));
+  // Always use toSlug when name is available — guarantees consistency
+  // with the slug index in products-full.ts. Stored slug field is only
+  // used as last resort (no name).
+  const slug = product.name
+    ? toSlug(product.name, product.sku)
+    : (product.slug || toSlug("", product.sku));
 
   if (!slug || slug === "undefined") {
     throw new Error(

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
@@ -40,7 +40,7 @@ export const generateMetadata = async ({
   if (!VALID_CATEGORIES.has(category)) return {};
 
   const product = await getProductBySlug(slug);
-  if (!product || product.category !== category) return {};
+  if (!product) return {};
 
   const content = getProductContent(product.id);
   const isEs = locale === "es";
@@ -93,7 +93,8 @@ const PDPPage = async ({ params }: PDPProps) => {
   if (!VALID_CATEGORIES.has(category)) notFound();
 
   const found = await getProductBySlug(slug);
-  if (!found || found.category !== category) notFound();
+  if (!found) notFound();
+  if (found.category !== category) redirect(`/${locale}/shop/${found.category}/p/${slug}`);
 
   const session = await getServerSession(customerAuthOptions);
   const customerUser = session?.user as
