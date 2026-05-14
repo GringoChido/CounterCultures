@@ -117,6 +117,7 @@ For background and evidence behind any fix, see `docs/baseline/` (the read-mostl
 | P3.4 | **Trade tier system (v2)** — Gold/Silver/Bronze (structure ready, just populate) | [`docs/fixes/p3-trade-tiers.md`](docs/fixes/p3-trade-tiers.md) | 🔴 PENDING | 1 day |
 | P3.5 | **Sheets → Postgres migration plan** — main CRM is near 10M cell cap | [`docs/fixes/p3-database-migration.md`](docs/fixes/p3-database-migration.md) | 🔴 PENDING | RESEARCH |
 | P3.6 | **Customer accounts v2** — wishlists, order history UI, address book mgmt | [`docs/fixes/p3-customer-accounts-v2.md`](docs/fixes/p3-customer-accounts-v2.md) | 🔴 PENDING | 2-3 days |
+| P3.7 | **Admin portal access** — admin@ rejected silently, structured auth logging, better error UX | [`docs/fixes/p3-admin-portal-access.md`](docs/fixes/p3-admin-portal-access.md) | 🟢 DONE | 1 hr |
 
 ---
 

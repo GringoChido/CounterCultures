@@ -1,12 +1,8 @@
 /**
  * NextAuth v4 configuration. Google SSO, JWT session, restricted to
- * @countercultures.com.mx with a small allowlist for external collaborators
- * (e.g. joshua@untold.works).
- *
- * Role is read from the `Users` Sheet tab at sign-in and embedded in the JWT
- * so callers can read it without re-querying. If a user signs in successfully
- * at the OAuth layer but has no row in `Users` (or `active=false`), sign-in
- * is rejected with `AccessDenied`.
+ * @countercultures.com.mx. Role is read from the `Users` Sheet tab at
+ * sign-in and embedded in the JWT. If a user has no row in `Users` (or
+ * `active=false`), sign-in is rejected with `AccessDenied`.
  */
 
 import type { AuthOptions } from "next-auth";
@@ -14,6 +10,14 @@ import GoogleProvider from "next-auth/providers/google";
 import { findUserByEmail, type UserRole } from "./users-sheet";
 
 const ALLOWED_DOMAIN = "countercultures.com.mx";
+
+// Break-glass accounts — always allowed in, even if the Users sheet row is
+// missing, deactivated, or the Sheets API is down.
+const BREAK_GLASS: Record<string, UserRole> = {
+  "admin@countercultures.com.mx": "owner",
+  "roger@countercultures.com.mx": "owner",
+  "control@countercultures.com.mx": "finance",
+};
 
 const parseAllowlist = (): string[] =>
   (process.env.PORTAL_EMAIL_ALLOWLIST ?? "")
@@ -40,17 +44,27 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async signIn({ profile }) {
       const email = profile?.email?.toLowerCase();
-      if (!email) return false;
+      if (!email) {
+        console.warn("[auth] signIn rejected: no email on profile");
+        return false;
+      }
       const allowlist = parseAllowlist();
+      const domain = email.split("@")[1];
       const inDomain = email.endsWith(`@${ALLOWED_DOMAIN}`);
-      if (!inDomain && !allowlist.includes(email)) return false;
+      if (!inDomain && !allowlist.includes(email)) {
+        console.warn(`[auth] signIn rejected: domain "${domain}" not allowed for ${email}`);
+        return false;
+      }
 
-      // Membership is REQUIRED. Bootstrap mode is removed (P0 security fix):
-      // an empty Users sheet now rejects all sign-ins so the auth hole cannot
-      // re-open accidentally. The Users sheet must be seeded out-of-band
-      // (Sheets UI or admin script) before any portal user can authenticate.
       const user = await findUserByEmail(email);
-      if (!user || !user.active) return false;
+      if (!user || !user.active) {
+        if (email in BREAK_GLASS) {
+          console.warn(`[auth] break-glass bypass: ${email} allowed in despite ${!user ? "missing sheet row" : "active=false"}`);
+          return true;
+        }
+        console.warn(`[auth] signIn rejected: ${!user ? "no Users-sheet row" : "active=false"} for ${email}`);
+        return false;
+      }
       return true;
     },
     async jwt({ token, user, profile, trigger }) {
@@ -60,13 +74,10 @@ export const authOptions: AuthOptions = {
       // (next request after their JWT refreshes will have the new values).
       if (email && (!token.role || trigger === "update" || trigger === "signIn")) {
         const u = await findUserByEmail(email);
-        // signIn callback now requires a Users-sheet row; if `u` is missing
-        // here it's an unexpected state. Default to a safe "sales" role
-        // (least privilege) and log so the issue surfaces.
-        if (!u) {
-          console.warn(`[auth] No Users-sheet row found for authenticated email ${email}; defaulting to sales role.`);
+        if (!u && !(email in BREAK_GLASS)) {
+          console.warn(`[auth] No Users-sheet row for ${email}; defaulting to sales role`);
         }
-        token.role = (u?.role ?? "sales") as UserRole;
+        token.role = (u?.role ?? BREAK_GLASS[email] ?? "sales") as UserRole;
         token.name = u?.name ?? token.name;
         token.featureOverrides = u?.featureOverrides ?? "";
       }
