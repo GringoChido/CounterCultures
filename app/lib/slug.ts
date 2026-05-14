@@ -8,7 +8,7 @@ const DIACRITICS: Record<string, string> = {
 };
 
 const deAccent = (s: string): string =>
-  s.replace(/[àáâãäåèéêëìíîïòóôõöùúûüñçß]/gi, (ch) => DIACRITICS[ch.toLowerCase()] ?? ch);
+  s.normalize("NFC").replace(/[àáâãäåèéêëìíîïòóôõöùúûüñçß]/gi, (ch) => DIACRITICS[ch.toLowerCase()] ?? ch);
 
 const MAX_NAME_CHARS = 60;
 const MAX_SLUG = 80;

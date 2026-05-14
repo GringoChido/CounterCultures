@@ -26,4 +26,9 @@ describe("toSlug", () => {
     expect(toSlug("Foo / Bar (Baz)", "X--Y"))
       .toBe("foo-bar-baz-x-y");
   });
+
+  it("handles decomposed Unicode (n + combining tilde → diseno)", () => {
+    const decomposed = "Diseño Martillado";
+    expect(toSlug(decomposed, "SKU-1")).toBe("diseno-martillado-sku-1");
+  });
 });
