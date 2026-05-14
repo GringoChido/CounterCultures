@@ -31,11 +31,11 @@ const T = {
       "Browse the showroom and add the pieces you'd like to spec for your project.",
     browseCta: "Browse Shop",
     contactCta: "Talk to a specialist",
-    tradeCode: "Trade code",
+    tradeCode: "Discount Code",
     applyCode: "Apply",
     removeCode: "Remove",
     tradeApplied: "Trade pricing active",
-    tradeHint: "Architect, designer, or builder? Apply your trade code.",
+    tradeHint: "",
     mixedBanner:
       "This selection includes quote-only pieces. Checkout will route to a quote request — no card required.",
     finish: "Finish",
@@ -58,11 +58,11 @@ const T = {
       "Explora el showroom y agrega las piezas que quieras especificar para tu proyecto.",
     browseCta: "Ver Tienda",
     contactCta: "Hablar con un especialista",
-    tradeCode: "Código trade",
+    tradeCode: "Código de descuento",
     applyCode: "Aplicar",
     removeCode: "Quitar",
     tradeApplied: "Precio trade activo",
-    tradeHint: "¿Arquitecto, diseñador o constructor? Aplica tu código trade.",
+    tradeHint: "",
     mixedBanner:
       "Esta selección incluye piezas que requieren cotización. El pago generará una solicitud — sin tarjeta requerida.",
     finish: "Acabado",
@@ -364,9 +364,11 @@ export const CartPageClient = ({ locale }: { locale: "en" | "es" }) => {
                     <span className="font-body text-sm font-medium text-brand-charcoal">
                       {t.tradeCode}
                     </span>
-                    <span className="font-body text-xs text-dash-text-secondary ml-2 hidden sm:inline">
-                      {t.tradeHint}
-                    </span>
+                    {t.tradeHint && (
+                      <span className="font-body text-xs text-dash-text-secondary ml-2 hidden sm:inline">
+                        {t.tradeHint}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-brand-stone group-open:rotate-90 transition-transform" />
