@@ -76,17 +76,21 @@ export async function POST(req: NextRequest) {
       now,
     ]);
 
-    // Upsert customer preferences
-    await upsertPreferences(
-      contact.email,
-      {
-        locale: contact.commLocale ?? locale,
-        email_opt_in: true,
-        whatsapp_opt_in: contact.channelPreference !== "email",
-        channel_preference: contact.channelPreference ?? "both",
-      },
-      `guest:${cartSessionId}`
-    );
+    // Upsert customer preferences — non-blocking; must never crash checkout
+    try {
+      await upsertPreferences(
+        contact.email,
+        {
+          locale: contact.commLocale ?? locale,
+          email_opt_in: true,
+          whatsapp_opt_in: contact.channelPreference !== "email",
+          channel_preference: contact.channelPreference ?? "both",
+        },
+        `guest:${cartSessionId}`
+      );
+    } catch (prefErr) {
+      console.error("[checkout/quote] upsertPreferences failed (non-blocking):", prefErr);
+    }
 
     // Generate tracker token
     const trackerToken = signQuoteToken(dealId);
