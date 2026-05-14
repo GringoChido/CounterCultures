@@ -94,22 +94,31 @@ export async function POST(req: NextRequest) {
       ]);
     }
 
-    // Upsert customer preferences
-    await upsertPreferences(
-      contact.email,
-      {
-        locale: commLocale,
-        email_opt_in: true,
-        whatsapp_opt_in: contact.channelPreference !== "email",
-        channel_preference: contact.channelPreference ?? "both",
-      },
-      `guest:${cartSessionId}`
-    );
+    // Upsert customer preferences — non-blocking; must never crash checkout
+    try {
+      await upsertPreferences(
+        contact.email,
+        {
+          locale: commLocale,
+          email_opt_in: true,
+          whatsapp_opt_in: contact.channelPreference !== "email",
+          channel_preference: contact.channelPreference ?? "both",
+        },
+        `guest:${cartSessionId}`
+      );
+    } catch (prefErr) {
+      console.error("[checkout/submit] upsertPreferences failed (non-blocking):", prefErr);
+    }
 
     // Fire cart_submitted lifecycle transition
-    const trackerToken = signQuoteToken(dealId);
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://countercultures.mx";
-    const trackerUrl = `${baseUrl}/${locale}/quote/${dealId}?t=${encodeURIComponent(trackerToken)}`;
+    let trackerUrl = `${baseUrl}/${locale}/quote/${dealId}`;
+    try {
+      const trackerToken = signQuoteToken(dealId);
+      trackerUrl = `${baseUrl}/${locale}/quote/${dealId}?t=${encodeURIComponent(trackerToken)}`;
+    } catch (tokenErr) {
+      console.error("[checkout/submit] signQuoteToken failed (non-blocking):", tokenErr);
+    }
 
     try {
       const { evaluateAndTransition } = await import("@/app/lib/rule-engine");

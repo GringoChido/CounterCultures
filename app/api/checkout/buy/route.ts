@@ -38,11 +38,13 @@ export async function POST(req: NextRequest) {
     const dealId = `DEAL-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
     const now = new Date().toISOString();
 
+    const safeCurrency = (currency ?? "mxn").toLowerCase();
+
     // Build Stripe line items
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map(
       (item: { name: string; sku: string; listPrice: number; quantity: number }) => ({
         price_data: {
-          currency: currency.toLowerCase(),
+          currency: safeCurrency,
           product_data: {
             name: item.name,
             metadata: { sku: item.sku },
@@ -57,7 +59,7 @@ export async function POST(req: NextRequest) {
     if (ivaAmount > 0) {
       lineItems.push({
         price_data: {
-          currency: currency.toLowerCase(),
+          currency: safeCurrency,
           product_data: { name: "IVA (16%)" },
           unit_amount: Math.round(ivaAmount * 100),
         },
@@ -147,17 +149,21 @@ export async function POST(req: NextRequest) {
       ]);
     }
 
-    // Upsert customer preferences
-    await upsertPreferences(
-      contact.email,
-      {
-        locale: contact.commLocale ?? locale,
-        email_opt_in: true,
-        whatsapp_opt_in: contact.channelPreference !== "email",
-        channel_preference: contact.channelPreference ?? "both",
-      },
-      `guest:${cartSessionId}`
-    );
+    // Upsert customer preferences — non-blocking; must never crash checkout
+    try {
+      await upsertPreferences(
+        contact.email,
+        {
+          locale: contact.commLocale ?? locale,
+          email_opt_in: true,
+          whatsapp_opt_in: contact.channelPreference !== "email",
+          channel_preference: contact.channelPreference ?? "both",
+        },
+        `guest:${cartSessionId}`
+      );
+    } catch (prefErr) {
+      console.error("[checkout/buy] upsertPreferences failed (non-blocking):", prefErr);
+    }
 
     // Fire payment_initiated transition
     try {

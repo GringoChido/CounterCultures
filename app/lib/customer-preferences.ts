@@ -61,72 +61,86 @@ function rowToPreferences(row: PreferencesRow): CustomerPreferences {
 }
 
 export async function getPreferences(email: string): Promise<CustomerPreferences | null> {
-  const rows = await readSheet<PreferencesRow>("Customer_Preferences");
-  const match = rows.find(
-    (r) => r.customer_email.toLowerCase().trim() === email.toLowerCase().trim()
-  );
-  return match ? rowToPreferences(match) : null;
+  try {
+    const rows = await readSheet<PreferencesRow>("Customer_Preferences");
+    const normalizedEmail = (email ?? "").toLowerCase().trim();
+    if (!normalizedEmail) return null;
+    const match = rows.find(
+      (r) => (r.customer_email ?? "").toLowerCase().trim() === normalizedEmail
+    );
+    return match ? rowToPreferences(match) : null;
+  } catch (err) {
+    console.error("[customer-preferences] getPreferences failed:", err);
+    return null;
+  }
 }
 
 export async function upsertPreferences(
   email: string,
   patch: Partial<Pick<CustomerPreferences, "locale" | "email_opt_in" | "whatsapp_opt_in" | "channel_preference" | "digest_frequency">>,
   _actor: string
-): Promise<CustomerPreferences> {
-  const existing = await getPreferences(email);
-  const now = new Date().toISOString();
+): Promise<CustomerPreferences | null> {
+  const normalizedEmail = (email ?? "").toLowerCase().trim();
+  if (!normalizedEmail) return null;
 
-  if (existing) {
-    const updated: CustomerPreferences = {
-      ...existing,
-      ...patch,
+  try {
+    const existing = await getPreferences(normalizedEmail);
+    const now = new Date().toISOString();
+
+    if (existing) {
+      const updated: CustomerPreferences = {
+        ...existing,
+        ...patch,
+        updated_at: now,
+      };
+      await appendRow("Customer_Preferences", [
+        updated.customer_email,
+        updated.locale,
+        String(updated.email_opt_in),
+        String(updated.whatsapp_opt_in),
+        updated.channel_preference,
+        updated.digest_frequency,
+        updated.unsubscribe_token,
+        updated.unsubscribed_at ?? "",
+        "",
+        updated.created_at,
+        now,
+      ]);
+      return updated;
+    }
+
+    const token = generateUnsubscribeToken(normalizedEmail);
+    const prefs: CustomerPreferences = {
+      customer_email: normalizedEmail,
+      locale: patch.locale ?? "es",
+      email_opt_in: patch.email_opt_in ?? true,
+      whatsapp_opt_in: patch.whatsapp_opt_in ?? true,
+      channel_preference: patch.channel_preference ?? "both",
+      digest_frequency: patch.digest_frequency ?? "every_event",
+      unsubscribe_token: token,
+      created_at: now,
       updated_at: now,
     };
-    // Append updated row (sheet-level dedup by email handled by reads taking last match)
+
     await appendRow("Customer_Preferences", [
-      updated.customer_email,
-      updated.locale,
-      String(updated.email_opt_in),
-      String(updated.whatsapp_opt_in),
-      updated.channel_preference,
-      updated.digest_frequency,
-      updated.unsubscribe_token,
-      updated.unsubscribed_at ?? "",
+      prefs.customer_email,
+      prefs.locale,
+      String(prefs.email_opt_in),
+      String(prefs.whatsapp_opt_in),
+      prefs.channel_preference,
+      prefs.digest_frequency,
+      prefs.unsubscribe_token,
       "",
-      updated.created_at,
+      "",
+      now,
       now,
     ]);
-    return updated;
+
+    return prefs;
+  } catch (err) {
+    console.error("[customer-preferences] upsertPreferences failed:", err);
+    return null;
   }
-
-  const token = generateUnsubscribeToken(email);
-  const prefs: CustomerPreferences = {
-    customer_email: email.toLowerCase().trim(),
-    locale: patch.locale ?? "es",
-    email_opt_in: patch.email_opt_in ?? true,
-    whatsapp_opt_in: patch.whatsapp_opt_in ?? true,
-    channel_preference: patch.channel_preference ?? "both",
-    digest_frequency: patch.digest_frequency ?? "every_event",
-    unsubscribe_token: token,
-    created_at: now,
-    updated_at: now,
-  };
-
-  await appendRow("Customer_Preferences", [
-    prefs.customer_email,
-    prefs.locale,
-    String(prefs.email_opt_in),
-    String(prefs.whatsapp_opt_in),
-    prefs.channel_preference,
-    prefs.digest_frequency,
-    prefs.unsubscribe_token,
-    "",
-    "",
-    now,
-    now,
-  ]);
-
-  return prefs;
 }
 
 export function applyPreferencesToSendDecision(
