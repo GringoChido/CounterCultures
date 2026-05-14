@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Eye } from "lucide-react";
 import type { Product } from "@/app/lib/types";
+import { pdpHref } from "@/app/lib/pdp-href";
 import { SafeProductImage } from "@/app/components/safe-product-image";
 
 interface ProductCardProps {
@@ -18,7 +19,7 @@ const ProductCard = ({ product, locale = "en" }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <Link href={`/${locale}/shop/${product.category}/p/${product.slug}`} className="group block h-full">
+    <Link href={pdpHref(locale, product)} className="group block h-full">
       <div
         className="relative overflow-hidden aspect-square bg-brand-sand/20 rounded-sm"
         onMouseEnter={() => setIsHovered(true)}

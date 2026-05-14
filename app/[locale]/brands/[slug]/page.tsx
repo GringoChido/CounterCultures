@@ -9,6 +9,7 @@ import { ShopCatalog } from "@/app/[locale]/shop/shop-catalog";
 import { getProductsByBrand } from "@/app/lib/sheets";
 import { getBrandBySlug, getBrands } from "@/app/lib/brand-kit-sheets";
 import { getBrandSummary } from "@/app/lib/products-full";
+import { pdpUrl } from "@/app/lib/pdp-href";
 import { articles, pillarColors, pillarLabels } from "@/app/lib/articles";
 import { Shield, Wrench, HeadphonesIcon, ArrowUpRight, Package } from "lucide-react";
 import { BrandSignatureTile } from "./brand-signature-tile";
@@ -216,7 +217,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
         itemListElement: products.slice(0, 10).map((product, index) => ({
           "@type": "ListItem",
           position: index + 1,
-          url: `${BASE_URL}/${locale}/shop/${product.category}/p/${product.slug}`,
+          url: pdpUrl(locale, product),
           name: product.nameEn,
         })),
       },

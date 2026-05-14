@@ -9,6 +9,7 @@ import {
   getProductSlug,
   type ProductCategory,
 } from "@/app/lib/products-full";
+import { pdpUrl } from "@/app/lib/pdp-href";
 import {
   getInShowroomIds,
   getMostSpecifiedScores,
@@ -187,7 +188,7 @@ const PDPPage = async ({ params }: PDPProps) => {
       isRelatedTo: relatedProducts.slice(0, 3).map((rp) => ({
         "@type": "Product",
         name: rp.name,
-        url: `${BASE_URL}/${locale}/shop/${rp.category}/p/${rp.slug}`,
+        url: pdpUrl(locale, rp),
       })),
     }),
   };

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { pdpHref } from "@/app/lib/pdp-href";
 import {
   MapPin,
   Package,
@@ -433,7 +434,7 @@ const PDPClient = ({
             {relatedProducts.map((rp) => (
               <Link
                 key={rp.id}
-                href={`/${locale}/shop/${rp.category}/p/${rp.slug}`}
+                href={pdpHref(locale, rp)}
                 className="group bg-dash-surface border border-brand-stone/15 hover:border-brand-copper/60 transition-colors"
               >
                 <ProductVisual

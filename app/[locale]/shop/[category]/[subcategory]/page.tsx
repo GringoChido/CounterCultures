@@ -8,6 +8,7 @@ import { HowItWorksBand } from "@/app/components/sections/how-it-works-band";
 import { ShopCatalog } from "../../shop-catalog";
 import { getProductsBySubcategory } from "@/app/lib/sheets";
 import { PRODUCT_CATEGORIES, SUBCATEGORY_META, SUBCATEGORY_CATALOG_QUERY } from "@/app/lib/constants";
+import { pdpUrl } from "@/app/lib/pdp-href";
 import type { CategoryKey } from "@/app/lib/constants";
 
 export const revalidate = 300;
@@ -141,7 +142,7 @@ const SubcategoryPage = async ({ params }: SubcategoryPageProps) => {
     itemListElement: products.slice(0, 20).map((product, index) => ({
       "@type": "ListItem",
       position: index + 1,
-      url: `${BASE_URL}/${locale}/shop/${category}/p/${product.slug}`,
+      url: pdpUrl(locale, product),
       name: lang === "es" ? product.name : product.nameEn,
     })),
   };

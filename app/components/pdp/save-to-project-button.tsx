@@ -5,6 +5,7 @@ import { FolderPlus } from "lucide-react";
 import { SaveToProjectModal } from "./save-to-project-modal";
 import type { Product } from "@/app/lib/types";
 import type { ProjectLineItem } from "@/app/lib/project-store";
+import { pdpHref } from "@/app/lib/pdp-href";
 
 const T = {
   en: { saveToProject: "Save to Project" },
@@ -34,7 +35,7 @@ export const SaveToProjectButton = ({
     unitPrice: product.tradePrice ?? product.price,
     currency: product.currency,
     imageSrc: product.images[0],
-    productHref: `/${locale}/shop/${product.category}/p/${product.slug}`,
+    productHref: pdpHref(locale, product),
     notes: selectedFinish ? `Finish: ${selectedFinish}` : undefined,
   };
 

@@ -1,5 +1,7 @@
 import { describe, it, expect } from "vitest";
+import { execSync } from "node:child_process";
 import { toSlug } from "./slug";
+import { pdpHref, pdpPath, pdpUrl } from "./pdp-href";
 import type { ProductFull, ProductCategory } from "./products-full";
 
 const makeProduct = (
@@ -18,9 +20,6 @@ const makeProduct = (
   slug: toSlug(overrides.name, overrides.sku),
 });
 
-const buildPdpHref = (locale: string, p: ProductFull) =>
-  `/${locale}/shop/${p.category}/p/${p.slug}`;
-
 const SAMPLE_PRODUCTS: { name: string; sku: string; category: ProductCategory }[] = [
   { name: "Axor Citterio M Single-Hole Faucet", sku: "39010001", category: "bathroom" },
   { name: "Hansgrohe Raindance Select S 120", sku: "26530001", category: "bathroom" },
@@ -34,7 +33,43 @@ const SAMPLE_PRODUCTS: { name: string; sku: string; category: ProductCategory }[
   { name: "Rocky Mountain Hardware Briggs Lever", sku: "E30611/E30611", category: "hardware" },
 ];
 
-describe("PDP link 404 smoke tests", () => {
+// ── pdpHref helper tests ────────────────────────────────────────────
+
+describe("pdpHref / pdpPath / pdpUrl", () => {
+  it("pdpHref builds a valid locale-prefixed path", () => {
+    const p = makeProduct({ name: "Test Faucet", sku: "TF-100", category: "bathroom" });
+    expect(pdpHref("en", p)).toBe("/en/shop/bathroom/p/test-faucet-tf-100");
+    expect(pdpHref("es", p)).toBe("/es/shop/bathroom/p/test-faucet-tf-100");
+  });
+
+  it("pdpPath builds a locale-free path", () => {
+    const p = makeProduct({ name: "Test Faucet", sku: "TF-100", category: "kitchen" });
+    expect(pdpPath(p)).toBe("/shop/kitchen/p/test-faucet-tf-100");
+  });
+
+  it("pdpUrl builds a full absolute URL", () => {
+    const p = makeProduct({ name: "Test Faucet", sku: "TF-100", category: "hardware" });
+    expect(pdpUrl("en", p)).toBe("https://countercultures.mx/en/shop/hardware/p/test-faucet-tf-100");
+  });
+
+  it("throws when slug resolves to empty string", () => {
+    expect(() => pdpHref("en", { sku: "", category: "bathroom" })).toThrow("[pdpHref]");
+  });
+
+  it("falls back to toSlug(name, sku) when slug field is missing", () => {
+    const result = pdpHref("en", { name: "Some Product", sku: "SP-1", category: "bathroom" });
+    expect(result).toBe("/en/shop/bathroom/p/some-product-sp-1");
+  });
+
+  it("falls back to SKU-derived slug when both slug and name are missing", () => {
+    const result = pdpHref("en", { sku: "ABC-123", category: "bathroom" });
+    expect(result).toBe("/en/shop/bathroom/p/abc-123");
+  });
+});
+
+// ── ProductFull slug integrity ──────────────────────────────────────
+
+describe("ProductFull slug integrity", () => {
   it("every ProductFull.slug is a non-empty string (never undefined)", () => {
     for (const raw of SAMPLE_PRODUCTS) {
       const p = makeProduct(raw);
@@ -47,7 +82,7 @@ describe("PDP link 404 smoke tests", () => {
   it("no PDP href contains 'undefined'", () => {
     for (const raw of SAMPLE_PRODUCTS) {
       const p = makeProduct(raw);
-      const href = buildPdpHref("en", p);
+      const href = pdpHref("en", p);
       expect(href).not.toContain("undefined");
       expect(href).toMatch(/^\/en\/shop\/(bathroom|kitchen|hardware)\/p\/[a-z0-9-]+$/);
     }
@@ -69,10 +104,8 @@ describe("PDP link 404 smoke tests", () => {
     for (const p of products) {
       slugIndex.set(p.slug, p.id);
     }
-
     for (const p of products) {
-      const resolvedId = slugIndex.get(p.slug);
-      expect(resolvedId).toBe(p.id);
+      expect(slugIndex.get(p.slug)).toBe(p.id);
     }
   });
 
@@ -80,43 +113,57 @@ describe("PDP link 404 smoke tests", () => {
     const products = SAMPLE_PRODUCTS.map((raw, i) =>
       makeProduct({ ...raw, id: `prod-${i}` })
     );
-
     for (const p of products) {
       const skuSlug = p.sku.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
       const match = products.find(
-        (candidate) =>
-          candidate.sku.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") === skuSlug
+        (c) => c.sku.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") === skuSlug
       );
       expect(match).toBeDefined();
       expect(match!.id).toBe(p.id);
     }
   });
 
-  it("products with empty name still produce a valid slug from SKU", () => {
+  it("empty name → SKU-only slug", () => {
     const p = makeProduct({ name: "", sku: "CRL-US10B" });
     expect(p.slug).toBe("crl-us10b");
-    const href = buildPdpHref("es", p);
-    expect(href).toBe("/es/shop/bathroom/p/crl-us10b");
-    expect(href).not.toContain("undefined");
+    expect(pdpHref("es", p)).toBe("/es/shop/bathroom/p/crl-us10b");
   });
 
-  it("products with diacritics in name produce clean slugs", () => {
+  it("diacritics stripped from slug", () => {
     const p = makeProduct({ name: "Válvula de Compresión Estándar", sku: "VAL-001" });
     expect(p.slug).toBe("valvula-de-compresion-estandar-val-001");
     expect(p.slug).not.toMatch(/[áéíóúñ]/);
   });
+});
 
-  it("catalog-view openProduct pattern uses slug directly", () => {
-    const p = makeProduct({ name: "Test Product", sku: "TP-100" });
-    const href = `/${("en")}/shop/${p.category}/p/${p.slug}`;
-    expect(href).not.toContain("undefined");
-    expect(href).toBe("/en/shop/bathroom/p/test-product-tp-100");
-  });
+// ── Codebase regression guard ───────────────────────────────────────
 
-  it("search-palette fallback pattern uses toSlug when slug missing from API", () => {
-    const apiResult = { name: "Some Faucet", sku: "SF-200", category: "kitchen", slug: undefined as string | undefined };
-    const hrefSuffix = `/shop/${apiResult.category}/p/${apiResult.slug || toSlug(apiResult.name, apiResult.sku)}`;
-    expect(hrefSuffix).not.toContain("undefined");
-    expect(hrefSuffix).toBe("/shop/kitchen/p/some-faucet-sf-200");
+describe("no raw /p/${...} patterns outside pdp-href.ts and PDP page", () => {
+  it("every PDP link in the codebase uses pdpHref/pdpPath/pdpUrl", () => {
+    const ALLOWED_FILES = [
+      "app/lib/pdp-href.ts",
+      "app/[locale]/shop/[category]/p/[slug]/page.tsx",
+      "app/[locale]/shop/[category]/p/[slug]/pdp-client.tsx",
+      "app/[locale]/p/[slug]/page.tsx",
+    ];
+
+    const raw = execSync(
+      "grep -rn '/p/\\${' app/ --include='*.tsx' --include='*.ts' || true",
+      { encoding: "utf-8" }
+    );
+
+    const violations = raw
+      .split("\n")
+      .filter(Boolean)
+      .filter((line) => !ALLOWED_FILES.some((f) => line.startsWith(f)))
+      .filter((line) => !line.includes(".test."));
+
+    if (violations.length > 0) {
+      throw new Error(
+        `Found ${violations.length} raw /p/\${...} pattern(s) outside pdpHref. ` +
+        `Use pdpHref(), pdpPath(), or pdpUrl() from app/lib/pdp-href.ts instead:\n` +
+        violations.join("\n")
+      );
+    }
   });
 });

@@ -14,6 +14,7 @@ import {
   Camera,
 } from "lucide-react";
 import type { ProductFull, ProductFullWithSignals, BrandCount } from "@/app/lib/products-full";
+import { pdpHref } from "@/app/lib/pdp-href";
 import { ProductVisual } from "@/app/components/product-visual";
 import { VisualSearchModal } from "@/app/components/visual-search-modal";
 import { brandTheme } from "@/app/lib/product-visuals";
@@ -202,7 +203,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
   const reqIdRef = useRef(0);
 
   const openProduct = useCallback(
-    (p: ProductFull) => router.push(`/${locale}/shop/${p.category}/p/${p.slug}`),
+    (p: ProductFull) => router.push(pdpHref(locale, p)),
     [router, locale],
   );
 

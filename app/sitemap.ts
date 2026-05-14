@@ -4,6 +4,7 @@ import { articles } from "@/app/lib/articles";
 import { PROJECTS } from "@/app/lib/projects";
 import { getProducts } from "@/app/lib/sheets";
 import { getBrandCategoryCombos, getProductById, getProductSlug } from "@/app/lib/products-full";
+import { pdpPath } from "@/app/lib/pdp-href";
 import { getBrands } from "@/app/lib/brand-kit-sheets";
 import { getStagedIds } from "@/app/lib/product-content";
 
@@ -99,7 +100,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const products = await getProducts();
   const productRoutes: MetadataRoute.Sitemap = products.flatMap((product) =>
     localizedEntry(
-      `/shop/${product.category}/p/${product.slug}`,
+      pdpPath(product),
       "monthly",
       0.6
     )
@@ -118,7 +119,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (fullCatalogSlugs.has(slug)) continue;
     fullCatalogSlugs.add(slug);
     fullCatalogRoutes.push(
-      ...localizedEntry(`/shop/${p.category}/p/${slug}`, "monthly", 0.5)
+      ...localizedEntry(pdpPath({ slug, sku: p.sku, category: p.category }), "monthly", 0.5)
     );
   }
 
