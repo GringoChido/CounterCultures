@@ -393,6 +393,8 @@ const stripIndex = (p: IndexedProduct): ProductFull => ({
   specSheetLocal: p.specSheetLocal,
   imageSrc: p.imageSrc,
   slug: p.slug,
+  tradePrice: p.tradePrice,
+  shippingClass: p.shippingClass,
 });
 
 // Scored substring match. Higher score = better match.
