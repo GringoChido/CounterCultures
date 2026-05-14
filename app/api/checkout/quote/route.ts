@@ -15,109 +15,83 @@ export async function POST(req: NextRequest) {
     const dealId = `DEAL-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
     const now = new Date().toISOString();
 
-    // Write Pipeline row
-    await appendRow("Pipeline", [
-      dealId,
-      "", // leadId
-      "cart_submitted",
-      contact.name,
-      contact.email,
-      contact.phone ?? "",
-      contact.company ?? "",
-      project.projectName ?? "",
-      "website",
-      String(total),
-      currency,
-      now, // created_at
-      now, // stage_entered_at
-      "", // expected_close
-      "", // win_loss_reason
-      locale,
-      cartSessionId,
-      tradeCode ?? "",
-      JSON.stringify(address),
-      project.room ?? "",
-      project.timeline ?? "",
-      project.isTrade ? "true" : "false",
-      contact.commLocale ?? locale,
-    ]);
-
-    // Write Deal_Line_Items
-    for (const item of items) {
-      await appendRow("Deal_Line_Items", [
-        dealId,
-        item.productId,
-        item.sku,
-        item.name,
-        item.brand,
-        String(item.quantity),
-        String(item.listPrice),
-        currency,
-        item.selectedFinish ?? "",
-        item.notes ?? "",
-        item.availability,
-        item.buyable ? "true" : "false",
-        now,
-      ]);
-    }
-
-    // Write Cart_Sessions
-    await appendRow("Cart_Sessions", [
-      cartSessionId,
-      dealId,
-      JSON.stringify(items),
-      JSON.stringify(contact),
-      JSON.stringify(address),
-      locale,
-      "quote",
-      "submitted",
-      "", // odoo_sale_order_id
-      now,
-      now,
-    ]);
-
-    // Upsert customer preferences — non-blocking; must never crash checkout
+    // ── Generate response data FIRST — customer gets the URL immediately ──
+    let trackerUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://countercultures.mx"}/${locale}/quote/${dealId}`;
     try {
-      await upsertPreferences(
-        contact.email,
-        {
-          locale: contact.commLocale ?? locale,
-          email_opt_in: true,
-          whatsapp_opt_in: contact.channelPreference !== "email",
-          channel_preference: contact.channelPreference ?? "both",
-        },
-        `guest:${cartSessionId}`
-      );
-    } catch (prefErr) {
-      console.error("[checkout/quote] upsertPreferences failed (non-blocking):", prefErr);
+      const trackerToken = signQuoteToken(dealId);
+      trackerUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://countercultures.mx"}/${locale}/quote/${dealId}?t=${encodeURIComponent(trackerToken)}`;
+    } catch (tokenErr) {
+      console.error("[checkout/quote] signQuoteToken failed (non-blocking):", tokenErr);
     }
 
-    // Generate tracker token
-    const trackerToken = signQuoteToken(dealId);
-    const trackerUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://countercultures.mx"}/${locale}/quote/${dealId}?t=${encodeURIComponent(trackerToken)}`;
+    // ── Sheet writes + side-effects — fire in parallel, never block response ──
+    const sheetWrites = async () => {
+      try {
+        await Promise.all([
+          appendRow("Pipeline", [
+            dealId, "", "cart_submitted", contact.name, contact.email,
+            contact.phone ?? "", contact.company ?? "", project.projectName ?? "",
+            "website", String(total), currency, now, now, "", "", locale,
+            cartSessionId, tradeCode ?? "", JSON.stringify(address),
+            project.room ?? "", project.timeline ?? "",
+            project.isTrade ? "true" : "false", contact.commLocale ?? locale,
+          ]),
+          appendRow("Cart_Sessions", [
+            cartSessionId, dealId, JSON.stringify(items), JSON.stringify(contact),
+            JSON.stringify(address), locale, "quote", "submitted", "", now, now,
+          ]),
+          ...items.map((item: { productId: string; sku: string; name: string; brand: string; quantity: number; listPrice: number; selectedFinish?: string; notes?: string; availability: string; buyable: boolean }) =>
+            appendRow("Deal_Line_Items", [
+              dealId, item.productId, item.sku, item.name, item.brand,
+              String(item.quantity), String(item.listPrice), currency,
+              item.selectedFinish ?? "", item.notes ?? "", item.availability,
+              item.buyable ? "true" : "false", now,
+            ])
+          ),
+        ]);
+      } catch (err) {
+        console.error("[checkout/quote] Sheet writes failed (non-blocking):", err);
+      }
 
-    // Fire lifecycle transition (deferred import to avoid circular)
-    try {
-      const { evaluateAndTransition } = await import("@/app/lib/rule-engine");
-      await evaluateAndTransition(
-        "cart_submitted",
-        dealId,
-        {
-          mode: "quote",
-          customer_name: contact.name,
-          customer_email: contact.email,
-          customer_phone: contact.phone,
-          total_value: `${currency} ${total}`,
-          item_count: String(items.length),
-          project_name: project.projectName || "Unnamed project",
-          tracker_url: trackerUrl,
-          dashboard_link: `/dashboard/deals/${dealId}`,
-        },
-        `guest:${cartSessionId}`
-      );
-    } catch {
-      // Non-blocking: lifecycle fires asynchronously
-    }
+      try {
+        await upsertPreferences(
+          contact.email,
+          {
+            locale: contact.commLocale ?? locale,
+            email_opt_in: true,
+            whatsapp_opt_in: contact.channelPreference !== "email",
+            channel_preference: contact.channelPreference ?? "both",
+          },
+          `guest:${cartSessionId}`
+        );
+      } catch (prefErr) {
+        console.error("[checkout/quote] upsertPreferences failed (non-blocking):", prefErr);
+      }
+
+      try {
+        const { evaluateAndTransition } = await import("@/app/lib/rule-engine");
+        await evaluateAndTransition(
+          "cart_submitted",
+          dealId,
+          {
+            mode: "quote",
+            customer_name: contact.name,
+            customer_email: contact.email,
+            customer_phone: contact.phone,
+            total_value: `${currency} ${total}`,
+            item_count: String(items.length),
+            project_name: project.projectName || "Unnamed project",
+            tracker_url: trackerUrl,
+            dashboard_link: `/dashboard/deals/${dealId}`,
+          },
+          `guest:${cartSessionId}`
+        );
+      } catch {
+        // Non-blocking
+      }
+    };
+
+    sheetWrites().catch(() => {});
 
     return NextResponse.json({ dealId, trackerUrl });
   } catch (err) {
