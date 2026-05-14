@@ -861,3 +861,51 @@ export const getQuoteCatalogBrands = async (): Promise<BrandCount[]> => {
     .map(([brand, count]) => ({ brand, count }))
     .sort((a, b) => b.count - a.count);
 };
+
+// ── PDP slug-based lookup ─────────────────────────────────────────────
+import { toSlug } from "./slug";
+
+let slugIndex: Map<string, string> | null = null;
+let slugIndexTs = 0;
+
+const ensureSlugIndex = async (): Promise<Map<string, string>> => {
+  const c = await getCache();
+  if (slugIndex && slugIndexTs === c.ts) return slugIndex;
+  const idx = new Map<string, string>();
+  for (const p of c.products) {
+    const slug = toSlug(p.name, p.sku);
+    if (!idx.has(slug)) idx.set(slug, p.id);
+  }
+  slugIndex = idx;
+  slugIndexTs = c.ts;
+  return idx;
+};
+
+export const getProductBySlug = async (
+  slug: string
+): Promise<ProductFull | null> => {
+  const idx = await ensureSlugIndex();
+  const id = idx.get(slug);
+  if (!id) return null;
+  return getProductById(id);
+};
+
+export const getRelatedProducts = async (
+  category: ProductCategory,
+  excludeId: string,
+  limit = 8
+): Promise<ProductFull[]> => {
+  const c = await getCache();
+  const out: ProductFull[] = [];
+  for (const p of c.products) {
+    if (p.id === excludeId) continue;
+    if (p.category !== category) continue;
+    if (!p.saleOk || !p.active) continue;
+    if (!p.imageSrc) continue;
+    out.push(stripIndex(p));
+    if (out.length >= limit) break;
+  }
+  return out;
+};
+
+export const getProductSlug = (p: ProductFull): string => toSlug(p.name, p.sku);

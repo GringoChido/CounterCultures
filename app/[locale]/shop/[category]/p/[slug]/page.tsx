@@ -3,41 +3,70 @@ import { notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
-import { ProductDetail } from "./product-detail";
-import { getProducts } from "@/app/lib/sheets";
-import { PRODUCT_CATEGORIES } from "@/app/lib/constants";
+import {
+  getProductBySlug,
+  getRelatedProducts,
+  getProductSlug,
+  type ProductCategory,
+} from "@/app/lib/products-full";
+import {
+  getInShowroomIds,
+  getMostSpecifiedScores,
+} from "@/app/lib/catalog-signals";
+import { getProductContent } from "@/app/lib/product-content";
+import { BRANDS, PRODUCT_CATEGORIES } from "@/app/lib/constants";
 import type { CategoryKey } from "@/app/lib/constants";
 import { customerAuthOptions } from "@/app/lib/customer-auth";
 import { getTradePrice } from "@/app/lib/trade-pricing";
+import { PDPClient, type PDPClientProps } from "./pdp-client";
 
-export const revalidate = 300;
-
-interface PDPProps {
-  params: Promise<{ category: string; slug: string; locale: string }>;
-}
+export const revalidate = 1800;
 
 const BASE_URL = "https://countercultures.mx";
 
-export const generateMetadata = async ({ params }: PDPProps): Promise<Metadata> => {
-  const { slug, locale, category } = await params;
-  const allProducts = await getProducts();
-  const product = allProducts.find((p) => p.slug === slug) ?? null;
-  if (!product) return { title: "Product Not Found" };
+const BRAND_SLUG_MAP = new Map<string, string>(BRANDS.map((b) => [b.name, b.slug]));
 
+const VALID_CATEGORIES = new Set<string>(["bathroom", "kitchen", "hardware"]);
+
+interface PDPProps {
+  params: Promise<{ locale: string; category: string; slug: string }>;
+}
+
+export const generateMetadata = async ({
+  params,
+}: PDPProps): Promise<Metadata> => {
+  const { locale, category, slug } = await params;
+  if (!VALID_CATEGORIES.has(category)) return {};
+
+  const product = await getProductBySlug(slug);
+  if (!product || product.category !== category) return {};
+
+  const content = getProductContent(product.id);
   const isEs = locale === "es";
-  const productName = isEs && product.name ? product.name : product.nameEn;
-  const productDescription = isEs
-    ? product.description
-    : product.descriptionEn;
-
-  const title = `${productName} — ${product.brand}`;
-  const description = productDescription;
+  const title = content?.title || product.name || product.sku;
+  const desc =
+    (isEs ? content?.descriptionEs : content?.descriptionEn) ||
+    content?.descriptionEs ||
+    `${product.brand} ${product.name}`;
+  const canonical = `${BASE_URL}/${locale}/shop/${category}/p/${slug}`;
+  const images = content?.gallery?.length
+    ? content.gallery
+    : product.imageSrc
+      ? [product.imageSrc]
+      : [];
+  const imageUrl =
+    images.length > 0
+      ? images[0].startsWith("http")
+        ? images[0]
+        : `${BASE_URL}${images[0]}`
+      : undefined;
 
   return {
-    title,
-    description,
+    title: `${title} — ${product.brand} | Counter Cultures`,
+    description: desc.slice(0, 160),
+    robots: { index: true, follow: true },
     alternates: {
-      canonical: `${BASE_URL}/${locale}/shop/${category}/p/${slug}`,
+      canonical,
       languages: {
         en: `${BASE_URL}/en/shop/${category}/p/${slug}`,
         es: `${BASE_URL}/es/shop/${category}/p/${slug}`,
@@ -45,34 +74,26 @@ export const generateMetadata = async ({ params }: PDPProps): Promise<Metadata> 
       },
     },
     openGraph: {
-      title,
-      description,
-      url: `${BASE_URL}/${locale}/shop/${category}/p/${slug}`,
-      locale: isEs ? "es_MX" : "en_US",
-      alternateLocale: isEs ? "en_US" : "es_MX",
+      title: `${title} — ${product.brand}`,
+      description: desc.slice(0, 160),
+      url: canonical,
+      siteName: "Counter Cultures",
       type: "website",
-      images: product.images[0]
-        ? [{ url: product.images[0], width: 1200, height: 630, alt: productName }]
-        : [],
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: product.images[0] ? [product.images[0]] : [],
+      ...(imageUrl && {
+        images: [{ url: imageUrl, width: 1200, height: 630, alt: title }],
+      }),
     },
   };
 };
 
-const ProductPage = async ({ params }: PDPProps) => {
-  const { category, slug, locale } = await params;
+const PDPPage = async ({ params }: PDPProps) => {
+  const { locale, category, slug } = await params;
   const lang = (locale as "en" | "es") || "en";
-  const allProducts = await getProducts();
-  const found = allProducts.find((p) => p.slug === slug) ?? null;
+  if (!VALID_CATEGORIES.has(category)) notFound();
 
-  if (!found) notFound();
+  const found = await getProductBySlug(slug);
+  if (!found || found.category !== category) notFound();
 
-  // Hydrate trade price for logged-in trade customers
   const session = await getServerSession(customerAuthOptions);
   const customerUser = session?.user as
     | { isTrade?: boolean; tradeTier?: string }
@@ -84,90 +105,93 @@ const ProductPage = async ({ params }: PDPProps) => {
     if (tp != null) product = { ...product, tradePrice: tp };
   }
 
-  // Cross-sells from the single fetch: same subcategory first, then same category
-  const sameSubcategory = allProducts.filter(
-    (p) => p.category === product.category && p.subcategory === product.subcategory && p.id !== product.id
-  );
-  const crossSells = sameSubcategory.length >= 4
-    ? sameSubcategory.slice(0, 4)
-    : [
-        ...sameSubcategory,
-        ...allProducts
-          .filter((p) => p.category === product.category && p.id !== product.id && !sameSubcategory.some((s) => s.id === p.id))
-          .slice(0, 4 - sameSubcategory.length),
-      ];
+  const content = getProductContent(product.id);
+  const isEs = locale === "es";
 
-  // Resolve subcategory label for breadcrumbs
+  const [showroomIds, specScores, relatedRaw] = await Promise.all([
+    getInShowroomIds().catch(() => new Set<string>()),
+    getMostSpecifiedScores().catch(() => new Map()),
+    getRelatedProducts(product.category, product.id, 8),
+  ]);
+
+  const inShowroom = showroomIds.has(product.id);
+  const specSignal = specScores.get(product.id);
+  const projectCount = specSignal?.projectCount ?? 0;
+  const brandSlug = BRAND_SLUG_MAP.get(product.brand) ?? null;
+
   const catConfig = PRODUCT_CATEGORIES[category as CategoryKey];
-  const subConfig = catConfig?.subcategories.find((s) => s.slug === product.subcategory);
+  const categoryLabel = catConfig
+    ? isEs
+      ? catConfig.label.es
+      : catConfig.label.en
+    : category;
 
-  const isEs = lang === "es";
-  const categoryLabel = catConfig?.label[lang] || category;
-  const subcategoryLabel = subConfig?.label[lang] || product.subcategory;
+  const images = content?.gallery?.length
+    ? content.gallery
+    : product.imageSrc
+      ? [product.imageSrc]
+      : [];
 
-  // Enriched Product JSON-LD — GEO: explicit entity linking, AEO: complete product data
+  const relatedProducts: PDPClientProps["relatedProducts"] = relatedRaw.map(
+    (rp) => ({
+      id: rp.id,
+      name: rp.name,
+      sku: rp.sku,
+      brand: rp.brand,
+      category: rp.category,
+      listPrice: rp.listPrice,
+      currency: rp.currency,
+      imageSrc: rp.imageSrc,
+      slug: getProductSlug(rp),
+    })
+  );
+
+  const canonical = `${BASE_URL}/${locale}/shop/${category}/p/${slug}`;
+  const availability = product.inStock
+    ? "https://schema.org/InStock"
+    : "https://schema.org/PreOrder";
+
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
-    "@id": `${BASE_URL}/${lang}/shop/${category}/p/${product.slug}#product`,
-    name: product.nameEn,
-    description: product.descriptionEn,
-    brand: {
-      "@type": "Brand",
-      name: product.brand,
-    },
-    manufacturer: {
-      "@type": "Organization",
-      name: product.brand,
-    },
+    "@id": `${canonical}#product`,
+    name: content?.title || product.name,
+    description:
+      (isEs ? content?.descriptionEs : content?.descriptionEn) ||
+      content?.descriptionEs ||
+      product.name,
     sku: product.sku,
     mpn: product.sku,
-    image: product.images.map((img) => ({
-      "@type": "ImageObject",
-      url: img,
-      representativeOfPage: img === product.images[0],
-    })),
-    url: `${BASE_URL}/${lang}/shop/${category}/p/${product.slug}`,
+    brand: { "@type": "Brand", name: product.brand },
+    ...(images.length > 0 && {
+      image: images.map((img) =>
+        img.startsWith("http") ? img : `${BASE_URL}${img}`
+      ),
+    }),
+    url: canonical,
     offers: {
       "@type": "Offer",
-      "@id": `${BASE_URL}/${lang}/shop/${category}/p/${product.slug}#offer`,
-      price: product.price > 0 ? product.price : undefined,
+      url: canonical,
       priceCurrency: product.currency || "MXN",
-      availability:
-        product.availability === "in-stock"
-          ? "https://schema.org/InStock"
-          : product.availability === "made-to-order"
-            ? "https://schema.org/PreOrder"
-            : "https://schema.org/LimitedAvailability",
+      ...(product.listPrice > 10 && { price: product.listPrice }),
+      availability,
       itemCondition: "https://schema.org/NewCondition",
       seller: {
         "@type": "Organization",
         "@id": `${BASE_URL}/#organization`,
         name: "Counter Cultures",
       },
-      url: `${BASE_URL}/${lang}/shop/${category}/p/${product.slug}`,
     },
-    category: `${categoryLabel} > ${subcategoryLabel}`,
-    inProductGroupWithID: product.subcategory,
-    isRelatedTo: crossSells.slice(0, 3).map((p) => ({
-      "@type": "Product",
-      name: p.nameEn,
-      url: `${BASE_URL}/${lang}/shop/${p.category}/p/${p.slug}`,
-    })),
+    category: categoryLabel,
+    ...(relatedProducts.length > 0 && {
+      isRelatedTo: relatedProducts.slice(0, 3).map((rp) => ({
+        "@type": "Product",
+        name: rp.name,
+        url: `${BASE_URL}/${locale}/shop/${rp.category}/p/${rp.slug}`,
+      })),
+    }),
   };
 
-  // Speakable — GEO: helps AI assistants extract key product info
-  const speakableJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    speakable: {
-      "@type": "SpeakableSpecification",
-      cssSelector: ["h1", "[data-speakable='description']"],
-    },
-    url: `${BASE_URL}/${lang}/shop/${category}/p/${product.slug}`,
-  };
-
-  // BreadcrumbList JSON-LD
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -176,63 +200,75 @@ const ProductPage = async ({ params }: PDPProps) => {
         "@type": "ListItem",
         position: 1,
         name: isEs ? "Inicio" : "Home",
-        item: `${BASE_URL}/${lang}`,
+        item: `${BASE_URL}/${locale}`,
       },
       {
         "@type": "ListItem",
         position: 2,
-        name: isEs ? "Tienda" : "Shop",
-        item: `${BASE_URL}/${lang}/shop`,
+        name: isEs ? "Catálogo" : "Catalog",
+        item: `${BASE_URL}/${locale}/shop/catalog`,
       },
       {
         "@type": "ListItem",
         position: 3,
         name: categoryLabel,
-        item: `${BASE_URL}/${lang}/shop/${category}`,
+        item: `${BASE_URL}/${locale}/shop/${category}`,
       },
       {
         "@type": "ListItem",
         position: 4,
-        name: subcategoryLabel,
-        item: `${BASE_URL}/${lang}/shop/${category}/${product.subcategory}`,
-      },
-      {
-        "@type": "ListItem",
-        position: 5,
-        name: product.nameEn,
-        item: `${BASE_URL}/${lang}/shop/${category}/p/${product.slug}`,
+        name: content?.title || product.name,
+        item: canonical,
       },
     ],
   };
 
   return (
     <>
-      <Header locale={lang} />
-      <main id="main" tabIndex={-1} className="pt-16 md:pt-20">
+      <Header locale={locale} />
+      <main id="main" tabIndex={-1} className="pt-16 md:pt-20 bg-white">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(speakableJsonLd) }}
-        />
-        <script
-          type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
         />
-      <ProductDetail
-          product={product}
-          crossSells={crossSells}
-          locale={lang}
+        <PDPClient
+          product={{
+            id: product.id,
+            name: product.name,
+            sku: product.sku,
+            brand: product.brand,
+            category: product.category,
+            listPrice: product.listPrice,
+            currency: product.currency,
+            uom: product.uom,
+            inStock: product.inStock ?? false,
+            stockQty: product.stockQty ?? 0,
+            imageSrc: product.imageSrc,
+          }}
+          locale={locale as "en" | "es"}
           categoryLabel={categoryLabel}
-          subcategoryLabel={subcategoryLabel}
-          subcategorySlug={product.subcategory}
+          categorySlug={category}
+          brandSlug={brandSlug}
+          relatedProducts={relatedProducts}
+          inShowroom={inShowroom}
+          projectCount={projectCount}
+          descriptionEs={content?.descriptionEs}
+          descriptionEn={content?.descriptionEn}
+          features={content?.features}
+          gallery={images}
+          finishes={content?.variants}
+          specSheetUrl={content?.specSheetUrl}
+          specSheetLocal={content?.specSheetLocal}
+          pdpSlug={slug}
         />
       </main>
-      <Footer locale={lang} />
+      <Footer locale={locale} />
     </>
   );
 };
 
-export default ProductPage;
+export default PDPPage;

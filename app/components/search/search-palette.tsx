@@ -5,6 +5,7 @@ import MiniSearch from "minisearch";
 import NextLink from "next/link";
 import { Search, ArrowUpRight, FileText, Tag, Package, X, Loader2 } from "lucide-react";
 import type { SearchDoc, SearchIndexPayload } from "@/app/lib/search-index";
+import { toSlug } from "@/app/lib/slug";
 
 interface SearchPaletteProps {
   locale: "en" | "es";
