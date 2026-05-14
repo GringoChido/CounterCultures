@@ -1,12 +1,8 @@
 /**
  * NextAuth v4 configuration. Google SSO, JWT session, restricted to
- * @countercultures.com.mx with a small allowlist for external collaborators
- * (e.g. joshua@untold.works).
- *
- * Role is read from the `Users` Sheet tab at sign-in and embedded in the JWT
- * so callers can read it without re-querying. If a user signs in successfully
- * at the OAuth layer but has no row in `Users` (or `active=false`), sign-in
- * is rejected with `AccessDenied`.
+ * @countercultures.com.mx. Role is read from the `Users` Sheet tab at
+ * sign-in and embedded in the JWT. If a user has no row in `Users` (or
+ * `active=false`), sign-in is rejected with `AccessDenied`.
  */
 
 import type { AuthOptions } from "next-auth";
@@ -40,17 +36,27 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async signIn({ profile }) {
       const email = profile?.email?.toLowerCase();
-      if (!email) return false;
+      if (!email) {
+        console.warn("[auth] signIn rejected: no email on profile");
+        return false;
+      }
       const allowlist = parseAllowlist();
+      const domain = email.split("@")[1];
       const inDomain = email.endsWith(`@${ALLOWED_DOMAIN}`);
-      if (!inDomain && !allowlist.includes(email)) return false;
+      if (!inDomain && !allowlist.includes(email)) {
+        console.warn(`[auth] signIn rejected: domain "${domain}" not allowed for ${email}`);
+        return false;
+      }
 
-      // Membership is REQUIRED. Bootstrap mode is removed (P0 security fix):
-      // an empty Users sheet now rejects all sign-ins so the auth hole cannot
-      // re-open accidentally. The Users sheet must be seeded out-of-band
-      // (Sheets UI or admin script) before any portal user can authenticate.
       const user = await findUserByEmail(email);
-      if (!user || !user.active) return false;
+      if (!user) {
+        console.warn(`[auth] signIn rejected: no Users-sheet row for ${email}`);
+        return false;
+      }
+      if (!user.active) {
+        console.warn(`[auth] signIn rejected: user ${email} exists but active=false`);
+        return false;
+      }
       return true;
     },
     async jwt({ token, user, profile, trigger }) {

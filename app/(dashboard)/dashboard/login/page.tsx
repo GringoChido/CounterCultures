@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 
 const ERROR_MESSAGES: Record<string, string> = {
   AccessDenied:
-    "Your account isn't authorized for the Counter Portal. Ask an admin to add you to the Users sheet.",
+    "Your @countercultures.com.mx account isn't in the Users sheet, or it's been deactivated. Ask an admin to add or re-activate your row.",
   OAuthSignin: "Couldn't start the Google sign-in flow. Try again.",
   OAuthCallback: "Google sign-in failed. Try again.",
   OAuthAccountNotLinked: "This email is already linked to a different account.",
@@ -48,9 +48,20 @@ const LoginInner = () => {
           </p>
 
           {errorMessage && (
-            <p className="text-sm text-dash-danger bg-dash-danger-soft px-3 py-2 rounded-lg mb-4">
-              {errorMessage}
-            </p>
+            <div className="bg-dash-danger-soft px-3 py-2 rounded-lg mb-4">
+              <p className="text-sm text-dash-danger">
+                {errorMessage}
+              </p>
+              {errorCode === "AccessDenied" && (
+                <button
+                  type="button"
+                  onClick={() => signIn("google", { callbackUrl: "/dashboard/overview" })}
+                  className="text-xs text-dash-text-secondary underline mt-1 cursor-pointer hover:text-dash-text transition-colors"
+                >
+                  Try a different Google account
+                </button>
+              )}
+            </div>
           )}
 
           <button
