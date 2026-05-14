@@ -5,6 +5,7 @@ import { ShoppingBag, Check } from "lucide-react";
 import { useCartStore } from "@/app/lib/stores/cart-store";
 import { useUiStore } from "@/app/lib/stores/ui-store";
 import type { Product } from "@/app/lib/types";
+import { pdpHref } from "@/app/lib/pdp-href";
 
 const BUYABLE_THRESHOLD_MXN = 50_000;
 
@@ -83,7 +84,7 @@ export const AddToCartButton = ({
       quantity,
       selectedFinish: selectedFinish || undefined,
       imageSrc: product.images[0],
-      productHref: `/${locale}/shop/${product.category}/p/${product.slug}`,
+      productHref: pdpHref(locale, product),
       availability: product.availability,
       buyable,
     });

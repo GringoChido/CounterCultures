@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { toSlug } from "@/app/lib/slug";
 import {
   X,
   Package,
@@ -362,6 +363,7 @@ const ProductDrawer = ({
                             uom: product.uom,
                             active: true,
                             saleOk: true,
+                            slug: toSlug(v.name, v.sku),
                           })
                         }
                         className="flex items-center gap-3 text-left p-3 border border-brand-stone/15 hover:border-brand-copper hover:bg-brand-linen transition-colors cursor-pointer"

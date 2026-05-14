@@ -6,6 +6,7 @@ import NextLink from "next/link";
 import { Search, ArrowUpRight, FileText, Tag, Package, X, Loader2 } from "lucide-react";
 import type { SearchDoc, SearchIndexPayload } from "@/app/lib/search-index";
 import { toSlug } from "@/app/lib/slug";
+import { pdpPath } from "@/app/lib/pdp-href";
 
 interface SearchPaletteProps {
   locale: "en" | "es";
@@ -218,7 +219,7 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
       name: p.name || p.sku,
       subtitle: `${p.brand} · ${p.sku}`,
 
-      hrefSuffix: `/shop/${p.category}/p/${p.slug || p.sku}`,
+      hrefSuffix: pdpPath({ slug: p.slug, name: p.name, sku: p.sku, category: p.category }),
       score: Math.max(0.5, 5 - idx * 0.6),
     }));
     return [...productDisplayResults, ...brandArticleResults].sort(

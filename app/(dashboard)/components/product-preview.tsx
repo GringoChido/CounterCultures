@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useProductInsert } from "./product-insert-context";
+import { pdpHref } from "@/app/lib/pdp-href";
 import { ProductVisual } from "@/app/components/product-visual";
 
 // V3 S17b: Spec-sheet library per product. Searches Drive for PDFs that
@@ -420,7 +421,7 @@ export const ProductPreview = () => {
                 Insert to Document
               </button>
               <a
-                href={`/en/shop/${p.category}/p/${p.slug}`}
+                href={pdpHref("en", p)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 px-3 py-2 text-sm border border-dash-border rounded-lg hover:bg-dash-bg transition-colors text-dash-text"

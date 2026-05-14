@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { pdpHref } from "@/app/lib/pdp-href";
 import { SafeProductImage } from "@/app/components/safe-product-image";
 
 interface ProductCardProps {
@@ -43,7 +44,7 @@ const ProductCard = ({
 
   return (
     <Link
-      href={`/${locale}/shop/${category}/p/${slug}`}
+      href={pdpHref(locale, { slug, sku, category })}
       className="group block"
     >
       <div className="relative overflow-hidden aspect-square bg-brand-sand/20">
