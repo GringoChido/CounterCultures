@@ -29,7 +29,7 @@ const CategoryHero = ({
   catalogHref,
   catalogLabel,
 }: CategoryHeroProps) => (
-  <section className="relative h-[50vh] md:h-[60vh] flex items-end overflow-hidden">
+  <section className="relative h-[85vh] md:h-screen flex items-end overflow-hidden">
     <div className="absolute inset-0">
       <div
         className="absolute inset-0"
