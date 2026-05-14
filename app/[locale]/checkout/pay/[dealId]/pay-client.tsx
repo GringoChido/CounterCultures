@@ -7,6 +7,7 @@ import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-
 import { Loader2, Lock } from "lucide-react";
 import { useCartStore } from "@/app/lib/stores/cart-store";
 import { CartWatermark, CartWordmark } from "@/app/components/cart/cart-watermark";
+import { computeIva } from "@/app/lib/iva";
 
 const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
   ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
@@ -81,7 +82,7 @@ export const PayClient = ({ locale, dealId }: { locale: "en" | "es"; dealId: str
   const cartSessionId = useCartStore((s) => s.cartSessionId);
 
   const currency = items[0]?.currency ?? "MXN";
-  const ivaAmount = Math.round(subtotal * 0.16);
+  const { iva: ivaAmount } = computeIva(subtotal, "MX");
   const tradeDiscountAmount = tradeDiscountPct ? Math.round(subtotal * (tradeDiscountPct / 100)) : 0;
   const total = subtotal - tradeDiscountAmount + ivaAmount;
 

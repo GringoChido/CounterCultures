@@ -9,6 +9,8 @@ export type CartItemAvailability =
   | "special-order"
   | "quote_only";
 
+export type ShippingClass = "standard" | "oversized";
+
 export interface CartItem {
   id: string;
   sku: string;
@@ -27,9 +29,16 @@ export interface CartItem {
   availability: CartItemAvailability;
   buyable: boolean;
   addedAt: number;
+  shippingClass?: ShippingClass;
 }
 
 export type CartMode = "all_buyable" | "all_quote" | "mixed";
+
+export type ShippingMethod =
+  | "local_pickup"
+  | "sma_delivery"
+  | "ship"
+  | "custom_freight";
 
 export interface CartState {
   items: CartItem[];
@@ -37,6 +46,8 @@ export interface CartState {
   tradeDiscountPct?: number;
   tradePartnerName?: string;
   cartSessionId: string;
+  shippingMethod?: ShippingMethod;
+  shippingQuoteMXN?: number;
   add: (item: Omit<CartItem, "addedAt">) => void;
   updateQty: (id: string, qty: number) => void;
   updateFinish: (id: string, finish: string) => void;
@@ -46,9 +57,11 @@ export interface CartState {
   has: (id: string) => boolean;
   applyTradeCode: (code: string) => Promise<{ ok: boolean; message: string }>;
   clearTradeCode: () => void;
+  setShipping: (method: ShippingMethod, quoteMXN?: number) => void;
   subtotal: () => number;
   cartMode: () => CartMode;
   isMultiCurrency: () => boolean;
+  hasOversized: () => boolean;
   itemCount: () => number;
 }
 
@@ -98,6 +111,8 @@ export const useCartStore = create<CartState>()(
       tradeCode: undefined,
       tradeDiscountPct: undefined,
       tradePartnerName: undefined,
+      shippingMethod: undefined,
+      shippingQuoteMXN: undefined,
       cartSessionId: generateSessionId(),
 
       add: (item) => {
@@ -162,6 +177,8 @@ export const useCartStore = create<CartState>()(
           tradeCode: undefined,
           tradeDiscountPct: undefined,
           tradePartnerName: undefined,
+          shippingMethod: undefined,
+          shippingQuoteMXN: undefined,
           cartSessionId: generateSessionId(),
         }),
 
@@ -196,6 +213,9 @@ export const useCartStore = create<CartState>()(
           tradePartnerName: undefined,
         }),
 
+      setShipping: (method, quoteMXN) =>
+        set({ shippingMethod: method, shippingQuoteMXN: quoteMXN }),
+
       subtotal: () => {
         const state = get();
         return state.items.reduce((sum, item) => {
@@ -223,6 +243,9 @@ export const useCartStore = create<CartState>()(
         const first = items[0].currency;
         return items.some((i) => i.currency !== first);
       },
+
+      hasOversized: () =>
+        get().items.some((i) => i.shippingClass === "oversized"),
 
       itemCount: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
     }),

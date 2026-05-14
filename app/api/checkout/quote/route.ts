@@ -6,7 +6,7 @@ import { signQuoteToken } from "@/app/lib/quote-token";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { locale, contact, address, project, items, cartSessionId, tradeCode, subtotal, total, currency } = body;
+    const { locale, contact, address, project, items, cartSessionId, tradeCode, subtotal, total, currency, shippingMethod, shippingCost, requiresFreightQuote } = body;
 
     if (!contact?.email || !contact?.name || !items?.length) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -35,6 +35,8 @@ export async function POST(req: NextRequest) {
             cartSessionId, tradeCode ?? "", JSON.stringify(address),
             project.room ?? "", project.timeline ?? "",
             project.isTrade ? "true" : "false", contact.commLocale ?? locale,
+            shippingMethod ?? "", String(shippingCost ?? ""),
+            requiresFreightQuote ? "true" : "false",
           ]),
           appendRow("Cart_Sessions", [
             cartSessionId, dealId, JSON.stringify(items), JSON.stringify(contact),

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { computeIva } from "@/app/lib/iva";
 
 const FROM_ADDRESS =
   process.env.RESEND_FROM_TRANSACTIONAL || "onboarding@resend.dev";
@@ -48,8 +49,7 @@ const fmtPrice = (amount: number, currency: string) =>
 
 const buildHtml = (p: SharePayload): string => {
   const isEs = p.locale === "es";
-  const ivaAmount = Math.round(p.subtotal * 0.16);
-  const total = p.subtotal + ivaAmount;
+  const { iva: ivaAmount, total } = computeIva(p.subtotal, "MX");
 
   const heroImg = p.items.find((i) => i.imageSrc)?.imageSrc;
 
@@ -163,8 +163,7 @@ const buildHtml = (p: SharePayload): string => {
 
 const buildPlainText = (p: SharePayload): string => {
   const isEs = p.locale === "es";
-  const ivaAmount = Math.round(p.subtotal * 0.16);
-  const total = p.subtotal + ivaAmount;
+  const { iva: ivaAmount, total } = computeIva(p.subtotal, "MX");
 
   const lines = p.items.map(
     (i) =>

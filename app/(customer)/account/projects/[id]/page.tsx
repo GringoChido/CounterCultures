@@ -18,6 +18,7 @@ import {
   SPECIAL_PRICING_THRESHOLD_MXN,
 } from "@/app/lib/project-store";
 import { useCartStore } from "@/app/lib/stores/cart-store";
+import { computeIva } from "@/app/lib/iva";
 import { useUiStore } from "@/app/lib/stores/ui-store";
 
 const fmtMXN = (n: number) =>
@@ -81,8 +82,7 @@ const ProjectDetailPage = ({
   }
 
   const subtotal = projectSubtotal(id);
-  const iva = Math.round(subtotal * 0.16);
-  const total = subtotal + iva;
+  const { iva, total } = computeIva(subtotal, "MX");
   const eligible = subtotal >= SPECIAL_PRICING_THRESHOLD_MXN;
   const pct = Math.min(
     (subtotal / SPECIAL_PRICING_THRESHOLD_MXN) * 100,

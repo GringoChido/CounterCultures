@@ -17,6 +17,7 @@ import {
 import { useCartStore } from "@/app/lib/stores/cart-store";
 import { useDisplayedMoney } from "@/app/lib/currency";
 import { OrderSummary } from "@/app/components/cart/order-summary";
+import { computeIva } from "@/app/lib/iva";
 import { FinishSwatch } from "@/app/components/cart/finish-swatch";
 import { CurrencyToggle } from "@/app/components/cart/currency-toggle";
 import { SaveCartButton } from "@/app/components/cart/save-cart-button";
@@ -85,6 +86,7 @@ export const CartPageClient = ({ locale }: { locale: "en" | "es" }) => {
   const updateQty = useCartStore((s) => s.updateQty);
   const updateNotes = useCartStore((s) => s.updateNotes);
   const remove = useCartStore((s) => s.remove);
+  const subtotal = useCartStore((s) => s.subtotal());
   const mode = useCartStore((s) => s.cartMode());
   const tradeCode = useCartStore((s) => s.tradeCode);
   const tradePartnerName = useCartStore((s) => s.tradePartnerName);
@@ -402,9 +404,15 @@ export const CartPageClient = ({ locale }: { locale: "en" | "es" }) => {
           )}
         </div>
 
-        {/* Order summary */}
+        {/* Order summary — default to MX ship-to (captured at checkout step 2) */}
         <div className="mt-6">
-          <OrderSummary locale={locale} variant="panel" density="compact" />
+          <OrderSummary
+            locale={locale}
+            variant="panel"
+            density="compact"
+            isMxShipTo
+            ivaAmount={computeIva(subtotal, "MX").iva}
+          />
         </div>
 
         {/* Save / share */}

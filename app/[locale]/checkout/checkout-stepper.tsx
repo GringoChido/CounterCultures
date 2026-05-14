@@ -11,8 +11,12 @@ import {
   ShoppingBag,
   Lock,
   Check,
+  Package,
+  MapPin,
+  Truck,
+  AlertTriangle,
 } from "lucide-react";
-import { useCartStore } from "@/app/lib/stores/cart-store";
+import { useCartStore, type ShippingMethod } from "@/app/lib/stores/cart-store";
 import { useDisplayedMoney } from "@/app/lib/currency";
 import { OrderSummary } from "@/app/components/cart/order-summary";
 import { CurrencyToggle } from "@/app/components/cart/currency-toggle";
@@ -21,6 +25,7 @@ import {
   EMPTY_FACTURA,
   type FacturaData,
 } from "@/app/components/cart/factura-section";
+import { computeIva } from "@/app/lib/iva";
 
 const BUYABLE_THRESHOLD_MXN = 50_000;
 
@@ -110,6 +115,16 @@ const T = {
     yourOrder: "Your Order",
     showOrder: "Show order summary",
     hideOrder: "Hide order summary",
+    shippingMethodLabel: "Shipping method",
+    localPickup: "Local pickup (SMA showroom)",
+    localPickupDesc: "Pick up at our San Miguel de Allende showroom. We'll email you when ready.",
+    smaDelivery: "Local delivery in SMA",
+    smaDeliveryDesc: "Free delivery within San Miguel de Allende. We'll schedule with you.",
+    shipFedex: "Ship via FedEx Economy (Skydropx)",
+    shipFedexLoading: "Getting a live rate…",
+    shipFedexError: "Couldn't get a live rate — we'll quote it manually after order review.",
+    customFreight: "Custom freight quote (oversized item)",
+    customFreightDesc: "This order contains an oversized item (e.g., bathtub). Our team shops freight quotes from multiple carriers — we'll send you options within 24 hours.",
   },
   es: {
     eyebrow: "Pago Seguro",
@@ -191,6 +206,16 @@ const T = {
     yourOrder: "Tu Pedido",
     showOrder: "Ver resumen del pedido",
     hideOrder: "Ocultar resumen del pedido",
+    shippingMethodLabel: "Método de envío",
+    localPickup: "Recoger en showroom (SMA)",
+    localPickupDesc: "Recoge en nuestro showroom de San Miguel de Allende. Te avisaremos por correo cuando esté listo.",
+    smaDelivery: "Entrega local en SMA",
+    smaDeliveryDesc: "Entrega gratuita dentro de San Miguel de Allende. Coordinaremos contigo.",
+    shipFedex: "Envío por FedEx Economy (Skydropx)",
+    shipFedexLoading: "Obteniendo tarifa en vivo…",
+    shipFedexError: "No pudimos obtener tarifa — la cotizaremos manualmente tras revisar tu pedido.",
+    customFreight: "Cotización de flete especial (artículo sobredimensionado)",
+    customFreightDesc: "Tu pedido contiene un artículo sobredimensionado (ej. bañera). Nuestro equipo busca las mejores opciones de flete — te enviaremos opciones en 24 horas.",
   },
 };
 
@@ -296,6 +321,16 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
   const cartSessionId = useCartStore((s) => s.cartSessionId);
   const tradeCode = useCartStore((s) => s.tradeCode);
   const clear = useCartStore((s) => s.clear);
+  const hasOversized = useCartStore((s) => s.hasOversized());
+  const setShipping = useCartStore((s) => s.setShipping);
+
+  const [shippingMethod, setShippingMethod] = useState<ShippingMethod>(
+    hasOversized ? "custom_freight" : "local_pickup"
+  );
+  const [shippingQuote, setShippingQuote] = useState<number | null>(null);
+  const [shippingQuoteLoading, setShippingQuoteLoading] = useState(false);
+  const [shippingQuoteError, setShippingQuoteError] = useState(false);
+  const [shippingQuoteLabel, setShippingQuoteLabel] = useState("");
 
   const [contact, setContact] = useState<ContactForm>({
     firstName: "",
@@ -330,6 +365,47 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
   });
 
   const [factura, setFactura] = useState<FacturaData>(EMPTY_FACTURA);
+
+  const fetchShippingQuote = async () => {
+    if (!address.postal || address.postal.length < 5) return;
+    setShippingQuoteLoading(true);
+    setShippingQuoteError(false);
+    try {
+      const res = await fetch("/api/shipping/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: items.map((i) => ({ quantity: i.quantity })),
+          address: { postal: address.postal, country: address.country },
+        }),
+      });
+      const data = await res.json();
+      const rates = data.rates as Array<{
+        carrier: string;
+        service: string;
+        amount_mxn: number;
+      }>;
+      if (rates && rates.length > 0) {
+        const economy = rates.find(
+          (r) => r.carrier === "fedex" && r.service === "economy"
+        );
+        const best = economy ?? rates[0];
+        setShippingQuote(best.amount_mxn);
+        setShippingQuoteLabel(
+          `${best.carrier.toUpperCase()} ${best.service}`
+        );
+        setShipping("ship", best.amount_mxn);
+      } else {
+        setShippingQuoteError(true);
+        setShippingQuote(null);
+      }
+    } catch {
+      setShippingQuoteError(true);
+      setShippingQuote(null);
+    } finally {
+      setShippingQuoteLoading(false);
+    }
+  };
 
   // SSR-safe mount guard for zustand-persist cart store (see CART-RULES rule 42).
   // The lint rule prefers useSyncExternalStore, but the codebase convention
@@ -384,9 +460,12 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
   }
 
   const isMxShipTo = address.country === "MX";
-  const ivaAmount = isMxShipTo ? Math.round(subtotal * 0.16) : 0;
-  const total = subtotal + ivaAmount;
+  const { iva: ivaAmount } = computeIva(subtotal, address.country);
+  const effectiveShippingCost =
+    shippingMethod === "ship" && shippingQuote != null ? shippingQuote : 0;
+  const total = subtotal + ivaAmount + effectiveShippingCost;
   const isBuyPath =
+    !hasOversized &&
     cartMode === "all_buyable" &&
     (sourceCurrency === "MXN"
       ? total < BUYABLE_THRESHOLD_MXN
@@ -520,6 +599,9 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
       ivaAmount,
       total,
       currency: sourceCurrency,
+      shippingMethod,
+      shippingCost: effectiveShippingCost,
+      requiresFreightQuote: hasOversized,
     };
 
     const attemptCheckout = async (attempt: number): Promise<void> => {
@@ -654,6 +736,8 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
               density="full"
               isMxShipTo={isMxShipTo}
               ivaAmount={ivaAmount}
+              shippingMethod={shippingMethod}
+              shippingCost={effectiveShippingCost > 0 ? effectiveShippingCost : undefined}
             />
           </div>
         </details>
@@ -868,7 +952,7 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
                     />
                   </div>
 
-                  {/* NEW: delivery notes — third address-area field */}
+                  {/* Delivery notes */}
                   <div>
                     <label className="block font-body text-xs tracking-wide text-dash-text-secondary mb-1.5">
                       {t.deliveryNotes}
@@ -886,6 +970,97 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
                       placeholder={t.deliveryNotesHint}
                       className="w-full px-3 py-2.5 font-body text-sm bg-white border border-brand-stone/25 focus:border-brand-copper focus:outline-none focus:ring-1 focus:ring-brand-copper/20 resize-none placeholder:text-brand-stone/50"
                     />
+                  </div>
+
+                  {/* ─── Shipping method picker ─── */}
+                  <div className="pt-2">
+                    <p className="font-body text-[11px] uppercase tracking-[0.2em] text-brand-copper mb-3">
+                      {t.shippingMethodLabel}
+                    </p>
+
+                    {hasOversized && (
+                      <div className="mb-4 px-4 py-3 bg-dash-warn-soft border-l-2 border-dash-warn flex gap-3">
+                        <AlertTriangle className="w-4 h-4 text-dash-warn shrink-0 mt-0.5" />
+                        <p className="font-body text-sm text-brand-charcoal/80">
+                          {t.customFreightDesc}
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      {!hasOversized && (
+                        <>
+                          <ShippingOption
+                            value="local_pickup"
+                            selected={shippingMethod}
+                            onSelect={(v) => {
+                              setShippingMethod(v);
+                              setShipping(v, 0);
+                            }}
+                            icon={<MapPin className="w-4 h-4" />}
+                            label={t.localPickup}
+                            description={t.localPickupDesc}
+                            price={formatted(0)}
+                          />
+                          <ShippingOption
+                            value="sma_delivery"
+                            selected={shippingMethod}
+                            onSelect={(v) => {
+                              setShippingMethod(v);
+                              setShipping(v, 0);
+                            }}
+                            icon={<Package className="w-4 h-4" />}
+                            label={t.smaDelivery}
+                            description={t.smaDeliveryDesc}
+                            price={formatted(0)}
+                          />
+                          <ShippingOption
+                            value="ship"
+                            selected={shippingMethod}
+                            onSelect={(v) => {
+                              setShippingMethod(v);
+                              if (shippingQuote != null) {
+                                setShipping(v, shippingQuote);
+                              } else {
+                                fetchShippingQuote();
+                              }
+                            }}
+                            icon={<Truck className="w-4 h-4" />}
+                            label={
+                              shippingQuoteLabel
+                                ? `${t.shipFedex} — ${shippingQuoteLabel}`
+                                : t.shipFedex
+                            }
+                            description={
+                              shippingQuoteLoading
+                                ? t.shipFedexLoading
+                                : shippingQuoteError
+                                  ? t.shipFedexError
+                                  : undefined
+                            }
+                            price={
+                              shippingQuoteLoading
+                                ? "…"
+                                : shippingQuote != null
+                                  ? formatted(shippingQuote)
+                                  : undefined
+                            }
+                            loading={shippingQuoteLoading}
+                          />
+                        </>
+                      )}
+
+                      {hasOversized && (
+                        <ShippingOption
+                          value="custom_freight"
+                          selected="custom_freight"
+                          onSelect={() => {}}
+                          icon={<Truck className="w-4 h-4" />}
+                          label={t.customFreight}
+                          disabled
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
@@ -1258,6 +1433,8 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
                 density="full"
                 isMxShipTo={isMxShipTo}
                 ivaAmount={ivaAmount}
+                shippingMethod={shippingMethod}
+                shippingCost={effectiveShippingCost > 0 ? effectiveShippingCost : undefined}
               />
             </div>
           </aside>
@@ -1420,5 +1597,74 @@ function LegalAccordion({
         </div>
       </div>
     </details>
+  );
+}
+
+interface ShippingOptionProps {
+  value: ShippingMethod;
+  selected: ShippingMethod;
+  onSelect: (v: ShippingMethod) => void;
+  icon: React.ReactNode;
+  label: string;
+  description?: string;
+  price?: string;
+  loading?: boolean;
+  disabled?: boolean;
+}
+
+function ShippingOption({
+  value,
+  selected,
+  onSelect,
+  icon,
+  label,
+  description,
+  price,
+  loading,
+  disabled,
+}: ShippingOptionProps) {
+  const isSelected = selected === value;
+  return (
+    <button
+      type="button"
+      onClick={() => !disabled && onSelect(value)}
+      disabled={disabled && !isSelected}
+      className={`w-full text-left px-4 py-3.5 border transition-colors flex items-start gap-3 ${
+        isSelected
+          ? "border-brand-copper bg-brand-copper/5 ring-1 ring-brand-copper/20"
+          : "border-brand-stone/20 hover:border-brand-stone/40"
+      } ${disabled ? "opacity-80 cursor-default" : "cursor-pointer"}`}
+    >
+      <div
+        className={`mt-0.5 w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${
+          isSelected ? "border-brand-copper" : "border-brand-stone/40"
+        }`}
+      >
+        {isSelected && (
+          <div className="w-2 h-2 rounded-full bg-brand-copper" />
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="text-brand-copper">{icon}</span>
+          <span className="font-body text-sm text-brand-charcoal">
+            {label}
+          </span>
+          {loading && (
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-copper" />
+          )}
+        </div>
+        {description && (
+          <p className="mt-1 font-body text-xs text-dash-text-secondary leading-relaxed ml-6">
+            {description}
+          </p>
+        )}
+      </div>
+      {price && (
+        <span className="font-mono text-sm text-brand-charcoal tabular-nums shrink-0 mt-0.5">
+          {price}
+        </span>
+      )}
+    </button>
   );
 }

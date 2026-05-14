@@ -122,6 +122,7 @@ export interface ProductFull {
   specSheetLocal?: string;
   tradePrice?: number;
   slug?: string;
+  shippingClass?: "standard" | "oversized";
 }
 
 interface IndexedProduct extends ProductFull {
@@ -176,7 +177,7 @@ const load = async (): Promise<Cache> => {
   // Single call — 354k rows × 10 cols comes back in ~10-20s.
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SHEET_ID,
-    range: `${TAB}!A:K`,
+    range: `${TAB}!A:L`,
   });
   const rows = res.data.values;
   if (!rows || rows.length < 2) {
@@ -197,6 +198,7 @@ const load = async (): Promise<Cache> => {
   const iActive = idx("active");
   const iSaleOk = idx("sale_ok");
   const iSatCode = idx("sat_code");
+  const iShippingClass = idx("shipping_class");
 
   const products: IndexedProduct[] = [];
   const brandAgg = new Map<string, number>();
@@ -242,6 +244,7 @@ const load = async (): Promise<Cache> => {
       active: (row[iActive] ?? "").toString() === "true",
       saleOk: (row[iSaleOk] ?? "").toString() === "true",
       satCode: iSatCode >= 0 ? (row[iSatCode] ?? "").toString() || undefined : undefined,
+      shippingClass: iShippingClass >= 0 && (row[iShippingClass] ?? "").toString() === "oversized" ? "oversized" : "standard",
       descriptionEs: content?.descriptionEs || undefined,
       descriptionEn: content?.descriptionEn || undefined,
       features: content?.features?.length ? content.features : undefined,

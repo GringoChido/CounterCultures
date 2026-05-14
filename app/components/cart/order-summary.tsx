@@ -1,29 +1,39 @@
 "use client";
 
 import { Tag } from "lucide-react";
-import { useCartStore, type CartItem } from "@/app/lib/stores/cart-store";
+import { useCartStore, type CartItem, type ShippingMethod } from "@/app/lib/stores/cart-store";
 import { useDisplayedMoney } from "@/app/lib/currency";
 import { FinishSwatch } from "./finish-swatch";
 
 interface OrderSummaryProps {
   locale: "en" | "es";
-  /**
-   * Show the IVA line. The cart page renders before ship-to is captured,
-   * so it shows IVA as "included in price". The checkout review
-   * passes `isMxShipTo` so we can show the itemized amount.
-   */
   showIva?: boolean;
   isMxShipTo?: boolean;
   ivaAmount?: number;
-  /**
-   * "panel"  — bordered surface card (used as a sticky sidebar)
-   * "inline" — no chrome (used inside the review step which already
-   *            sits in a card)
-   */
+  shippingMethod?: ShippingMethod;
+  shippingCost?: number;
   variant?: "panel" | "inline";
-  /** Show full thumbnails + qty controls vs compact text-only line items. */
   density?: "full" | "compact";
 }
+
+const SHIPPING_LABELS = {
+  en: {
+    local_pickup: "Local pickup (SMA)",
+    sma_delivery: "Local delivery (SMA)",
+    ship: "FedEx Economy",
+    custom_freight: "Custom freight quote",
+    calcAtCheckout: "Calculated at checkout",
+    quotedAfterReview: "Quoted after order review",
+  },
+  es: {
+    local_pickup: "Recoger en showroom (SMA)",
+    sma_delivery: "Entrega local (SMA)",
+    ship: "FedEx Economy",
+    custom_freight: "Cotización de flete",
+    calcAtCheckout: "Calculado en checkout",
+    quotedAfterReview: "Cotizado tras revisión",
+  },
+};
 
 const T = {
   en: {
@@ -40,6 +50,7 @@ const T = {
     each: "each",
     finish: "Finish",
     quoteOnly: "Quote",
+    free: "Free",
   },
   es: {
     summary: "Resumen del Pedido",
@@ -55,6 +66,7 @@ const T = {
     each: "c/u",
     finish: "Acabado",
     quoteOnly: "Cotización",
+    free: "Gratis",
   },
 };
 
@@ -63,10 +75,13 @@ export const OrderSummary = ({
   showIva = true,
   isMxShipTo = false,
   ivaAmount = 0,
+  shippingMethod,
+  shippingCost,
   variant = "panel",
   density = "compact",
 }: OrderSummaryProps) => {
   const t = T[locale];
+  const sl = SHIPPING_LABELS[locale];
   const items = useCartStore((s) => s.items);
   const subtotal = useCartStore((s) => s.subtotal());
   const tradeCode = useCartStore((s) => s.tradeCode);
@@ -78,7 +93,8 @@ export const OrderSummary = ({
     locale,
   });
 
-  const total = subtotal + (isMxShipTo ? ivaAmount : 0);
+  const shippingAmount = shippingCost ?? 0;
+  const total = subtotal + (isMxShipTo ? ivaAmount : 0) + shippingAmount;
   const itemCount = items.reduce((acc, i) => acc + i.quantity, 0);
 
   const wrapperClass =
@@ -158,9 +174,24 @@ export const OrderSummary = ({
         <div className="flex items-baseline justify-between">
           <dt className="font-body text-sm text-dash-text-secondary">
             {t.shipping}
+            {shippingMethod && (
+              <span className="block text-xs text-dash-text-secondary/70 mt-0.5">
+                {sl[shippingMethod]}
+              </span>
+            )}
           </dt>
-          <dd className="font-body text-xs text-dash-text-secondary/70">
-            {t.shippingNote}
+          <dd
+            className={
+              shippingMethod && shippingCost != null
+                ? "font-mono text-sm text-brand-charcoal tabular-nums"
+                : "font-body text-xs text-dash-text-secondary/70"
+            }
+          >
+            {shippingMethod
+              ? shippingCost != null && shippingCost > 0
+                ? formatted(shippingCost)
+                : t.free
+              : sl.calcAtCheckout}
           </dd>
         </div>
 

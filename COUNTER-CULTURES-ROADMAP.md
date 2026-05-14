@@ -80,6 +80,7 @@ For background and evidence behind any fix, see `docs/baseline/` (the read-mostl
 | P1.14 | **Sales / Marketing / Website analytics — kill hardcoded numbers** | [`docs/fixes/p1-analytics-real-data.md`](docs/fixes/p1-analytics-real-data.md) | 🔴 PENDING | 1 day |
 | P1.15 | **Drive dashboard page** — "Failed to load" despite service account connected | [`docs/fixes/p1-drive-page-fix.md`](docs/fixes/p1-drive-page-fix.md) | 🔴 PENDING | 4 hrs |
 | P1.16 | **Deprecated checkout/Stripe routes — final cleanup** (3 concurrent implementations) | [`docs/fixes/p1-deprecated-routes-cleanup.md`](docs/fixes/p1-deprecated-routes-cleanup.md) | 🔴 PENDING | 2 hrs |
+| P1.17 | **Cart IVA + shipping method picker + oversized freight flow** — IVA on cart page, 3-option shipping picker at checkout, oversized → custom freight quote | [`docs/fixes/p1-cart-iva-shipping-methods.md`](docs/fixes/p1-cart-iva-shipping-methods.md) | 🟢 DONE 2026-05-14 | 4 hrs |
 
 ---
 
