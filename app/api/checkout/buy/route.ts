@@ -19,10 +19,11 @@ export async function POST(req: NextRequest) {
     }
 
     if (!process.env.STRIPE_SECRET_KEY) {
-      return NextResponse.json(
-        { error: "Stripe is not configured. Set STRIPE_SECRET_KEY in your environment." },
-        { status: 503 }
-      );
+      console.error("[checkout/buy] STRIPE_SECRET_KEY not set in environment");
+      const msg = locale === "en"
+        ? "Payments are temporarily unavailable. Please contact us on WhatsApp."
+        : "Pagos no disponibles temporalmente. Por favor contáctanos por WhatsApp.";
+      return NextResponse.json({ error: msg }, { status: 503 });
     }
 
     // Guard: only buyable items allowed on buy path
@@ -183,7 +184,9 @@ export async function POST(req: NextRequest) {
     const message = err instanceof Error ? err.message : String(err);
     console.error("[checkout/buy] Error:", message, err);
     return NextResponse.json(
-      { error: message.includes("STRIPE") ? "Stripe is not configured" : "Internal error" },
+      { error: message.includes("STRIPE")
+          ? "Pagos no disponibles temporalmente. Por favor contáctanos por WhatsApp."
+          : "Internal error" },
       { status: 500 }
     );
   }
