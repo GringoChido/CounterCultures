@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -238,6 +238,231 @@ const DOC_STATUS_STYLES: Record<string, string> = {
 };
 
 // ---------------------------------------------------------------------------
+// CfdiPanel — renders the "¿Requiere CFDI?" prompt + branch state on the
+// deal detail. Three states the customer can be in:
+//   1. Unanswered → big copper prompt with Yes / No buttons
+//   2. "yes"      → Constancia upload zone (or link to uploaded file)
+//   3. "no"       → "factura general al público" indicator. Roger can
+//                   still flip to "yes" any time before delivery.
+// ---------------------------------------------------------------------------
+
+const CFDI_LOCKED_STAGES: PipelineStage[] = [
+  "delivered", "complete", "balance-pending", "post-delivery-issue",
+];
+
+const CfdiPanel = ({
+  deal,
+  onChanged,
+}: {
+  deal: PipelineDeal;
+  onChanged: (patch: Partial<PipelineDeal>) => void;
+}) => {
+  const [busy, setBusy] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const locked = CFDI_LOCKED_STAGES.includes(deal.stage);
+
+  const setRequiresCFDI = async (v: "yes" | "no") => {
+    if (busy || locked) return;
+    setBusy(true);
+    try {
+      const res = await fetch("/api/dashboard/pipeline", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: deal.id, requires_cfdi: v }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      onChanged({ requiresCFDI: v });
+      toast.success(v === "yes" ? "CFDI: Sí" : "CFDI: No · factura pública queued");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to update CFDI");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleConstanciaUpload = async (file: File) => {
+    if (uploading || locked) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch(
+        `/api/dashboard/deals/${encodeURIComponent(deal.id)}/constancia`,
+        { method: "POST", body: fd },
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${res.status}`);
+      }
+      const data = (await res.json()) as {
+        driveFileId: string;
+        uploadedAt: string;
+        requiresCfdi: "yes";
+      };
+      onChanged({
+        requiresCFDI: "yes",
+        constanciaDriveFileId: data.driveFileId,
+        constanciaUploadedAt: data.uploadedAt,
+      });
+      toast.success("Constancia uploaded — CFDI: Sí");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const constanciaHref = deal.constanciaDriveFileId
+    ? `https://drive.google.com/file/d/${deal.constanciaDriveFileId}/view`
+    : null;
+
+  return (
+    <div className="rounded-lg border border-brand-copper/30 bg-brand-copper/5 p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-brand-copper">
+          Fiscal · CFDI
+        </h4>
+        {locked && (
+          <span className="text-[10px] text-dash-text-secondary uppercase tracking-wider">
+            locked · post-delivery
+          </span>
+        )}
+      </div>
+
+      {/* State 1 — unanswered */}
+      {!deal.requiresCFDI && (
+        <div>
+          <p className="text-sm text-dash-text mb-2">
+            ¿Requiere CFDI para esta orden?
+          </p>
+          <p className="text-[11px] text-dash-text-secondary mb-3 leading-snug">
+            Drives whether we collect a Constancia and stamp at deposit, or
+            issue a factura general al público.
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setRequiresCFDI("yes")}
+              disabled={busy || locked}
+              className="flex-1 text-xs px-3 py-2 rounded-md border border-brand-copper/40 bg-dash-surface text-dash-text hover:border-brand-copper hover:bg-brand-copper/10 transition-colors cursor-pointer disabled:opacity-50"
+            >
+              Sí · stamped CFDI
+            </button>
+            <button
+              type="button"
+              onClick={() => setRequiresCFDI("no")}
+              disabled={busy || locked}
+              className="flex-1 text-xs px-3 py-2 rounded-md border border-dash-border bg-dash-surface text-dash-text-secondary hover:border-dash-text-secondary transition-colors cursor-pointer disabled:opacity-50"
+            >
+              No · factura pública
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* State 2 — yes */}
+      {deal.requiresCFDI === "yes" && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="inline-flex items-center gap-2 text-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-dash-success" />
+              <span className="text-dash-text font-medium">Sí</span>
+              <span className="text-dash-text-secondary text-[11px]">
+                · stamps at deposit
+              </span>
+            </span>
+            {!locked && (
+              <button
+                type="button"
+                onClick={() => setRequiresCFDI("no")}
+                disabled={busy}
+                className="text-[10px] text-dash-text-secondary hover:text-dash-text underline"
+              >
+                Switch to No
+              </button>
+            )}
+          </div>
+          {constanciaHref ? (
+            <div className="flex items-center justify-between bg-dash-surface border border-dash-border rounded-md px-3 py-2 text-xs">
+              <a
+                href={constanciaHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-brand-copper hover:underline truncate"
+              >
+                Constancia received
+              </a>
+              <span className="text-dash-text-secondary text-[10px]">
+                {deal.constanciaUploadedAt
+                  ? format(parseISO(deal.constanciaUploadedAt), "MMM d, HH:mm")
+                  : ""}
+              </span>
+            </div>
+          ) : (
+            <div>
+              <p className="text-[11px] text-dash-text-secondary mb-2">
+                Upload customer&rsquo;s Constancia de Situación Fiscal · saves to{" "}
+                <span className="font-mono">Deals/{deal.id}/CFDI &amp; Facturas/</span>
+              </p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/pdf,image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void handleConstanciaUpload(f);
+                  if (fileInputRef.current) fileInputRef.current.value = "";
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading || locked}
+                className="w-full text-xs px-3 py-2 rounded-md border border-dashed border-brand-copper/50 bg-brand-copper/5 text-brand-copper hover:bg-brand-copper/10 transition-colors cursor-pointer disabled:opacity-50 inline-flex items-center justify-center gap-2"
+              >
+                {uploading ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    Uploading…
+                  </>
+                ) : (
+                  "Upload Constancia"
+                )}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* State 3 — no */}
+      {deal.requiresCFDI === "no" && (
+        <div className="flex items-center justify-between">
+          <span className="inline-flex items-center gap-2 text-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-dash-text-secondary" />
+            <span className="text-dash-text font-medium">No</span>
+            <span className="text-dash-text-secondary text-[11px]">
+              · factura general al público queued
+            </span>
+          </span>
+          {!locked && (
+            <button
+              type="button"
+              onClick={() => setRequiresCFDI("yes")}
+              disabled={busy}
+              className="text-[10px] text-brand-copper hover:underline"
+            >
+              Switch to Sí
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
 // DealCard
 // ---------------------------------------------------------------------------
 
@@ -465,6 +690,9 @@ const emptyNewDealForm = {
   expectedClose: "",
   source: "Direct",
   brandSlugs: [] as string[],
+  // PR 5 — CFDI early-prompt. "" means unanswered (Roger can decide later
+  // from the deal detail). "yes" / "no" branch the post-deposit flow.
+  requiresCFDI: "" as "" | "yes" | "no",
 };
 
 // Inline editable number cell for line-item qty/price fields. Commits on
@@ -767,6 +995,7 @@ const PipelinePageInner = () => {
         created_at: now,
         last_activity: now,
         brand_slugs: newDealForm.brandSlugs.join("|"),
+        requires_cfdi: newDealForm.requiresCFDI,
       };
 
       const res = await fetch("/api/dashboard/pipeline", {
@@ -792,6 +1021,10 @@ const PipelinePageInner = () => {
         notes: "",
         leadSource: body.source,
         brandSlugs: newDealForm.brandSlugs,
+        requiresCFDI:
+          newDealForm.requiresCFDI === "yes" || newDealForm.requiresCFDI === "no"
+            ? newDealForm.requiresCFDI
+            : undefined,
       };
       setDeals((prev) => [created, ...prev]);
       setNewDealOpen(false);
@@ -838,6 +1071,13 @@ const PipelinePageInner = () => {
               pendingMoveAt: d.pending_move_at || undefined,
               dateAtBorder: d.date_at_border || undefined,
               dateCustomsCleared: d.date_customs_cleared || undefined,
+              // CFDI fields (PR 5)
+              requiresCFDI:
+                d.requires_cfdi === "yes" || d.requires_cfdi === "no"
+                  ? (d.requires_cfdi as "yes" | "no")
+                  : undefined,
+              constanciaDriveFileId: d.constancia_drive_file_id || undefined,
+              constanciaUploadedAt: d.constancia_uploaded_at || undefined,
             }));
             setDeals(mapped);
           }
@@ -1806,6 +2046,17 @@ const PipelinePageInner = () => {
             {/* Details Tab */}
             {dealTab === "details" && (
               <>
+                <CfdiPanel
+                  deal={selectedDeal}
+                  onChanged={(patch) => {
+                    setSelectedDeal((d) => (d ? { ...d, ...patch } : d));
+                    setDeals((prev) =>
+                      prev.map((d) =>
+                        d.id === selectedDeal.id ? { ...d, ...patch } : d,
+                      ),
+                    );
+                  }}
+                />
                 <div>
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary mb-3">
                     Deal Information
@@ -3212,6 +3463,38 @@ const PipelinePageInner = () => {
                   <option key={src} value={src}>{src}</option>
                 ))}
               </select>
+            </div>
+          </div>
+
+          {/* CFDI early-prompt — Roger asks the customer up front so the
+              fiscal path is decided before the deposit. Skippable: "Decide
+              later" leaves it unanswered and the deal detail panel will
+              prompt again. */}
+          <div className="border border-brand-copper/30 bg-brand-copper/5 rounded-lg p-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-brand-copper mb-2">
+              ¿Requiere CFDI?
+            </p>
+            <p className="text-[11px] text-dash-text-secondary mb-2.5 leading-snug">
+              Drives whether we collect a Constancia and stamp at deposit, or
+              issue a factura general al público.
+            </p>
+            <div className="flex gap-2">
+              {(["yes", "no", ""] as const).map((v) => (
+                <button
+                  key={v || "later"}
+                  type="button"
+                  onClick={() =>
+                    setNewDealForm((p) => ({ ...p, requiresCFDI: v }))
+                  }
+                  className={`flex-1 text-xs px-3 py-2 rounded-md border transition-colors cursor-pointer ${
+                    newDealForm.requiresCFDI === v
+                      ? "bg-brand-copper text-white border-brand-copper"
+                      : "bg-dash-surface text-dash-text-secondary border-dash-border hover:border-brand-copper/40"
+                  }`}
+                >
+                  {v === "yes" ? "Sí · stamped CFDI" : v === "no" ? "No · factura pública" : "Decide later"}
+                </button>
+              ))}
             </div>
           </div>
 
