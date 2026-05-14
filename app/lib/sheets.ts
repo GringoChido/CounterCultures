@@ -21,6 +21,7 @@ import { getGooglePrivateKey } from "./google-private-key";
 import type { Product, ProductFilter } from "./types";
 import { SAMPLE_PRODUCTS, PRODUCT_CATEGORIES, SUBCATEGORY_CATALOG_QUERY } from "./constants";
 import type { CategoryKey } from "./constants";
+import { toSlug } from "./slug";
 
 // ── Config ────────────────────────────────────────────────────────────
 
@@ -135,7 +136,7 @@ const rowToProduct = (row: string[], index: number): Product => {
     descriptionEn: row[14] || row[13] || "",
     availability: (row[15] as Product["availability"]) || "in-stock",
     featured: row[16] === "true",
-    slug: row[17] || name.toLowerCase().replace(/\s+/g, "-") || "",
+    slug: row[17] || toSlug(name, row[1] || ""),
   };
 };
 
@@ -164,7 +165,7 @@ const sampleToProducts = (): Product[] =>
         availability: "in-stock" as const,
         slug:
           (record.slug as string) ||
-          p.name.toLowerCase().replace(/\s+/g, "-"),
+          toSlug(p.name, p.sku),
         specifications: record.specifications as
           | Record<string, string>
           | undefined,
@@ -276,7 +277,12 @@ export const getProductBySlug = async (
   slug: string
 ): Promise<Product | null> => {
   const products = await getProducts();
-  return products.find((p) => p.slug === slug) || null;
+  const direct = products.find((p) => p.slug === slug);
+  if (direct) return direct;
+  const computed = products.find(
+    (p) => toSlug(p.name, p.sku) === slug
+  );
+  return computed || null;
 };
 
 export const getProductsByBrand = async (

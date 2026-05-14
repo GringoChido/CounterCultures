@@ -24,6 +24,7 @@ import {
   getOdooStockLocations,
 } from "./odoo-sheets";
 import { getProductContent } from "./product-content";
+import type { Product } from "./types";
 
 const SHEET_ID = process.env.GOOGLE_SHEETS_ID_PRODUCTS_FULL ?? "";
 const TAB = "Products";
@@ -131,6 +132,27 @@ interface IndexedProduct extends ProductFull {
   _name: string; // lowercased name
   _brand: string; // lowercased brand
 }
+
+const crmToProductFull = (p: Product): ProductFull => ({
+  id: p.id,
+  name: p.name,
+  sku: p.sku,
+  brand: p.brand,
+  category: p.category,
+  listPrice: p.price,
+  currency: p.currency,
+  uom: "Units",
+  active: true,
+  saleOk: p.availability !== "quote_only",
+  inStock: p.availability === "in-stock",
+  stockQty: p.availability === "in-stock" ? 1 : 0,
+  imageSrc: p.images?.[0],
+  descriptionEs: p.description,
+  descriptionEn: p.descriptionEn,
+  features: p.features,
+  tradePrice: p.tradePrice,
+  slug: p.slug,
+});
 
 export interface BrandCount {
   brand: string;
@@ -795,8 +817,6 @@ export const getCatalogStats = async (): Promise<{
 // images are deliberately blank on the quote surface — customers request a
 // quote; they don't see MXN list prices.
 
-import type { Product } from "./types";
-
 const slugFor = (id: string) => `p-${id}`;
 
 const toQuoteProduct = (p: ProductFull): Product => {
@@ -938,6 +958,11 @@ export const getProductBySlug = async (
       }
     }
   }
+
+  // Fallback 3: CRM sheet products (artisanal / curated items not in Odoo)
+  const { getProductBySlug: getCrmProduct } = await import("./sheets");
+  const crm = await getCrmProduct(slug);
+  if (crm) return crmToProductFull(crm);
 
   return null;
 };
