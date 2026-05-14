@@ -70,7 +70,7 @@ const ProjectDetailPage = ({
         <div className="text-center">
           <p className="text-sm text-[#6B6B6B] mb-4">Project not found</p>
           <Link
-            href="/en/account/projects"
+            href="/account/projects"
             className="text-sm text-[#B87333] hover:text-[#A0632D]"
           >
             &larr; Back to projects
@@ -141,7 +141,7 @@ const ProjectDetailPage = ({
     <div className="min-h-screen bg-[#FAF8F5] py-12 px-4 sm:px-6">
       <div className="mx-auto max-w-3xl">
         <Link
-          href="/en/account/projects"
+          href="/account/projects"
           className="inline-flex items-center gap-1.5 text-sm text-[#6B6B6B] hover:text-[#2C2C2C] transition-colors font-body mb-6"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
