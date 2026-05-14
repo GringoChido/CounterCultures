@@ -11,6 +11,10 @@ import { findUserByEmail, type UserRole } from "./users-sheet";
 
 const ALLOWED_DOMAIN = "countercultures.com.mx";
 
+// Break-glass superadmin — always allowed in, even if the Users sheet row is
+// missing, deactivated, or the Sheets API is down. Gets owner role as fallback.
+const SUPERADMIN_EMAIL = "admin@countercultures.com.mx";
+
 const parseAllowlist = (): string[] =>
   (process.env.PORTAL_EMAIL_ALLOWLIST ?? "")
     .split(",")
@@ -49,12 +53,12 @@ export const authOptions: AuthOptions = {
       }
 
       const user = await findUserByEmail(email);
-      if (!user) {
-        console.warn(`[auth] signIn rejected: no Users-sheet row for ${email}`);
-        return false;
-      }
-      if (!user.active) {
-        console.warn(`[auth] signIn rejected: user ${email} exists but active=false`);
+      if (!user || !user.active) {
+        if (email === SUPERADMIN_EMAIL) {
+          console.warn(`[auth] superadmin bypass: ${email} allowed in despite ${!user ? "missing sheet row" : "active=false"}`);
+          return true;
+        }
+        console.warn(`[auth] signIn rejected: ${!user ? "no Users-sheet row" : "active=false"} for ${email}`);
         return false;
       }
       return true;
@@ -66,13 +70,10 @@ export const authOptions: AuthOptions = {
       // (next request after their JWT refreshes will have the new values).
       if (email && (!token.role || trigger === "update" || trigger === "signIn")) {
         const u = await findUserByEmail(email);
-        // signIn callback now requires a Users-sheet row; if `u` is missing
-        // here it's an unexpected state. Default to a safe "sales" role
-        // (least privilege) and log so the issue surfaces.
-        if (!u) {
-          console.warn(`[auth] No Users-sheet row found for authenticated email ${email}; defaulting to sales role.`);
+        if (!u && email !== SUPERADMIN_EMAIL) {
+          console.warn(`[auth] No Users-sheet row for ${email}; defaulting to sales role`);
         }
-        token.role = (u?.role ?? "sales") as UserRole;
+        token.role = (u?.role ?? (email === SUPERADMIN_EMAIL ? "owner" : "sales")) as UserRole;
         token.name = u?.name ?? token.name;
         token.featureOverrides = u?.featureOverrides ?? "";
       }

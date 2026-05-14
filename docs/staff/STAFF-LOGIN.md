@@ -11,6 +11,8 @@ NextAuth + Google OAuth, domain-locked to `@countercultures.com.mx`. **No except
 1. **Domain gate** — Google OAuth `hd` param restricts to `@countercultures.com.mx`. Non-domain emails are rejected before they hit the app.
 2. **Users-sheet gate** — the `signIn` callback in `app/lib/auth-options.ts` looks up the email in the `Users` tab of the Counter Cultures CRM Google Sheet. If no row exists, or `active=false`, sign-in is rejected with `AccessDenied`. Both rejection reasons are logged as structured `[auth]` warnings in the server logs.
 
+**Exception:** `admin@countercultures.com.mx` is hardcoded as a break-glass superadmin. It always gets through, even if the Users sheet row is missing, deactivated, or the Sheets API is down. Falls back to `owner` role when the sheet is unavailable.
+
 ## Current seed list
 
 | Email | Name | Role | Active |
