@@ -15,7 +15,13 @@ import { toast } from "sonner";
 import type { PipelineDeal } from "@/app/lib/sample-dashboard-data";
 import type { DocumentType } from "@/app/lib/document-numbers";
 import { getDocumentTypeLabel } from "@/app/lib/document-numbers";
-import { QuoteTemplate, type LineItem, type QuoteData } from "./templates/quote-template";
+import {
+  QuoteTemplate,
+  type LineItem,
+  type QuoteData,
+  type QuoteCurrency,
+  type QuoteFulfillment,
+} from "./templates/quote-template";
 import { InvoiceTemplate, type InvoiceData } from "./templates/invoice-template";
 import { POTemplate, type POData } from "./templates/po-template";
 import {
@@ -70,8 +76,13 @@ export const DocumentGenerator = ({
   onSaved,
   onSend,
 }: DocumentGeneratorProps) => {
-  const locale: "en" | "es" = "en";
   const previewRef = useRef<HTMLDivElement>(null);
+
+  // PR 7 — quote-builder toggles. Default to ES + MXN since Roger's
+  // book of business is mostly Mexican-resident customers.
+  const [locale, setLocale] = useState<"en" | "es">("es");
+  const [currency, setCurrency] = useState<QuoteCurrency>("MXN");
+  const [fulfillment, setFulfillment] = useState<QuoteFulfillment>("ship");
 
   // Shared state
   const [saving, setSaving] = useState(false);
@@ -102,7 +113,7 @@ export const DocumentGenerator = ({
   const [dueDate, setDueDate] = useState(addDays(today(), 30));
 
   // PO-specific
-  const [manufacturerName, setManufacturerName] = useState("");
+  const [vendorName, setVendorName] = useState("");
   const [deliveryAddress, setDeliveryAddress] = useState(
     "Providencia, San Miguel de Allende, Guanajuato, Mexico"
   );
@@ -164,6 +175,8 @@ export const DocumentGenerator = ({
     deliveryEstimate,
     notes,
     locale,
+    currency,
+    fulfillment,
   };
 
   const invoiceData: InvoiceData = {
@@ -184,7 +197,7 @@ export const DocumentGenerator = ({
     docNumber,
     date,
     requestedDelivery,
-    manufacturerName,
+    vendorName,
     deliveryAddress,
     items,
     notes,
@@ -295,6 +308,76 @@ export const DocumentGenerator = ({
 
         {/* Form body */}
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
+          {/* PR 7 — quote-only toggles: language, currency, fulfillment.
+              These ride at the top of the form so Roger picks them before
+              picking line items, and they propagate into the rendered PDF. */}
+          {docType === "quote" && (
+            <div className="border border-brand-copper/30 bg-brand-copper/5 rounded-lg p-3 space-y-2.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-dash-text-secondary">
+                  Language
+                </span>
+                {(["en", "es"] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setLocale(v)}
+                    className={`text-[11px] px-2.5 py-0.5 rounded-full border transition-colors cursor-pointer ${
+                      locale === v
+                        ? "bg-brand-charcoal text-white border-brand-charcoal"
+                        : "bg-dash-surface text-dash-text-secondary border-dash-border hover:border-dash-text-secondary"
+                    }`}
+                  >
+                    {v.toUpperCase()}
+                  </button>
+                ))}
+                <span className="w-px h-4 bg-dash-border mx-1" />
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-dash-text-secondary">
+                  Currency
+                </span>
+                {(["MXN", "USD"] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setCurrency(v)}
+                    className={`text-[11px] px-2.5 py-0.5 rounded-full border transition-colors cursor-pointer ${
+                      currency === v
+                        ? "bg-brand-charcoal text-white border-brand-charcoal"
+                        : "bg-dash-surface text-dash-text-secondary border-dash-border hover:border-dash-text-secondary"
+                    }`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-dash-text-secondary">
+                  Fulfillment
+                </span>
+                {(
+                  [
+                    { v: "ship" as const, label: "Skydropx" },
+                    { v: "local" as const, label: "SMA · Miguel" },
+                    { v: "pickup" as const, label: "Pickup · Warehouse" },
+                  ]
+                ).map(({ v, label }) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setFulfillment(v)}
+                    className={`text-[11px] px-2.5 py-0.5 rounded-full border transition-colors cursor-pointer ${
+                      fulfillment === v
+                        ? "bg-brand-copper text-white border-brand-copper"
+                        : "bg-dash-surface text-dash-text-secondary border-dash-border hover:border-brand-copper/40"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Customer fields (not for PO) */}
           {docType !== "po" && (
             <div className="space-y-3">
@@ -332,19 +415,19 @@ export const DocumentGenerator = ({
             </div>
           )}
 
-          {/* PO: Manufacturer */}
+          {/* PO: Vendor */}
           {docType === "po" && (
             <div className="space-y-3">
               <p className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
-                Manufacturer
+                Vendor
               </p>
               <div>
-                <label className={labelCls}>Manufacturer / Brand</label>
+                <label className={labelCls}>Vendor</label>
                 <input
                   className={inputCls}
-                  value={manufacturerName}
-                  onChange={(e) => setManufacturerName(e.target.value)}
-                  placeholder="e.g. Kohler, Brizo"
+                  value={vendorName}
+                  onChange={(e) => setVendorName(e.target.value)}
+                  placeholder="e.g. Ferguson, JCR"
                 />
               </div>
               <div>

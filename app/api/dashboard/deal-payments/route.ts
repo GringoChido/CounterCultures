@@ -42,6 +42,12 @@ type DealPaymentRecord = {
    * months later.
    */
   Memo: string;
+  /** PaymentMethodId — see app/lib/payment-methods.ts */
+  Method: string;
+  /** "fiscal" | "non-fiscal" */
+  Fiscal_Posture: string;
+  /** free-text — wire confirmation, check #, etc. */
+  Reference: string;
 };
 
 // Canonical R2 columns. The header-keyed write helpers don't use this for
@@ -65,6 +71,9 @@ const PAYMENT_COLUMNS: (keyof DealPaymentRecord)[] = [
   "Fiscal_Disposition",
   "Cash_Earmark",
   "Memo",
+  "Method",
+  "Fiscal_Posture",
+  "Reference",
 ];
 
 const recordToFields = (body: DealPaymentRecord): Record<string, string> => {
@@ -127,7 +136,10 @@ export const POST = async (request: NextRequest) => {
 
     // Self-heal: ensure the R2-4 + Memo columns exist before we attempt to
     // write them. Idempotent.
-    await ensureColumns("Deal_Payments", ["Fiscal_Disposition", "Cash_Earmark", "Memo"]);
+    await ensureColumns("Deal_Payments", [
+      "Fiscal_Disposition", "Cash_Earmark", "Memo",
+      "Method", "Fiscal_Posture", "Reference",
+    ]);
 
     await appendRowByHeader("Deal_Payments", recordToFields(body));
 

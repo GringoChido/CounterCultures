@@ -48,7 +48,7 @@ export const onPOShipped = (
     id: `PI-${crypto.randomUUID()}`,
     dealId: po.dealId,
     poId: po.id,
-    vendorName: po.manufacturerName,
+    vendorName: po.vendorName,
     vendorInvoiceNumber: po.id,
     vendorInvoiceDate: new Date().toISOString().split("T")[0],
     products: po.items.map((item) => ({

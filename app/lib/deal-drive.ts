@@ -26,6 +26,9 @@ export type DealSubfolder =
   | "Quotes"
   | "Invoices"
   | "Pedimentos"
+  | "Pedimentos & Importacion"
+  | "Shipping"
+  | "Delivery Receipts"
   | "CFDI & Facturas"
   | "Misc";
 

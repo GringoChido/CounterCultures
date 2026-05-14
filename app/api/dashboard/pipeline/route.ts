@@ -35,6 +35,13 @@ type PipelineRecord = {
   requires_cfdi: string;
   constancia_drive_file_id: string;
   constancia_uploaded_at: string;
+  // PR 10 — delivery / signature
+  delivery_window_start: string;
+  delivery_window_end: string;
+  delivery_phone_confirmed_at: string;
+  delivery_signature_drive_file_id: string;
+  delivery_signed_at: string;
+  delivery_signed_by: string;
 };
 
 const PIPELINE_COLUMNS: (keyof PipelineRecord)[] = [
@@ -59,6 +66,12 @@ const PIPELINE_COLUMNS: (keyof PipelineRecord)[] = [
   "requires_cfdi",
   "constancia_drive_file_id",
   "constancia_uploaded_at",
+  "delivery_window_start",
+  "delivery_window_end",
+  "delivery_phone_confirmed_at",
+  "delivery_signature_drive_file_id",
+  "delivery_signed_at",
+  "delivery_signed_by",
 ];
 
 // Fields whose write should trigger a rule-engine evaluation. Anything else

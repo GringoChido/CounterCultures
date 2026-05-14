@@ -96,6 +96,10 @@ import type { HydratedTrafico } from "@/app/lib/trafico-hydrator";
 import { LandedCostCalculator } from "@/app/(dashboard)/components/landed-cost-calculator";
 import { PoVendorEditor } from "@/app/(dashboard)/components/po/po-vendor-editor";
 import { useCurrentUser } from "@/app/lib/use-current-user";
+import { TakePaymentPanel } from "@/app/(dashboard)/components/payments/take-payment-panel";
+import { SkydropxShipPanel } from "@/app/(dashboard)/components/shipments/skydropx-ship-panel";
+import { ImportsPanel, type ImportsPanelData } from "@/app/(dashboard)/components/customs/imports-panel";
+import { DeliveryPanel } from "@/app/(dashboard)/components/delivery/delivery-panel";
 import {
   MineAllToggle,
   matchesUser,
@@ -235,6 +239,44 @@ const DOC_STATUS_STYLES: Record<string, string> = {
   Sent: "bg-dash-info/10 text-dash-info",
   Paid: "bg-status-won/10 text-status-won",
   Signed: "bg-dash-success/10 text-dash-success",
+};
+
+// ---------------------------------------------------------------------------
+// PoLink — renders a PO number as a copper-underlined link. If the PO has a
+// Drive file ID, we link directly to the PDF; otherwise we deep-link back
+// into the pipeline page with the deal+POs tab pre-opened so the user can
+// drill into payment / shipment details on that PO.
+// ---------------------------------------------------------------------------
+
+const poHref = (po: PurchaseOrder): string =>
+  po.driveFileId
+    ? `https://drive.google.com/file/d/${po.driveFileId}/view`
+    : `/dashboard/pipeline?deal=${encodeURIComponent(po.dealId)}&tab=purchase-orders`;
+
+const PoLink = ({
+  po,
+  className = "",
+}: {
+  po: PurchaseOrder;
+  className?: string;
+}) => {
+  const isExternal = !!po.driveFileId;
+  return (
+    <a
+      href={poHref(po)}
+      target={isExternal ? "_blank" : undefined}
+      rel={isExternal ? "noopener noreferrer" : undefined}
+      onClick={(e) => e.stopPropagation()}
+      className={`font-mono text-brand-copper hover:text-brand-copper/80 underline decoration-brand-copper/40 underline-offset-2 transition-colors ${className}`}
+      title={
+        isExternal
+          ? `Open ${po.id} PDF in Drive`
+          : `Open ${po.id} on the deal`
+      }
+    >
+      {po.id}
+    </a>
+  );
 };
 
 // ---------------------------------------------------------------------------
@@ -625,6 +667,23 @@ const DealCard = ({ deal, onClick, shipmentRisk, sla }: DealCardProps) => {
         </div>
       )}
 
+      {/* PO numbers — only render when already hydrated on the deal. POs
+          load lazily for live-sheet deals (the user has to open the POs
+          tab once), so absence here doesn't mean none exist. */}
+      {deal.purchaseOrders && deal.purchaseOrders.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5 mb-1.5 text-[10px]">
+          <span className="text-dash-text-secondary">PO</span>
+          {deal.purchaseOrders.slice(0, 3).map((po) => (
+            <PoLink key={po.id} po={po} className="text-[10px]" />
+          ))}
+          {deal.purchaseOrders.length > 3 && (
+            <span className="text-dash-text-secondary">
+              +{deal.purchaseOrders.length - 3}
+            </span>
+          )}
+        </div>
+      )}
+
       <div className="flex items-center justify-between text-[10px] text-dash-text-secondary">
         <div className="flex items-center gap-1">
           <Calendar className="w-3 h-3" />
@@ -675,7 +734,7 @@ const DealCardOverlay = ({ deal }: { deal: PipelineDeal }) => (
 // Pipeline Page
 // ---------------------------------------------------------------------------
 
-type DealTabKey = "details" | "documents" | "line-items" | "payments" | "purchase-orders" | "shipments" | "customs" | "landed-cost" | "financial" | "history";
+type DealTabKey = "details" | "documents" | "line-items" | "payments" | "purchase-orders" | "shipments" | "customs" | "landed-cost" | "financial" | "delivery" | "history";
 
 interface BrandOption {
   slug: string;
@@ -931,17 +990,30 @@ const PipelinePageInner = () => {
     }
   }, [newDealActionParam, router]);
 
-  // Deep-link: /dashboard/pipeline?deal=<id> from Needs You panel, bell drop-down,
-  // etc. Opens the slideout for that deal once deals are loaded, then strips the
-  // param so a refresh doesn't re-trigger the open.
+  // Deep-link: /dashboard/pipeline?deal=<id>[&tab=<tabKey>] from Needs You,
+  // bell drop-down, PO links, etc. Opens the slideout for that deal once
+  // deals are loaded, switches to the requested tab if supplied, then
+  // strips the params so a refresh doesn't re-trigger the open.
+  const tabDeepLinkParam = searchParams.get("tab");
   useEffect(() => {
     if (!dealDeepLinkParam || deals.length === 0) return;
     const hit = deals.find((d) => d.id === dealDeepLinkParam);
     if (hit) {
       setSelectedDeal(hit);
+      const validTabs: DealTabKey[] = [
+        "details", "documents", "line-items", "payments",
+        "purchase-orders", "shipments", "customs", "landed-cost",
+        "delivery", "financial", "history",
+      ];
+      if (
+        tabDeepLinkParam &&
+        validTabs.includes(tabDeepLinkParam as DealTabKey)
+      ) {
+        setDealTab(tabDeepLinkParam as DealTabKey);
+      }
       router.replace("/dashboard/pipeline");
     }
-  }, [dealDeepLinkParam, deals, router]);
+  }, [dealDeepLinkParam, tabDeepLinkParam, deals, router]);
   const [newDealForm, setNewDealForm] = useState(emptyNewDealForm);
   const [newDealSaving, setNewDealSaving] = useState(false);
   const [brandOptions, setBrandOptions] = useState<BrandOption[]>([]);
@@ -1193,7 +1265,8 @@ const PipelinePageInner = () => {
           PO_ID: string;
           Deal_ID: string;
           Brand: string;
-          Manufacturer: string;
+          Vendor: string;
+          Manufacturer?: string;
           Items_JSON: string;
           Total_Amount: string;
           Currency: string;
@@ -1208,7 +1281,6 @@ const PipelinePageInner = () => {
           Carrier: string;
           Tracking: string;
           Received_Date: string;
-          Vendor?: string;
           Vendor_Override_Reason?: string;
         }>;
         const pos: PurchaseOrder[] = rows.map((r) => {
@@ -1222,7 +1294,7 @@ const PipelinePageInner = () => {
             id: r.PO_ID,
             dealId: r.Deal_ID,
             brand: r.Brand,
-            manufacturerName: r.Manufacturer || r.Brand,
+            vendorName: r.Vendor || r.Manufacturer || r.Brand,
             items,
             totalAmount: parseFloat(r.Total_Amount) || 0,
             currency: r.Currency || "MXN",
@@ -1237,7 +1309,7 @@ const PipelinePageInner = () => {
           if (r.Vendor) po.vendor = r.Vendor;
           if (r.Vendor_Override_Reason) po.vendorOverrideReason = r.Vendor_Override_Reason;
           if (r.Payment_Date && r.Payment_Amount) {
-            po.paymentToMfr = {
+            po.paymentToVendor = {
               date: r.Payment_Date,
               amount: parseFloat(r.Payment_Amount) || 0,
               method: r.Payment_Method || "",
@@ -2024,6 +2096,7 @@ const PipelinePageInner = () => {
                 { key: "shipments" as DealTabKey, label: "Shipments", icon: Truck },
                 { key: "customs" as DealTabKey, label: "Customs", icon: FileCheck },
                 { key: "landed-cost" as DealTabKey, label: "Landed Cost", icon: Calculator },
+                { key: "delivery" as DealTabKey, label: "Delivery", icon: CheckCircle2 },
                 { key: "financial" as DealTabKey, label: "P&L", icon: BarChart3 },
                 { key: "documents" as DealTabKey, label: "Docs", icon: FileText },
                 { key: "history" as DealTabKey, label: "History", icon: Circle },
@@ -2577,6 +2650,20 @@ const PipelinePageInner = () => {
                     </span>
                   )}
                 </div>
+                <TakePaymentPanel
+                  dealId={selectedDeal.id}
+                  dealValue={selectedDeal.value}
+                  dealCurrency={(selectedDeal.currency as "MXN" | "USD") ?? "MXN"}
+                  alreadyCollected={(selectedDeal.payments ?? []).filter(p => p.status === "paid").reduce((s, p) => s + p.amount, 0)}
+                  onRecorded={(payment) => {
+                    setSelectedDeal((cur) =>
+                      cur && cur.id === selectedDeal.id
+                        ? { ...cur, payments: [...(cur.payments ?? []), payment] }
+                        : cur
+                    );
+                    toast.success(`Payment of $${payment.amount.toLocaleString()} recorded`);
+                  }}
+                />
                 {/* Payment summary */}
                 {(selectedDeal.payments ?? []).length > 0 && (
                   <div className="bg-dash-bg rounded-lg p-3 grid grid-cols-3 gap-2 text-xs">
@@ -2680,8 +2767,10 @@ const PipelinePageInner = () => {
                       <div key={po.id} className="bg-dash-bg rounded-lg p-3 space-y-2">
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-dash-text">{po.id}</p>
-                            <p className="text-[11px] text-dash-text-secondary">{po.brand} &bull; {po.manufacturerName}</p>
+                            <p className="text-sm font-medium text-dash-text">
+                              <PoLink po={po} className="text-sm" />
+                            </p>
+                            <p className="text-[11px] text-dash-text-secondary">{po.brand} &bull; {po.vendorName}</p>
                             <div className="mt-1.5">
                               <PoVendorEditor
                                 poId={po.id}
@@ -2714,7 +2803,7 @@ const PipelinePageInner = () => {
                             po.status === "received" ? "bg-dash-success/10 text-dash-success" :
                             po.status === "shipped" ? "bg-dash-info/10 text-dash-info" :
                             po.status === "in-production" ? "bg-dash-cat-violet/10 text-dash-cat-violet" :
-                            po.status === "confirmed" || po.status === "paid-to-manufacturer" ? "bg-dash-info/10 text-dash-info" :
+                            po.status === "confirmed" || po.status === "paid-to-vendor" ? "bg-dash-info/10 text-dash-info" :
                             po.status === "sent" ? "bg-dash-warn/10 text-dash-warn" :
                             po.status === "issue" ? "bg-dash-danger/10 text-dash-danger" :
                             "bg-dash-text-secondary/10 text-dash-text-secondary"
@@ -2733,8 +2822,8 @@ const PipelinePageInner = () => {
                           </div>
                           <div>
                             <p className="text-dash-text-secondary">Mfr Paid</p>
-                            <p className={`font-medium ${po.paymentToMfr ? "text-dash-success" : "text-dash-warn"}`}>
-                              {po.paymentToMfr ? `\u2713 ${po.paymentToMfr.date}` : "Pending"}
+                            <p className={`font-medium ${po.paymentToVendor ? "text-dash-success" : "text-dash-warn"}`}>
+                              {po.paymentToVendor ? `\u2713 ${po.paymentToVendor.date}` : "Pending"}
                             </p>
                           </div>
                         </div>
@@ -2769,6 +2858,20 @@ const PipelinePageInner = () => {
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
                   Shipments
                 </h4>
+                {(selectedDeal.purchaseOrders ?? []).length > 0 && (
+                  <SkydropxShipPanel
+                    dealId={selectedDeal.id}
+                    defaultPoId={(selectedDeal.purchaseOrders ?? [])[0]?.id}
+                    defaultBrand={(selectedDeal.purchaseOrders ?? [])[0]?.brand}
+                    defaultRecipient={{
+                      name: selectedDeal.contactName,
+                      phone: selectedDeal.phone,
+                    }}
+                    onShipped={(info) => {
+                      toast.success(`Label created — ${info.carrier} ${info.trackingNumber}`);
+                    }}
+                  />
+                )}
                 {selectedDeal.deliveryStrategy && (
                   <div className="bg-dash-bg rounded-lg p-2 text-[11px] text-dash-text-secondary flex items-center gap-1.5">
                     <Truck className="w-3.5 h-3.5" />
@@ -3055,6 +3158,35 @@ const PipelinePageInner = () => {
               </div>
             )}
 
+            {/* Delivery Tab */}
+            {dealTab === "delivery" && (
+              <div className="space-y-4">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-dash-text-secondary">
+                  Delivery & Signature
+                </h4>
+                <DeliveryPanel
+                  dealId={selectedDeal.id}
+                  fulfillmentMode={selectedDeal.deliveryStrategy === "consolidate" ? "local" : "pickup"}
+                  contactName={selectedDeal.contactName}
+                  deliveryAddress={selectedDeal.deliveryAddress}
+                  itemsSummary={(selectedDeal.lineItems ?? []).map(li => `${li.quantity}x ${li.productName}`).join(", ")}
+                  initial={{
+                    windowStart: selectedDeal.deliveryWindowStart,
+                    windowEnd: selectedDeal.deliveryWindowEnd,
+                    phoneConfirmedAt: selectedDeal.deliveryPhoneConfirmedAt,
+                    signatureDriveFileId: selectedDeal.deliverySignatureDriveFileId,
+                    signedAt: selectedDeal.deliverySignedAt,
+                    signedBy: selectedDeal.deliverySignedBy,
+                  }}
+                  onUpdated={(patch) => {
+                    setSelectedDeal((cur) =>
+                      cur && cur.id === selectedDeal.id ? { ...cur, ...patch } : cur
+                    );
+                  }}
+                />
+              </div>
+            )}
+
             {/* Financial Summary Tab */}
             {dealTab === "financial" && (
               <div className="space-y-4">
@@ -3100,11 +3232,11 @@ const PipelinePageInner = () => {
                   {(selectedDeal.purchaseOrders ?? []).map((po) => (
                     <div key={po.id} className="flex items-center justify-between text-xs">
                       <span className="text-dash-text-secondary">
-                        {po.id} ({po.brand}):
+                        <PoLink po={po} className="text-xs" /> ({po.brand}):
                       </span>
                       <span className="flex items-center gap-2">
                         <span className="text-dash-text">${po.totalAmount.toLocaleString()} MXN</span>
-                        {po.paymentToMfr ? (
+                        {po.paymentToVendor ? (
                           <span className="text-dash-success">\u2705</span>
                         ) : (
                           <span className="text-dash-text-secondary">\u23f3</span>
@@ -3113,7 +3245,7 @@ const PipelinePageInner = () => {
                     </div>
                   ))}
                   <div className="flex items-center justify-between text-xs font-semibold border-t border-dash-border pt-1">
-                    <span className="text-dash-text-secondary">Total manufacturer cost:</span>
+                    <span className="text-dash-text-secondary">Total vendor cost:</span>
                     <span className="text-dash-text">${(selectedDeal.totalDealerCost ?? 0).toLocaleString()} MXN</span>
                   </div>
                 </div>
@@ -3130,7 +3262,7 @@ const PipelinePageInner = () => {
                     <span className="text-dash-danger">-${(selectedDeal.totalStripeFees ?? 0).toLocaleString()} MXN</span>
                   </div>
                   <div className="flex justify-between text-xs">
-                    <span className="text-dash-text-secondary">Manufacturer costs:</span>
+                    <span className="text-dash-text-secondary">Vendor costs:</span>
                     <span className="text-dash-danger">-${(selectedDeal.totalDealerCost ?? 0).toLocaleString()} MXN</span>
                   </div>
                   <div className="flex justify-between text-xs">
@@ -3252,6 +3384,7 @@ const PipelinePageInner = () => {
         docType={sendDocType}
         customerName={selectedDeal?.contactName ?? ""}
         customerEmail=""
+        customerPhone={selectedDeal?.phone}
         dealName={selectedDeal?.name}
         source={selectedDeal?.leadSource}
         onSent={() => {

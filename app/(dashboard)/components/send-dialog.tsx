@@ -72,6 +72,9 @@ export const SendDialog = ({
   const [message, setMessage] = useState(
     `Hi ${customerName || "there"},\n\nPlease find attached your ${docType.toLowerCase()} from Counter Cultures.\n\nIf you have any questions, feel free to reply to this email or message us on WhatsApp.\n\nBest regards,\nCounter Cultures\nSan Miguel de Allende`
   );
+  const [waMessage, setWaMessage] = useState(
+    `Hola ${customerName || ""}, gracias por la consulta. Le adjunto su ${docType.toLowerCase()}${dealName ? ` para ${dealName}` : ""}.`
+  );
   const [sending, setSending] = useState(false);
 
   const emailValid = emailRegex.test(emailTo.trim());
@@ -90,48 +93,41 @@ export const SendDialog = ({
 
     setSending(true);
     try {
-      const emailRes = await fetch("/api/dashboard/documents/send", {
+      const res = await fetch("/api/dashboard/documents/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "send-email",
+          action: "send-multi",
           docId,
-          to: emailTo.trim(),
-          subject,
-          message,
+          email: emailTo.trim(),
+          phone: alsoWhatsApp ? phoneTo.trim() : undefined,
+          emailSubject: subject,
+          emailMessage: message,
+          whatsappMessage: alsoWhatsApp ? waMessage : undefined,
+          leadSource: source,
         }),
       });
-      if (!emailRes.ok) throw new Error("Email send failed");
 
-      let waUrl: string | null = null;
-      if (alsoWhatsApp) {
-        const waRes = await fetch("/api/dashboard/documents/send", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action: "send-whatsapp",
-            docId,
-            to: phoneTo.trim(),
-            message,
-          }),
-        });
-        if (waRes.ok) {
-          const data = await waRes.json();
-          if (data.whatsappUrl) waUrl = data.whatsappUrl as string;
-        } else {
-          // Email already went through — surface the WhatsApp failure but don't
-          // block the success path. Roger can retry WhatsApp manually.
-          toast.error("Email sent, but WhatsApp send failed.");
-        }
-      }
+      if (!res.ok) throw new Error("Send failed");
+      const data = (await res.json()) as {
+        emailSent: boolean;
+        whatsappUrl: string | null;
+        whatsappDryRun: boolean;
+        warnings: string[];
+      };
 
-      if (waUrl) window.open(waUrl, "_blank");
+      if (data.whatsappUrl) window.open(data.whatsappUrl, "_blank");
 
+      const parts: string[] = [];
+      if (data.emailSent) parts.push("email");
+      if (data.whatsappUrl)
+        parts.push(data.whatsappDryRun ? "WhatsApp (dry-run)" : "WhatsApp");
       toast.success(
-        alsoWhatsApp
-          ? `${docType} sent to ${customerName || emailTo} (email + WhatsApp)`
-          : `${docType} emailed to ${customerName || emailTo}`
+        parts.length > 0
+          ? `${docType} sent · ${parts.join(" + ")}`
+          : `${docType} dispatched`,
       );
+      for (const w of data.warnings) toast.warning(w);
       onSent?.();
       onClose();
     } catch {
@@ -188,6 +184,18 @@ export const SendDialog = ({
                   </div>
                 </div>
 
+                {/* Channel source indicator */}
+                {source && (
+                  <p className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-dash-text-secondary">
+                    Lead source: {source}
+                    {initialAlsoWhatsApp(source) && (
+                      <span className="text-dash-success ml-1">
+                        — WhatsApp auto-enabled
+                      </span>
+                    )}
+                  </p>
+                )}
+
                 {/* Email — always on. R4 Note 3: every quote ships by email. */}
                 <div className="rounded-lg border border-brand-copper/30 bg-brand-copper/5 p-3 space-y-3">
                   <div className="flex items-center gap-2 text-brand-copper">
@@ -236,7 +244,11 @@ export const SendDialog = ({
                 </div>
 
                 {/* Optional WhatsApp companion */}
-                <div className="rounded-lg border border-dash-border p-3 space-y-3">
+                <div className={`rounded-lg border p-3 space-y-3 ${
+                  alsoWhatsApp
+                    ? "border-dash-success/30 bg-dash-success/5"
+                    : "border-dash-border"
+                }`}>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
@@ -251,18 +263,35 @@ export const SendDialog = ({
                   </label>
 
                   {alsoWhatsApp && (
-                    <div>
-                      <label className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-dash-text-secondary mb-1 block">
-                        Phone <span className="text-dash-danger">*</span>
-                      </label>
-                      <input
-                        className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper transition-colors"
-                        type="tel"
-                        value={phoneTo}
-                        onChange={(e) => setPhoneTo(e.target.value)}
-                        placeholder="+52 415 123 4567"
-                      />
-                    </div>
+                    <>
+                      <div>
+                        <label className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-dash-text-secondary mb-1 block">
+                          Phone <span className="text-dash-danger">*</span>
+                        </label>
+                        <input
+                          className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper transition-colors"
+                          type="tel"
+                          value={phoneTo}
+                          onChange={(e) => setPhoneTo(e.target.value)}
+                          placeholder="+52 415 123 4567"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-dash-text-secondary mb-1 block">
+                          WhatsApp note
+                        </label>
+                        <textarea
+                          className="w-full px-3 py-2 bg-dash-bg border border-dash-border rounded-lg text-sm text-dash-text placeholder:text-dash-text-secondary/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper transition-colors resize-none"
+                          rows={3}
+                          value={waMessage}
+                          onChange={(e) => setWaMessage(e.target.value)}
+                        />
+                        <p className="text-[10px] text-dash-text-secondary mt-1">
+                          A signed share link to the document is appended
+                          automatically. WhatsApp opens in a new tab.
+                        </p>
+                      </div>
+                    </>
                   )}
                 </div>
               </div>

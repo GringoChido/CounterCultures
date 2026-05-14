@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { readSheet, appendRow } from "@/app/lib/dashboard-sheets";
+import { getStockMapForSkus } from "@/app/lib/stock-by-sku";
+import { getVendorForBrand } from "@/app/lib/brand-vendors";
 
 /**
  * Generate one Purchase_Orders row per distinct brand on a deal's line items.
@@ -36,7 +38,7 @@ type PurchaseOrderRecord = {
   PO_ID: string;
   Deal_ID: string;
   Brand: string;
-  Manufacturer: string;
+  Vendor: string;
   Items_JSON: string;
   Total_Amount: string;
   Currency: string;
@@ -62,7 +64,7 @@ const PO_COLUMNS: (keyof PurchaseOrderRecord)[] = [
   "PO_ID",
   "Deal_ID",
   "Brand",
-  "Manufacturer",
+  "Vendor",
   "Items_JSON",
   "Total_Amount",
   "Currency",
@@ -103,7 +105,7 @@ interface GeneratedPo {
   id: string;
   dealId: string;
   brand: string;
-  manufacturerName: string;
+  vendorName: string;
   items: Array<{
     sku: string;
     productName: string;
@@ -115,6 +117,15 @@ interface GeneratedPo {
   currency: string;
   status: "draft";
   shipTo: "cc-showroom";
+}
+
+interface FromStockLine {
+  sku: string;
+  productName: string;
+  brand: string;
+  vendor: string;
+  quantity: number;
+  stockBefore: number;
 }
 
 export const POST = async (
@@ -143,6 +154,15 @@ export const POST = async (
       allPos.filter((p) => p.Deal_ID === dealId).map((p) => p.Brand)
     );
 
+    // Stock check at fulfillment time. Roger's rule: only generate a PO for
+    // SKUs whose internal stock can't fully cover the requested qty. Lines
+    // covered by stock become From-Stock entries waiting for shipping; lines
+    // with stock < qty go on the PO at full qty (we don't split partials —
+    // simpler accounting and Roger orders the full qty when re-stocking).
+    const stockMap = await getStockMapForSkus(
+      dealLines.map((l) => l.sku),
+    );
+
     // Group lines by canonical brand. Empty/blank brand falls into "Misc" so
     // line items without a brand still get a PO and don't silently disappear.
     const byBrand = new Map<string, LineItemRecord[]>();
@@ -154,18 +174,46 @@ export const POST = async (
     }
 
     const created: GeneratedPo[] = [];
+    const fromStock: FromStockLine[] = [];
+    let inStockSkippedBrands = 0;
 
     for (const [brand, lines] of byBrand) {
       if (existingBrands.has(brand)) continue;
 
-      const items = lines.map((l) => ({
-        sku: l.sku,
-        productName: l.product_name,
-        finish: l.finish || undefined,
-        quantity: num(l.quantity) || 1,
-        dealerCost: num(l.dealer_cost),
-      }));
-      const totalAmount = items.reduce(
+      const vendor = getVendorForBrand(brand);
+
+      // Split lines into from-stock vs needs-PO based on stockMap
+      const poItems: GeneratedPo["items"] = [];
+      for (const l of lines) {
+        const qty = num(l.quantity) || 1;
+        const stock = stockMap.get(l.sku.trim().toUpperCase()) ?? 0;
+        if (stock >= qty) {
+          fromStock.push({
+            sku: l.sku,
+            productName: l.product_name,
+            brand,
+            vendor,
+            quantity: qty,
+            stockBefore: stock,
+          });
+          continue;
+        }
+        poItems.push({
+          sku: l.sku,
+          productName: l.product_name,
+          finish: l.finish || undefined,
+          quantity: qty,
+          dealerCost: num(l.dealer_cost),
+        });
+      }
+
+      // All SKUs for this brand are covered by stock — no PO needed.
+      if (poItems.length === 0) {
+        inStockSkippedBrands += 1;
+        continue;
+      }
+
+      const totalAmount = poItems.reduce(
         (s, it) => s + it.dealerCost * it.quantity,
         0
       );
@@ -175,8 +223,8 @@ export const POST = async (
         PO_ID: poId,
         Deal_ID: dealId,
         Brand: brand,
-        Manufacturer: brand,
-        Items_JSON: JSON.stringify(items),
+        Vendor: vendor,
+        Items_JSON: JSON.stringify(poItems),
         Total_Amount: totalAmount.toFixed(2),
         Currency: "MXN",
         Status: "draft",
@@ -204,8 +252,8 @@ export const POST = async (
         id: poId,
         dealId,
         brand,
-        manufacturerName: brand,
-        items,
+        vendorName: vendor,
+        items: poItems,
         totalAmount,
         currency: "MXN",
         status: "draft",
@@ -216,7 +264,10 @@ export const POST = async (
     return NextResponse.json({
       success: true,
       created,
-      skipped: byBrand.size - created.length,
+      fromStock,
+      inStockSkippedBrands,
+      skipped:
+        byBrand.size - created.length - inStockSkippedBrands,
     });
   } catch (err) {
     console.error("[deals/generate-pos] error:", err);

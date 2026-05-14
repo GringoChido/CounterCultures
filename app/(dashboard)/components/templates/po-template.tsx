@@ -4,7 +4,7 @@ export interface POData {
   docNumber: string;
   date: string;
   requestedDelivery: string;
-  manufacturerName: string;
+  vendorName: string;
   deliveryAddress: string;
   items: LineItem[];
   notes: string;
@@ -16,7 +16,7 @@ const t = {
   number: { en: "PO #", es: "OC #" },
   date: { en: "Date", es: "Fecha" },
   requestedDelivery: { en: "Requested Delivery", es: "Entrega Solicitada" },
-  manufacturer: { en: "To (Manufacturer)", es: "A (Fabricante)" },
+  vendor: { en: "To (Vendor)", es: "A (Proveedor)" },
   shipTo: { en: "Ship To", es: "Enviar A" },
   product: { en: "Product", es: "Producto" },
   sku: { en: "SKU", es: "SKU" },
@@ -24,7 +24,7 @@ const t = {
   dealerCost: { en: "Dealer Cost", es: "Costo Distribuidor" },
   subtotalLabel: { en: "Subtotal", es: "Subtotal" },
   total: { en: "Total", es: "Total" },
-  notes: { en: "Notes for Manufacturer", es: "Notas para el Fabricante" },
+  notes: { en: "Notes for Vendor", es: "Notas para el Proveedor" },
   footer: {
     en: "Counter Cultures | Providencia, San Miguel de Allende, Guanajuato, Mexico | equipo@countercultures.com.mx",
     es: "Counter Cultures | Providencia, San Miguel de Allende, Guanajuato, Mexico | equipo@countercultures.com.mx",
@@ -68,9 +68,9 @@ export const POTemplate = ({ data }: { data: POData }) => {
       <div className="grid grid-cols-2 gap-8 mb-8">
         <div>
           <p className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-brand-copper mb-1">
-            {t.manufacturer[l]}
+            {t.vendor[l]}
           </p>
-          <p className="font-medium">{data.manufacturerName}</p>
+          <p className="font-medium">{data.vendorName}</p>
         </div>
         <div>
           <p className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-brand-copper mb-1">

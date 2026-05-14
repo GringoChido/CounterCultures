@@ -154,7 +154,7 @@ export const VendorOverrideDropdown = ({
                     <div className="mt-1 grid grid-cols-2 gap-3 text-[10.5px] text-dash-text-secondary">
                       <span>Lead: {o.leadTimeDays}d</span>
                       <span className="font-mono">
-                        Import: <span className="text-brand-copper">{easeBar(o.importEase)}</span>
+                        Import: <span className="text-brand-copper">{easeBar((o.importEase ?? 3) as 1 | 2 | 3 | 4 | 5)}</span>
                       </span>
                     </div>
                     {o.note && (
