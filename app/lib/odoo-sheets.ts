@@ -7,6 +7,36 @@
  */
 import { readSheet } from "./dashboard-sheets";
 
+// ── Company detection (CC Mexico vs LLC USA) ─────────────────────
+
+export type EntityCompany = "cc" | "llc";
+
+const JOURNAL_COMPANY_MAP: Record<string, EntityCompany> = {
+  santander: "cc",
+  banamex: "cc",
+  banorte: "cc",
+  bbva: "cc",
+  hsbc: "cc",
+  "wells fargo": "llc",
+  wells: "llc",
+  stripe: "llc",
+  "bank of america": "llc",
+  chase: "llc",
+};
+
+export const detectCompany = (invoice: OdooInvoice): EntityCompany => {
+  const journal = (invoice.journal_id ?? "").toLowerCase();
+  for (const [key, company] of Object.entries(JOURNAL_COMPANY_MAP)) {
+    if (journal.includes(key)) return company;
+  }
+  const currency = (invoice.currency_id ?? "").toUpperCase();
+  if (currency === "USD") return "llc";
+  return "cc";
+};
+
+export const detectCompanyFromCurrency = (currency: string): EntityCompany =>
+  (currency ?? "").toUpperCase() === "USD" ? "llc" : "cc";
+
 // ── Raw row types (as they come out of the sheet) ────────────────
 
 export interface OdooPartner {
@@ -1078,6 +1108,7 @@ export interface POListRow {
   invoiceStatus: string;
   daysOpen: number;
   isOverdue: boolean; // past date_planned and not done
+  company: EntityCompany;
 }
 
 const toPORow = (p: OdooPurchaseOrder, now: Date = today()): POListRow => {
@@ -1095,6 +1126,7 @@ const toPORow = (p: OdooPurchaseOrder, now: Date = today()): POListRow => {
     invoiceStatus: p.invoice_status || "",
     daysOpen: days,
     isOverdue: isOpen && days > 60, // open >60d is "stuck"
+    company: detectCompanyFromCurrency(p.currency_id),
   };
 };
 
@@ -1881,6 +1913,7 @@ export interface InvoiceListRow {
   daysOverdue: number;
   agingBucket: AgingBucket | null;
   isOverdue: boolean;
+  company: EntityCompany;
 }
 
 const today = () => new Date();
@@ -1968,6 +2001,7 @@ const toInvoiceListRow = (i: OdooInvoice, now: Date = today()): InvoiceListRow =
     daysOverdue: isOpen ? Math.max(0, days) : 0,
     agingBucket: bucketFor(days, isOpen),
     isOverdue: isOpen && days > 0,
+    company: detectCompany(i),
   };
 };
 
