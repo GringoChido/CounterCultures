@@ -42,6 +42,7 @@ export const FEATURES = {
   view_social: "Social media hub",
 
   // Pipeline / CRM
+  view_contacts: "CRM contacts with classifications",
   view_leads: "Leads list",
   view_pipeline: "Sales pipeline (kanban)",
 
@@ -69,6 +70,7 @@ const ALL_FEATURES = Object.keys(FEATURES) as Feature[];
 const FINANCE_FEATURES: Feature[] = [
   "view_today",
   "view_customers",
+  "view_contacts",
   "view_orders",
   "view_invoices",
   "view_payments",
@@ -90,6 +92,7 @@ const FINANCE_FEATURES: Feature[] = [
 const SALES_FEATURES: Feature[] = [
   "view_today",
   "view_customers",
+  "view_contacts",
   "view_orders",
   "view_vendors",
   "view_inventory",
