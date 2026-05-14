@@ -63,7 +63,7 @@ function rowToPreferences(row: PreferencesRow): CustomerPreferences {
 export async function getPreferences(email: string): Promise<CustomerPreferences | null> {
   const rows = await readSheet<PreferencesRow>("Customer_Preferences");
   const match = rows.find(
-    (r) => r.customer_email.toLowerCase().trim() === email.toLowerCase().trim()
+    (r) => (r.customer_email ?? "").toLowerCase().trim() === email.toLowerCase().trim()
   );
   return match ? rowToPreferences(match) : null;
 }
