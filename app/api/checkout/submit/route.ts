@@ -30,87 +30,7 @@ export async function POST(req: NextRequest) {
     const now = new Date().toISOString();
     const commLocale = contact.commLocale ?? locale;
 
-    // Write Pipeline row
-    await appendRow("Pipeline", [
-      dealId,
-      "",
-      "cart_submitted",
-      contact.name,
-      contact.email,
-      contact.phone ?? "",
-      contact.company ?? "",
-      project.projectName ?? "",
-      "website",
-      String(total),
-      currency,
-      now,
-      now,
-      "",
-      "",
-      commLocale,
-      cartSessionId,
-      tradeCode ?? "",
-      JSON.stringify(address),
-      project.room ?? "",
-      project.timeline ?? "",
-      project.isTrade ? "true" : "false",
-      commLocale,
-    ]);
-
-    // Write Cart_Sessions
-    await appendRow("Cart_Sessions", [
-      cartSessionId,
-      dealId,
-      JSON.stringify(items),
-      JSON.stringify(contact),
-      JSON.stringify(address),
-      commLocale,
-      "buy",
-      "pending",
-      "",
-      now,
-      now,
-      factura ? JSON.stringify(factura) : "",
-      billingAddress ? JSON.stringify(billingAddress) : "",
-      selectedShippingRate ? JSON.stringify(selectedShippingRate) : "",
-    ]);
-
-    // Write Deal_Line_Items
-    for (const item of items) {
-      await appendRow("Deal_Line_Items", [
-        dealId,
-        item.productId,
-        item.sku,
-        item.name,
-        item.brand,
-        String(item.quantity),
-        String(item.listPrice),
-        currency,
-        item.selectedFinish ?? "",
-        item.notes ?? "",
-        item.availability,
-        item.buyable ? "true" : "false",
-        now,
-      ]);
-    }
-
-    // Upsert customer preferences — non-blocking; must never crash checkout
-    try {
-      await upsertPreferences(
-        contact.email,
-        {
-          locale: commLocale,
-          email_opt_in: true,
-          whatsapp_opt_in: contact.channelPreference !== "email",
-          channel_preference: contact.channelPreference ?? "both",
-        },
-        `guest:${cartSessionId}`
-      );
-    } catch (prefErr) {
-      console.error("[checkout/submit] upsertPreferences failed (non-blocking):", prefErr);
-    }
-
-    // Fire cart_submitted lifecycle transition
+    // ── Build response data FIRST — customer never waits for sheet writes ──
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://countercultures.mx";
     let trackerUrl = `${baseUrl}/${locale}/quote/${dealId}`;
     try {
@@ -120,37 +40,85 @@ export async function POST(req: NextRequest) {
       console.error("[checkout/submit] signQuoteToken failed (non-blocking):", tokenErr);
     }
 
-    try {
-      const { evaluateAndTransition } = await import("@/app/lib/rule-engine");
-      await evaluateAndTransition(
-        "cart_submitted",
-        dealId,
-        {
-          mode: "buy",
-          customer_name: contact.name,
-          customer_email: contact.email,
-          customer_phone: contact.phone,
-          total_value: `${currency} ${total}`,
-          item_count: String(items.length),
-          project_name: project.projectName || "Unnamed project",
-          tracker_url: trackerUrl,
-          dashboard_link: `/dashboard/deals/${dealId}`,
-          has_factura: factura?.enabled ? "true" : "false",
-          rfc: factura?.rfc ?? "",
-        },
-        `guest:${cartSessionId}`
-      );
-    } catch {
-      // Non-blocking
-    }
+    // ── Sheet writes + side-effects — fire in parallel, never block response ──
+    const sheetWrites = async () => {
+      try {
+        await Promise.all([
+          appendRow("Pipeline", [
+            dealId, "", "cart_submitted", contact.name, contact.email,
+            contact.phone ?? "", contact.company ?? "", project.projectName ?? "",
+            "website", String(total), currency, now, now, "", "", commLocale,
+            cartSessionId, tradeCode ?? "", JSON.stringify(address),
+            project.room ?? "", project.timeline ?? "",
+            project.isTrade ? "true" : "false", commLocale,
+          ]),
+          appendRow("Cart_Sessions", [
+            cartSessionId, dealId, JSON.stringify(items), JSON.stringify(contact),
+            JSON.stringify(address), commLocale, "buy", "pending", "", now, now,
+            factura ? JSON.stringify(factura) : "",
+            billingAddress ? JSON.stringify(billingAddress) : "",
+            selectedShippingRate ? JSON.stringify(selectedShippingRate) : "",
+          ]),
+          ...items.map((item: { productId: string; sku: string; name: string; brand: string; quantity: number; listPrice: number; selectedFinish?: string; notes?: string; availability: string; buyable: boolean }) =>
+            appendRow("Deal_Line_Items", [
+              dealId, item.productId, item.sku, item.name, item.brand,
+              String(item.quantity), String(item.listPrice), currency,
+              item.selectedFinish ?? "", item.notes ?? "", item.availability,
+              item.buyable ? "true" : "false", now,
+            ])
+          ),
+        ]);
+      } catch (err) {
+        console.error("[checkout/submit] Sheet writes failed (non-blocking):", err);
+      }
 
-    // Always attempt Stripe Payment Intent
+      try {
+        await upsertPreferences(
+          contact.email,
+          {
+            locale: commLocale,
+            email_opt_in: true,
+            whatsapp_opt_in: contact.channelPreference !== "email",
+            channel_preference: contact.channelPreference ?? "both",
+          },
+          `guest:${cartSessionId}`
+        );
+      } catch (prefErr) {
+        console.error("[checkout/submit] upsertPreferences failed (non-blocking):", prefErr);
+      }
+
+      try {
+        const { evaluateAndTransition } = await import("@/app/lib/rule-engine");
+        await evaluateAndTransition(
+          "cart_submitted",
+          dealId,
+          {
+            mode: "buy",
+            customer_name: contact.name,
+            customer_email: contact.email,
+            customer_phone: contact.phone,
+            total_value: `${currency} ${total}`,
+            item_count: String(items.length),
+            project_name: project.projectName || "Unnamed project",
+            tracker_url: trackerUrl,
+            dashboard_link: `/dashboard/deals/${dealId}`,
+            has_factura: factura?.enabled ? "true" : "false",
+            rfc: factura?.rfc ?? "",
+          },
+          `guest:${cartSessionId}`
+        );
+      } catch {
+        // Non-blocking
+      }
+    };
+
+    sheetWrites().catch(() => {});
+
     if (isStripeConfigured()) {
       const payUrl = `/${locale}/checkout/pay/${dealId}`;
       return NextResponse.json({ dealId, payUrl, trackerUrl });
     }
 
-    // Fallback: no Stripe configured — treat as quote
     return NextResponse.json({ dealId, trackerUrl });
   } catch (err) {
     console.error("[checkout/submit] Error:", err);
