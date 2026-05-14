@@ -36,6 +36,7 @@ import {
   Building2,
   ExternalLink,
   Landmark,
+  ContactRound,
 } from "lucide-react";
 
 interface NavItem {
@@ -57,6 +58,7 @@ const navItems: NavItem[] = [
   { label: "Today", href: "/dashboard/overview", icon: LayoutDashboard, section: "Home", feature: "view_today" },
 
   { label: "Customers", href: "/dashboard/customers", icon: Users, section: "Sales", feature: "view_customers" },
+  { label: "Contacts", href: "/dashboard/contacts", icon: ContactRound, feature: "view_contacts" },
   { label: "Orders", href: "/dashboard/orders", icon: Kanban, feature: "view_orders" },
   { label: "Invoices", href: "/dashboard/invoices", icon: FileText, feature: "view_invoices" },
   { label: "Payments", href: "/dashboard/payments", icon: CreditCard, feature: "view_payments" },

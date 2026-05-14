@@ -43,7 +43,7 @@ const TABS = [
   },
   {
     title: "Contacts",
-    headers: ["id", "name", "email", "phone", "company", "type", "tags", "createdAt", "notes"],
+    headers: ["id", "name", "email", "phone", "company", "type", "tags", "createdAt", "notes", "classifications"],
   },
   {
     title: "Activity_Log",
