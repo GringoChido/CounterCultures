@@ -201,7 +201,7 @@ export const BATHROOM_BRAND_INDEX: CategoryBrandSection[] = [
     },
     brands: [
       { name: "Counter Cultures", flagship: true },
-      { name: "Mistoa", slug: "mistoa", flagship: true },
+      { name: "Mistoa", flagship: true },
       { name: "Don Miguel · Santa Clara del Cobre", flagship: true },
       { name: "Taller Piedra Viva" },
       { name: "Sun Valley Bronze", slug: "sun-valley-bronze" },
@@ -303,7 +303,7 @@ export const KITCHEN_BRAND_INDEX: CategoryBrandSection[] = [
       { name: "SMEG", slug: "smeg", flagship: true },
       { name: "Teka", slug: "teka", flagship: true },
       { name: "Fisher & Paykel", flagship: true },
-      { name: "Banté", slug: "bante" },
+      { name: "Banté" },
     ],
   },
   {
@@ -329,7 +329,7 @@ export const KITCHEN_BRAND_INDEX: CategoryBrandSection[] = [
     },
     brands: [
       { name: "Counter Cultures", flagship: true },
-      { name: "Mistoa", slug: "mistoa", flagship: true },
+      { name: "Mistoa", flagship: true },
       { name: "Don Miguel · Santa Clara del Cobre", flagship: true },
       { name: "Sun Valley Bronze", slug: "sun-valley-bronze" },
     ],
