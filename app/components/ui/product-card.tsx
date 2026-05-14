@@ -44,7 +44,7 @@ const ProductCard = ({
 
   return (
     <Link
-      href={pdpHref(locale, { slug, sku, category })}
+      href={pdpHref(locale, { slug, sku, category, name })}
       className="group block"
     >
       <div className="relative overflow-hidden aspect-square bg-brand-sand/20">
