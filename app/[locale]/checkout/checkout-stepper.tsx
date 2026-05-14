@@ -284,6 +284,7 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
   const [mounted, setMounted] = useState(false);
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [redirectingToPayment, setRedirectingToPayment] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -521,7 +522,7 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
       currency: sourceCurrency,
     };
 
-    try {
+    const attemptCheckout = async (attempt: number): Promise<void> => {
       const endpoint = isBuyPath ? "/api/checkout/buy" : "/api/checkout/quote";
       const res = await fetch(endpoint, {
         method: "POST",
@@ -531,6 +532,10 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
       const data = await res.json();
 
       if (!res.ok) {
+        if (attempt < 2 && res.status >= 500) {
+          await new Promise((r) => setTimeout(r, 1000));
+          return attemptCheckout(attempt + 1);
+        }
         setSubmitError(
           data.error ||
             (locale === "es"
@@ -542,6 +547,7 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
       }
 
       if (isBuyPath && data.stripeUrl) {
+        setRedirectingToPayment(true);
         window.location.href = data.stripeUrl;
       } else if (data.dealId) {
         clear();
@@ -559,6 +565,10 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
         );
         setSubmitting(false);
       }
+    };
+
+    try {
+      await attemptCheckout(1);
     } catch {
       setSubmitError(
         locale === "es"
@@ -584,6 +594,21 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
       .join(", ");
     return { lineA, lineB, country: a.country };
   };
+
+  if (redirectingToPayment) {
+    return (
+      <div className="cc-paper min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-brand-copper mx-auto mb-4" />
+          <p className="font-body text-sm text-brand-charcoal">
+            {locale === "es"
+              ? "Redirigiendo al pago seguro…"
+              : "Redirecting to secure payment…"}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="cc-paper min-h-screen">
