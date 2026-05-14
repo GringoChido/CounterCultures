@@ -11,9 +11,13 @@ import { findUserByEmail, type UserRole } from "./users-sheet";
 
 const ALLOWED_DOMAIN = "countercultures.com.mx";
 
-// Break-glass superadmin — always allowed in, even if the Users sheet row is
-// missing, deactivated, or the Sheets API is down. Gets owner role as fallback.
-const SUPERADMIN_EMAIL = "admin@countercultures.com.mx";
+// Break-glass accounts — always allowed in, even if the Users sheet row is
+// missing, deactivated, or the Sheets API is down.
+const BREAK_GLASS: Record<string, UserRole> = {
+  "admin@countercultures.com.mx": "owner",
+  "roger@countercultures.com.mx": "owner",
+  "control@countercultures.com.mx": "finance",
+};
 
 const parseAllowlist = (): string[] =>
   (process.env.PORTAL_EMAIL_ALLOWLIST ?? "")
@@ -54,8 +58,8 @@ export const authOptions: AuthOptions = {
 
       const user = await findUserByEmail(email);
       if (!user || !user.active) {
-        if (email === SUPERADMIN_EMAIL) {
-          console.warn(`[auth] superadmin bypass: ${email} allowed in despite ${!user ? "missing sheet row" : "active=false"}`);
+        if (email in BREAK_GLASS) {
+          console.warn(`[auth] break-glass bypass: ${email} allowed in despite ${!user ? "missing sheet row" : "active=false"}`);
           return true;
         }
         console.warn(`[auth] signIn rejected: ${!user ? "no Users-sheet row" : "active=false"} for ${email}`);
@@ -70,10 +74,10 @@ export const authOptions: AuthOptions = {
       // (next request after their JWT refreshes will have the new values).
       if (email && (!token.role || trigger === "update" || trigger === "signIn")) {
         const u = await findUserByEmail(email);
-        if (!u && email !== SUPERADMIN_EMAIL) {
+        if (!u && !(email in BREAK_GLASS)) {
           console.warn(`[auth] No Users-sheet row for ${email}; defaulting to sales role`);
         }
-        token.role = (u?.role ?? (email === SUPERADMIN_EMAIL ? "owner" : "sales")) as UserRole;
+        token.role = (u?.role ?? BREAK_GLASS[email] ?? "sales") as UserRole;
         token.name = u?.name ?? token.name;
         token.featureOverrides = u?.featureOverrides ?? "";
       }
