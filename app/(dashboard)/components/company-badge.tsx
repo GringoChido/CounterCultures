@@ -1,5 +1,7 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 type Company = "cc" | "llc";
 
 const COMPANY_CONFIG = {
@@ -11,6 +13,8 @@ const COMPANY_CONFIG = {
     border: "border-company-cc/30",
     accent: "text-company-cc",
     dot: "bg-company-cc",
+    tintBg: "bg-company-cc/8",
+    tintBorder: "border-company-cc/20",
   },
   llc: {
     label: "LLC USA",
@@ -20,6 +24,8 @@ const COMPANY_CONFIG = {
     border: "border-company-llc/30",
     accent: "text-company-llc",
     dot: "bg-company-llc",
+    tintBg: "bg-company-llc/8",
+    tintBorder: "border-company-llc/20",
   },
 } as const;
 
@@ -46,5 +52,22 @@ export const CompanyBadge = ({
       <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
       {c.short}
     </span>
+  );
+};
+
+export const EntityTintedCard = ({
+  company,
+  children,
+  className = "",
+}: {
+  company: string;
+  children: ReactNode;
+  className?: string;
+}) => {
+  const c = getCompanyConfig(company);
+  return (
+    <div className={`${c.tintBg} ${c.tintBorder} border rounded ${className}`}>
+      {children}
+    </div>
   );
 };

@@ -1609,6 +1609,7 @@ export interface OrderListRow {
   daysOpen: number;
   isStale: boolean; // quote sitting too long
   origin: string;
+  company: EntityCompany;
 }
 
 const toOrderListRow = (
@@ -1644,6 +1645,7 @@ const toOrderListRow = (
     daysOpen: days,
     isStale: isQuote && days > 30,
     origin: "",
+    company: detectCompanyFromCurrency(o.currency_id),
   };
 };
 

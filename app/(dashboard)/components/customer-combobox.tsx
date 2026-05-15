@@ -18,6 +18,7 @@ interface CustomerComboboxProps {
   placeholder?: string;
   autoFocus?: boolean;
   className?: string;
+  partnerType?: "customer" | "vendor" | "all";
 }
 
 /**
@@ -34,6 +35,7 @@ const CustomerCombobox = ({
   placeholder,
   autoFocus,
   className = "",
+  partnerType = "customer",
 }: CustomerComboboxProps) => {
   const [open, setOpen] = useState(false);
   const [matchedId, setMatchedId] = useState<string | null>(null);
@@ -42,7 +44,7 @@ const CustomerCombobox = ({
   const trimmed = value.trim();
   const fetchUrl =
     open && trimmed.length >= 2
-      ? `/api/dashboard/customers?q=${encodeURIComponent(trimmed)}&limit=8&sort=name&type=customer`
+      ? `/api/dashboard/customers?q=${encodeURIComponent(trimmed)}&limit=8&sort=name&type=${partnerType}`
       : null;
   const { data: hitsResponse, loading } = useDebouncedFetch<{
     customers?: CustomerHit[];
@@ -120,7 +122,7 @@ const CustomerCombobox = ({
           ) : (
             <div className="px-3 py-2 text-xs text-dash-text-secondary flex items-center gap-2">
               <UserPlus className="w-3.5 h-3.5" />
-              No existing customer matches — "<span className="text-dash-text">{value}</span>" will be created as new.
+              No existing {partnerType === "vendor" ? "vendor" : "customer"} matches — "<span className="text-dash-text">{value}</span>" will be created as new.
             </div>
           )}
         </div>

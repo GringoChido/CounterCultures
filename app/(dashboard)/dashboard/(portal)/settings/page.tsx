@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { User, Bell, Link2, Users, Check, X, ExternalLink, CheckCircle2, Mail, Loader2, AlertCircle, ArrowRight } from "lucide-react";
+import { User, Bell, Link2, Users, Check, X, ExternalLink, CheckCircle2, Mail, Loader2, AlertCircle, ArrowRight, Percent } from "lucide-react";
 import { IntegrationHealthPanel } from "@/app/(dashboard)/components/integration-health-panel";
 import { useCurrentUser } from "@/app/lib/use-current-user";
 
@@ -244,6 +244,29 @@ const SettingsPageInner = () => {
               <h3 className="text-sm font-semibold text-dash-text">Team Members</h3>
               <p className="text-xs text-dash-text-secondary mt-0.5">
                 Add, edit, or deactivate accounts and per-user feature access.
+              </p>
+            </div>
+          </div>
+          <ArrowRight className="w-4 h-4 text-dash-text-secondary group-hover:text-brand-copper transition-colors" />
+        </div>
+      </Link>
+
+      {/* Tax Rates — finance-managed tax rate registry */}
+      <Link
+        href="/dashboard/settings/tax-rates"
+        className="block bg-dash-surface rounded-xl border border-dash-border p-5 hover:border-brand-copper/40 transition-colors group"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-brand-terracotta/80 flex items-center justify-center">
+              <Percent className="w-4.5 h-4.5 text-white" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-dash-text">
+                Tasas de impuesto / Tax Rates
+              </h3>
+              <p className="text-xs text-dash-text-secondary mt-0.5">
+                Manage IVA, IEPS, retención, and custom tax rates for bills and invoices.
               </p>
             </div>
           </div>
