@@ -4,6 +4,10 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
+# 🛡️ MANDATORY: Read `docs/SURGICAL-RULES.md` BEFORE writing any code
+
+Joshua's standing rule (2026-05-15): things that are built right now CAN NOT be broken or disrupted. The goal is to ENHANCE, not disrupt. That file lists the Sacred Surface (13 working systems), the operating rules, the risk register, and the mandatory final-report template. It applies to every Claude Code session in this repo, no exceptions. If a change would alter the behavior of a Sacred Surface item, STOP and ask Joshua before coding.
+
 # Staging vs Production (read this FIRST — critical scope context)
 
 **This Next.js app deployed at `countercultures.netlify.app` is STAGING.** It is the build environment for a new system. It is NOT live to customers.
