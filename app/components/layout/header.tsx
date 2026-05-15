@@ -146,7 +146,7 @@ const Header = ({ locale: localeProp = "en", transparent = false }: { locale?: s
             <MyProjectsDropdown locale={lang} />
 
             <NextLink
-              href={localizedHref("/account/sign-in")}
+              href="/account/sign-in"
               className={`hidden sm:flex items-center gap-1.5 h-9 px-3 border rounded-full text-xs font-body font-medium tracking-wider uppercase transition-colors ${
                 isTransparent
                   ? "border-white/25 text-white bg-white/10 hover:border-white/40"
@@ -365,7 +365,7 @@ const Header = ({ locale: localeProp = "en", transparent = false }: { locale?: s
 
               {/* Trade Login in mobile */}
               <NextLink
-                href={localizedHref("/account/sign-in")}
+                href="/account/sign-in"
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-2 py-3.5 min-h-[44px] font-body text-base font-medium text-brand-copper border-b border-brand-stone/5"
               >
