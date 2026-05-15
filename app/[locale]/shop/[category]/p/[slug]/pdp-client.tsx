@@ -11,9 +11,13 @@ import {
   FileDown,
   ChevronRight,
   Check,
+  Minus,
+  Plus,
 } from "lucide-react";
 import { ProductVisual } from "@/app/components/product-visual";
 import { useCartStore } from "@/app/lib/stores/cart-store";
+import { useUiStore } from "@/app/lib/stores/ui-store";
+import { FinishSwatch } from "@/app/components/cart/finish-swatch";
 import { focusRing } from "@/app/components/ui/focus-ring";
 
 interface SerializedProduct {
@@ -65,8 +69,13 @@ const T = {
   en: {
     home: "Home",
     catalog: "Catalog",
-    addToProject: "Add to Project List",
-    added: "Added to List",
+    addToCart: "Add to Cart",
+    addToQuote: "Add to Quote",
+    added: "Added",
+    viewCart: "View Cart",
+    selectFinish: "Select a finish",
+    currencyMismatch: "Cannot mix currencies in one cart",
+    quoteTooltip: "Roger will send a formal quote within 24 hours.",
     from: "from",
     quote: "Quote on request",
     inShowroom: "In Showroom",
@@ -84,8 +93,13 @@ const T = {
   es: {
     home: "Inicio",
     catalog: "Catálogo",
-    addToProject: "Agregar al Proyecto",
+    addToCart: "Agregar al Carrito",
+    addToQuote: "Agregar a Cotización",
     added: "Agregado",
+    viewCart: "Ver Carrito",
+    selectFinish: "Selecciona un acabado",
+    currencyMismatch: "No se pueden mezclar monedas en un carrito",
+    quoteTooltip: "Roger enviará una cotización formal en menos de 24 horas.",
     from: "desde",
     quote: "Cotización bajo pedido",
     inShowroom: "En Showroom",
@@ -130,9 +144,17 @@ const PDPClient = ({
   const t = T[locale];
   const [activeImg, setActiveImg] = useState(0);
   const [descLang, setDescLang] = useState<"en" | "es">(locale);
+  const [qty, setQty] = useState(1);
+  const [selectedFinish, setSelectedFinish] = useState<string | undefined>(
+    finishes && finishes.length === 1 ? finishes[0] : undefined
+  );
+  const [justAdded, setJustAdded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const cartAdd = useCartStore((s) => s.add);
   const cartHas = useCartStore((s) => s.has);
+  const cartItems = useCartStore((s) => s.items);
+  const openCart = useUiStore((s) => s.openCart);
   const inCart = cartHas(product.id);
 
   const images = gallery ?? [];
@@ -142,22 +164,51 @@ const PDPClient = ({
   const descText = descLang === "es" ? descriptionEs : descriptionEn;
   const singleDesc = descriptionEs || descriptionEn;
 
+  const BUYABLE_THRESHOLD_MXN = 50_000;
+  const currency = (product.currency === "USD" ? "USD" : "MXN") as "MXN" | "USD";
+  const buyable =
+    product.listPrice > 10 &&
+    product.inStock &&
+    (currency === "MXN"
+      ? product.listPrice <= BUYABLE_THRESHOLD_MXN
+      : product.listPrice <= BUYABLE_THRESHOLD_MXN / 20);
+
+  const needsFinish = !!finishes && finishes.length > 1 && !selectedFinish;
+
   const handleAdd = () => {
-    if (inCart) return;
+    setError(null);
+
+    if (needsFinish) {
+      setError(t.selectFinish);
+      return;
+    }
+
+    if (cartItems.length > 0 && cartItems[0].currency !== currency) {
+      setError(t.currencyMismatch);
+      return;
+    }
+
     cartAdd({
       id: product.id,
       sku: product.sku,
       name: product.name,
       brand: product.brand,
       category: product.category,
-      currency: (product.currency === "USD" ? "USD" : "MXN") as "MXN" | "USD",
+      currency,
       listPrice: product.listPrice,
-      quantity: 1,
+      quantity: qty,
+      selectedFinish,
       imageSrc: product.imageSrc,
       productHref: `/${locale}/shop/${categorySlug}/p/${pdpSlug}`,
       availability: product.inStock ? "in-stock" : "quote_only",
-      buyable: product.listPrice > 10 && product.inStock,
+      buyable,
     });
+
+    setJustAdded(true);
+    setTimeout(() => {
+      openCart();
+      setJustAdded(false);
+    }, 600);
   };
 
   return (
@@ -316,29 +367,103 @@ const PDPClient = ({
             )}
           </div>
 
-          {/* CTA */}
-          <button
-            type="button"
-            onClick={handleAdd}
-            disabled={inCart}
-            className={`w-full py-3.5 font-body text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-colors ${
-              inCart
-                ? "bg-brand-sage text-white cursor-default"
-                : "bg-brand-charcoal text-white hover:bg-brand-copper cursor-pointer"
-            } ${focusRing}`}
-          >
-            {inCart ? (
-              <>
-                <Check className="w-4 h-4" />
-                {t.added}
-              </>
-            ) : (
-              <>
-                <ShoppingBag className="w-4 h-4" />
-                {t.addToProject}
-              </>
+          {/* Finish picker */}
+          {finishes && finishes.length > 1 && (
+            <div>
+              <h2 className="font-body text-xs font-semibold tracking-[0.2em] uppercase text-dash-text-secondary mb-3">
+                {t.finishes}
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {finishes.map((f) => (
+                  <button
+                    key={f}
+                    type="button"
+                    onClick={() => setSelectedFinish(f)}
+                    className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs font-body border rounded-full transition-colors cursor-pointer ${
+                      selectedFinish === f
+                        ? "border-brand-copper bg-brand-copper/10 text-brand-charcoal"
+                        : "border-brand-stone/15 bg-brand-linen text-brand-charcoal hover:border-brand-stone/40"
+                    }`}
+                  >
+                    <FinishSwatch finish={f} size="sm" />
+                    {f}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Quantity selector */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center">
+              <button
+                type="button"
+                onClick={() => setQty((q) => Math.max(1, q - 1))}
+                className="w-10 h-10 flex items-center justify-center border border-brand-stone/25 text-dash-text-secondary hover:text-brand-charcoal hover:border-brand-charcoal/60 transition-colors cursor-pointer"
+                aria-label="Decrease quantity"
+              >
+                <Minus className="w-3.5 h-3.5" />
+              </button>
+              <span className="w-14 text-center font-mono text-sm text-brand-charcoal tabular-nums border-y border-brand-stone/25 h-10 flex items-center justify-center">
+                {qty}
+              </span>
+              <button
+                type="button"
+                onClick={() => setQty((q) => Math.min(99, q + 1))}
+                className="w-10 h-10 flex items-center justify-center border border-brand-stone/25 text-dash-text-secondary hover:text-brand-charcoal hover:border-brand-charcoal/60 transition-colors cursor-pointer"
+                aria-label="Increase quantity"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Add to Cart / Quote CTA */}
+          <div className="space-y-3">
+            <button
+              type="button"
+              onClick={handleAdd}
+              disabled={justAdded}
+              className={`w-full py-4 min-h-[52px] font-body text-sm font-medium tracking-wider transition-colors duration-300 flex items-center justify-center gap-2 cursor-pointer disabled:cursor-default ${focusRing} ${
+                buyable
+                  ? "bg-brand-terracotta text-white hover:bg-brand-copper disabled:bg-brand-copper"
+                  : "bg-brand-sage/20 text-brand-charcoal border border-brand-sage/40 hover:bg-brand-sage/30 disabled:bg-brand-sage/30"
+              }`}
+              title={!buyable ? t.quoteTooltip : undefined}
+            >
+              {justAdded ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  {t.added}
+                </>
+              ) : (
+                <>
+                  <ShoppingBag className="w-4 h-4" />
+                  {buyable ? t.addToCart : t.addToQuote}
+                </>
+              )}
+            </button>
+
+            {!buyable && !error && (
+              <p className="font-body text-xs text-dash-text-secondary">
+                {t.quoteTooltip}
+              </p>
             )}
-          </button>
+
+            {error && (
+              <p className="font-body text-xs text-red-600">{error}</p>
+            )}
+
+            {inCart && !justAdded && (
+              <Link
+                href={`/${locale}/cart`}
+                className="w-full py-3 border border-brand-stone/30 font-body text-sm tracking-wider text-brand-charcoal hover:border-brand-copper hover:text-brand-copper transition-colors flex items-center justify-center gap-2"
+              >
+                {t.viewCart}
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            )}
+          </div>
 
           {/* Description */}
           {singleDesc && (
@@ -390,21 +515,15 @@ const PDPClient = ({
             </div>
           )}
 
-          {/* Finishes */}
-          {finishes && finishes.length > 0 && (
+          {/* Single finish display (when only one option, no picker needed) */}
+          {finishes && finishes.length === 1 && (
             <div>
               <h2 className="font-body text-xs font-semibold tracking-[0.2em] uppercase text-dash-text-secondary mb-3">
                 {t.finishes}
               </h2>
-              <div className="flex flex-wrap gap-2">
-                {finishes.map((f) => (
-                  <span
-                    key={f}
-                    className="px-3 py-1.5 text-xs font-body text-brand-charcoal bg-brand-linen border border-brand-stone/15 rounded-full"
-                  >
-                    {f}
-                  </span>
-                ))}
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-body text-brand-charcoal bg-brand-linen border border-brand-copper/30 rounded-full">
+                <FinishSwatch finish={finishes[0]} size="sm" />
+                {finishes[0]}
               </div>
             </div>
           )}
