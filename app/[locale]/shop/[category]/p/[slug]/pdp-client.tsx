@@ -34,6 +34,7 @@ interface SerializedProduct {
   uom: string;
   inStock: boolean;
   stockQty: number;
+  hasImage?: boolean;
   imageSrc?: string;
 }
 
@@ -45,6 +46,7 @@ interface RelatedProductItem {
   category: string;
   listPrice: number;
   currency: string;
+  hasImage?: boolean;
   imageSrc?: string;
   slug: string;
 }
@@ -324,6 +326,9 @@ const PDPClient = ({
                 name={product.name}
                 aspect="4/3"
                 size="hero"
+                hasImage={product.hasImage}
+                imageSrc={product.imageSrc}
+                eager
               />
               <BadgeCluster
                 inShowroom={inShowroom}
@@ -635,6 +640,8 @@ const PDPClient = ({
                   name={rp.name || rp.sku}
                   aspect="4/3"
                   size="card"
+                  hasImage={rp.hasImage}
+                  imageSrc={rp.imageSrc}
                   className="group-hover:[&>img]:scale-[1.02] [&>img]:transition-transform [&>img]:duration-500"
                 />
                 <div className="p-3">

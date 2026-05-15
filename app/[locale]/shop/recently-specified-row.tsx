@@ -61,6 +61,8 @@ const Tile = ({
           name={item.name || item.sku}
           aspect="4/3"
           size="card"
+          hasImage={item.hasImage}
+          imageSrc={item.imageSrc}
           className="group-hover:[&>img]:scale-[1.02] [&>img]:transition-transform [&>img]:duration-500"
         />
         {/* Project count badge — overlays both image and typographic cards */}

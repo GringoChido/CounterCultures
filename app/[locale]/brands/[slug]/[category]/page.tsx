@@ -395,6 +395,8 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
                       name={p.name || p.sku}
                       aspect="4/3"
                       size="card"
+                      hasImage={p.hasImage}
+                      imageSrc={p.imageSrc}
                     />
                     {p.inShowroom && (
                       <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-1 bg-brand-charcoal/90 text-white font-body text-[10px] tracking-[0.1em] uppercase backdrop-blur-sm">

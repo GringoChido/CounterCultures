@@ -24,6 +24,7 @@ const ProductGallery = ({ images, productId, brand, sku, name }: ProductGalleryP
           name={name}
           aspect="4/3"
           size="hero"
+          hasImage={false}
         />
       </div>
     );

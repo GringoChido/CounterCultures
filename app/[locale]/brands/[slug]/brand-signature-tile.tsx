@@ -32,6 +32,8 @@ const BrandSignatureTile = ({ product, locale }: BrandSignatureTileProps) => {
         name={product.name || product.sku}
         aspect="4/3"
         size="card"
+        hasImage={product.hasImage}
+        imageSrc={product.imageSrc}
         className="group-hover:[&>img]:scale-[1.02] [&>img]:transition-transform [&>img]:duration-500"
       />
       <div className="p-3">

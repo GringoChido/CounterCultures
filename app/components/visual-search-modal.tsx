@@ -357,6 +357,8 @@ const VisualSearchModal = ({
                                 name={p.name || p.sku}
                                 aspect="1/1"
                                 size="card"
+                                hasImage={p.hasImage}
+                                imageSrc={p.imageSrc}
                               />
                             </button>
                             <div className="p-2 flex flex-col gap-1.5 flex-1">

@@ -89,11 +89,15 @@ const ProductImage = ({
   brand,
   sku,
   name,
+  hasImage,
+  imageSrc,
 }: {
   id: string;
   brand: string;
   sku: string;
   name: string;
+  hasImage?: boolean;
+  imageSrc?: string;
 }) => (
   <div className="border border-brand-stone/15">
     <ProductVisual
@@ -103,6 +107,9 @@ const ProductImage = ({
       name={name}
       aspect="4/3"
       size="hero"
+      hasImage={hasImage}
+      imageSrc={imageSrc}
+      eager
     />
   </div>
 );
@@ -277,6 +284,8 @@ const ProductDrawer = ({
                 brand={product.brand}
                 sku={product.sku}
                 name={product.name || product.sku}
+                hasImage={product.hasImage}
+                imageSrc={product.imageSrc}
               />
               {description && (
                 <p className="font-body text-sm text-brand-charcoal leading-relaxed">
@@ -421,6 +430,8 @@ const ProductDrawer = ({
                             name={p.name || p.sku}
                             aspect="1/1"
                             size="tile"
+                            hasImage={p.hasImage}
+                            imageSrc={p.imageSrc}
                           />
                         </div>
                         <div className="flex-1 min-w-0">

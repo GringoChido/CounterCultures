@@ -62,6 +62,7 @@ const SafeProductImage = ({
         size={size}
         forceTypography
         fill
+        hasImage={false}
       />
       {showImage && (
         <Image

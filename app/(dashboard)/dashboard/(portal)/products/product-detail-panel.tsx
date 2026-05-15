@@ -83,11 +83,15 @@ const ProductImage = ({
   brand,
   sku,
   name,
+  hasImage,
+  imageSrc,
 }: {
   id: string;
   brand: string;
   sku: string;
   name: string;
+  hasImage?: boolean;
+  imageSrc?: string;
 }) => (
   <div className="border border-dash-border rounded-lg overflow-hidden">
     <ProductVisual
@@ -97,6 +101,8 @@ const ProductImage = ({
       name={name}
       aspect="4/3"
       size="hero"
+      hasImage={hasImage}
+      imageSrc={imageSrc}
     />
   </div>
 );
@@ -489,6 +495,8 @@ const ProductDetailPanel = ({
                 brand={product.brand}
                 sku={product.sku}
                 name={product.name || product.sku}
+                hasImage={product.hasImage}
+                imageSrc={product.imageSrc}
               />
               {/* AI description + admin gate */}
               <div className="rounded-lg border border-dash-border bg-dash-bg/50 p-3 space-y-2">

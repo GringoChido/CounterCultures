@@ -646,13 +646,14 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
             {/* Grid or table */}
             {result && sortedItems.length > 0 && viewMode === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {sortedItems.map((p) => (
+                {sortedItems.map((p, i) => (
                   <ProductCard
                     key={p.id}
                     product={p}
                     locale={locale}
                     onOpen={() => openProduct(p)}
                     t={t}
+                    eager={i < 8}
                   />
                 ))}
               </div>
@@ -909,9 +910,10 @@ interface ProductCardProps {
   locale: "en" | "es";
   onOpen: () => void;
   t: typeof T["en"];
+  eager?: boolean;
 }
 
-const ProductCard = ({ product, locale, onOpen, t }: ProductCardProps) => {
+const ProductCard = ({ product, locale, onOpen, t, eager }: ProductCardProps) => {
   const price = formatPrice(product.listPrice, product.currency, locale);
   return (
     <div className="group bg-dash-surface border border-brand-stone/15 hover:border-brand-copper/60 transition-colors flex flex-col">
@@ -927,6 +929,9 @@ const ProductCard = ({ product, locale, onOpen, t }: ProductCardProps) => {
           name={product.name || product.sku}
           aspect="4/3"
           size="card"
+          hasImage={product.hasImage}
+          imageSrc={product.imageSrc}
+          eager={eager}
           className="group-hover:[&>img]:scale-[1.02] [&>img]:transition-transform [&>img]:duration-500"
         />
       </button>
@@ -1008,6 +1013,8 @@ const ProductTable = ({ items, locale, onOpen, t }: ProductTableProps) => (
                     name={p.name || p.sku}
                     aspect="1/1"
                     size="tile"
+                    hasImage={p.hasImage}
+                    imageSrc={p.imageSrc}
                   />
                 </div>
               </td>

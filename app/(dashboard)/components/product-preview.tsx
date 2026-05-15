@@ -237,6 +237,7 @@ export const ProductPreview = () => {
                     size="hero"
                     forceTypography
                     fill
+                    hasImage={false}
                   />
                   {p.images.length > 0 && !heroErrored && (
                     /* eslint-disable-next-line @next/next/no-img-element */

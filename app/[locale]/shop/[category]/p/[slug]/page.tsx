@@ -143,6 +143,7 @@ const PDPPage = async ({ params }: PDPProps) => {
       category: rp.category,
       listPrice: rp.listPrice,
       currency: rp.currency,
+      hasImage: rp.hasImage,
       imageSrc: rp.imageSrc,
       slug: getProductSlug(rp),
     })
@@ -250,6 +251,7 @@ const PDPPage = async ({ params }: PDPProps) => {
             uom: product.uom,
             inStock: product.inStock ?? false,
             stockQty: product.stockQty ?? 0,
+            hasImage: product.hasImage,
             imageSrc: product.imageSrc,
           }}
           locale={locale as "en" | "es"}
