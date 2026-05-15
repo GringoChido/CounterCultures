@@ -101,6 +101,9 @@ export interface ProductFull {
   stockQty?: number;
   /** Convenience flag — `stockQty > 0`. Optional same as above. */
   inStock?: boolean;
+  /** True when any image source is available (manifest or gallery).
+   *  False means the UI should skip image loading entirely. */
+  hasImage?: boolean;
   /** Public path to the product thumbnail when one exists locally
    *  (`/products/odoo/<id>.jpg`). Undefined when no image is bundled
    *  so the UI can fall back to typography without trying a 404. */
@@ -146,6 +149,7 @@ const crmToProductFull = (p: Product): ProductFull => ({
   saleOk: p.availability !== "quote_only",
   inStock: p.availability === "in-stock",
   stockQty: p.availability === "in-stock" ? 1 : 0,
+  hasImage: !!p.images?.[0],
   imageSrc: p.images?.[0],
   descriptionEs: p.description,
   descriptionEn: p.descriptionEn,
@@ -277,6 +281,7 @@ const load = async (): Promise<Cache> => {
       specSheetLocal: content?.specSheetLocal || undefined,
       stockQty,
       inStock: stockQty > 0,
+      hasImage: !!imageSrc,
       imageSrc,
       slug: toSlug(name, sku),
       _sku: normalize(sku),
@@ -413,6 +418,7 @@ const stripIndex = (p: IndexedProduct): ProductFull => ({
   variantLabels: p.variantLabels,
   specSheetUrl: p.specSheetUrl,
   specSheetLocal: p.specSheetLocal,
+  hasImage: p.hasImage,
   imageSrc: p.imageSrc,
   slug: p.slug,
   tradePrice: p.tradePrice,
@@ -427,7 +433,7 @@ const stripIndex = (p: IndexedProduct): ProductFull => ({
 //  30: name contains q
 //  20: brand contains q
 //   0: no match
-const hasImage = (p: IndexedProduct) => (p.imageSrc ? 1 : 0);
+const imageWeight = (p: IndexedProduct) => (p.imageSrc ? 1 : 0);
 
 const scoreRow = (p: IndexedProduct, q: string): number =>
   scoreNormalized(q, [p._sku, p._name, p._brand], { weights: [4, 3, 1] });
@@ -487,7 +493,7 @@ export const searchProducts = async (
     } else if (sort === "price_desc") {
       scored.sort((a, b) => b.p.listPrice - a.p.listPrice);
     } else {
-      scored.sort((a, b) => b.s - a.s || (hasImage(b.p) - hasImage(a.p)) || a.p._sku.localeCompare(b.p._sku));
+      scored.sort((a, b) => b.s - a.s || (imageWeight(b.p) - imageWeight(a.p)) || a.p._sku.localeCompare(b.p._sku));
     }
     matched = scored.map((x) => x.p);
   } else {
@@ -514,7 +520,7 @@ export const searchProducts = async (
     } else if (sort === "price_desc") {
       matched = [...matched].sort((a, b) => b.listPrice - a.listPrice);
     } else {
-      matched = [...matched].sort((a, b) => (hasImage(b) - hasImage(a)) || a._sku.localeCompare(b._sku));
+      matched = [...matched].sort((a, b) => (imageWeight(b) - imageWeight(a)) || a._sku.localeCompare(b._sku));
     }
   }
 

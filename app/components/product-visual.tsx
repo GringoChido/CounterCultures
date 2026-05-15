@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import Image from "next/image";
 import { resolveVisualTheme } from "@/app/lib/product-visuals";
 
 interface ProductVisualProps {
@@ -21,16 +22,23 @@ interface ProductVisualProps {
    *  Drops the internal aspect class so this can stack inside a layered
    *  parent next to a foreground Image — used by SafeProductImage. */
   fill?: boolean;
+  /** When false, skip image loading entirely and render the typographic
+   *  fallback immediately. Prevents 404 probes for imageless SKUs.
+   *  Default true to preserve backward compatibility. */
+  hasImage?: boolean;
+  /** Explicit image source URL. When provided, used as-is instead of
+   *  the default /products/odoo/<id>.jpg path. */
+  imageSrc?: string;
+  /** When true, load eagerly (above-the-fold). Default false (lazy). */
+  eager?: boolean;
 }
 
-/**
- * The cornerstone visual for every product card, tile, and drawer hero
- * across the public site. Tries to load the product image first; on 404
- * (the 98.8% of the catalog without photos) falls back to a branded
- * typographic panel using the finish code or brand color.
- *
- * This is what lets the whole 354k catalog look intentional.
- */
+const sizesForPreset = (size: "tile" | "card" | "hero"): string => {
+  if (size === "tile") return "48px";
+  if (size === "hero") return "(max-width: 768px) 100vw, 50vw";
+  return "(max-width: 768px) 50vw, 25vw";
+};
+
 const ProductVisual = ({
   id,
   brand,
@@ -41,26 +49,24 @@ const ProductVisual = ({
   className = "",
   forceTypography,
   fill,
+  hasImage = true,
+  imageSrc,
+  eager = false,
 }: ProductVisualProps) => {
-  // Probe state: start optimistic for products likely to have an image,
-  // skip straight to typography otherwise (saves a 404 round trip on
-  // 98.8% of rows).
-  const [mode, setMode] = useState<"probing" | "image" | "typography">(
-    forceTypography ? "typography" : "probing"
+  const shouldShowImage = hasImage !== false && !forceTypography;
+  const src = imageSrc ?? `/products/odoo/${id}.jpg`;
+
+  const [mode, setMode] = useState<"image" | "typography">(
+    shouldShowImage ? "image" : "typography"
   );
-  useEffect(() => {
-    if (forceTypography) {
-      setMode("typography");
-      return;
-    }
-    setMode("probing");
-  }, [id, forceTypography]);
+  const [prevKey, setPrevKey] = useState(`${shouldShowImage}-${id}`);
+  const key = `${shouldShowImage}-${id}`;
+  if (key !== prevKey) {
+    setPrevKey(key);
+    setMode(shouldShowImage ? "image" : "typography");
+  }
 
   const theme = resolveVisualTheme(brand, sku);
-  // When `fill` is on the parent provides aspect/overflow and we absolutely
-  // fill it. `position` must be `absolute` cleanly — combining `relative`
-  // and `absolute` in the same className lets CSS cascade pick `relative`,
-  // collapsing the panel to wordmark height (the "top tab" artifact).
   const positionCls = fill
     ? "absolute inset-0"
     : "relative " +
@@ -72,11 +78,9 @@ const ProductVisual = ({
 
   const chipText = size === "tile" ? "text-[9px]" : "text-[10px]";
 
-  // Finish chip — always shown when we parsed one, even on image cards.
-  // It's a universal data signal architects use.
   const finishChip = theme.finishCode ? (
     <span
-      className={`absolute top-2 right-2 px-2 py-0.5 font-mono ${chipText} font-semibold tracking-wider backdrop-blur-sm ${
+      className={`absolute top-2 right-2 px-2 py-0.5 font-mono ${chipText} font-semibold tracking-wider backdrop-blur-sm z-20 ${
         mode === "image" ? "bg-white/95 text-brand-charcoal" : "bg-white/15"
       }`}
       style={
@@ -93,28 +97,14 @@ const ProductVisual = ({
   if (mode === "image") {
     return (
       <div className={`${positionCls} bg-white overflow-hidden ${className}`}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={`/products/odoo/${id}.jpg`}
+        <Image
+          src={src}
           alt={name}
+          fill
+          sizes={sizesForPreset(size)}
+          priority={eager}
+          className="object-contain"
           onError={() => setMode("typography")}
-          className="w-full h-full object-contain"
-        />
-        {finishChip}
-      </div>
-    );
-  }
-
-  if (mode === "probing") {
-    return (
-      <div className={`${positionCls} bg-white overflow-hidden ${className}`}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={`/products/odoo/${id}.jpg`}
-          alt={name}
-          onLoad={() => setMode("image")}
-          onError={() => setMode("typography")}
-          className="w-full h-full object-contain opacity-0"
         />
         {finishChip}
       </div>
@@ -137,16 +127,13 @@ const ProductVisual = ({
         color: theme.fg,
       }}
     >
-      {/* Subtle inner ring for depth — keeps the panel from feeling flat */}
       <div className="absolute inset-0 ring-1 ring-inset ring-black/5 pointer-events-none" />
-      {/* Centered brand wordmark — serif, echoes the site's editorial voice */}
       <h4
         className={`font-display font-light tracking-wide ${wordmarkSize} text-center leading-tight max-w-full truncate opacity-90`}
       >
         {brand || "—"}
       </h4>
       {finishChip}
-      {/* Tiny finish label at bottom-left on larger sizes */}
       {theme.finishLabel && size !== "tile" && (
         <span
           className="absolute bottom-2 left-2 text-[9px] tracking-[0.2em] uppercase opacity-70 font-body"
