@@ -18,6 +18,7 @@ import { pdpHref } from "@/app/lib/pdp-href";
 import { ProductVisual } from "@/app/components/product-visual";
 import { VisualSearchModal } from "@/app/components/visual-search-modal";
 import { brandTheme } from "@/app/lib/product-visuals";
+import { cachedFetch } from "@/app/lib/search-utils";
 
 // Color-coded finish swatches — architects scan finish codes (MB/PC/BG/etc.)
 // at a glance on SKU sheets. This turns code-scanning into color-scanning
@@ -242,26 +243,21 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
         p.set("limit", String(PAGE_SIZE));
         p.set("offset", String(offset));
         try {
-          const res = await fetch(`/api/products/search?${p}`);
+          const data = await cachedFetch<SearchResponse>(`/api/products/search?${p}`);
           if (myReq !== reqIdRef.current) return;
-          if (res.status === 401) {
+          setNeedsAccess(false);
+          setFetchError(null);
+          setResult(data);
+        } catch (e) {
+          if (myReq !== reqIdRef.current) return;
+          const msg = e instanceof Error ? e.message : "";
+          if (msg.includes("→ 401")) {
             setNeedsAccess(true);
             setResult(null);
             setFetchError(null);
             return;
           }
-          if (!res.ok) {
-            setFetchError(`Catalog search failed (HTTP ${res.status}). Retry below.`);
-            return;
-          }
-          setNeedsAccess(false);
-          setFetchError(null);
-          setResult(await res.json());
-        } catch (e) {
-          if (myReq !== reqIdRef.current) return;
-          setFetchError(
-            e instanceof Error ? e.message : "Catalog search failed. Retry below."
-          );
+          setFetchError(msg || "Catalog search failed. Retry below.");
         }
       });
     }, 180);
