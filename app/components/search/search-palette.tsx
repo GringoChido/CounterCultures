@@ -7,6 +7,7 @@ import { Search, ArrowUpRight, FileText, Tag, Package, X, Loader2 } from "lucide
 import type { SearchDoc, SearchIndexPayload } from "@/app/lib/search-index";
 import { toSlug } from "@/app/lib/slug";
 import { pdpPath } from "@/app/lib/pdp-href";
+import { cachedFetch } from "@/app/lib/search-utils";
 
 interface SearchPaletteProps {
   locale: "en" | "es";
@@ -149,16 +150,10 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
     const timer = setTimeout(async () => {
       try {
         const p = new URLSearchParams({ q: trimmed, limit: "6" });
-        const res = await fetch(`/api/products/search?${p}`);
+        const data = await cachedFetch<{ items?: ProductHit[] }>(`/api/products/search?${p}`);
         if (myReq !== productReqRef.current) return;
-        if (!res.ok) {
-          setProductResults([]);
-          return;
-        }
-        const data = await res.json();
         setProductResults(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (data.items ?? []).slice(0, 6).map((item: any) => ({
+          (data.items ?? []).slice(0, 6).map((item) => ({
             id: item.id,
             name: item.name,
             sku: item.sku,
