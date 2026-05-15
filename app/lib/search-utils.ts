@@ -81,3 +81,37 @@ export const scoreTokens = (
   }
   return total;
 };
+
+/**
+ * Same scoring logic as scoreTokens, but skips normalize() on both
+ * query and fields. Use when both are already lowercased + NFD-stripped
+ * (e.g. the pre-indexed _sku/_name/_brand fields in the catalog cache).
+ */
+export const scoreNormalized = (
+  query: string,
+  fields: (string | undefined)[],
+  opts: ScoreTokensOpts = {}
+): number => {
+  if (!query) return 0;
+  const tokens = query.split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return 0;
+  const weights = opts.weights ?? fields.map((_, i) => Math.max(1, 5 - i));
+  let total = 0;
+  for (const token of tokens) {
+    let bestForToken = 0;
+    for (let i = 0; i < fields.length; i++) {
+      const f = fields[i];
+      if (!f) continue;
+      const w = weights[i] ?? 1;
+      if (f === token) {
+        bestForToken = Math.max(bestForToken, 10 * w);
+      } else if (f.startsWith(token)) {
+        bestForToken = Math.max(bestForToken, 5 * w);
+      } else if (f.includes(token)) {
+        bestForToken = Math.max(bestForToken, 2 * w);
+      }
+    }
+    total += bestForToken;
+  }
+  return total;
+};

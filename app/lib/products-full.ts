@@ -16,7 +16,7 @@
 import { GoogleAuth } from "google-auth-library";
 import { sheets as sheetsApi } from "@googleapis/sheets";
 import { getGooglePrivateKey } from "./google-private-key";
-import { normalize, scoreTokens } from "./search-utils";
+import { normalize, scoreNormalized } from "./search-utils";
 import { toSlug } from "./slug";
 import productImageManifest from "./product-image-manifest.json";
 import {
@@ -430,7 +430,7 @@ const stripIndex = (p: IndexedProduct): ProductFull => ({
 const hasImage = (p: IndexedProduct) => (p.imageSrc ? 1 : 0);
 
 const scoreRow = (p: IndexedProduct, q: string): number =>
-  scoreTokens(q, [p._sku, p._name, p._brand], { weights: [4, 3, 1] });
+  scoreNormalized(q, [p._sku, p._name, p._brand], { weights: [4, 3, 1] });
 
 export const searchProducts = async (
   opts: SearchOptions = {}
