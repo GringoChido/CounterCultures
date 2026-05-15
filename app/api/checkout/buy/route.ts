@@ -41,14 +41,14 @@ export async function POST(req: NextRequest) {
 
     // ── Stripe session FIRST — this is the only thing the customer waits for ──
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = items.map(
-      (item: { name: string; sku: string; listPrice: number; quantity: number }) => ({
+      (item: { name: string; sku: string; listPrice: number; tradePrice?: number; quantity: number }) => ({
         price_data: {
           currency: safeCurrency,
           product_data: {
             name: item.name,
             metadata: { sku: item.sku },
           },
-          unit_amount: Math.round(item.listPrice * 100),
+          unit_amount: Math.round((item.tradePrice != null && item.tradePrice > 0 ? item.tradePrice : item.listPrice) * 100),
         },
         quantity: item.quantity,
       })
@@ -110,10 +110,12 @@ export async function POST(req: NextRequest) {
             cartSessionId, dealId, JSON.stringify(items), JSON.stringify(contact),
             JSON.stringify(address), locale, "buy", "pending", "", now, now,
           ]),
-          ...items.map((item: { productId: string; sku: string; name: string; brand: string; quantity: number; listPrice: number; selectedFinish?: string; notes?: string; availability: string }) =>
+          ...items.map((item: { productId: string; sku: string; name: string; brand: string; quantity: number; listPrice: number; tradePrice?: number; selectedFinish?: string; notes?: string; availability: string }) =>
             appendRow("Deal_Line_Items", [
               dealId, item.productId, item.sku, item.name, item.brand,
-              String(item.quantity), String(item.listPrice), currency,
+              String(item.quantity),
+              String(item.tradePrice != null && item.tradePrice > 0 ? item.tradePrice : item.listPrice),
+              currency,
               item.selectedFinish ?? "", item.notes ?? "", item.availability,
               "true", now,
             ])

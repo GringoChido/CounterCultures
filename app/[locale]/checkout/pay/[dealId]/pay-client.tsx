@@ -192,7 +192,7 @@ export const PayClient = ({ locale, dealId }: { locale: "en" | "es"; dealId: str
                       <p className="font-body text-xs text-dash-text-secondary mt-0.5">x{item.quantity}</p>
                     </div>
                     <span className="font-mono text-sm text-brand-charcoal shrink-0">
-                      {formatted(item.listPrice * item.quantity)}
+                      {formatted((item.tradePrice != null && item.tradePrice > 0 ? item.tradePrice : item.listPrice) * item.quantity)}
                     </span>
                   </div>
                 ))}

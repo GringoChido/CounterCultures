@@ -42,10 +42,12 @@ export async function POST(req: NextRequest) {
             cartSessionId, dealId, JSON.stringify(items), JSON.stringify(contact),
             JSON.stringify(address), locale, "quote", "submitted", "", now, now,
           ]),
-          ...items.map((item: { productId: string; sku: string; name: string; brand: string; quantity: number; listPrice: number; selectedFinish?: string; notes?: string; availability: string; buyable: boolean }) =>
+          ...items.map((item: { productId: string; sku: string; name: string; brand: string; quantity: number; listPrice: number; tradePrice?: number; selectedFinish?: string; notes?: string; availability: string; buyable: boolean }) =>
             appendRow("Deal_Line_Items", [
               dealId, item.productId, item.sku, item.name, item.brand,
-              String(item.quantity), String(item.listPrice), currency,
+              String(item.quantity),
+              String(item.tradePrice != null && item.tradePrice > 0 ? item.tradePrice : item.listPrice),
+              currency,
               item.selectedFinish ?? "", item.notes ?? "", item.availability,
               item.buyable ? "true" : "false", now,
             ])
