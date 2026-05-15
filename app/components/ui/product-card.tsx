@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Plus, Check } from "lucide-react";
 import { pdpHref } from "@/app/lib/pdp-href";
 import { SafeProductImage } from "@/app/components/safe-product-image";
-import { useCartStore } from "@/app/lib/stores/cart-store";
+import { useProjectStore } from "@/app/lib/stores/project-store";
 
 interface ProductCardProps {
   id: string;
@@ -44,16 +44,16 @@ const ProductCard = ({
   const pathname = usePathname();
   const locale = pathname.startsWith("/es") ? "es" : "en";
 
-  const cartAdd = useCartStore((s) => s.add);
-  const inCart = useCartStore((s) => s.items.some((i) => i.id === id));
+  const projectAdd = useProjectStore((s) => s.add);
+  const inProject = useProjectStore((s) => s.items.some((i) => i.id === id));
 
   const href = pdpHref(locale, { slug, sku, category, name });
 
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (inCart) return;
-    cartAdd({
+    if (inProject) return;
+    projectAdd({
       id,
       sku,
       name: nameEn || name,
@@ -64,8 +64,6 @@ const ProductCard = ({
       quantity: 1,
       imageSrc: image,
       productHref: href,
-      availability: "made-to-order",
-      buyable: price > 10,
     });
   };
 
@@ -94,24 +92,24 @@ const ProductCard = ({
           <button
             type="button"
             onClick={handleAdd}
-            disabled={inCart}
+            disabled={inProject}
             className={`absolute bottom-3 right-3 z-20 flex items-center justify-center w-9 h-9 rounded-full shadow-md transition-all duration-200 cursor-pointer ${
-              inCart
+              inProject
                 ? "bg-brand-sage text-white"
                 : "bg-white/90 text-brand-charcoal hover:bg-brand-copper hover:text-white opacity-0 group-hover:opacity-100"
             }`}
             aria-label={
-              inCart
+              inProject
                 ? locale === "es" ? "Agregado" : "Added"
                 : locale === "es" ? "Agregar al proyecto" : "Add to project"
             }
             title={
-              inCart
+              inProject
                 ? locale === "es" ? "Agregado al proyecto" : "Added to project"
                 : locale === "es" ? "Agregar al proyecto" : "Add to project"
             }
           >
-            {inCart ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+            {inProject ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
           </button>
         </div>
 

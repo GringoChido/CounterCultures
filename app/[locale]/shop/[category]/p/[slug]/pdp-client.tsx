@@ -8,6 +8,7 @@ import {
   Package,
   TrendingUp,
   ShoppingBag,
+  Bookmark,
   FileDown,
   ChevronRight,
   Check,
@@ -16,6 +17,7 @@ import {
 } from "lucide-react";
 import { ProductVisual } from "@/app/components/product-visual";
 import { useCartStore } from "@/app/lib/stores/cart-store";
+import { useProjectStore } from "@/app/lib/stores/project-store";
 import { useUiStore } from "@/app/lib/stores/ui-store";
 import { FinishSwatch } from "@/app/components/cart/finish-swatch";
 import { focusRing } from "@/app/components/ui/focus-ring";
@@ -70,12 +72,14 @@ const T = {
   en: {
     home: "Home",
     catalog: "Catalog",
-    addToCart: "Add to Project",
-    addToQuote: "Add to Project",
-    added: "Added to Project",
-    viewCart: "View Project List",
+    addToCart: "Add to Cart",
+    addToQuote: "Request Quote",
+    added: "Added",
+    viewCart: "View Cart",
+    saveToProject: "Save to Project",
+    savedToProject: "Saved to Project",
     selectFinish: "Select a finish",
-    currencyMismatch: "Cannot mix currencies in one project",
+    currencyMismatch: "Cannot mix currencies in one cart",
     quoteTooltip: "Roger will send a formal quote within 24 hours.",
     from: "from",
     quote: "Quote on request",
@@ -94,12 +98,14 @@ const T = {
   es: {
     home: "Inicio",
     catalog: "Catálogo",
-    addToCart: "Agregar al Proyecto",
-    addToQuote: "Agregar al Proyecto",
-    added: "Agregado al Proyecto",
-    viewCart: "Ver Lista de Proyecto",
+    addToCart: "Agregar al Carrito",
+    addToQuote: "Solicitar Cotización",
+    added: "Agregado",
+    viewCart: "Ver Carrito",
+    saveToProject: "Guardar en Proyecto",
+    savedToProject: "Guardado en Proyecto",
     selectFinish: "Selecciona un acabado",
-    currencyMismatch: "No se pueden mezclar monedas en un proyecto",
+    currencyMismatch: "No se pueden mezclar monedas en un carrito",
     quoteTooltip: "Roger enviará una cotización formal en menos de 24 horas.",
     from: "desde",
     quote: "Cotización bajo pedido",
@@ -158,6 +164,10 @@ const PDPClient = ({
   const openCart = useUiStore((s) => s.openCart);
   const inCart = cartHas(product.id);
 
+  const projectAdd = useProjectStore((s) => s.add);
+  const inProject = useProjectStore((s) => s.items.some((i) => i.id === product.id));
+  const [justSaved, setJustSaved] = useState(false);
+
   const images = gallery ?? [];
   const specHref = specSheetLocal ?? specSheetUrl;
 
@@ -211,6 +221,24 @@ const PDPClient = ({
       openCart();
       setJustAdded(false);
     }, 600);
+  };
+
+  const handleSaveToProject = () => {
+    if (inProject) return;
+    projectAdd({
+      id: product.id,
+      sku: product.sku,
+      name: product.name,
+      brand: product.brand,
+      category: product.category,
+      currency,
+      listPrice: product.listPrice,
+      quantity: qty,
+      imageSrc: product.imageSrc,
+      productHref: `/${locale}/shop/${categorySlug}/p/${pdpSlug}`,
+    });
+    setJustSaved(true);
+    setTimeout(() => setJustSaved(false), 1500);
   };
 
   return (
@@ -439,7 +467,7 @@ const PDPClient = ({
             </div>
           </div>
 
-          {/* Add to Project CTA */}
+          {/* Cart + Project CTAs */}
           <div className="space-y-3">
             <button
               type="button"
@@ -461,6 +489,29 @@ const PDPClient = ({
                 <>
                   <ShoppingBag className="w-4 h-4" />
                   {buyable ? t.addToCart : t.addToQuote}
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSaveToProject}
+              disabled={inProject || justSaved}
+              className={`w-full py-3 min-h-[44px] font-body text-sm font-medium tracking-wider transition-colors duration-300 flex items-center justify-center gap-2 cursor-pointer disabled:cursor-default border ${focusRing} ${
+                inProject || justSaved
+                  ? "border-brand-sage/40 bg-brand-sage/10 text-brand-sage"
+                  : "border-brand-stone/30 text-brand-charcoal hover:border-brand-copper hover:text-brand-copper"
+              }`}
+            >
+              {inProject || justSaved ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  {t.savedToProject}
+                </>
+              ) : (
+                <>
+                  <Bookmark className="w-4 h-4" />
+                  {t.saveToProject}
                 </>
               )}
             </button>

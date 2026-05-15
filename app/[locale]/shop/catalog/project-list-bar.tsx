@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { ShoppingBag, X, Trash2, Loader2, Send, Check, FileUp } from "lucide-react";
+import { Bookmark, X, Trash2, Loader2, Send, Check, FileUp, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
+import { useProjectStore } from "@/app/lib/stores/project-store";
 import { useCartStore } from "@/app/lib/stores/cart-store";
 import { PdfDropModal, type PdfDropResult } from "@/app/components/pdf-drop-modal";
 
@@ -25,6 +26,8 @@ const T = {
     sendRequest: "Send quote request",
     thanks: "Thanks — we'll get back within 24 hours.",
     error: "Could not send the request. Please try again or email equipo@countercultures.com.mx",
+    moveToCart: "Move to Cart",
+    movedToCart: "Moved to cart",
     viewList: "View list",
     dropPdf: "Drop spec PDF",
     addedFromPdf: (n: number) => `Added ${n} item${n === 1 ? "" : "s"} from PDF`,
@@ -47,6 +50,8 @@ const T = {
     sendRequest: "Enviar solicitud",
     thanks: "Gracias — te respondemos en menos de 24 horas.",
     error: "No pudimos enviar la solicitud. Intenta de nuevo o escribe a equipo@countercultures.com.mx",
+    moveToCart: "Mover al Carrito",
+    movedToCart: "Movido al carrito",
     viewList: "Ver lista",
     dropPdf: "Soltar PDF de especificación",
     addedFromPdf: (n: number) => `${n} artículo${n === 1 ? "" : "s"} agregado${n === 1 ? "" : "s"} del PDF`,
@@ -59,11 +64,14 @@ interface ProjectListBarProps {
 
 const ProjectListBar = ({ locale }: ProjectListBarProps) => {
   const t = T[locale];
-  const items = useCartStore((s) => s.items);
-  const add = useCartStore((s) => s.add);
-  const updateQty = useCartStore((s) => s.updateQty);
-  const remove = useCartStore((s) => s.remove);
-  const clear = useCartStore((s) => s.clear);
+  const items = useProjectStore((s) => s.items);
+  const add = useProjectStore((s) => s.add);
+  const updateQty = useProjectStore((s) => s.updateQty);
+  const remove = useProjectStore((s) => s.remove);
+  const clear = useProjectStore((s) => s.clear);
+
+  const cartAdd = useCartStore((s) => s.add);
+  const cartHas = useCartStore((s) => s.has);
 
   const [expanded, setExpanded] = useState(false);
   const [pdfOpen, setPdfOpen] = useState(false);
@@ -91,11 +99,28 @@ const ProjectListBar = ({ locale }: ProjectListBarProps) => {
         listPrice: r.product.listPrice,
         quantity: r.quantity,
         productHref: "/shop",
-        availability: "made-to-order",
-        buyable: true,
       });
     }
     toast.success(t.addedFromPdf(results.length));
+  };
+
+  const handleMoveToCart = (item: typeof items[number]) => {
+    if (cartHas(item.id)) return;
+    cartAdd({
+      id: item.id,
+      sku: item.sku,
+      name: item.name,
+      brand: item.brand,
+      category: item.category,
+      currency: item.currency,
+      listPrice: item.listPrice,
+      quantity: item.quantity,
+      imageSrc: item.imageSrc,
+      productHref: item.productHref,
+      availability: "made-to-order",
+      buyable: item.listPrice > 10,
+    });
+    toast.success(t.movedToCart);
   };
 
   const submit = async () => {
@@ -161,7 +186,7 @@ const ProjectListBar = ({ locale }: ProjectListBarProps) => {
               onClick={() => setExpanded(true)}
               className="flex items-center gap-3 px-5 py-3 bg-brand-copper text-white shadow-lg hover:bg-brand-copper/90 transition-colors cursor-pointer rounded-full"
             >
-              <ShoppingBag className="w-4 h-4" />
+              <Bookmark className="w-4 h-4" />
               <span className="font-body text-sm font-medium">
                 {t.itemCount(items.length)}
               </span>
@@ -254,6 +279,19 @@ const ProjectListBar = ({ locale }: ProjectListBarProps) => {
                           }
                           className="w-14 px-2 py-1 text-sm border border-brand-stone/20 bg-dash-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper font-body text-center"
                         />
+                        <button
+                          type="button"
+                          onClick={() => handleMoveToCart(it)}
+                          disabled={cartHas(it.id)}
+                          className={`p-1.5 cursor-pointer ${
+                            cartHas(it.id)
+                              ? "text-brand-sage"
+                              : "text-dash-text-secondary hover:text-brand-copper"
+                          }`}
+                          title={cartHas(it.id) ? (locale === "es" ? "Ya en carrito" : "Already in cart") : t.moveToCart}
+                        >
+                          <ShoppingBag className="w-4 h-4" />
+                        </button>
                         <button
                           type="button"
                           onClick={() => remove(it.id)}
