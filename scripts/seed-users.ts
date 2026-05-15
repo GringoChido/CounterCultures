@@ -35,10 +35,8 @@ interface SeedUser {
   role: UserRole;
 }
 
-// Known team members. Only seed emails we're sure of — incorrect seeding
-// would silently grant the wrong role.
+// Known team members. Only seed @countercultures.com.mx emails.
 //
-// Joshua: project lead, external collaborator already in PORTAL_EMAIL_ALLOWLIST.
 // admin@: Joshua's Workspace alias (used by Resend staging redirect, Drive ops).
 // roger@: CEO. Owns trade-app approvals, brand-kit edits, owner deposits.
 // control@: Antonina Trischitta (Finance/AP). Same person as "Tonina"/"Antonia".
@@ -46,7 +44,6 @@ interface SeedUser {
 // TODO: add Javier Medina + Ian once their @countercultures.com.mx emails
 // are confirmed. Both should be role=sales.
 const SEED: SeedUser[] = [
-  { email: "joshua@untold.works", name: "Joshua Semolik", role: "owner" },
   { email: "admin@countercultures.com.mx", name: "Joshua Semolik (admin alias)", role: "owner" },
   { email: "roger@countercultures.com.mx", name: "Roger Williams", role: "owner" },
   { email: "control@countercultures.com.mx", name: "Antonina Trischitta", role: "finance" },

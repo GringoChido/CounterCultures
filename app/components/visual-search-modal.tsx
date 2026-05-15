@@ -12,7 +12,7 @@ import {
 import type { ProductFull } from "@/app/lib/products-full";
 import type { VisualAttributes } from "@/app/lib/visual-search";
 import { ProductVisual } from "@/app/components/product-visual";
-import { useProjectListStore } from "@/app/lib/stores/project-list-store";
+import { useCartStore } from "@/app/lib/stores/cart-store";
 import { DialogRoot } from "@/app/components/ui/modal";
 import { IconButton } from "@/app/components/ui/icon-button";
 import { focusRing } from "@/app/components/ui/focus-ring";
@@ -95,8 +95,9 @@ const VisualSearchModal = ({
   const [attributes, setAttributes] = useState<VisualAttributes | null>(null);
   const [matches, setMatches] = useState<ProductFull[]>([]);
   const [totalMatched, setTotalMatched] = useState(0);
-  const projectAdd = useProjectListStore((s) => s.add);
-  const projectHas = useProjectListStore((s) => s.has);
+  const cartAdd = useCartStore((s) => s.add);
+  const cartItems = useCartStore((s) => s.items);
+  const cartHas = (id: string) => cartItems.some((i) => i.id === id);
 
   const reset = useCallback(() => {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -156,14 +157,18 @@ const VisualSearchModal = ({
   };
 
   const handleAdd = (p: ProductFull) => {
-    projectAdd({
+    cartAdd({
       id: p.id,
       sku: p.sku,
       name: p.name,
       brand: p.brand,
       category: p.category,
-      currency: p.currency,
+      currency: (p.currency === "USD" ? "USD" : "MXN") as "MXN" | "USD",
       listPrice: p.listPrice,
+      quantity: 1,
+      productHref: `/${locale}/shop/${p.category}/p/${p.slug || p.sku}`,
+      availability: "made-to-order",
+      buyable: p.listPrice > 10,
     });
   };
 
@@ -334,7 +339,7 @@ const VisualSearchModal = ({
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                       {matches.slice(0, 12).map((p) => {
-                        const inProject = projectHas(p.id);
+                        const inProject = cartHas(p.id);
                         return (
                           <div
                             key={p.id}

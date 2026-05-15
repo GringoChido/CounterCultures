@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { ShoppingBag, X, Trash2, Loader2, Send, Check, FileUp } from "lucide-react";
 import { toast } from "sonner";
-import { useProjectListStore } from "@/app/lib/stores/project-list-store";
+import { useCartStore } from "@/app/lib/stores/cart-store";
 import { PdfDropModal, type PdfDropResult } from "@/app/components/pdf-drop-modal";
 
 const T = {
   en: {
     yourProject: "Your project list",
-    empty: "No items yet. Click + Add to project on any product.",
+    empty: "No items yet. Click + on any product to add it.",
     itemCount: (n: number) => `${n} item${n === 1 ? "" : "s"}`,
     request: "Request quote",
     submitting: "Sending…",
@@ -31,7 +31,7 @@ const T = {
   },
   es: {
     yourProject: "Tu lista de proyecto",
-    empty: "Sin artículos. Toca + Agregar al proyecto en cualquier producto.",
+    empty: "Sin artículos. Toca + en cualquier producto para agregarlo.",
     itemCount: (n: number) => `${n} artículo${n === 1 ? "" : "s"}`,
     request: "Solicitar cotización",
     submitting: "Enviando…",
@@ -59,11 +59,11 @@ interface ProjectListBarProps {
 
 const ProjectListBar = ({ locale }: ProjectListBarProps) => {
   const t = T[locale];
-  const items = useProjectListStore((s) => s.items);
-  const add = useProjectListStore((s) => s.add);
-  const updateQty = useProjectListStore((s) => s.updateQty);
-  const remove = useProjectListStore((s) => s.remove);
-  const clear = useProjectListStore((s) => s.clear);
+  const items = useCartStore((s) => s.items);
+  const add = useCartStore((s) => s.add);
+  const updateQty = useCartStore((s) => s.updateQty);
+  const remove = useCartStore((s) => s.remove);
+  const clear = useCartStore((s) => s.clear);
 
   const [expanded, setExpanded] = useState(false);
   const [pdfOpen, setPdfOpen] = useState(false);
@@ -81,18 +81,19 @@ const ProjectListBar = ({ locale }: ProjectListBarProps) => {
 
   const handlePdfCommit = async (results: PdfDropResult[]) => {
     for (const r of results) {
-      add(
-        {
-          id: r.product.id,
-          sku: r.product.sku,
-          name: r.product.name,
-          brand: r.product.brand,
-          category: r.product.category,
-          currency: r.product.currency,
-          listPrice: r.product.listPrice,
-        },
-        r.quantity
-      );
+      add({
+        id: r.product.id,
+        sku: r.product.sku,
+        name: r.product.name,
+        brand: r.product.brand,
+        category: r.product.category,
+        currency: (r.product.currency === "USD" ? "USD" : "MXN") as "MXN" | "USD",
+        listPrice: r.product.listPrice,
+        quantity: r.quantity,
+        productHref: "/shop",
+        availability: "made-to-order",
+        buyable: true,
+      });
     }
     toast.success(t.addedFromPdf(results.length));
   };
@@ -129,7 +130,6 @@ const ProjectListBar = ({ locale }: ProjectListBarProps) => {
       if (!res.ok) throw new Error("failed");
       setSubmitted(true);
       toast.success(t.thanks);
-      // Clear list + close after a beat
       setTimeout(() => {
         clear();
         setFormOpen(false);
