@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
+import { useUiStore } from "@/app/lib/stores/ui-store";
 
 interface Message {
   role: "user" | "assistant";
@@ -29,6 +30,7 @@ const greetings = {
 const ChatWidget = ({ locale = "en" }: { locale?: string }) => {
   const lang = (locale as "en" | "es") || "en";
   const t = greetings[lang];
+  const setChatOpen = useUiStore((s) => s.setChatOpen);
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { role: "assistant", content: t.greeting },
@@ -36,6 +38,11 @@ const ChatWidget = ({ locale = "en" }: { locale?: string }) => {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setChatOpen(open);
+    return () => setChatOpen(false);
+  }, [open, setChatOpen]);
 
   useEffect(() => {
     if (scrollRef.current) {

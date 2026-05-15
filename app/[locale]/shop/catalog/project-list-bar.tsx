@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Bookmark, X, Trash2, Loader2, Send, Check, FileUp, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { useProjectStore } from "@/app/lib/stores/project-store";
 import { useCartStore } from "@/app/lib/stores/cart-store";
+import { useUiStore } from "@/app/lib/stores/ui-store";
 import { PdfDropModal, type PdfDropResult } from "@/app/components/pdf-drop-modal";
 
 const T = {
@@ -60,9 +61,10 @@ const T = {
 
 interface ProjectListBarProps {
   locale: "en" | "es";
+  revealTriggerSelector?: string;
 }
 
-const ProjectListBar = ({ locale }: ProjectListBarProps) => {
+const ProjectListBar = ({ locale, revealTriggerSelector }: ProjectListBarProps) => {
   const t = T[locale];
   const items = useProjectStore((s) => s.items);
   const add = useProjectStore((s) => s.add);
@@ -73,7 +75,46 @@ const ProjectListBar = ({ locale }: ProjectListBarProps) => {
   const cartAdd = useCartStore((s) => s.add);
   const cartHas = useCartStore((s) => s.has);
 
+  const chatOpen = useUiStore((s) => s.chatOpen);
+
   const [expanded, setExpanded] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [armed, setArmed] = useState(!revealTriggerSelector);
+  const armedRef = useRef(armed);
+
+  useEffect(() => {
+    const next = !revealTriggerSelector;
+    setArmed(next);
+    armedRef.current = next;
+  }, [revealTriggerSelector]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 300);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 200);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (!revealTriggerSelector || armedRef.current || !mounted) return;
+    const el = document.querySelector(revealTriggerSelector);
+    if (!el) return;
+    const check = () => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.9) {
+        setArmed(true);
+        armedRef.current = true;
+        window.removeEventListener("scroll", check);
+      }
+    };
+    window.addEventListener("scroll", check, { passive: true });
+    return () => window.removeEventListener("scroll", check);
+  }, [revealTriggerSelector, mounted]);
   const [pdfOpen, setPdfOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [name, setName] = useState("");
@@ -176,15 +217,16 @@ const ProjectListBar = ({ locale }: ProjectListBarProps) => {
 
   return (
     <>
-      {/* Floating actions — PDF drop is always visible; project-list pill
-          appears once the user has staged something. */}
-      {!expanded && (
-        <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2">
+      {!expanded && (armed || items.length > 0) && (
+        <div
+          className={`fixed z-40 left-4 right-auto flex flex-col items-start bottom-[calc(env(safe-area-inset-bottom,0px)+1rem)] md:left-1/2 md:-translate-x-1/2 md:bottom-6 md:items-center gap-2 transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none ${mounted && !chatOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}`}
+          aria-hidden={chatOpen || !mounted}
+        >
           {items.length > 0 && (
             <button
               type="button"
               onClick={() => setExpanded(true)}
-              className="flex items-center gap-3 px-5 py-3 bg-brand-copper text-white shadow-lg hover:bg-brand-copper/90 transition-colors cursor-pointer rounded-full"
+              className={`flex items-center gap-3 px-5 py-3 bg-brand-copper text-white hover:bg-brand-copper/90 transition-colors cursor-pointer rounded-full ${scrolled ? "shadow-xl" : "shadow-lg"}`}
             >
               <Bookmark className="w-4 h-4" />
               <span className="font-body text-sm font-medium">
@@ -193,17 +235,19 @@ const ProjectListBar = ({ locale }: ProjectListBarProps) => {
               <span className="font-body text-xs opacity-80">{t.viewList} →</span>
             </button>
           )}
-          <button
-            type="button"
-            onClick={() => setPdfOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-brand-charcoal text-white shadow-lg hover:bg-brand-charcoal/90 transition-colors cursor-pointer rounded-full"
-            title={t.dropPdf}
-          >
-            <FileUp className="w-4 h-4" />
-            <span className="font-body text-xs font-medium tracking-wide">
-              {t.dropPdf}
-            </span>
-          </button>
+          {armed && (
+            <button
+              type="button"
+              onClick={() => setPdfOpen(true)}
+              className={`flex items-center gap-2 px-4 py-2.5 bg-brand-charcoal text-white hover:bg-brand-charcoal/90 transition-colors cursor-pointer rounded-full ${scrolled ? "shadow-xl" : "shadow-lg"}`}
+              title={t.dropPdf}
+            >
+              <FileUp className="w-4 h-4" />
+              <span className="font-body text-xs font-medium tracking-wide">
+                {t.dropPdf}
+              </span>
+            </button>
+          )}
         </div>
       )}
 

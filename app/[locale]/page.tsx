@@ -239,6 +239,7 @@ const HomePage = async ({ params }: HomePageProps) => {
         <FounderStory locale={lang} />
         <Testimonial locale={lang} />
         <TwoPathsBand locale={lang} />
+        <div id="cc-spec-fab-trigger" aria-hidden className="h-0 w-0 -mt-px pointer-events-none" />
         <ContactCTA locale={lang} />
         <NewsletterStrip locale={lang} />
       </main>

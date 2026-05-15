@@ -12,6 +12,10 @@ interface UiState {
   closeCart: () => void;
   toggleCart: () => void;
 
+  // Chat widget open state — lets FABs yield when chat is expanded.
+  chatOpen: boolean;
+  setChatOpen: (open: boolean) => void;
+
   // User-preferred display currency. "auto" follows the cart's native
   // currency; explicit MXN/USD overrides it for display only (charges
   // always go through in the cart's actual currency).
@@ -29,6 +33,9 @@ export const useUiStore = create<UiState>()(
       openCart: () => set({ cartOpen: true }),
       closeCart: () => set({ cartOpen: false }),
       toggleCart: () => set((s) => ({ cartOpen: !s.cartOpen })),
+
+      chatOpen: false,
+      setChatOpen: (open) => set({ chatOpen: open }),
 
       displayCurrency: "auto",
       setDisplayCurrency: (c) => set({ displayCurrency: c }),
