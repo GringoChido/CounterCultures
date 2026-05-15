@@ -400,22 +400,34 @@ export const submitTradeApplication = async (app: {
   license: string;
   website: string;
   message: string;
-}): Promise<void> => {
+}): Promise<string> => {
   const appId = `TRADE-${Date.now()}`;
   const now = new Date().toISOString();
 
-  await appendSheetData("Trade_Applications!A:H", [
+  // Schema matches dashboard-sheets Trade_Applications tab (canonical).
+  // Columns: id | company | contact_name | email | phone | license_number |
+  //          status | created_at | business_type | website |
+  //          expected_annual_volume | decided_at | decided_by | notes
+  await appendSheetData("Trade_Applications!A:N", [
     [
       appId,
       app.company,
-      app.profession,
+      app.name,
+      app.email,
+      app.phone,
       app.license,
       "pending",
       now,
-      "",
-      `${app.name} | ${app.email} | ${app.phone} | ${app.website} | ${app.message}`,
+      app.profession, // business_type
+      app.website,
+      "",  // expected_annual_volume
+      "",  // decided_at
+      "",  // decided_by
+      app.message, // notes
     ],
   ]);
+
+  return appId;
 };
 
 export const submitNewsletter = async (email: string): Promise<void> => {

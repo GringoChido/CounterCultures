@@ -245,6 +245,7 @@ const PDPPage = async ({ params }: PDPProps) => {
             brand: product.brand,
             category: product.category,
             listPrice: product.listPrice,
+            tradePrice: product.tradePrice,
             currency: product.currency,
             uom: product.uom,
             inStock: product.inStock ?? false,

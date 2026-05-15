@@ -132,6 +132,49 @@ export const upsertCustomer = async (
   return { action: "created", customer };
 };
 
+// ── Trade status ────────────────────────────────────────────────────
+
+export const setCustomerTrade = async (
+  email: string,
+  opts: { isTrade: boolean; tier: string }
+): Promise<{ action: "created" | "updated" }> => {
+  const target = email.toLowerCase().trim();
+  const existing = await getCustomer(target);
+
+  if (existing) {
+    const idx = await findRowIndex(CUSTOMERS_TAB, "email", existing.email);
+    if (idx !== null) {
+      await updateRowByHeader(CUSTOMERS_TAB, idx, {
+        is_trade: opts.isTrade ? "TRUE" : "FALSE",
+        trade_tier: opts.tier,
+      });
+      invalidateCache();
+    }
+    return { action: "updated" };
+  }
+
+  const now = new Date().toISOString();
+  const customer: Customer = {
+    email: target,
+    name: "",
+    phone: "",
+    default_ship_address: "",
+    default_billing_address: "",
+    saved_rfc: "",
+    factura_default: "",
+    locale: "es-MX",
+    trade_tier: opts.tier,
+    is_trade: opts.isTrade ? "TRUE" : "FALSE",
+    created_at: now,
+    last_login_at: "",
+    marketing_opt_in: "TRUE",
+    notes: "",
+  };
+  await appendRowByHeader(CUSTOMERS_TAB, customer as unknown as Record<string, string>);
+  invalidateCache();
+  return { action: "created" };
+};
+
 // ── Pipeline backfill ────────────────────────────────────────────────
 // On first login, find Pipeline rows whose `email` matches and ensure
 // `customer_email` is populated. Idempotent — rows already carrying

@@ -578,7 +578,7 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
         room: "",
         timeline: "",
         notes: "",
-        isTrade: false,
+        isTrade: items.some((i) => i.tradePrice != null && i.tradePrice > 0),
       },
       items: items.map((i) => ({
         productId: i.id,
@@ -587,6 +587,7 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
         brand: i.brand,
         quantity: i.quantity,
         listPrice: i.listPrice,
+        tradePrice: i.tradePrice,
         selectedFinish: i.selectedFinish,
         notes: i.notes,
         buyable: i.buyable,

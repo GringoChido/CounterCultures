@@ -27,6 +27,7 @@ interface SerializedProduct {
   brand: string;
   category: string;
   listPrice: number;
+  tradePrice?: number;
   currency: string;
   uom: string;
   inStock: boolean;
@@ -196,6 +197,7 @@ const PDPClient = ({
       category: product.category,
       currency,
       listPrice: product.listPrice,
+      tradePrice: product.tradePrice,
       quantity: qty,
       selectedFinish,
       imageSrc: product.imageSrc,
@@ -346,16 +348,35 @@ const PDPClient = ({
           <div>
             {product.listPrice > 10 ? (
               <>
-                <p className="font-display text-2xl text-brand-charcoal">
-                  <span className="text-sm font-body text-dash-text-secondary mr-1">
-                    {t.from}
-                  </span>
-                  {fmtPrice(product.listPrice, product.currency, locale)}
-                  <span className="text-sm font-body text-dash-text-secondary ml-2">
-                    {product.currency}
-                  </span>
-                </p>
-                {/* TODO: Step 8 (trade pricing) — swap to trade price when tradeContext is available */}
+                {product.tradePrice != null ? (
+                  <div>
+                    <p className="font-display text-2xl text-brand-copper">
+                      <span className="text-sm font-body text-dash-text-secondary mr-1">
+                        {t.from}
+                      </span>
+                      {fmtPrice(product.tradePrice, product.currency, locale)}
+                      <span className="text-sm font-body text-dash-text-secondary ml-2">
+                        {product.currency}
+                      </span>
+                    </p>
+                    <p className="mt-0.5 font-body text-sm text-dash-text-secondary line-through">
+                      {fmtPrice(product.listPrice, product.currency, locale)} {product.currency}
+                    </p>
+                    <span className="inline-block mt-1 px-2 py-0.5 bg-brand-copper/10 text-brand-copper text-[10px] font-body font-semibold uppercase tracking-wider rounded-full">
+                      {locale === "es" ? "Precio trade" : "Trade Price"}
+                    </span>
+                  </div>
+                ) : (
+                  <p className="font-display text-2xl text-brand-charcoal">
+                    <span className="text-sm font-body text-dash-text-secondary mr-1">
+                      {t.from}
+                    </span>
+                    {fmtPrice(product.listPrice, product.currency, locale)}
+                    <span className="text-sm font-body text-dash-text-secondary ml-2">
+                      {product.currency}
+                    </span>
+                  </p>
+                )}
                 <p className="mt-1 font-body text-[11px] text-dash-text-secondary">
                   {t.priceNote}
                 </p>

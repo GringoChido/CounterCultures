@@ -199,6 +199,75 @@ export const sendDocument = async (
   });
 };
 
+// --- Trade welcome (on approval) ---
+
+export const sendTradeWelcomeEmail = async (
+  to: string,
+  name: string,
+  company: string,
+  welcomeCode: string
+): Promise<void> => {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://countercultures.netlify.app";
+  await getResend()?.emails.send({
+    from: FROM,
+    to: redirectRecipient(to),
+    subject: "Welcome to the Trade Program — Counter Cultures",
+    html: `
+      <div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; color: #2C2C2C;">
+        <h2 style="font-weight: 400; letter-spacing: 0.05em;">Welcome to the Trade Program</h2>
+        <p style="line-height: 1.7; color: #6B6B6B;">
+          ${escapeHtml(name || "Hello")}, your trade application for <strong>${escapeHtml(company)}</strong> has been approved.
+        </p>
+        <p style="line-height: 1.7; color: #6B6B6B;">
+          Your trade pricing is now active. Sign in to see exclusive trade pricing on every product page.
+        </p>
+        <div style="background: #F5F0EB; padding: 20px; border-radius: 4px; margin: 24px 0; text-align: center;">
+          <p style="margin: 0 0 8px; font-size: 13px; color: #6B6B6B;">Your welcome code (one-time use):</p>
+          <p style="margin: 0; font-size: 22px; font-weight: bold; letter-spacing: 0.15em; color: #B87333;">${escapeHtml(welcomeCode)}</p>
+        </div>
+        <a href="${baseUrl}/account/sign-in" style="display: inline-block; background: #B87333; color: #fff; text-decoration: none; padding: 12px 28px; border-radius: 4px; font-size: 14px; font-weight: 600; letter-spacing: 0.04em;">Sign In to Your Account</a>
+        <hr style="border: none; border-top: 1px solid #E5E0DB; margin: 32px 0;" />
+        <p style="font-size: 12px; color: #999;">Counter Cultures · San Miguel de Allende, México</p>
+      </div>
+    `,
+  });
+};
+
+// --- Trade decline (on rejection) ---
+
+export const sendTradeDeclineEmail = async (
+  to: string,
+  name: string,
+  notes?: string
+): Promise<void> => {
+  const reasonBlock = notes
+    ? `<p style="line-height: 1.7; color: #6B6B6B;">Our team noted: <em>${escapeHtml(notes)}</em></p>`
+    : "";
+  await getResend()?.emails.send({
+    from: FROM,
+    to: redirectRecipient(to),
+    subject: "Trade Application Update — Counter Cultures",
+    html: `
+      <div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; color: #2C2C2C;">
+        <h2 style="font-weight: 400; letter-spacing: 0.05em;">Trade Application Update</h2>
+        <p style="line-height: 1.7; color: #6B6B6B;">
+          ${escapeHtml(name || "Hello")}, thank you for your interest in the Counter Cultures Trade Program.
+        </p>
+        <p style="line-height: 1.7; color: #6B6B6B;">
+          After reviewing your application, we weren't able to extend trade pricing at this time.
+        </p>
+        ${reasonBlock}
+        <p style="line-height: 1.7; color: #6B6B6B;">
+          If your circumstances change or you have additional information to share, we welcome you to reapply.
+          You can also reach us directly by replying to this email.
+        </p>
+        <hr style="border: none; border-top: 1px solid #E5E0DB; margin: 32px 0;" />
+        <p style="font-size: 12px; color: #999;">Counter Cultures · San Miguel de Allende, México</p>
+      </div>
+    `,
+  });
+};
+
 // --- Internal notification to Roger ---
 
 export const notifyRoger = async (subject: string, body: string): Promise<void> => {

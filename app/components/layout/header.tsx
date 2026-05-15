@@ -12,6 +12,7 @@ import {
   MessageCircle,
   Sparkles,
   Search,
+  KeyRound,
 } from "lucide-react";
 import { NAV_LINKS, SITE_CONFIG, PRODUCT_CATEGORIES } from "@/app/lib/constants";
 import { SearchPalette } from "@/app/components/search/search-palette";
@@ -143,6 +144,18 @@ const Header = ({ locale: localeProp = "en", transparent = false }: { locale?: s
             </a>
 
             <MyProjectsDropdown locale={lang} />
+
+            <NextLink
+              href={localizedHref("/account/sign-in")}
+              className={`hidden sm:flex items-center gap-1.5 h-9 px-3 border rounded-full text-xs font-body font-medium tracking-wider uppercase transition-colors ${
+                isTransparent
+                  ? "border-white/25 text-white bg-white/10 hover:border-white/40"
+                  : "border-brand-copper/30 text-brand-copper bg-brand-copper/5 hover:bg-brand-copper/10 hover:border-brand-copper/50"
+              }`}
+            >
+              <KeyRound className="w-3.5 h-3.5" />
+              {lang === "es" ? "Trade" : "Trade"}
+            </NextLink>
 
             <CartIconButton />
 
@@ -349,6 +362,16 @@ const Header = ({ locale: localeProp = "en", transparent = false }: { locale?: s
                   </NextLink>
                 );
               })}
+
+              {/* Trade Login in mobile */}
+              <NextLink
+                href={localizedHref("/account/sign-in")}
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-2 py-3.5 min-h-[44px] font-body text-base font-medium text-brand-copper border-b border-brand-stone/5"
+              >
+                <KeyRound className="w-5 h-5" />
+                {lang === "es" ? "Trade Login" : "Trade Login"}
+              </NextLink>
 
               {/* WhatsApp in mobile */}
               <a
