@@ -69,12 +69,12 @@ const T = {
   en: {
     home: "Home",
     catalog: "Catalog",
-    addToCart: "Add to Cart",
-    addToQuote: "Add to Quote",
-    added: "Added",
-    viewCart: "View Cart",
+    addToCart: "Add to Project",
+    addToQuote: "Add to Project",
+    added: "Added to Project",
+    viewCart: "View Project List",
     selectFinish: "Select a finish",
-    currencyMismatch: "Cannot mix currencies in one cart",
+    currencyMismatch: "Cannot mix currencies in one project",
     quoteTooltip: "Roger will send a formal quote within 24 hours.",
     from: "from",
     quote: "Quote on request",
@@ -93,12 +93,12 @@ const T = {
   es: {
     home: "Inicio",
     catalog: "Catálogo",
-    addToCart: "Agregar al Carrito",
-    addToQuote: "Agregar a Cotización",
-    added: "Agregado",
-    viewCart: "Ver Carrito",
+    addToCart: "Agregar al Proyecto",
+    addToQuote: "Agregar al Proyecto",
+    added: "Agregado al Proyecto",
+    viewCart: "Ver Lista de Proyecto",
     selectFinish: "Selecciona un acabado",
-    currencyMismatch: "No se pueden mezclar monedas en un carrito",
+    currencyMismatch: "No se pueden mezclar monedas en un proyecto",
     quoteTooltip: "Roger enviará una cotización formal en menos de 24 horas.",
     from: "desde",
     quote: "Cotización bajo pedido",
@@ -418,7 +418,7 @@ const PDPClient = ({
             </div>
           </div>
 
-          {/* Add to Cart / Quote CTA */}
+          {/* Add to Project CTA */}
           <div className="space-y-3">
             <button
               type="button"
