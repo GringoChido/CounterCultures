@@ -43,3 +43,11 @@
 # is offline (page just hides the equivalent display).
 [functions."fx-sync"]
   schedule = "0 17 * * *"
+
+# Keepalive: every 3 minutes hit a tiny products-search endpoint to keep
+# products-full.ts' in-memory LRU and the Lambda warm. ~14,400 invocations
+# per month — comfortably within Pro-tier scheduled-function limits —
+# in exchange for sub-second first-hit latency throughout the day.
+# Pattern matches the other three scheduled functions.
+[functions."keepalive"]
+  schedule = "*/3 * * * *"
