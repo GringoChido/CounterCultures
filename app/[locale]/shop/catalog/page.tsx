@@ -16,7 +16,6 @@ import {
   getInShowroomIds,
 } from "@/app/lib/catalog-signals";
 import { CatalogView } from "./catalog-view";
-import { ProjectListBar } from "./project-list-bar";
 
 export const revalidate = 1800;
 
@@ -209,7 +208,6 @@ const CatalogPage = async ({ params }: CatalogPageProps) => {
       </main>
       <ArtisanProfiles locale={locale as "en" | "es"} />
       <Footer locale={locale} />
-      <ProjectListBar locale={locale as "en" | "es"} />
     </>
   );
 };
