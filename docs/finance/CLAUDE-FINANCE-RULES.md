@@ -72,7 +72,23 @@ This file is canonical. Every Claude session touching AR / AP / Facturas / Payme
 36. Operations attachments (vendor bills, POs, sale orders, inbox messages when wired) render a unified sequence viewer with keyboard navigation, so reviewers do not have to open each file singularly.
 37. Attachments matching the logo/noise heuristic auto-hide from the default sequence. Users can override per file; overrides persist in the `Attachment_Visibility` sheet tab keyed on `(res_model, res_id, filename_hash)` and the toggle is logged to `Activity_Log`.
 
+## Entity carryover
+
+38. Every detail page (invoice, bill, PO, sale order) carries a CompanyBadge (CC or LLC) in the header, derived from `detectCompany()` or `detectCompanyFromCurrency()` in `odoo-sheets.ts`.
+39. The KPI totals strip on each detail page is wrapped in an `EntityTintedCard` — copper tint for CC, teal tint for LLC — as a peripheral-vision safeguard so Antonia never posts to the wrong entity.
+
+## Tax rates
+
+40. Tax rates are stored in the `Tax_Rates` sheet tab and managed at `/dashboard/settings/tax-rates`. AP can create, activate, and deactivate named rates (IVA, IEPS, Retencion, Other).
+41. The document generator (invoice template) uses a dropdown populated from active tax rates via `GET /api/dashboard/tax-rates`. If no rates are configured, it falls back to a manual numeric input.
+42. Cart/checkout still uses the `iva.ts` default (16% IVA). The registry is for AP-generated invoices and bills only.
+
+## Contact filtering
+
+43. The `CustomerCombobox` accepts a `partnerType` prop (`customer` | `vendor` | `all`). Document generator uses `partnerType="vendor"` for POs and `partnerType="customer"` for invoices/quotes/receipts.
+44. `roleFilterFor(documentContext)` in `contact-classifications.ts` provides the canonical mapping from document type to classification filters.
+
 ## Navigation
 
-38. Accounts Payable has a dedicated tab at `/dashboard/accounts-payable`. The tab is sidebar-pinned (between AR and P&L Reports) and gated behind `view_ap`.
-39. The AP queue, the open vendor bills aging table, and the vendor terms table all live on the AP page. The AP queue API is `GET /api/dashboard/ap-queue` and remains the single source of truth.
+45. Accounts Payable has a dedicated tab at `/dashboard/accounts-payable`. The tab is sidebar-pinned (between AR and P&L Reports) and gated behind `view_ap`.
+46. The AP queue, the open vendor bills aging table, and the vendor terms table all live on the AP page. The AP queue API is `GET /api/dashboard/ap-queue` and remains the single source of truth.

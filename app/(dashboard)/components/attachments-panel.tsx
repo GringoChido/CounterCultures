@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { Paperclip, Download, ExternalLink, FileText, FileImage, FileArchive, File, Eye, EyeOff } from "lucide-react";
+import { Paperclip, Download, ExternalLink, FileText, FileImage, FileArchive, File, Eye, EyeOff, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import SequenceViewer from "@/app/(dashboard)/components/attachments/sequence-viewer";
 import {
   classifyAttachment,
@@ -64,6 +65,34 @@ const AttachmentsPanel = ({ resModel, resId }: AttachmentsPanelProps) => {
   const [error, setError] = useState(false);
   const [viewerOpenAt, setViewerOpenAt] = useState<number | null>(null);
   const [overrides, setOverrides] = useState<Record<string, "user-show" | "user-hide">>({});
+  const [downloading, setDownloading] = useState<string | null>(null);
+
+  const handleDownload = async (a: AttachmentRow) => {
+    const url = a.driveFileId
+      ? `/api/dashboard/attachments/download?fileId=${encodeURIComponent(a.driveFileId)}`
+      : a.downloadUrl;
+    setDownloading(a.id);
+    try {
+      const res = await fetch(url);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || `HTTP ${res.status}`);
+      }
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = blobUrl;
+      anchor.download = a.name;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      toast.error(`Download failed: ${err instanceof Error ? err.message : "unknown error"}`);
+    } finally {
+      setDownloading(null);
+    }
+  };
 
   useEffect(() => {
     if (!resId) return;
@@ -246,17 +275,19 @@ const AttachmentsPanel = ({ resModel, resId }: AttachmentsPanelProps) => {
                   >
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
-                  <a
-                    href={
-                      a.driveFileId
-                        ? `/api/dashboard/attachments/download?fileId=${encodeURIComponent(a.driveFileId)}`
-                        : a.downloadUrl
-                    }
+                  <button
+                    type="button"
+                    onClick={() => handleDownload(a)}
+                    disabled={downloading === a.id}
                     title="Download"
-                    className="p-1.5 rounded hover:bg-dash-bg text-dash-text-secondary hover:text-dash-text transition-colors"
+                    className="p-1.5 rounded hover:bg-dash-bg text-dash-text-secondary hover:text-dash-text transition-colors disabled:opacity-50"
                   >
-                    <Download className="w-3.5 h-3.5" />
-                  </a>
+                    {downloading === a.id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Download className="w-3.5 h-3.5" />
+                    )}
+                  </button>
                 </div>
               </li>
             );

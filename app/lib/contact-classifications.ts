@@ -42,10 +42,25 @@ const parseClassifications = (raw: string | undefined): ContactClassification[] 
 const serializeClassifications = (classifications: ContactClassification[]): string =>
   classifications.join(",");
 
+type DocumentContext = "invoice" | "bill" | "po" | "quote" | "receipt";
+
+const roleFilterFor = (ctx: DocumentContext): ContactClassification[] => {
+  switch (ctx) {
+    case "bill":
+    case "po":
+      return ["Vendor", "Supplies vendor"];
+    case "invoice":
+    case "quote":
+    case "receipt":
+      return ["Customer"];
+  }
+};
+
 export {
   CONTACT_CLASSIFICATIONS,
   CLASSIFICATION_COLORS,
   parseClassifications,
   serializeClassifications,
+  roleFilterFor,
 };
-export type { ContactClassification, CrmContact };
+export type { ContactClassification, CrmContact, DocumentContext };

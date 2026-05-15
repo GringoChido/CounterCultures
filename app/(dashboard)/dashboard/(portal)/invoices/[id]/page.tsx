@@ -24,6 +24,7 @@ import { PaymentLinkButton } from "@/app/(dashboard)/components/payments/payment
 import { InvoiceWorkflowPanel } from "@/app/(dashboard)/components/cfdi/invoice-workflow-panel";
 
 import { DownloadReportButton } from "@/app/(dashboard)/components/download-report-button";
+import { CompanyBadge, EntityTintedCard } from "@/app/(dashboard)/components/company-badge";
 
 interface InvoiceListRow {
   id: string;
@@ -45,6 +46,7 @@ interface InvoiceListRow {
   daysOverdue: number;
   agingBucket: string | null;
   isOverdue: boolean;
+  company: string;
   rawState: string;
 }
 
@@ -477,6 +479,7 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-2 mb-1">
             <h1 className="font-display text-2xl text-dash-text">{invoice.name}</h1>
+            <CompanyBadge company={invoice.company} />
             <StatusBadge label={invoice.rawState} variant={stateVariant(invoice.rawState)} />
             {invoice.paymentState && (
               <StatusBadge
@@ -513,36 +516,38 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
       </header>
 
       {/* KPI strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <div className="bg-dash-surface border border-dash-border p-4 rounded">
-          <div className="text-xs uppercase tracking-wider text-dash-text-secondary">Total</div>
-          <div className="text-xl font-semibold text-dash-text mt-1">
-            {fmt(invoice.total, invoice.currency)}
+      <EntityTintedCard company={invoice.company} className="p-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div>
+            <div className="text-xs uppercase tracking-wider text-dash-text-secondary">Total</div>
+            <div className="text-xl font-semibold text-dash-text mt-1">
+              {fmt(invoice.total, invoice.currency)}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-wider text-dash-text-secondary">Paid</div>
+            <div className="text-xl font-semibold text-brand-sage mt-1">
+              {fmt(paidAmount, invoice.currency)}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-wider text-dash-text-secondary">Balance</div>
+            <div
+              className={`text-xl font-semibold mt-1 ${
+                invoice.residual > 0 ? "text-brand-terracotta" : "text-dash-text"
+              }`}
+            >
+              {invoice.residual > 0 ? fmt(invoice.residual, invoice.currency) : "—"}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-wider text-dash-text-secondary">Tax</div>
+            <div className="text-xl font-semibold text-dash-text mt-1">
+              {fmt(num(rawInvoice.amount_tax), invoice.currency)}
+            </div>
           </div>
         </div>
-        <div className="bg-dash-surface border border-dash-border p-4 rounded">
-          <div className="text-xs uppercase tracking-wider text-dash-text-secondary">Paid</div>
-          <div className="text-xl font-semibold text-brand-sage mt-1">
-            {fmt(paidAmount, invoice.currency)}
-          </div>
-        </div>
-        <div className="bg-dash-surface border border-dash-border p-4 rounded">
-          <div className="text-xs uppercase tracking-wider text-dash-text-secondary">Balance</div>
-          <div
-            className={`text-xl font-semibold mt-1 ${
-              invoice.residual > 0 ? "text-brand-terracotta" : "text-dash-text"
-            }`}
-          >
-            {invoice.residual > 0 ? fmt(invoice.residual, invoice.currency) : "—"}
-          </div>
-        </div>
-        <div className="bg-dash-surface border border-dash-border p-4 rounded">
-          <div className="text-xs uppercase tracking-wider text-dash-text-secondary">Tax</div>
-          <div className="text-xl font-semibold text-dash-text mt-1">
-            {fmt(num(rawInvoice.amount_tax), invoice.currency)}
-          </div>
-        </div>
-      </div>
+      </EntityTintedCard>
 
       {invoice.residual > 0 &&
       (invoice.paymentState === "not_paid" ||

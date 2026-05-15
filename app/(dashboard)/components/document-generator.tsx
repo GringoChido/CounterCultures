@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   X,
   Plus,
@@ -29,6 +29,7 @@ import {
   type DeliveryReceiptData,
 } from "./templates/delivery-receipt-template";
 import { useProductInsert } from "./product-insert-context";
+import { CustomerCombobox } from "./customer-combobox";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -107,10 +108,29 @@ export const DocumentGenerator = ({
   const [validityDays, setValidityDays] = useState(15);
   const [deliveryEstimate, setDeliveryEstimate] = useState("");
 
-  // Invoice-specific
+  // Invoice-specific — tax rate picker fetches from registry
+  interface TaxRateOption { id: string; name: string; rate: number }
+  const [taxRateOptions, setTaxRateOptions] = useState<TaxRateOption[]>([]);
   const [taxRate, setTaxRate] = useState(16);
   const [stripeLink, setStripeLink] = useState("");
   const [dueDate, setDueDate] = useState(addDays(today(), 30));
+
+  const fetchTaxRates = useCallback(async () => {
+    try {
+      const res = await fetch("/api/dashboard/tax-rates");
+      const data = await res.json();
+      const opts = (data.rates ?? []) as TaxRateOption[];
+      setTaxRateOptions(opts);
+      if (opts.length > 0) {
+        const iva16 = opts.find((o) => o.rate === 16 && o.name.toLowerCase().includes("iva"));
+        setTaxRate((iva16 ?? opts[0]).rate);
+      }
+    } catch { /* keep default 16 */ }
+  }, []);
+
+  useEffect(() => {
+    if (docType === "invoice") fetchTaxRates();
+  }, [docType, fetchTaxRates]);
 
   // PO-specific
   const [vendorName, setVendorName] = useState("");
@@ -386,10 +406,13 @@ export const DocumentGenerator = ({
               </p>
               <div>
                 <label className={labelCls}>Name</label>
-                <input
-                  className={inputCls}
+                <CustomerCombobox
                   value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
+                  onChange={(v, hit) => {
+                    setCustomerName(v);
+                    if (hit?.email) setCustomerEmail(hit.email);
+                  }}
+                  partnerType="customer"
                   placeholder="Customer name"
                 />
               </div>
@@ -423,10 +446,10 @@ export const DocumentGenerator = ({
               </p>
               <div>
                 <label className={labelCls}>Vendor</label>
-                <input
-                  className={inputCls}
+                <CustomerCombobox
                   value={vendorName}
-                  onChange={(e) => setVendorName(e.target.value)}
+                  onChange={(v) => setVendorName(v)}
+                  partnerType="vendor"
                   placeholder="e.g. Ferguson, JCR"
                 />
               </div>
@@ -655,15 +678,28 @@ export const DocumentGenerator = ({
               </p>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className={labelCls}>Tax Rate (%)</label>
-                  <input
-                    className={inputCls}
-                    type="number"
-                    value={taxRate}
-                    onChange={(e) =>
-                      setTaxRate(parseFloat(e.target.value) || 0)
-                    }
-                  />
+                  <label className={labelCls}>Tasa / Tax Rate (%)</label>
+                  {taxRateOptions.length > 0 ? (
+                    <select
+                      className={inputCls}
+                      value={taxRate}
+                      onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
+                    >
+                      {taxRateOptions.map((o) => (
+                        <option key={o.id} value={o.rate}>
+                          {o.name} ({o.rate}%)
+                        </option>
+                      ))}
+                      <option value={0}>Sin impuesto / No tax (0%)</option>
+                    </select>
+                  ) : (
+                    <input
+                      className={inputCls}
+                      type="number"
+                      value={taxRate}
+                      onChange={(e) => setTaxRate(parseFloat(e.target.value) || 0)}
+                    />
+                  )}
                 </div>
                 <div>
                   <label className={labelCls}>Due Date</label>

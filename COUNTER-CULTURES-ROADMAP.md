@@ -81,6 +81,7 @@ For background and evidence behind any fix, see `docs/baseline/` (the read-mostl
 | P1.15 | **Drive dashboard page** — "Failed to load" despite service account connected | [`docs/fixes/p1-drive-page-fix.md`](docs/fixes/p1-drive-page-fix.md) | 🔴 PENDING | 4 hrs |
 | P1.16 | **Deprecated checkout/Stripe routes — final cleanup** (3 concurrent implementations) | [`docs/fixes/p1-deprecated-routes-cleanup.md`](docs/fixes/p1-deprecated-routes-cleanup.md) | 🔴 PENDING | 2 hrs |
 | P1.17 | **Cart IVA + shipping method picker + oversized freight flow** — IVA on cart page, 3-option shipping picker at checkout, oversized → custom freight quote | [`docs/fixes/p1-cart-iva-shipping-methods.md`](docs/fixes/p1-cart-iva-shipping-methods.md) | 🟢 DONE 2026-05-14 | 4 hrs |
+| P1.18 | **Antonina nav feedback (2026-05-14)** — entity badge + tinted totals on detail pages, PDF download fix, tax rate registry + picker, role-aware contact picker | [`docs/fixes/p1-antonina-nav-feedback-2026-05-14.md`](docs/fixes/p1-antonina-nav-feedback-2026-05-14.md) | 🟢 DONE 2026-05-14 | 4 hrs |
 
 ---
 

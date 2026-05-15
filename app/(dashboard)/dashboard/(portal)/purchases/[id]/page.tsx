@@ -21,6 +21,7 @@ import { AttachmentsPanel } from "@/app/(dashboard)/components/attachments-panel
 import { MessagesPanel } from "@/app/(dashboard)/components/messages-panel";
 
 import { DownloadReportButton } from "@/app/(dashboard)/components/download-report-button";
+import { CompanyBadge, EntityTintedCard } from "@/app/(dashboard)/components/company-badge";
 import { stripHtml } from "@/app/lib/strip-html";
 
 interface PORow {
@@ -35,6 +36,7 @@ interface PORow {
   invoiceStatus: string;
   daysOpen: number;
   isOverdue: boolean;
+  company: string;
   rawState: string;
 }
 
@@ -303,6 +305,7 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-2 mb-1">
             <h1 className="font-display text-2xl text-dash-text">{order.name}</h1>
+            <CompanyBadge company={order.company} />
             <StatusBadge label={stateLabel(order.rawState)} variant={stateVariant(order.rawState)} />
             {order.invoiceStatus && order.invoiceStatus !== "no" && (
               <StatusBadge
@@ -376,30 +379,32 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
       )}
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <div className="bg-dash-surface border border-dash-border p-4 rounded">
-          <div className="text-xs uppercase tracking-wider text-dash-text-secondary">Total</div>
-          <div className="text-xl font-semibold text-dash-text mt-1">
-            {fmt(order.amountTotal, order.currency)}
+      <EntityTintedCard company={order.company} className="p-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div>
+            <div className="text-xs uppercase tracking-wider text-dash-text-secondary">Total</div>
+            <div className="text-xl font-semibold text-dash-text mt-1">
+              {fmt(order.amountTotal, order.currency)}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-wider text-dash-text-secondary">Subtotal</div>
+            <div className="text-xl font-semibold text-dash-text mt-1">
+              {fmt(num(rawOrder.amount_untaxed), order.currency)}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-wider text-dash-text-secondary">Tax</div>
+            <div className="text-xl font-semibold text-dash-text mt-1">
+              {fmt(num(rawOrder.amount_tax), order.currency)}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-wider text-dash-text-secondary">Line items</div>
+            <div className="text-xl font-semibold text-dash-text mt-1">{lines.length}</div>
           </div>
         </div>
-        <div className="bg-dash-surface border border-dash-border p-4 rounded">
-          <div className="text-xs uppercase tracking-wider text-dash-text-secondary">Subtotal</div>
-          <div className="text-xl font-semibold text-dash-text mt-1">
-            {fmt(num(rawOrder.amount_untaxed), order.currency)}
-          </div>
-        </div>
-        <div className="bg-dash-surface border border-dash-border p-4 rounded">
-          <div className="text-xs uppercase tracking-wider text-dash-text-secondary">Tax</div>
-          <div className="text-xl font-semibold text-dash-text mt-1">
-            {fmt(num(rawOrder.amount_tax), order.currency)}
-          </div>
-        </div>
-        <div className="bg-dash-surface border border-dash-border p-4 rounded">
-          <div className="text-xs uppercase tracking-wider text-dash-text-secondary">Line items</div>
-          <div className="text-xl font-semibold text-dash-text mt-1">{lines.length}</div>
-        </div>
-      </div>
+      </EntityTintedCard>
 
       {/* Source — what triggered this PO */}
       {(rawOrder.origin || linkedSaleOrder) && (

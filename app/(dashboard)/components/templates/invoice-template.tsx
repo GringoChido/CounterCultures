@@ -25,7 +25,7 @@ const t = {
   qty: { en: "Qty", es: "Cant" },
   unitPrice: { en: "Unit Price", es: "Precio Unit." },
   subtotalLabel: { en: "Subtotal", es: "Subtotal" },
-  tax: { en: "IVA (16%)", es: "IVA (16%)" },
+  tax: (rate: number) => ({ en: `Tax (${rate}%)`, es: `Impuesto (${rate}%)` }),
   total: { en: "Total Due", es: "Total a Pagar" },
   payOnline: { en: "Pay Online", es: "Pagar en Linea" },
   notes: { en: "Notes", es: "Notas" },
@@ -142,7 +142,7 @@ export const InvoiceTemplate = ({ data }: { data: InvoiceData }) => {
             <span>{fmt(subtotal)}</span>
           </div>
           <div className="flex justify-between py-1.5">
-            <span className="text-dash-text-secondary">{t.tax[l]}</span>
+            <span className="text-dash-text-secondary">{t.tax(data.taxRate)[l]}</span>
             <span>{fmt(tax)}</span>
           </div>
           <div className="flex justify-between py-2 border-t-2 border-brand-copper font-semibold text-lg mt-1">
