@@ -1,7 +1,14 @@
 /**
- * GET /api/cron/keepalive — pings a tiny internal endpoint on a short
- * cadence to keep server-side caches (`products-full.ts`) and the Lambda
- * warm. No user-visible side effects; observable only via response time.
+ * GET /api/cron/keepalive — pings internal endpoints on a short cadence
+ * to keep server-side caches (`products-full.ts`) and the Lambda warm.
+ * No user-visible side effects; observable only via response time.
+ *
+ * Targets:
+ *   1. Search API — warms the products-full in-memory cache.
+ *   2. PDP pages — warms the SSR render path and seeds ISR edge cache
+ *      for 2 representative PDPs (both /en and /es). PDP slugs are
+ *      resolved dynamically from the search response so they stay
+ *      correct even when catalog data changes.
  *
  * Auth: requires `x-cron-probe-key` header matching the CRON_PROBE_KEY
  * env var. Netlify scheduled functions send this header via the
@@ -36,10 +43,7 @@ interface ProbeResult {
   error?: string;
 }
 
-// Tiny search query — warms products-full.ts' in-memory cache without
-// returning a meaningful payload. `q=a&limit=1` is the cheapest hit
-// that still exercises the search path end-to-end.
-const TARGETS: readonly string[] = ["/api/products/search?q=a&limit=1"];
+const SEARCH_TARGET = "/api/products/search?q=a&limit=1";
 
 const TIMEOUT_MS = 5000;
 
@@ -49,8 +53,6 @@ const probe = async (baseUrl: string, path: string): Promise<ProbeResult> => {
   const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
   try {
     const res = await fetch(`${baseUrl}${path}`, { signal: ctrl.signal });
-    // Drain the body so the connection can be released; we don't care
-    // about the payload, only that the route handler ran to completion.
     await res.text().catch(() => "");
     return { path, status: res.status, ms: Date.now() - t0 };
   } catch (err) {
@@ -61,29 +63,78 @@ const probe = async (baseUrl: string, path: string): Promise<ProbeResult> => {
   }
 };
 
+interface SearchItem {
+  slug?: string;
+  category?: string;
+  imageSrc?: string;
+}
+
+const resolvePdpPaths = async (baseUrl: string): Promise<string[]> => {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+  try {
+    const res = await fetch(
+      `${baseUrl}/api/products/search?q=&limit=10&sort=relevance`,
+      { signal: ctrl.signal },
+    );
+    if (!res.ok) return [];
+    const data = (await res.json()) as { items?: SearchItem[] };
+    const items = data.items ?? [];
+    return items
+      .filter(
+        (p): p is SearchItem & { slug: string; category: string } =>
+          !!p.slug && !!p.category && !!p.imageSrc,
+      )
+      .slice(0, 2)
+      .flatMap((p) => [
+        `/en/shop/${p.category}/p/${p.slug}`,
+        `/es/shop/${p.category}/p/${p.slug}`,
+      ]);
+  } catch {
+    return [];
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
 export const GET = async (req: NextRequest): Promise<Response> => {
   if (!isAuthorized(req)) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
-  // On Netlify `URL` is the canonical site URL; NEXT_PUBLIC_SITE_URL is
-  // a stable fallback we already set in prod env. `req.nextUrl.origin`
-  // covers local `next dev` so the route is also exercisable in tests.
   const baseUrl =
     process.env.URL ?? process.env.NEXT_PUBLIC_SITE_URL ?? req.nextUrl.origin;
 
   const results: ProbeResult[] = [];
-  for (const path of TARGETS) {
-    try {
-      results.push(await probe(baseUrl, path));
-    } catch (err) {
-      // Defensive: probe() already swallows errors, but keep keepalive
-      // crash-proof so a transient target failure never trips the cron
-      // run as a whole.
-      const msg = err instanceof Error ? err.message : "probe_threw";
-      console.error("[cron/keepalive]", path, msg);
-      results.push({ path, status: null, ms: 0, error: msg });
+
+  // Step 1: warm the products-full in-memory cache via search API
+  try {
+    results.push(await probe(baseUrl, SEARCH_TARGET));
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "probe_threw";
+    console.error("[cron/keepalive]", SEARCH_TARGET, msg);
+    results.push({ path: SEARCH_TARGET, status: null, ms: 0, error: msg });
+  }
+
+  // Step 2: resolve 2 PDP slugs from the now-warm catalog, then probe
+  // both /en and /es variants in parallel to warm the SSR path + ISR cache
+  try {
+    const pdpPaths = await resolvePdpPaths(baseUrl);
+    if (pdpPaths.length > 0) {
+      const pdpResults = await Promise.all(
+        pdpPaths.map((path) =>
+          probe(baseUrl, path).catch((err) => {
+            const msg = err instanceof Error ? err.message : "probe_threw";
+            console.error("[cron/keepalive]", path, msg);
+            return { path, status: null, ms: 0, error: msg } as ProbeResult;
+          }),
+        ),
+      );
+      results.push(...pdpResults);
     }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "pdp_resolve_failed";
+    console.error("[cron/keepalive] PDP target resolution failed:", msg);
   }
 
   return NextResponse.json({ ok: true, results });
