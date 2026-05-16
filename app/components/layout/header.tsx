@@ -21,6 +21,10 @@ import { CartIconButton } from "@/app/components/cart/cart-icon-button";
 import { CartDrawer } from "@/app/components/cart/cart-drawer";
 import { MyProjectsDropdown } from "@/app/components/nav/my-projects-dropdown";
 
+const setLocaleCookie = (locale: string) => {
+  document.cookie = `NEXT_LOCALE=${locale}; path=/; SameSite=lax; max-age=31536000`;
+};
+
 const LanguageToggle = ({
   variant,
   onSwitch,
@@ -28,13 +32,22 @@ const LanguageToggle = ({
   variant: "desktop" | "mobile";
   onSwitch?: () => void;
 }) => {
-  const pathname = usePathname();
   const lang = useLocale() as "en" | "es";
+  const intlPath = usePathname();
 
-  const buildHref = (next: "en" | "es") => {
-    const qs = typeof window !== "undefined" ? window.location.search : "";
-    const hash = typeof window !== "undefined" ? window.location.hash : "";
-    return `${pathname}${qs}${hash}`;
+  const ssrHref = (next: "en" | "es") => {
+    const path = intlPath === "/" ? "" : intlPath;
+    return `/${next}${path}`;
+  };
+
+  const handleClick = (e: React.MouseEvent, next: "en" | "es") => {
+    e.preventDefault();
+    setLocaleCookie(next);
+    const path = intlPath === "/" ? "" : intlPath;
+    const qs = window.location.search;
+    const hash = window.location.hash;
+    window.location.href = `/${next}${path}${qs}${hash}`;
+    onSwitch?.();
   };
 
   if (variant === "mobile") {
@@ -45,14 +58,13 @@ const LanguageToggle = ({
             English
           </span>
         ) : (
-          <Link
-            href={buildHref("en")}
-            locale="en"
-            onClick={() => onSwitch?.()}
+          <a
+            href={ssrHref("en")}
+            onClick={(e) => handleClick(e, "en")}
             className="font-body text-base font-medium text-dash-text-secondary hover:text-brand-charcoal transition-colors"
           >
             English
-          </Link>
+          </a>
         )}
         <span className="text-dash-text-secondary/40">|</span>
         {lang === "es" ? (
@@ -60,14 +72,13 @@ const LanguageToggle = ({
             Español
           </span>
         ) : (
-          <Link
-            href={buildHref("es")}
-            locale="es"
-            onClick={() => onSwitch?.()}
+          <a
+            href={ssrHref("es")}
+            onClick={(e) => handleClick(e, "es")}
             className="font-body text-base font-medium text-dash-text-secondary hover:text-brand-charcoal transition-colors"
           >
             Español
-          </Link>
+          </a>
         )}
       </div>
     );
@@ -84,14 +95,14 @@ const LanguageToggle = ({
           <span className="hidden sm:inline">English</span>
         </span>
       ) : (
-        <Link
-          href={buildHref("en")}
-          locale="en"
+        <a
+          href={ssrHref("en")}
+          onClick={(e) => handleClick(e, "en")}
           className="flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors text-dash-text-secondary hover:text-brand-charcoal"
         >
           <span className="sm:hidden">EN</span>
           <span className="hidden sm:inline">English</span>
-        </Link>
+        </a>
       )}
       <span className="text-dash-text-secondary/40">|</span>
       {lang === "es" ? (
@@ -103,14 +114,14 @@ const LanguageToggle = ({
           <span className="hidden sm:inline">Español</span>
         </span>
       ) : (
-        <Link
-          href={buildHref("es")}
-          locale="es"
+        <a
+          href={ssrHref("es")}
+          onClick={(e) => handleClick(e, "es")}
           className="flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors text-dash-text-secondary hover:text-brand-charcoal"
         >
           <span className="sm:hidden">ES</span>
           <span className="hidden sm:inline">Español</span>
-        </Link>
+        </a>
       )}
     </div>
   );
