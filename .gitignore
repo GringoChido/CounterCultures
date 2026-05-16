@@ -71,6 +71,7 @@ public/Assets/BRANDS/staging/
 
 # Claude Code session artifacts
 .claude/worktrees/
+.claude/settings.local.json
 .ts-check.json
 CLAUDE-CODE-*.md
 
