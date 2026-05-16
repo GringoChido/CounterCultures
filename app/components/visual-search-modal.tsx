@@ -13,6 +13,7 @@ import type { ProductFull } from "@/app/lib/products-full";
 import type { VisualAttributes } from "@/app/lib/visual-search";
 import { ProductVisual } from "@/app/components/product-visual";
 import { useCartStore } from "@/app/lib/stores/cart-store";
+import { pdpHref } from "@/app/lib/pdp-href";
 import { DialogRoot } from "@/app/components/ui/modal";
 import { IconButton } from "@/app/components/ui/icon-button";
 import { focusRing } from "@/app/components/ui/focus-ring";
@@ -166,7 +167,7 @@ const VisualSearchModal = ({
       currency: (p.currency === "USD" ? "USD" : "MXN") as "MXN" | "USD",
       listPrice: p.listPrice,
       quantity: 1,
-      productHref: `/${locale}/shop/${p.category}/p/${p.slug || p.sku}`,
+      productHref: pdpHref(locale, p),
       availability: "made-to-order",
       buyable: p.listPrice > 10,
     });

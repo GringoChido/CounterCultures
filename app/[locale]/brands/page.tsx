@@ -7,6 +7,7 @@ import { Footer } from "@/app/components/layout/footer";
 import { getBrands } from "@/app/lib/brand-kit-sheets";
 import { getBrandCounts, type BrandCount } from "@/app/lib/products-full";
 import type { CategorySlug } from "@/app/lib/brand-kit-types";
+import { FALLBACK_BRAND_META } from "@/app/lib/brand-fallbacks";
 import { BrandsGrid } from "./brands-grid";
 import { BRAND_HERO_IMAGES } from "@/app/lib/brand-heroes";
 
@@ -14,36 +15,6 @@ const BASE_URL = "https://countercultures.mx";
 
 // Brand hero images — single source of truth at app/lib/brand-heroes.ts
 const PRE_STAGED_HEROES = BRAND_HERO_IMAGES;
-
-/**
- * Fallback brands — used when the Brand Kit Sheet load returns empty
- * (e.g. GOOGLE_BRAND_KIT_SHEET_ID env var missing on the build host or
- * private_key parsing fails). Covers the 17 brands we have hero images
- * for so the "Our Import Partners" section never renders empty. When the
- * sheet IS configured and loads successfully, this fallback is bypassed.
- */
-const FALLBACK_BRAND_META: Record<
-  string,
-  { name: string; originCountry?: string; originCountryName?: string; primaryCategorySlug?: string; isFeatured?: boolean }
-> = {
-  kohler: { name: "Kohler", originCountry: "US", originCountryName: "United States", primaryCategorySlug: "faucetry-showers", isFeatured: true },
-  toto: { name: "TOTO", originCountry: "JP", originCountryName: "Japan", primaryCategorySlug: "toilets", isFeatured: true },
-  brizo: { name: "Brizo", originCountry: "US", originCountryName: "United States", primaryCategorySlug: "faucetry-showers", isFeatured: true },
-  blanco: { name: "BLANCO", originCountry: "DE", originCountryName: "Germany", primaryCategorySlug: "kitchen-sinks", isFeatured: true },
-  "california-faucets": { name: "California Faucets", originCountry: "US", originCountryName: "United States", primaryCategorySlug: "faucetry-showers", isFeatured: true },
-  "sun-valley-bronze": { name: "Sun Valley Bronze", originCountry: "US", originCountryName: "United States", primaryCategorySlug: "door-cabinet-hardware", isFeatured: true },
-  emtek: { name: "Emtek", originCountry: "US", originCountryName: "United States", primaryCategorySlug: "door-cabinet-hardware" },
-  badeloft: { name: "Badeloft", originCountry: "DE", originCountryName: "Germany", primaryCategorySlug: "bathtubs" },
-  "villeroy-boch": { name: "Villeroy & Boch", originCountry: "DE", originCountryName: "Germany", primaryCategorySlug: "bathroom-sinks" },
-  aquaspa: { name: "Aquaspa", originCountry: "US", originCountryName: "United States", primaryCategorySlug: "bathtubs" },
-  ebbe: { name: "Ebbe", originCountry: "US", originCountryName: "United States", primaryCategorySlug: "drains" },
-  delta: { name: "Delta", originCountry: "US", originCountryName: "United States", primaryCategorySlug: "faucetry-showers" },
-  rohl: { name: "Rohl", originCountry: "US", originCountryName: "United States", primaryCategorySlug: "faucetry-showers" },
-  teka: { name: "Teka", originCountry: "ES", originCountryName: "Spain", primaryCategorySlug: "kitchen-sinks" },
-  smeg: { name: "Smeg", originCountry: "IT", originCountryName: "Italy", primaryCategorySlug: "appliances" },
-  bluestar: { name: "BlueStar", originCountry: "US", originCountryName: "United States", primaryCategorySlug: "appliances" },
-  baldwin: { name: "Baldwin", originCountry: "US", originCountryName: "United States", primaryCategorySlug: "door-cabinet-hardware" },
-};
 
 const buildFallbackBrands = (): import("@/app/lib/brand-kit-types").Brand[] =>
   Object.entries(FALLBACK_BRAND_META).map(([slug, meta], idx) => ({

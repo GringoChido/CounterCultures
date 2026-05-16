@@ -1,0 +1,46 @@
+name: check-links
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  check-links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Wait for Netlify deploy preview
+        id: netlify
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Waiting for Netlify deploy preview..."
+          for i in $(seq 1 60); do
+            URL=$(gh pr view ${{ github.event.pull_request.number }} \
+              --json statusCheckRollup \
+              --jq '.statusCheckRollup[]
+                | select(.context // .name | test("netlify"; "i"))
+                | select(.state == "SUCCESS")
+                | .targetUrl // .detailsUrl' 2>/dev/null | head -1)
+            if [ -n "$URL" ]; then
+              echo "preview_url=$URL" >> "$GITHUB_OUTPUT"
+              echo "Deploy preview ready: $URL"
+              break
+            fi
+            echo "Attempt $i/60 — preview not ready, waiting 30s..."
+            sleep 30
+          done
+          if [ -z "$URL" ]; then
+            echo "::error::Netlify deploy preview did not become ready within 30 minutes"
+            exit 1
+          fi
+
+      - name: Run link checker against deploy preview
+        run: node scripts/check-internal-links.mjs ${{ steps.netlify.outputs.preview_url }}
