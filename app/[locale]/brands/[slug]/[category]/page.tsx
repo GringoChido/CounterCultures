@@ -113,7 +113,14 @@ export const generateMetadata = async ({
   const isEs = locale === "es";
   const copy = CATEGORY_COPY[category][isEs ? "es" : "en"];
   const summary = await getBrandCategorySummary(brand.name, category, { limit: 1 });
-  if (summary.count < 1) return { title: "Not Found", robots: { index: false } };
+  if (summary.count < 1) {
+    return {
+      title: isEs
+        ? `${brand.name} ${copy.label} — Counter Cultures`
+        : `${brand.name} ${copy.label} — Counter Cultures`,
+      robots: { index: false },
+    };
+  }
 
   const title = isEs
     ? `${copy.seoTitle(brand.name)} — Counter Cultures`
@@ -159,6 +166,65 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
   const isEs = locale === "es";
   const copy = CATEGORY_COPY[category][isEs ? "es" : "en"];
 
+  // Check product count FIRST — avoids expensive signal fetches for empty combos
+  // and prevents 500s when signal sheets are unavailable.
+  const quickCheck = await getBrandCategorySummary(brand.name, category as ProductCategory, { limit: 1 });
+  if (quickCheck.count === 0) {
+    return (
+      <>
+        <Header locale={locale} />
+        <main id="main" tabIndex={-1} className="pt-16 md:pt-20 bg-dash-surface">
+          <section className="bg-brand-linen border-b border-brand-stone/10">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+              <nav
+                className="flex items-center gap-2 text-[11px] tracking-[0.18em] uppercase text-dash-text-secondary font-body mb-6"
+                aria-label="Breadcrumb"
+              >
+                <Link href={`/${locale}/brands`} className="hover:text-brand-copper">
+                  {isEs ? "Marcas" : "Brands"}
+                </Link>
+                <span aria-hidden>/</span>
+                <Link href={`/${locale}/brands/${slug}`} className="hover:text-brand-copper">
+                  {brand.name}
+                </Link>
+                <span aria-hidden>/</span>
+                <span className="text-brand-charcoal">{copy.label}</span>
+              </nav>
+              <span className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-copper uppercase">
+                {isEs ? "Distribuidor Autorizado" : "Authorized Dealer"} · {copy.label}
+              </span>
+              <h1 className="mt-3 font-display text-4xl md:text-5xl font-light tracking-wide text-brand-charcoal leading-[1.05]">
+                {isEs
+                  ? `Aún no manejamos ${brand.name} en ${copy.label.toLowerCase()}.`
+                  : `We don't carry ${brand.name} in ${copy.label.toLowerCase()} yet.`}
+              </h1>
+              <p className="mt-5 font-body text-[15px] md:text-base text-dash-text-secondary max-w-xl leading-relaxed">
+                {isEs
+                  ? `Estamos ampliando nuestra selección de ${brand.name}. Contáctanos si necesitas una pieza específica — podemos cotizarla directo de fábrica.`
+                  : `We're expanding our ${brand.name} selection. Contact us if you need a specific piece — we can quote it direct from the factory.`}
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  href={`/${locale}/brands/${slug}`}
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-brand-charcoal text-white font-body font-semibold text-sm tracking-wide hover:bg-brand-charcoal/90 transition-colors"
+                >
+                  {isEs ? `Ver todos los productos de ${brand.name}` : `View all ${brand.name} products`} →
+                </Link>
+                <Link
+                  href={`/${locale}/shop/${category}`}
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-brand-charcoal text-brand-charcoal font-body font-medium text-sm tracking-wide hover:bg-brand-charcoal hover:text-white transition-colors"
+                >
+                  {isEs ? `Explorar ${copy.label.toLowerCase()}` : `Browse all ${copy.label.toLowerCase()}`}
+                </Link>
+              </div>
+            </div>
+          </section>
+        </main>
+        <Footer locale={locale} />
+      </>
+    );
+  }
+
   // Pull signals once and pass into the summary for ranking + decoration
   const [specScores, inShowroomIds] = await Promise.all([
     getMostSpecifiedScores(),
@@ -169,8 +235,6 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
     specScores,
     inShowroomIds,
   });
-
-  if (summary.count === 0) notFound();
 
   const otherCategories = (["bathroom", "kitchen", "hardware"] as const).filter(
     (c) => c !== category
