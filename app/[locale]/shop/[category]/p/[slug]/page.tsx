@@ -16,6 +16,7 @@ import {
   getMostSpecifiedScores,
 } from "@/app/lib/catalog-signals";
 import { getProductContent } from "@/app/lib/product-content";
+import { resolvePdpDescription } from "@/app/lib/pdp-description";
 import { BRANDS, PRODUCT_CATEGORIES } from "@/app/lib/constants";
 import type { CategoryKey } from "@/app/lib/constants";
 import { customerAuthOptions } from "@/app/lib/customer-auth";
@@ -64,10 +65,13 @@ export const generateMetadata = async ({
   const content = getProductContent(product.id);
   const isEs = locale === "es";
   const title = content?.title || product.name || product.sku;
-  const desc =
-    (isEs ? content?.descriptionEs : content?.descriptionEn) ||
-    content?.descriptionEs ||
-    `${product.brand} ${product.name}`;
+  // Use the single source of truth for PDP descriptions.
+  // See app/lib/pdp-description.ts + docs/commerce/PDP-DESCRIPTION-RULES.md.
+  const desc = resolvePdpDescription({
+    content,
+    product,
+    locale: isEs ? "es" : "en",
+  }).primary;
   const canonical = `${BASE_URL}/${locale}/shop/${category}/p/${slug}`;
   const images = content?.gallery?.length
     ? content.gallery
@@ -130,6 +134,14 @@ const PDPPage = async ({ params }: PDPProps) => {
   const content = getProductContent(product.id);
   const isEs = locale === "es";
 
+  // Single source of truth for the PDP description — visible block, JSON-LD,
+  // OpenGraph, and meta all read from this. See docs/commerce/PDP-DESCRIPTION-RULES.md.
+  const resolvedDescription = resolvePdpDescription({
+    content,
+    product,
+    locale: isEs ? "es" : "en",
+  });
+
   const [showroomIds, specScores, relatedRaw] = await Promise.all([
     getInShowroomIds().catch(() => new Set<string>()),
     getMostSpecifiedScores().catch(() => new Map()),
@@ -179,10 +191,7 @@ const PDPPage = async ({ params }: PDPProps) => {
     "@type": "Product",
     "@id": `${canonical}#product`,
     name: content?.title || product.name,
-    description:
-      (isEs ? content?.descriptionEs : content?.descriptionEn) ||
-      content?.descriptionEs ||
-      product.name,
+    description: resolvedDescription.primary,
     sku: product.sku,
     mpn: product.sku,
     brand: { "@type": "Brand", name: product.brand },
@@ -285,8 +294,8 @@ const PDPPage = async ({ params }: PDPProps) => {
           relatedProducts={relatedProducts}
           inShowroom={inShowroom}
           projectCount={projectCount}
-          descriptionEs={content?.descriptionEs}
-          descriptionEn={content?.descriptionEn}
+          descriptionEs={resolvedDescription.es}
+          descriptionEn={resolvedDescription.en}
           features={content?.features}
           gallery={images}
           finishes={content?.variants}
