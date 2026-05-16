@@ -5,6 +5,7 @@ import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { ProductVisual } from "@/app/components/product-visual";
 import { getBrandBySlug, getBrands } from "@/app/lib/brand-kit-sheets";
+import { getFallbackBrand } from "@/app/lib/brand-fallbacks";
 import {
   getBrandCategorySummary,
   getBrandCategoryCombos,
@@ -107,7 +108,7 @@ export const generateMetadata = async ({
 }: PageProps): Promise<Metadata> => {
   const { slug, category, locale } = await params;
   if (!isValidCategory(category)) return { title: "Not Found" };
-  const brand = await getBrandBySlug(slug);
+  const brand = (await getBrandBySlug(slug)) ?? getFallbackBrand(slug);
   if (!brand) return { title: "Not Found" };
 
   const isEs = locale === "es";
@@ -160,7 +161,7 @@ const formatPrice = (p: number, cur: string, locale: string) =>
 const BrandCategoryPage = async ({ params }: PageProps) => {
   const { slug, category, locale } = await params;
   if (!isValidCategory(category)) notFound();
-  const brand = await getBrandBySlug(slug);
+  const brand = (await getBrandBySlug(slug)) ?? getFallbackBrand(slug);
   if (!brand) notFound();
 
   const isEs = locale === "es";

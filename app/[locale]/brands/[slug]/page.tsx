@@ -8,6 +8,7 @@ import { CategoryHero } from "@/app/components/sections/category-hero";
 import { ShopCatalog } from "@/app/[locale]/shop/shop-catalog";
 import { getProductsByBrand } from "@/app/lib/sheets";
 import { getBrandBySlug, getBrands } from "@/app/lib/brand-kit-sheets";
+import { getFallbackBrand } from "@/app/lib/brand-fallbacks";
 import { getBrandSummary } from "@/app/lib/products-full";
 import { pdpUrl } from "@/app/lib/pdp-href";
 import { articles, pillarColors, pillarLabels } from "@/app/lib/articles";
@@ -39,7 +40,7 @@ export const generateMetadata = async ({
   params,
 }: BrandPageProps): Promise<Metadata> => {
   const { slug, locale } = await params;
-  const brand = await getBrandBySlug(slug);
+  const brand = (await getBrandBySlug(slug)) ?? getFallbackBrand(slug);
   if (!brand) return { title: "Brand Not Found" };
 
   const isEs = locale === "es";
@@ -89,7 +90,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
   const { slug, locale } = await params;
   const isEs = locale === "es";
 
-  const brand = await getBrandBySlug(slug);
+  const brand = (await getBrandBySlug(slug)) ?? getFallbackBrand(slug);
   if (!brand) notFound();
 
   // External-state brands should have redirected at the card click, but if
