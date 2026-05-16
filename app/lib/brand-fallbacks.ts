@@ -28,6 +28,7 @@ const FALLBACK_BRAND_META: Record<
   bluestar: { name: "BlueStar", originCountry: "US", originCountryName: "United States", primaryCategorySlug: "appliances" },
   baldwin: { name: "Baldwin", originCountry: "US", originCountryName: "United States", primaryCategorySlug: "door-cabinet-hardware" },
   "chicago-faucets": { name: "Chicago Faucets", originCountry: "US", originCountryName: "United States", primaryCategorySlug: "faucetry-showers" },
+  dxv: { name: "DXV", originCountry: "US", originCountryName: "United States", primaryCategorySlug: "faucetry-showers" },
 };
 
 export { FALLBACK_BRAND_META };
