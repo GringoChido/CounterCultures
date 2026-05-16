@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import NextLink from "next/link";
-import { Link, usePathname, useRouter } from "@/app/i18n/navigation";
+import { Link, usePathname } from "@/app/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -28,77 +28,90 @@ const LanguageToggle = ({
   variant: "desktop" | "mobile";
   onSwitch?: () => void;
 }) => {
-  const router = useRouter();
   const pathname = usePathname();
   const lang = useLocale() as "en" | "es";
 
-  const switchTo = (next: "en" | "es") => {
-    if (next === lang) return;
-    const qs = window.location.search;
-    const hash = window.location.hash;
-    router.replace(`${pathname}${qs}${hash}`, { locale: next, scroll: false });
-    onSwitch?.();
+  const buildHref = (next: "en" | "es") => {
+    const qs = typeof window !== "undefined" ? window.location.search : "";
+    const hash = typeof window !== "undefined" ? window.location.hash : "";
+    return `${pathname}${qs}${hash}`;
   };
 
   if (variant === "mobile") {
     return (
       <div className="flex items-center justify-center gap-4 py-3.5 border-b border-brand-stone/5">
-        <button
-          type="button"
-          onClick={() => switchTo("en")}
-          className={`font-body text-base font-medium transition-colors cursor-pointer ${
-            lang === "en"
-              ? "text-brand-terracotta pointer-events-none"
-              : "text-dash-text-secondary hover:text-brand-charcoal"
-          }`}
-        >
-          English
-        </button>
+        {lang === "en" ? (
+          <span className="font-body text-base font-medium text-brand-terracotta">
+            English
+          </span>
+        ) : (
+          <Link
+            href={buildHref("en")}
+            locale="en"
+            onClick={() => onSwitch?.()}
+            className="font-body text-base font-medium text-dash-text-secondary hover:text-brand-charcoal transition-colors"
+          >
+            English
+          </Link>
+        )}
         <span className="text-dash-text-secondary/40">|</span>
-        <button
-          type="button"
-          onClick={() => switchTo("es")}
-          className={`font-body text-base font-medium transition-colors cursor-pointer ${
-            lang === "es"
-              ? "text-brand-terracotta pointer-events-none"
-              : "text-dash-text-secondary hover:text-brand-charcoal"
-          }`}
-        >
-          Español
-        </button>
+        {lang === "es" ? (
+          <span className="font-body text-base font-medium text-brand-terracotta">
+            Español
+          </span>
+        ) : (
+          <Link
+            href={buildHref("es")}
+            locale="es"
+            onClick={() => onSwitch?.()}
+            className="font-body text-base font-medium text-dash-text-secondary hover:text-brand-charcoal transition-colors"
+          >
+            Español
+          </Link>
+        )}
       </div>
     );
   }
 
   return (
     <div className="flex items-center font-body text-xs tracking-wider">
-      <button
-        type="button"
-        onClick={() => switchTo("en")}
-        className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors cursor-pointer ${
-          lang === "en"
-            ? "text-brand-terracotta font-bold pointer-events-none"
-            : "text-dash-text-secondary hover:text-brand-charcoal"
-        }`}
-        aria-current={lang === "en" ? "true" : undefined}
-      >
-        <span className="sm:hidden">EN</span>
-        <span className="hidden sm:inline">English</span>
-      </button>
+      {lang === "en" ? (
+        <span
+          className="flex items-center justify-center h-11 px-1.5 sm:px-2 text-brand-terracotta font-bold"
+          aria-current="true"
+        >
+          <span className="sm:hidden">EN</span>
+          <span className="hidden sm:inline">English</span>
+        </span>
+      ) : (
+        <Link
+          href={buildHref("en")}
+          locale="en"
+          className="flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors text-dash-text-secondary hover:text-brand-charcoal"
+        >
+          <span className="sm:hidden">EN</span>
+          <span className="hidden sm:inline">English</span>
+        </Link>
+      )}
       <span className="text-dash-text-secondary/40">|</span>
-      <button
-        type="button"
-        onClick={() => switchTo("es")}
-        className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors cursor-pointer ${
-          lang === "es"
-            ? "text-brand-terracotta font-bold pointer-events-none"
-            : "text-dash-text-secondary hover:text-brand-charcoal"
-        }`}
-        aria-current={lang === "es" ? "true" : undefined}
-      >
-        <span className="sm:hidden">ES</span>
-        <span className="hidden sm:inline">Español</span>
-      </button>
+      {lang === "es" ? (
+        <span
+          className="flex items-center justify-center h-11 px-1.5 sm:px-2 text-brand-terracotta font-bold"
+          aria-current="true"
+        >
+          <span className="sm:hidden">ES</span>
+          <span className="hidden sm:inline">Español</span>
+        </span>
+      ) : (
+        <Link
+          href={buildHref("es")}
+          locale="es"
+          className="flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors text-dash-text-secondary hover:text-brand-charcoal"
+        >
+          <span className="sm:hidden">ES</span>
+          <span className="hidden sm:inline">Español</span>
+        </Link>
+      )}
     </div>
   );
 };
