@@ -7,6 +7,7 @@ import {
   getProductBySlug,
   getRelatedProducts,
   getProductSlug,
+  getTopPdpSlugs,
   type ProductCategory,
 } from "@/app/lib/products-full";
 import { pdpUrl } from "@/app/lib/pdp-href";
@@ -28,6 +29,24 @@ const BASE_URL = "https://countercultures.mx";
 const BRAND_SLUG_MAP = new Map<string, string>(BRANDS.map((b) => [b.name, b.slug]));
 
 const VALID_CATEGORIES = new Set<string>(["bathroom", "kitchen", "hardware"]);
+
+export const generateStaticParams = async (): Promise<
+  Array<{ locale: string; category: string; slug: string }>
+> => {
+  try {
+    const params = await getTopPdpSlugs(1000);
+    console.log(
+      `[generateStaticParams] PDP: ${params.length} params (${params.length / 2} slugs × 2 locales)`,
+    );
+    return params;
+  } catch (err) {
+    console.warn(
+      "[generateStaticParams] PDP pre-render failed — falling back to ISR-only:",
+      err instanceof Error ? err.message : err,
+    );
+    return [];
+  }
+};
 
 interface PDPProps {
   params: Promise<{ locale: string; category: string; slug: string }>;
@@ -88,6 +107,7 @@ export const generateMetadata = async ({
 };
 
 const PDPPage = async ({ params }: PDPProps) => {
+  const t0 = Date.now();
   const { locale, category, slug } = await params;
   const lang = (locale as "en" | "es") || "en";
   if (!VALID_CATEGORIES.has(category)) notFound();
@@ -225,6 +245,10 @@ const PDPPage = async ({ params }: PDPProps) => {
       },
     ],
   };
+
+  console.log(
+    `[pdp-render] ${locale}/${category}/${slug} — ${Date.now() - t0}ms — product=${product.id} brand=${product.brand}`,
+  );
 
   return (
     <>
