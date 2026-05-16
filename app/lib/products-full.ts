@@ -992,3 +992,36 @@ export const getRelatedProducts = async (
 };
 
 export const getProductSlug = (p: ProductFull): string => toSlug(p.name, p.sku);
+
+// ── Build-time pre-rendering candidates ───────────────────────────────
+
+export interface PdpSlugParams {
+  locale: string;
+  category: string;
+  slug: string;
+}
+
+export const getTopPdpSlugs = async (
+  limit = 1000,
+): Promise<PdpSlugParams[]> => {
+  const c = await getCache();
+  if (c.products.length === 0) return [];
+
+  const candidates = c.products
+    .filter((p) => p.active && p.saleOk && p.imageSrc)
+    .slice(0, limit);
+
+  const params: PdpSlugParams[] = [];
+  const seen = new Set<string>();
+  for (const p of candidates) {
+    const slug = toSlug(p.name, p.sku);
+    const key = `${p.category}/${slug}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    params.push(
+      { locale: "en", category: p.category, slug },
+      { locale: "es", category: p.category, slug },
+    );
+  }
+  return params;
+};
