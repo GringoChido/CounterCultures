@@ -228,7 +228,9 @@ const results = [...visited.entries()]
 
 const ok = results.filter(([, r]) => r.status >= 200 && r.status < 300 && !r.redirected);
 const redirects = results.filter(([, r]) => r.redirected || (r.status >= 300 && r.status < 400));
-const notFound = results.filter(([, r]) => r.status >= 400 && r.status < 500);
+const notFound = results.filter(([, r]) => r.status === 404);
+const forbidden = results.filter(([, r]) => r.status === 403);
+const otherClientErr = results.filter(([, r]) => r.status >= 400 && r.status < 500 && r.status !== 404 && r.status !== 403);
 const serverErr = results.filter(([, r]) => r.status >= 500);
 const networkErr = results.filter(([, r]) => r.status === 0);
 
@@ -244,8 +246,21 @@ if (redirects.length > 0) {
 }
 
 if (notFound.length > 0) {
-  console.log(`❌ 4xx NOT FOUND: ${notFound.length} urls`);
+  console.log(`❌ 404 NOT FOUND: ${notFound.length} urls`);
   for (const [path, r] of notFound) {
+    console.log(`   ${path}`);
+  }
+  console.log();
+}
+
+if (forbidden.length > 0) {
+  console.log(`⚠️  403 FORBIDDEN (bot protection, not broken links): ${forbidden.length} urls`);
+  console.log();
+}
+
+if (otherClientErr.length > 0) {
+  console.log(`⚠️  Other 4xx: ${otherClientErr.length} urls`);
+  for (const [path, r] of otherClientErr) {
     console.log(`   ${path} (${r.status})`);
   }
   console.log();
