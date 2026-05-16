@@ -1,0 +1,3 @@
+# Paths listed here are skipped by scripts/check-internal-links.mjs.
+# One path prefix per line. Exact prefix match (no globs).
+# Example: /en/some-intentional-redirect
