@@ -163,13 +163,13 @@ const BrandPage = async ({ params }: BrandPageProps) => {
     if (isStocked && !hasProducts) {
       return {
         label: isEs ? "Reservar Visita al Showroom" : "Book a Showroom Visit",
-        href: `/${locale}/showroom?brand=${slug}`,
+        href: `/showroom?brand=${slug}`,
       };
     }
     // request state (and any unknown fallback)
     return {
       label: isEs ? "Solicitar Cotización" : "Request a Quote",
-      href: `/${locale}/contact?brand=${slug}`,
+      href: `/contact?brand=${slug}`,
     };
   })();
 

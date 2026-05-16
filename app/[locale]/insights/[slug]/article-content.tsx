@@ -266,7 +266,7 @@ export const ArticleContent = ({
                       <Button
                         variant="ghost"
                         size="sm"
-                        href={`/${locale}/contact`}
+                        href="/contact"
                       >
                         {locale === "es" ? "Contactar" : "Get in Touch"}
                       </Button>
@@ -350,7 +350,7 @@ export const ArticleContent = ({
                   : "Articles on design, product comparisons, and trends. No spam."}
               </p>
               <div className="mt-8">
-                <Button variant="primary" size="md" href={`/${locale}/contact`}>
+                <Button variant="primary" size="md" href="/contact">
                   {locale === "es" ? "Suscribirse" : "Subscribe"}
                 </Button>
               </div>
