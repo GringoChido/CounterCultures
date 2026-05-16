@@ -19,11 +19,11 @@ export default async function CartPage({ params }: CartPageProps) {
   const lang = (locale as "en" | "es") || "en";
   return (
     <>
-      <Header locale={lang} />
+      <Header />
       <main id="main" tabIndex={-1} className="pt-20">
         <CartPageClient locale={lang} />
       </main>
-      <Footer locale={lang} />
+      <Footer />
     </>
   );
 }

@@ -1,4 +1,8 @@
-import Link from "next/link";
+"use client";
+
+import { Link } from "@/app/i18n/navigation";
+import NextLink from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import { SITE_CONFIG } from "@/app/lib/constants";
 
 const InstagramIcon = ({ className }: { className?: string }) => (
@@ -39,18 +43,9 @@ const footerNav = {
   ],
 };
 
-const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
-  const lang = (localeProp as "en" | "es") || "en";
-  const t = {
-    collections: { en: "Collections", es: "Colecciones" },
-    company: { en: "Company", es: "Compañía" },
-    contact: { en: "Contact", es: "Contacto" },
-    follow: { en: "Follow", es: "Síguenos" },
-    curated: {
-      en: "Premium kitchen, bath & architectural hardware — curated in San Miguel de Allende, Mexico.",
-      es: "Cocina, baño y herrajes arquitectónicos premium — curado en San Miguel de Allende, México.",
-    },
-  };
+const Footer = () => {
+  const lang = useLocale() as "en" | "es";
+  const t = useTranslations("footer");
 
   return (
     <footer className="bg-brand-charcoal text-white py-14 md:py-16">
@@ -61,7 +56,7 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
             Counter Cultures
           </span>
           <span className="block font-body font-semibold text-[10px] tracking-[0.2em] text-dash-text-secondary uppercase mt-1">
-            {lang === "es" ? "Cocina, Baño y Herrajes Premium" : "Premium Kitchen, Bath & Hardware"}
+            {t("tagline")}
           </span>
         </Link>
 
@@ -69,13 +64,13 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
           {/* Collections */}
           <div>
             <h4 className="font-body text-sm font-semibold tracking-wider uppercase mb-4 text-brand-sand">
-              {t.collections[lang]}
+              {t("collections")}
             </h4>
             <ul className="space-y-1">
               {footerNav.collections.map((link) => (
                 <li key={link.href}>
                   <Link
-                    href={`/${lang}${link.href}`}
+                    href={link.href}
                     className="inline-flex items-center min-h-[36px] font-body text-sm text-dash-text-secondary hover:text-brand-terracotta transition-colors"
                   >
                     {link.label[lang]}
@@ -88,13 +83,13 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
           {/* Company */}
           <div>
             <h4 className="font-body text-sm font-semibold tracking-wider uppercase mb-4 text-brand-sand">
-              {t.company[lang]}
+              {t("company")}
             </h4>
             <ul className="space-y-1">
               {footerNav.company.map((link) => (
                 <li key={link.href}>
                   <Link
-                    href={`/${lang}${link.href}`}
+                    href={link.href}
                     className="inline-flex items-center min-h-[36px] font-body text-sm text-dash-text-secondary hover:text-brand-terracotta transition-colors"
                   >
                     {link.label[lang]}
@@ -107,7 +102,7 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
           {/* Contact */}
           <div>
             <h4 className="font-body text-sm font-semibold tracking-wider uppercase mb-4 text-brand-sand">
-              {t.contact[lang]}
+              {t("contact")}
             </h4>
             <ul className="space-y-2 font-body text-sm text-dash-text-secondary">
               <li>
@@ -143,7 +138,7 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
           {/* Social — icons */}
           <div>
             <h4 className="font-body text-sm font-semibold tracking-wider uppercase mb-4 text-brand-sand">
-              {t.follow[lang]}
+              {t("follow")}
             </h4>
             <div className="flex items-center gap-4">
               <a
@@ -181,46 +176,46 @@ const Footer = ({ locale: localeProp = "en" }: { locale?: string }) => {
         <div className="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="font-body text-xs text-dash-text-secondary">
             &copy; {new Date().getFullYear()} Counter Cultures.{" "}
-            {t.curated[lang]}
+            {t("curated")}
           </p>
           <div className="flex flex-wrap items-center gap-4">
             <Link
-              href={`/${lang}/privacy`}
+              href="/privacy"
               className="font-body text-xs text-dash-text-secondary hover:text-brand-terracotta transition-colors"
             >
-              {lang === "es" ? "Privacidad" : "Privacy"}
+              {t("privacy")}
             </Link>
             <Link
-              href={`/${lang}/payment-methods`}
+              href="/payment-methods"
               className="font-body text-xs text-dash-text-secondary hover:text-brand-terracotta transition-colors"
             >
-              {lang === "es" ? "Métodos de Pago" : "Payment Methods"}
+              {t("paymentMethods")}
             </Link>
             <Link
-              href={`/${lang}/sales-delivery`}
+              href="/sales-delivery"
               className="font-body text-xs text-dash-text-secondary hover:text-brand-terracotta transition-colors"
             >
-              {lang === "es" ? "Venta y Entrega" : "Sales & Delivery"}
+              {t("salesDelivery")}
             </Link>
             <Link
-              href={`/${lang}/returns-warranty`}
+              href="/returns-warranty"
               className="font-body text-xs text-dash-text-secondary hover:text-brand-terracotta transition-colors"
             >
-              {lang === "es" ? "Devoluciones" : "Returns & Warranty"}
+              {t("returns")}
             </Link>
-            <Link
+            <NextLink
               href="/dashboard/login"
               className="font-body text-xs text-dash-text-secondary/50 hover:text-dash-text-secondary transition-colors"
             >
-              {lang === "es" ? "Portal del Equipo" : "Team Portal"}
-            </Link>
+              {t("teamPortal")}
+            </NextLink>
           </div>
         </div>
 
         {/* Built by Untold.works */}
         <div className="mt-4 text-center">
           <p className="font-body text-[11px] text-dash-text-secondary/50">
-            {lang === "es" ? "Creado por" : "Built by"}{" "}
+            {t("builtBy")}{" "}
             <a
               href="https://untold.works"
               target="_blank"

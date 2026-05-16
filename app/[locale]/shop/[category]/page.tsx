@@ -203,7 +203,7 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }} />
-      <Header locale={lang} />
+      <Header />
       <main id="main" tabIndex={-1}>
         {/* SECTION 1: Cinematic Full-Height Hero */}
         <section className="relative h-[70vh] md:h-screen flex items-end overflow-hidden">
@@ -258,7 +258,7 @@ const CategoryPage = async ({ params }: CategoryPageProps) => {
         {/* SECTION 4: How it works trust band */}
         <HowItWorksBand locale={lang} variant="light" />
       </main>
-      <Footer locale={lang} />
+      <Footer />
     </>
   );
 };

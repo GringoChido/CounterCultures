@@ -95,7 +95,7 @@ export const HospitalityContent = () => {
 
   return (
     <>
-      <Header locale={locale} />
+      <Header />
       <main id="main" tabIndex={-1}>
         {/* HERO — full-bleed, real client image, copy overlaid */}
         <section className="relative min-h-[80vh] md:min-h-[88vh] flex items-end overflow-hidden bg-brand-charcoal">
@@ -252,7 +252,7 @@ export const HospitalityContent = () => {
           </div>
         </section>
       </main>
-      <Footer locale={locale} />
+      <Footer />
     </>
   );
 };

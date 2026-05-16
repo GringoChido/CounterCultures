@@ -113,7 +113,7 @@ export const ShowroomContent = () => {
 
   return (
   <>
-    <Header locale={locale} />
+    <Header />
     <main id="main" tabIndex={-1}>
       <CategoryHero
         eyebrow={t.heroEyebrow[locale]}
@@ -337,7 +337,7 @@ export const ShowroomContent = () => {
         </div>
       </section>
     </main>
-    <Footer locale={locale} />
+    <Footer />
   </>
   );
 };

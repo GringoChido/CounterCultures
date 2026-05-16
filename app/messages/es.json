@@ -18,7 +18,13 @@
   },
   "nav": {
     "visitShowroom": "Visitar Showroom",
-    "whatsapp": "WhatsApp"
+    "whatsapp": "WhatsApp",
+    "search": "Buscar…",
+    "searchAriaLabel": "Buscar (⌘K)",
+    "viewAll": "Ver Todo",
+    "viewAllCategory": "Ver Todo {category}",
+    "artisanalCollection": "Colección Artesanal",
+    "artisanalCollectionDesc": "Explora piezas hechas a mano por los maestros artesanos de México"
   },
   "hero": {
     "visitShowroom": "Visitar Showroom"
@@ -117,7 +123,14 @@
     "ourStory": "Nuestra Historia",
     "projects": "Proyectos",
     "blog": "Blog",
-    "tradeProgram": "Programa Trade"
+    "tradeProgram": "Programa Trade",
+    "tagline": "Cocina, Baño y Herrajes Premium",
+    "privacy": "Privacidad",
+    "paymentMethods": "Métodos de Pago",
+    "salesDelivery": "Venta y Entrega",
+    "returns": "Devoluciones",
+    "teamPortal": "Portal del Equipo",
+    "builtBy": "Creado por"
   },
   "shop": {
     "breadcrumbHome": "Inicio",

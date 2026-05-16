@@ -283,7 +283,7 @@ export const ResourcesContent = ({ brandCards }: { brandCards: BrandCard[] }) =>
 
   return (
     <>
-      <Header locale={locale} />
+      <Header />
       <main id="main" tabIndex={-1}>
         {/* HERO — full-bleed image, editorial overlay */}
         <section className="relative min-h-[88vh] md:min-h-[90vh] flex items-end overflow-hidden bg-brand-charcoal">
@@ -774,7 +774,7 @@ export const ResourcesContent = ({ brandCards }: { brandCards: BrandCard[] }) =>
           </div>
         </section>
       </main>
-      <Footer locale={locale} />
+      <Footer />
     </>
   );
 };

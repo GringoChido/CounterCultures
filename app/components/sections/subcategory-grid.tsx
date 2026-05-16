@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 import NextLink from "next/link";
+import { Link } from "@/app/i18n/navigation";
 
 interface SubcategoryCard {
   slug: string;
@@ -200,8 +201,8 @@ const SubcategoryGrid = ({
                 viewport={{ once: true, margin: "-60px" }}
                 custom={i}
               >
-                <NextLink
-                  href={`/${locale}/shop/${category}/${sub.slug}`}
+                <Link
+                  href={`/shop/${category}/${sub.slug}`}
                   className="group relative block overflow-hidden rounded-lg"
                 >
                   <div className="relative w-full aspect-[4/5] overflow-hidden">
@@ -231,7 +232,7 @@ const SubcategoryGrid = ({
                       )}
                     </div>
                   </div>
-                </NextLink>
+                </Link>
               </motion.div>
             );
           })}

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import NextLink from "next/link";
+import { Link } from "@/app/i18n/navigation";
 import type {
   CategoryBrand,
   CategoryBrandSection,
@@ -62,16 +62,16 @@ const BrandName = ({
   // filtered by brand name — always renders, never 404s, lets the user
   // see what we carry from that brand right now.
   const href = brand.slug
-    ? `/${locale}/brands/${brand.slug}/${category}`
-    : `/${locale}/shop/catalog?brand=${encodeURIComponent(brand.name)}&category=${category}`;
+    ? `/brands/${brand.slug}/${category}`
+    : `/shop/catalog?brand=${encodeURIComponent(brand.name)}&category=${category}`;
 
   return (
-    <NextLink
+    <Link
       href={href}
       className={`${flagshipClass} hover:text-brand-copper transition-colors duration-300`}
     >
       {brand.name}
-    </NextLink>
+    </Link>
   );
 };
 

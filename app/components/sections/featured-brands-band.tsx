@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/app/i18n/navigation";
 import type { Brand } from "@/app/lib/brand-kit-types";
 import { FeaturedBrandCard } from "./featured-brand-card";
 
@@ -58,7 +58,7 @@ const FeaturedBrandsBand = ({ locale, brands }: FeaturedBrandsBandProps) => {
             </p>
           </div>
           <Link
-            href={`/${locale}/brands`}
+            href="/brands"
             className="group inline-flex items-center gap-2 font-body text-xs tracking-[0.2em] uppercase text-brand-copper hover:text-white transition-colors"
           >
             {t.seeAll}
@@ -70,7 +70,7 @@ const FeaturedBrandsBand = ({ locale, brands }: FeaturedBrandsBandProps) => {
           {brands.map((b) => (
             <Link
               key={b.slug}
-              href={`/${locale}/brands/${b.slug}`}
+              href={`/brands/${b.slug}`}
               className="group relative aspect-[4/3] bg-brand-charcoal border border-white/10 hover:border-brand-copper/70 transition-all overflow-hidden"
             >
               <FeaturedBrandCard

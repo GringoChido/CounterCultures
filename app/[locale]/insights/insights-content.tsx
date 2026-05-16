@@ -50,7 +50,7 @@ export const InsightsContent = ({
 
   return (
     <>
-      <Header locale={locale} />
+      <Header />
       <main id="main" tabIndex={-1}>
         {/* Full-Bleed Hero */}
         <section className="relative h-[70vh] min-h-[500px] md:h-[85vh] md:min-h-[640px] w-full overflow-hidden bg-brand-charcoal">
@@ -181,7 +181,7 @@ export const InsightsContent = ({
           </div>
         </section>
       </main>
-      <Footer locale={locale} />
+      <Footer />
     </>
   );
 };

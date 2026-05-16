@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import NextLink from "next/link";
-import { usePathname as useIntlPathname } from "@/app/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/app/i18n/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Menu,
@@ -20,8 +21,91 @@ import { CartIconButton } from "@/app/components/cart/cart-icon-button";
 import { CartDrawer } from "@/app/components/cart/cart-drawer";
 import { MyProjectsDropdown } from "@/app/components/nav/my-projects-dropdown";
 
-const Header = ({ locale: localeProp = "en", transparent = false }: { locale?: string; transparent?: boolean }) => {
-  const locale = localeProp as "en" | "es";
+const LanguageToggle = ({
+  variant,
+  onSwitch,
+}: {
+  variant: "desktop" | "mobile";
+  onSwitch?: () => void;
+}) => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const lang = useLocale() as "en" | "es";
+
+  const switchTo = (next: "en" | "es") => {
+    if (next === lang) return;
+    const qs = window.location.search;
+    const hash = window.location.hash;
+    router.replace(`${pathname}${qs}${hash}`, { locale: next, scroll: false });
+    onSwitch?.();
+  };
+
+  if (variant === "mobile") {
+    return (
+      <div className="flex items-center justify-center gap-4 py-3.5 border-b border-brand-stone/5">
+        <button
+          type="button"
+          onClick={() => switchTo("en")}
+          className={`font-body text-base font-medium transition-colors cursor-pointer ${
+            lang === "en"
+              ? "text-brand-terracotta pointer-events-none"
+              : "text-dash-text-secondary hover:text-brand-charcoal"
+          }`}
+        >
+          English
+        </button>
+        <span className="text-dash-text-secondary/40">|</span>
+        <button
+          type="button"
+          onClick={() => switchTo("es")}
+          className={`font-body text-base font-medium transition-colors cursor-pointer ${
+            lang === "es"
+              ? "text-brand-terracotta pointer-events-none"
+              : "text-dash-text-secondary hover:text-brand-charcoal"
+          }`}
+        >
+          Español
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center font-body text-xs tracking-wider">
+      <button
+        type="button"
+        onClick={() => switchTo("en")}
+        className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors cursor-pointer ${
+          lang === "en"
+            ? "text-brand-terracotta font-bold pointer-events-none"
+            : "text-dash-text-secondary hover:text-brand-charcoal"
+        }`}
+        aria-current={lang === "en" ? "true" : undefined}
+      >
+        <span className="sm:hidden">EN</span>
+        <span className="hidden sm:inline">English</span>
+      </button>
+      <span className="text-dash-text-secondary/40">|</span>
+      <button
+        type="button"
+        onClick={() => switchTo("es")}
+        className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors cursor-pointer ${
+          lang === "es"
+            ? "text-brand-terracotta font-bold pointer-events-none"
+            : "text-dash-text-secondary hover:text-brand-charcoal"
+        }`}
+        aria-current={lang === "es" ? "true" : undefined}
+      >
+        <span className="sm:hidden">ES</span>
+        <span className="hidden sm:inline">Español</span>
+      </button>
+    </div>
+  );
+};
+
+const Header = ({ transparent = false }: { transparent?: boolean }) => {
+  const lang = useLocale() as "en" | "es";
+  const t = useTranslations("nav");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -35,10 +119,7 @@ const Header = ({ locale: localeProp = "en", transparent = false }: { locale?: s
   }, [transparent]);
   const [mobileCategoryOpen, setMobileCategoryOpen] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
-  const lang = locale as "en" | "es";
-  const intlPathname = useIntlPathname();
 
-  // Global cmd-K / ctrl-K binding to open the search palette.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -49,9 +130,6 @@ const Header = ({ locale: localeProp = "en", transparent = false }: { locale?: s
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
-
-  // Build locale-aware hrefs for nav links
-  const localizedHref = (path: string) => `/${locale}${path}`;
 
   const categories = Object.entries(PRODUCT_CATEGORIES);
   const isTransparent = transparent && !scrolled && !mobileOpen && !megaMenuOpen;
@@ -66,14 +144,14 @@ const Header = ({ locale: localeProp = "en", transparent = false }: { locale?: s
       <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <NextLink href={localizedHref("/")} className="flex flex-col leading-none shrink-0">
+          <Link href="/" className="flex flex-col leading-none shrink-0">
             <span className={`font-display text-xl md:text-2xl font-light tracking-wider whitespace-nowrap transition-colors duration-300 ${isTransparent ? "text-white" : "text-brand-charcoal"}`}>
               Counter Cultures
             </span>
             <span className={`hidden sm:block font-body text-[10px] md:text-[11px] tracking-[0.2em] uppercase mt-0.5 transition-colors duration-300 ${isTransparent ? "text-white/70" : "text-brand-copper"}`}>
               San Miguel de Allende, MX
             </span>
-          </NextLink>
+          </Link>
 
           {/* Desktop Nav */}
           <div className="hidden lg:flex items-center gap-6">
@@ -88,25 +166,25 @@ const Header = ({ locale: localeProp = "en", transparent = false }: { locale?: s
                     onMouseEnter={() => setMegaMenuOpen(true)}
                     onMouseLeave={() => setMegaMenuOpen(false)}
                   >
-                    <NextLink
-                      href={localizedHref(link.href)}
+                    <Link
+                      href={link.href}
                       className={`font-body text-sm font-medium transition-colors duration-300 flex items-center gap-1 py-2 ${isTransparent ? "text-white hover:text-white/70" : "text-brand-charcoal hover:text-brand-terracotta"}`}
                     >
                       {link.label[lang]}
                       <ChevronDown className={`w-3 h-3 transition-transform ${megaMenuOpen ? "rotate-180" : ""}`} />
-                    </NextLink>
+                    </Link>
                   </div>
                 );
               }
 
               return (
-                <NextLink
+                <Link
                   key={link.href}
-                  href={localizedHref(link.href)}
+                  href={link.href}
                   className={`font-body text-sm font-medium transition-colors duration-300 py-2 ${isTransparent ? "text-white hover:text-white/70" : "text-brand-charcoal hover:text-brand-terracotta"}`}
                 >
                   {link.label[lang]}
-                </NextLink>
+                </Link>
               );
             })}
           </div>
@@ -122,11 +200,11 @@ const Header = ({ locale: localeProp = "en", transparent = false }: { locale?: s
                   ? "text-white hover:text-white/70 md:border-white/25 md:bg-white/10 md:hover:border-white/40"
                   : "text-brand-charcoal hover:text-brand-terracotta md:border-brand-stone/25 md:bg-white/60 md:hover:border-brand-stone/40"
               }`}
-              aria-label={lang === "es" ? "Buscar (⌘K)" : "Search (⌘K)"}
+              aria-label={t("searchAriaLabel")}
             >
               <Search className="w-4 h-4 shrink-0" />
               <span className="hidden md:inline font-body text-sm text-dash-text-secondary/70">
-                {lang === "es" ? "Buscar…" : "Search…"}
+                {t("search")}
               </span>
               <kbd className="hidden md:inline font-mono text-[10px] text-dash-text-secondary/50 border border-brand-stone/20 rounded px-1.5 py-0.5 ml-2">
                 ⌘K
@@ -154,39 +232,12 @@ const Header = ({ locale: localeProp = "en", transparent = false }: { locale?: s
               }`}
             >
               <KeyRound className="w-3.5 h-3.5" />
-              {lang === "es" ? "Trade" : "Trade"}
+              Trade
             </NextLink>
 
             <CartIconButton />
 
-            {/* Language toggle — full page reload to bypass CDN/router cache */}
-            <div className="flex items-center font-body text-xs tracking-wider">
-              <a
-                href={`/en${intlPathname}`}
-                className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors ${
-                  lang === "en"
-                    ? "text-brand-terracotta font-bold pointer-events-none"
-                    : "text-dash-text-secondary hover:text-brand-charcoal"
-                }`}
-                aria-current={lang === "en" ? "true" : undefined}
-              >
-                <span className="sm:hidden">EN</span>
-                <span className="hidden sm:inline">English</span>
-              </a>
-              <span className="text-dash-text-secondary/40">|</span>
-              <a
-                href={`/es${intlPathname}`}
-                className={`flex items-center justify-center h-11 px-1.5 sm:px-2 transition-colors ${
-                  lang === "es"
-                    ? "text-brand-terracotta font-bold pointer-events-none"
-                    : "text-dash-text-secondary hover:text-brand-charcoal"
-                }`}
-                aria-current={lang === "es" ? "true" : undefined}
-              >
-                <span className="sm:hidden">ES</span>
-                <span className="hidden sm:inline">Español</span>
-              </a>
-            </div>
+            <LanguageToggle variant="desktop" />
 
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -215,53 +266,51 @@ const Header = ({ locale: localeProp = "en", transparent = false }: { locale?: s
               <div className="grid grid-cols-3 gap-10">
                 {categories.map(([key, cat]) => (
                   <div key={key}>
-                    <NextLink
-                      href={localizedHref(`/shop/${key}`)}
+                    <Link
+                      href={`/shop/${key}`}
                       className="font-display text-lg font-light tracking-wide text-brand-charcoal hover:text-brand-terracotta transition-colors"
                     >
                       {cat.label[lang]}
-                    </NextLink>
+                    </Link>
                     <div className="mt-1 mb-4 w-8 h-px bg-brand-terracotta" />
                     <ul className="space-y-2">
                       {cat.subcategories.map((sub) => (
                         <li key={sub.slug}>
-                          <NextLink
-                            href={localizedHref(`/shop/${key}/${sub.slug}`)}
+                          <Link
+                            href={`/shop/${key}/${sub.slug}`}
                             className="font-body text-sm text-dash-text-secondary hover:text-brand-terracotta transition-colors duration-200"
                           >
                             {sub.label[lang]}
-                          </NextLink>
+                          </Link>
                         </li>
                       ))}
                     </ul>
-                    <NextLink
-                      href={localizedHref(`/shop/${key}`)}
+                    <Link
+                      href={`/shop/${key}`}
                       className="inline-flex items-center gap-1 mt-4 font-body text-xs font-medium text-brand-terracotta hover:text-brand-copper transition-colors"
                     >
-                      {lang === "en" ? "View All" : "Ver Todo"}
+                      {t("viewAllCategory", { category: cat.label[lang] })}
                       <ChevronRight className="w-3 h-3" />
-                    </NextLink>
+                    </Link>
                   </div>
                 ))}
               </div>
 
               {/* Featured bar */}
               <div className="mt-8 pt-6 border-t border-brand-stone/10">
-                <NextLink
-                  href={localizedHref("/brands")}
+                <Link
+                  href="/brands"
                   className="flex items-center gap-3 group"
                 >
                   <Sparkles className="w-4 h-4 text-brand-copper" />
                   <span className="font-body text-sm font-medium text-brand-charcoal group-hover:text-brand-terracotta transition-colors">
-                    {lang === "en" ? "Artisanal Collection" : "Colección Artesanal"}
+                    {t("artisanalCollection")}
                   </span>
                   <span className="font-body text-xs text-dash-text-secondary">
-                    {lang === "en"
-                      ? "Browse handcrafted pieces by Mexico's master artisans"
-                      : "Explora piezas hechas a mano por los maestros artesanos de México"}
+                    {t("artisanalCollectionDesc")}
                   </span>
                   <ChevronRight className="w-3 h-3 text-dash-text-secondary ml-auto group-hover:text-brand-terracotta transition-colors" />
-                </NextLink>
+                </Link>
               </div>
             </div>
           </motion.div>
@@ -285,13 +334,13 @@ const Header = ({ locale: localeProp = "en", transparent = false }: { locale?: s
                 if (isShop) {
                   return (
                     <div key={link.href}>
-                      <NextLink
-                        href={localizedHref(link.href)}
+                      <Link
+                        href={link.href}
                         onClick={() => setMobileOpen(false)}
                         className="block py-3.5 font-body text-base font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors border-b border-brand-stone/5"
                       >
                         {link.label[lang]}
-                      </NextLink>
+                      </Link>
                       {/* Mobile category accordion */}
                       <div className="pl-3">
                         {categories.map(([key, cat]) => (
@@ -324,22 +373,22 @@ const Header = ({ locale: localeProp = "en", transparent = false }: { locale?: s
                                 >
                                   <div className="pl-3 pb-2 space-y-0">
                                     {cat.subcategories.map((sub) => (
-                                      <NextLink
+                                      <Link
                                         key={sub.slug}
-                                        href={localizedHref(`/shop/${key}/${sub.slug}`)}
+                                        href={`/shop/${key}/${sub.slug}`}
                                         onClick={() => setMobileOpen(false)}
                                         className="flex items-center py-2.5 min-h-[44px] text-sm text-dash-text-secondary hover:text-brand-terracotta transition-colors"
                                       >
                                         {sub.label[lang]}
-                                      </NextLink>
+                                      </Link>
                                     ))}
-                                    <NextLink
-                                      href={localizedHref(`/shop/${key}`)}
+                                    <Link
+                                      href={`/shop/${key}`}
                                       onClick={() => setMobileOpen(false)}
                                       className="flex items-center py-2.5 min-h-[44px] text-sm font-medium text-brand-terracotta"
                                     >
-                                      {lang === "en" ? `View All ${cat.label[lang]}` : `Ver Todo ${cat.label[lang]}`}
-                                    </NextLink>
+                                      {t("viewAllCategory", { category: cat.label[lang] })}
+                                    </Link>
                                   </div>
                                 </motion.div>
                               )}
@@ -352,14 +401,14 @@ const Header = ({ locale: localeProp = "en", transparent = false }: { locale?: s
                 }
 
                 return (
-                  <NextLink
+                  <Link
                     key={link.href}
-                    href={localizedHref(link.href)}
+                    href={link.href}
                     onClick={() => setMobileOpen(false)}
                     className="flex items-center py-3.5 min-h-[44px] font-body text-base font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors border-b border-brand-stone/5"
                   >
                     {link.label[lang]}
-                  </NextLink>
+                  </Link>
                 );
               })}
 
@@ -370,7 +419,7 @@ const Header = ({ locale: localeProp = "en", transparent = false }: { locale?: s
                 className="flex items-center gap-2 py-3.5 min-h-[44px] font-body text-base font-medium text-brand-copper border-b border-brand-stone/5"
               >
                 <KeyRound className="w-5 h-5" />
-                {lang === "es" ? "Trade Login" : "Trade Login"}
+                Trade Login
               </NextLink>
 
               {/* WhatsApp in mobile */}
@@ -384,32 +433,7 @@ const Header = ({ locale: localeProp = "en", transparent = false }: { locale?: s
                 WhatsApp
               </a>
 
-              {/* Language toggle — mobile */}
-              <div className="flex items-center justify-center gap-4 py-3.5 border-b border-brand-stone/5">
-                <a
-                  href={`/en${intlPathname}`}
-                  onClick={() => setMobileOpen(false)}
-                  className={`font-body text-base font-medium transition-colors ${
-                    lang === "en"
-                      ? "text-brand-terracotta pointer-events-none"
-                      : "text-dash-text-secondary hover:text-brand-charcoal"
-                  }`}
-                >
-                  English
-                </a>
-                <span className="text-dash-text-secondary/40">|</span>
-                <a
-                  href={`/es${intlPathname}`}
-                  onClick={() => setMobileOpen(false)}
-                  className={`font-body text-base font-medium transition-colors ${
-                    lang === "es"
-                      ? "text-brand-terracotta pointer-events-none"
-                      : "text-dash-text-secondary hover:text-brand-charcoal"
-                  }`}
-                >
-                  Español
-                </a>
-              </div>
+              <LanguageToggle variant="mobile" onSwitch={() => setMobileOpen(false)} />
 
             </div>
           </motion.div>

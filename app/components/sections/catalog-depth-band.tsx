@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/app/i18n/navigation";
 import Image from "next/image";
 
 interface CatalogDepthBandProps {
@@ -72,7 +72,7 @@ const CatalogDepthBand = ({ locale, totalCatalog }: CatalogDepthBandProps) => {
                 : "Every SKU spec'd through us and delivered through us. No middlemen, no surprises."}
             </p>
             <Link
-              href={`/${locale}/shop/catalog`}
+              href="/shop/catalog"
               className="mt-7 inline-flex items-center gap-2 font-body text-sm font-semibold tracking-wide text-brand-copper hover:text-brand-charcoal transition-colors"
             >
               {isEs ? "Buscar el catálogo" : "Search the catalog"}{" "}

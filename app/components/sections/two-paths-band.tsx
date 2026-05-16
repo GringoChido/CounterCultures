@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/app/i18n/navigation";
 
 interface TwoPathsBandProps {
   locale: "en" | "es";
@@ -15,7 +15,7 @@ const TwoPathsBand = ({ locale }: TwoPathsBandProps) => {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 gap-px bg-white/10">
           <Link
-            href={`/${locale}/showroom`}
+            href="/showroom"
             className="group bg-brand-charcoal p-8 md:p-12 hover:bg-brand-charcoal/80 transition-colors"
           >
             <p className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-copper uppercase mb-3">
@@ -37,7 +37,7 @@ const TwoPathsBand = ({ locale }: TwoPathsBandProps) => {
           </Link>
 
           <Link
-            href={`/${locale}/trade`}
+            href="/trade"
             className="group bg-brand-charcoal p-8 md:p-12 hover:bg-brand-charcoal/80 transition-colors"
           >
             <p className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-copper uppercase mb-3">

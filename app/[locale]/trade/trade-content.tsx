@@ -179,7 +179,7 @@ export const TradeContent = () => {
 
   return (
   <>
-    <Header locale={locale} />
+    <Header />
     <main id="main" tabIndex={-1}>
       <CategoryHero
         eyebrow={t.heroEyebrow[locale]}
@@ -464,7 +464,7 @@ export const TradeContent = () => {
         </div>
       </section>
     </main>
-    <Footer locale={locale} />
+    <Footer />
   </>
   );
 };

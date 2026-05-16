@@ -252,7 +252,7 @@ const PDPPage = async ({ params }: PDPProps) => {
 
   return (
     <>
-      <Header locale={locale} />
+      <Header />
       <main id="main" tabIndex={-1} className="pt-16 md:pt-20 bg-white">
         <script
           type="application/ld+json"
@@ -295,7 +295,7 @@ const PDPPage = async ({ params }: PDPProps) => {
           pdpSlug={slug}
         />
       </main>
-      <Footer locale={locale} />
+      <Footer />
     </>
   );
 };

@@ -52,7 +52,7 @@ const QuoteDetailPage = async ({ params }: QuoteDetailProps) => {
 
   return (
     <>
-      <Header locale={locale} />
+      <Header />
       <main id="main" tabIndex={-1} className="pt-16 md:pt-20">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-8 md:py-12">
           {/* Breadcrumb */}
@@ -195,7 +195,7 @@ const QuoteDetailPage = async ({ params }: QuoteDetailProps) => {
           </div>
         </div>
       </main>
-      <Footer locale={locale} />
+      <Footer />
     </>
   );
 };

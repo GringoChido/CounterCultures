@@ -109,7 +109,7 @@ export const ArticleContent = ({
 
   return (
     <>
-      <Header locale={locale} />
+      <Header />
       <main id="main" tabIndex={-1}>
         {/* Full-bleed Hero Image */}
         <section className="relative h-[60vh] min-h-[400px] md:h-[70vh] md:min-h-[560px] w-full overflow-hidden bg-brand-charcoal">
@@ -358,7 +358,7 @@ export const ArticleContent = ({
           </div>
         </section>
       </main>
-      <Footer locale={locale} />
+      <Footer />
     </>
   );
 };

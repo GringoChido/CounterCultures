@@ -173,7 +173,7 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
   if (quickCheck.count === 0) {
     return (
       <>
-        <Header locale={locale} />
+        <Header />
         <main id="main" tabIndex={-1} className="pt-16 md:pt-20 bg-dash-surface">
           <section className="bg-brand-linen border-b border-brand-stone/10">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 md:py-20">
@@ -221,7 +221,7 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
             </div>
           </section>
         </main>
-        <Footer locale={locale} />
+        <Footer />
       </>
     );
   }
@@ -334,7 +334,7 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
       />
-      <Header locale={locale} />
+      <Header />
       <main id="main" tabIndex={-1} className="pt-16 md:pt-20 bg-dash-surface">
         {/* Editorial hero */}
         <section className="bg-brand-linen border-b border-brand-stone/10">
@@ -555,7 +555,7 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
           </section>
         )}
       </main>
-      <Footer locale={locale} />
+      <Footer />
     </>
   );
 };

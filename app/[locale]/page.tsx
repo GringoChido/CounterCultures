@@ -219,7 +219,7 @@ const HomePage = async ({ params }: HomePageProps) => {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(speakableJsonLd) }}
       />
-      <Header locale={lang} />
+      <Header />
       <main id="main" tabIndex={-1}>
         <Hero locale={lang} />
         <ShopByRoom locale={lang} />
@@ -243,7 +243,7 @@ const HomePage = async ({ params }: HomePageProps) => {
         <ContactCTA locale={lang} />
         <NewsletterStrip locale={lang} />
       </main>
-      <Footer locale={lang} />
+      <Footer />
     </>
   );
 };

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/app/i18n/navigation";
 import { ArrowRight } from "lucide-react";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { HOTEL_CLIENTS, HOTEL_REGIONS } from "@/app/lib/hotel-clients";
@@ -46,7 +46,7 @@ const HospitalityTeaser = ({ locale = "en" }: { locale?: string }) => {
             </div>
             <div className="lg:col-span-4 lg:text-right">
               <Link
-                href={`/${lang}/hospitality`}
+                href="/hospitality"
                 className="group inline-flex items-center gap-3 font-body text-sm font-semibold tracking-[0.18em] uppercase text-brand-charcoal hover:text-brand-terracotta transition-colors"
               >
                 {t("See All Properties", "Ver Todas las Propiedades")}
@@ -98,7 +98,7 @@ const HospitalityTeaser = ({ locale = "en" }: { locale?: string }) => {
           <AnimatedSection delay={0.3}>
             <div className="mt-8 md:mt-10 text-center md:text-left">
               <Link
-                href={`/${lang}/hospitality`}
+                href="/hospitality"
                 className="group inline-flex items-center gap-2 font-body text-sm text-dash-text-secondary hover:text-brand-terracotta transition-colors"
               >
                 + {remaining} {t("more properties", "propiedades más")}

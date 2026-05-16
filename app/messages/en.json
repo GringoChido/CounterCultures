@@ -18,7 +18,13 @@
   },
   "nav": {
     "visitShowroom": "Visit Showroom",
-    "whatsapp": "WhatsApp"
+    "whatsapp": "WhatsApp",
+    "search": "Search…",
+    "searchAriaLabel": "Search (⌘K)",
+    "viewAll": "View All",
+    "viewAllCategory": "View All {category}",
+    "artisanalCollection": "Artisanal Collection",
+    "artisanalCollectionDesc": "Browse handcrafted pieces by Mexico's master artisans"
   },
   "hero": {
     "visitShowroom": "Visit Our Showroom"
@@ -117,7 +123,14 @@
     "ourStory": "Our Story",
     "projects": "Projects",
     "blog": "Blog",
-    "tradeProgram": "Trade Program"
+    "tradeProgram": "Trade Program",
+    "tagline": "Premium Kitchen, Bath & Hardware",
+    "privacy": "Privacy",
+    "paymentMethods": "Payment Methods",
+    "salesDelivery": "Sales & Delivery",
+    "returns": "Returns & Warranty",
+    "teamPortal": "Team Portal",
+    "builtBy": "Built by"
   },
   "shop": {
     "breadcrumbHome": "Home",

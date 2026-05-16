@@ -86,7 +86,7 @@ export const ContactContent = () => {
 
   return (
   <>
-    <Header locale={locale} />
+    <Header />
     <main id="main" tabIndex={-1}>
       {/* Hero */}
       <section className="pt-28 pb-12 md:pt-40 md:pb-20 bg-brand-charcoal">
@@ -272,7 +272,7 @@ export const ContactContent = () => {
         </div>
       </section>
     </main>
-    <Footer locale={locale} />
+    <Footer />
   </>
   );
 };

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/app/i18n/navigation";
 import Image from "next/image";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { ArrowRight } from "lucide-react";

@@ -260,7 +260,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <Header locale={locale} />
+      <Header />
       <main id="main" tabIndex={-1}>
         {heroImage ? (
           <CategoryHero
@@ -638,7 +638,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
           </section>
         )}
       </main>
-      <Footer locale={locale} />
+      <Footer />
     </>
   );
 };

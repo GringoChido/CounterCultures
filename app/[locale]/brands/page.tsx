@@ -408,7 +408,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <Header locale={locale} />
+      <Header />
       <main id="main" tabIndex={-1} className="pt-16 md:pt-20">
 
         {/* ═══════════════════════════════════════════════════════════ */}
@@ -674,7 +674,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
         </section>
 
       </main>
-      <Footer locale={locale} />
+      <Footer />
     </>
   );
 };

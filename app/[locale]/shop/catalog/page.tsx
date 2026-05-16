@@ -145,7 +145,7 @@ const CatalogPage = async ({ params }: CatalogPageProps) => {
 
   return (
     <>
-      <Header locale={locale} />
+      <Header />
       <main id="main" tabIndex={-1} className="bg-brand-linen">
         {/* HERO — full-bleed editorial header */}
         <section className="relative min-h-[60vh] md:min-h-[70vh] flex items-end overflow-hidden bg-brand-charcoal">
@@ -207,7 +207,7 @@ const CatalogPage = async ({ params }: CatalogPageProps) => {
         />
       </main>
       <ArtisanProfiles locale={locale as "en" | "es"} />
-      <Footer locale={locale} />
+      <Footer />
     </>
   );
 };
