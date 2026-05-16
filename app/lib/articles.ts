@@ -200,7 +200,7 @@ Una puerta principal no es lugar para economizar. El herraje sobre ella se toca 
 Eso no es un defecto. Ese es el punto.`,
     },
     relatedSlugs: ["sun-valley-bronze-foundry", "specifying-fixtures-hospitality-mexico"],
-    brandSlugs: ["sun-valley-bronze", "rocky-mountain-hardware", "emtek", "baldwin-hardware", "buster-punch", "linnea", "manzoni"],
+    brandSlugs: ["sun-valley-bronze", "rocky-mountain-hardware", "emtek", "baldwin", "buster-punch", "linnea", "manzoni"],
   },
   {
     slug: "hand-hammered-copper-basin-guide",
