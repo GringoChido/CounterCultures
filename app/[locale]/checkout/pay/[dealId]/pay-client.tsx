@@ -36,7 +36,7 @@ const T = {
     iva: "VAT (16%)",
     shipping: "Shipping",
     shippingQuoted: "Quoted after review",
-    total: "Total",
+    total: "Total (IVA included)",
     payNow: "Pay Now",
     processing: "Processing...",
     securePayment: "Secure payment via Stripe",
@@ -57,7 +57,7 @@ const T = {
     iva: "IVA (16%)",
     shipping: "Envio",
     shippingQuoted: "Cotizado despues de revision",
-    total: "Total",
+    total: "Total (IVA incluido)",
     payNow: "Pagar Ahora",
     processing: "Procesando...",
     securePayment: "Pago seguro via Stripe",
@@ -82,9 +82,9 @@ export const PayClient = ({ locale, dealId }: { locale: "en" | "es"; dealId: str
   const cartSessionId = useCartStore((s) => s.cartSessionId);
 
   const currency = items[0]?.currency ?? "MXN";
-  const { iva: ivaAmount } = computeIva(subtotal, "MX");
+  const { iva: ivaAmount, subtotal: productSubtotal } = computeIva(subtotal, "MX");
   const tradeDiscountAmount = tradeDiscountPct ? Math.round(subtotal * (tradeDiscountPct / 100)) : 0;
-  const total = subtotal - tradeDiscountAmount + ivaAmount;
+  const total = subtotal - tradeDiscountAmount;
 
   const formatted = (amount: number) =>
     new Intl.NumberFormat(locale === "es" ? "es-MX" : "en-US", {
@@ -202,7 +202,7 @@ export const PayClient = ({ locale, dealId }: { locale: "en" | "es"; dealId: str
               <div className="space-y-2 pt-4 border-t border-brand-stone/10">
                 <div className="flex justify-between">
                   <span className="font-body text-sm text-dash-text-secondary">{t.subtotal}</span>
-                  <span className="font-mono text-sm">{formatted(subtotal)}</span>
+                  <span className="font-mono text-sm">{formatted(productSubtotal)}</span>
                 </div>
                 {tradeDiscountAmount > 0 && (
                   <div className="flex justify-between text-brand-sage">

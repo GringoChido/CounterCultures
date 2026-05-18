@@ -93,7 +93,7 @@ const T = {
     specSheet: "Download Spec Sheet",
     related: "You may also like",
     priceNote:
-      "Reference price — final quote confirmed on request. IVA not included.",
+      "Price includes IVA — final quote confirmed on request.",
     viewBrand: "View all",
     description: "Description",
   },
@@ -119,7 +119,7 @@ const T = {
     specSheet: "Descargar Ficha Técnica",
     related: "También te puede interesar",
     priceNote:
-      "Precio de referencia — cotización final bajo pedido. IVA no incluido.",
+      "Precio con IVA incluido — cotización final bajo pedido.",
     viewBrand: "Ver todo",
     description: "Descripción",
   },

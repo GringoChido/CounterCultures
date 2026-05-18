@@ -460,10 +460,10 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
   }
 
   const isMxShipTo = address.country === "MX";
-  const { iva: ivaAmount } = computeIva(subtotal, address.country);
+  const { iva: ivaAmount, subtotal: productSubtotal } = computeIva(subtotal, address.country);
   const effectiveShippingCost =
     shippingMethod === "ship" && shippingQuote != null ? shippingQuote : 0;
-  const total = subtotal + ivaAmount + effectiveShippingCost;
+  const total = subtotal + effectiveShippingCost;
   const isBuyPath =
     !hasOversized &&
     cartMode === "all_buyable" &&
@@ -737,6 +737,7 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
               density="full"
               isMxShipTo={isMxShipTo}
               ivaAmount={ivaAmount}
+              productSubtotal={productSubtotal}
               shippingMethod={shippingMethod}
               shippingCost={effectiveShippingCost > 0 ? effectiveShippingCost : undefined}
             />
@@ -1434,6 +1435,7 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
                 density="full"
                 isMxShipTo={isMxShipTo}
                 ivaAmount={ivaAmount}
+                productSubtotal={productSubtotal}
                 shippingMethod={shippingMethod}
                 shippingCost={effectiveShippingCost > 0 ? effectiveShippingCost : undefined}
               />

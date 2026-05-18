@@ -54,16 +54,8 @@ export async function POST(req: NextRequest) {
       })
     );
 
-    if (ivaAmount > 0) {
-      lineItems.push({
-        price_data: {
-          currency: safeCurrency,
-          product_data: { name: "IVA (16%)" },
-          unit_amount: Math.round(ivaAmount * 100),
-        },
-        quantity: 1,
-      });
-    }
+    // IVA is already included in the published listPrice — do NOT add a separate line.
+    // The cart UI breaks out the IVA for display, but Stripe charges the published total.
 
     const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({

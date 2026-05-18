@@ -412,6 +412,7 @@ export const CartPageClient = ({ locale }: { locale: "en" | "es" }) => {
             density="compact"
             isMxShipTo
             ivaAmount={computeIva(subtotal, "MX").iva}
+            productSubtotal={computeIva(subtotal, "MX").subtotal}
           />
         </div>
 

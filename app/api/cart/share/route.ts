@@ -49,7 +49,7 @@ const fmtPrice = (amount: number, currency: string) =>
 
 const buildHtml = (p: SharePayload): string => {
   const isEs = p.locale === "es";
-  const { iva: ivaAmount, total } = computeIva(p.subtotal, "MX");
+  const { iva: ivaAmount, subtotal: productSubtotal, total } = computeIva(p.subtotal, "MX");
 
   const heroImg = p.items.find((i) => i.imageSrc)?.imageSrc;
 
@@ -113,10 +113,10 @@ const buildHtml = (p: SharePayload): string => {
     <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-top: 16px;">
       <tr>
         <td style="padding: 6px 0; font-size: 14px; color: #6B6B6B;">
-          ${isEs ? "Subtotal (neto)" : "Subtotal (net)"}
+          ${isEs ? "Subtotal" : "Subtotal"}
         </td>
         <td style="padding: 6px 0; text-align: right; font-family: 'Courier New', monospace; font-size: 14px; color: #2C2C2C;">
-          ${fmtPrice(p.subtotal, p.currency)}
+          ${fmtPrice(productSubtotal, p.currency)}
         </td>
       </tr>
       <tr>
@@ -129,7 +129,7 @@ const buildHtml = (p: SharePayload): string => {
         <td colspan="2" style="padding: 0;"><hr style="border: none; border-top: 1px solid #B87333; margin: 8px 0;" /></td>
       </tr>
       <tr>
-        <td style="padding: 8px 0; font-size: 16px; color: #2C2C2C; font-weight: 400;">Total</td>
+        <td style="padding: 8px 0; font-size: 16px; color: #2C2C2C; font-weight: 400;">${isEs ? "Total (IVA incluido)" : "Total (IVA included)"}</td>
         <td style="padding: 8px 0; text-align: right; font-family: 'Courier New', monospace; font-size: 20px; color: #2C2C2C;">
           ${fmtPrice(total, p.currency)}
         </td>
@@ -163,7 +163,7 @@ const buildHtml = (p: SharePayload): string => {
 
 const buildPlainText = (p: SharePayload): string => {
   const isEs = p.locale === "es";
-  const { iva: ivaAmount, total } = computeIva(p.subtotal, "MX");
+  const { iva: ivaAmount, subtotal: productSubtotal, total } = computeIva(p.subtotal, "MX");
 
   const lines = p.items.map(
     (i) =>
@@ -177,9 +177,9 @@ const buildPlainText = (p: SharePayload): string => {
     "",
     ...lines,
     "",
-    `${isEs ? "Subtotal (neto)" : "Subtotal (net)"}: ${fmtPrice(p.subtotal, p.currency)}`,
+    `Subtotal: ${fmtPrice(productSubtotal, p.currency)}`,
     `IVA (16%): ${fmtPrice(ivaAmount, p.currency)}`,
-    `Total: ${fmtPrice(total, p.currency)}`,
+    `${isEs ? "Total (IVA incluido)" : "Total (IVA included)"}: ${fmtPrice(total, p.currency)}`,
     "",
     isEs ? "Continúa tu selección:" : "Continue your selection:",
     p.shareUrl,

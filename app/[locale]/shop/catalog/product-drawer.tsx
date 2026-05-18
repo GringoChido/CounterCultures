@@ -51,7 +51,7 @@ const T = {
     alsoSpecifiedHint:
       "Products that consistently ship alongside this one — real pairings, not algorithmic guesses.",
     requestQuote: "Request a quote",
-    priceNote: "Prices shown are reference only. Final quoted price confirmed on request — IVA not included.",
+    priceNote: "Price includes IVA — final quote confirmed on request.",
     variantsHint: "Same model, different finish or size. Click a tile to view.",
   },
   es: {
@@ -72,7 +72,7 @@ const T = {
     alsoSpecifiedHint:
       "Productos que acompañan consistentemente a este — patrones reales de proyectos, no sugerencias algorítmicas.",
     requestQuote: "Solicitar cotización",
-    priceNote: "Precios de referencia. Precio final confirmado al cotizar — IVA no incluido.",
+    priceNote: "Precio con IVA incluido — cotización final bajo pedido.",
     variantsHint: "Mismo modelo, distinto acabado o tamaño. Toca una ficha para verla.",
   },
 };

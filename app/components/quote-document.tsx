@@ -148,7 +148,7 @@ const QuoteDocument = ({
               <span>{fmtMxn(depositAmount)}</span>
             </div>
             <p className="mt-1 text-[10px] text-dash-text-muted text-right">
-              Prices in Mexican Pesos. IVA not included.
+              Prices in Mexican Pesos. IVA included.
             </p>
           </div>
         </div>

@@ -82,7 +82,7 @@ const ProjectDetailPage = ({
   }
 
   const subtotal = projectSubtotal(id);
-  const { iva, total } = computeIva(subtotal, "MX");
+  const { iva, total, subtotal: productSubtotal } = computeIva(subtotal, "MX");
   const eligible = subtotal >= SPECIAL_PRICING_THRESHOLD_MXN;
   const pct = Math.min(
     (subtotal / SPECIAL_PRICING_THRESHOLD_MXN) * 100,
@@ -327,10 +327,10 @@ const ProjectDetailPage = ({
             <div className="border-t border-[#E5E0DB] px-4 py-4 space-y-2">
               <div className="flex justify-between">
                 <span className="font-body text-sm text-[#6B6B6B]">
-                  Subtotal (net)
+                  Subtotal
                 </span>
                 <span className="font-mono text-sm text-[#2C2C2C]">
-                  {fmtMXN(subtotal)}
+                  {fmtMXN(productSubtotal)}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -343,7 +343,7 @@ const ProjectDetailPage = ({
               </div>
               <div className="flex justify-between pt-2 border-t border-[#B87333]/30">
                 <span className="font-body text-base font-medium text-[#2C2C2C]">
-                  Total
+                  Total (IVA included)
                 </span>
                 <span className="font-mono text-lg text-[#2C2C2C]">
                   {fmtMXN(total)}

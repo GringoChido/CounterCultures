@@ -9,7 +9,10 @@ interface OrderSummaryProps {
   locale: "en" | "es";
   showIva?: boolean;
   isMxShipTo?: boolean;
+  /** IVA extracted from the published (tax-inclusive) prices */
   ivaAmount?: number;
+  /** Product cost before tax (published total minus IVA) */
+  productSubtotal?: number;
   shippingMethod?: ShippingMethod;
   shippingCost?: number;
   variant?: "panel" | "inline";
@@ -39,13 +42,13 @@ const T = {
   en: {
     summary: "Order Summary",
     items: (n: number) => `${n} ${n === 1 ? "item" : "items"}`,
-    subtotal: "Subtotal (net)",
+    subtotal: "Subtotal",
     iva: "IVA (16%)",
     ivaPending: "Included in price",
     ivaApplied: "Mexico delivery",
     shipping: "Shipping",
     shippingNote: "Quoted after order review",
-    total: "Estimated Total",
+    total: "Total (IVA included)",
     tradeApplied: "Trade pricing active",
     each: "each",
     finish: "Finish",
@@ -55,13 +58,13 @@ const T = {
   es: {
     summary: "Resumen del Pedido",
     items: (n: number) => `${n} ${n === 1 ? "artículo" : "artículos"}`,
-    subtotal: "Subtotal (neto)",
+    subtotal: "Subtotal",
     iva: "IVA (16%)",
     ivaPending: "Incluido en el precio",
     ivaApplied: "Envío a México",
     shipping: "Envío",
     shippingNote: "Cotizado tras revisión",
-    total: "Total Estimado",
+    total: "Total (IVA incluido)",
     tradeApplied: "Precio trade activo",
     each: "c/u",
     finish: "Acabado",
@@ -75,6 +78,7 @@ export const OrderSummary = ({
   showIva = true,
   isMxShipTo = false,
   ivaAmount = 0,
+  productSubtotal,
   shippingMethod,
   shippingCost,
   variant = "panel",
@@ -83,7 +87,7 @@ export const OrderSummary = ({
   const t = T[locale];
   const sl = SHIPPING_LABELS[locale];
   const items = useCartStore((s) => s.items);
-  const subtotal = useCartStore((s) => s.subtotal());
+  const publishedTotal = useCartStore((s) => s.subtotal());
   const tradeCode = useCartStore((s) => s.tradeCode);
   const tradePartnerName = useCartStore((s) => s.tradePartnerName);
 
@@ -94,7 +98,8 @@ export const OrderSummary = ({
   });
 
   const shippingAmount = shippingCost ?? 0;
-  const total = subtotal + (isMxShipTo ? ivaAmount : 0) + shippingAmount;
+  const displaySubtotal = productSubtotal ?? publishedTotal;
+  const total = publishedTotal + shippingAmount;
   const itemCount = items.reduce((acc, i) => acc + i.quantity, 0);
 
   const wrapperClass =
@@ -150,7 +155,7 @@ export const OrderSummary = ({
             {t.subtotal}
           </dt>
           <dd className="font-mono text-sm text-brand-charcoal tabular-nums">
-            {formatted(subtotal)}
+            {formatted(displaySubtotal)}
           </dd>
         </div>
 
