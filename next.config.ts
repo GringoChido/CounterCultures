@@ -46,6 +46,13 @@ const nextConfig: NextConfig = {
       // Stranded inspiration detail URLs (the case-study slug pages were
       // retired with sample content). Bounce to the index instead of 404.
       { source: "/:locale(en|es)/inspiration/:slug", destination: "/:locale/inspiration", permanent: true },
+      // /shop/quote deprecated (Day 2 PDP consolidation, 2026-05-20).
+      // Quote detail slugs used `p-{id}` format which can't map to canonical
+      // PDP slugs, so all quote URLs land on the catalog.
+      { source: "/:locale(en|es)/shop/quote/:slug", destination: "/:locale/shop/catalog", permanent: true },
+      { source: "/:locale(en|es)/shop/quote", destination: "/:locale/shop/catalog", permanent: true },
+      { source: "/shop/quote/:slug", destination: "/en/shop/catalog", permanent: true },
+      { source: "/shop/quote", destination: "/en/shop/catalog", permanent: true },
       // /portal → staff login (the public "Portal" button was removed)
       { source: "/portal", destination: "/dashboard/login", permanent: false },
       { source: "/:locale(en|es)/portal", destination: "/dashboard/login", permanent: false },

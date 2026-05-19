@@ -278,4 +278,71 @@ These surfaced during the audit. Each needs a decision — don't fix, just decid
 
 ---
 
+## PDP contract
+
+| | |
+|---|---|
+| **Canonical template** | `app/[locale]/shop/[category]/p/[slug]/page.tsx` |
+| **Sacred Surface** | #2 (see `docs/SURGICAL-RULES.md`) |
+| **Data input** | `ProductFull` from `app/lib/products-full.ts` (source: `CC_Products_Full` sheet) |
+| **Description input** | `pdp-description.ts` resolver (5-level fallback: sidecar → ProductFull → fallback) |
+| **Display elements** | Image hero, product name (H1), brand, breadcrumb, description, list price, currency, finish picker, qty selector, Add to Cart, Add to Project, related products grid, JSON-LD, meta/OG tags |
+| **URL pattern** | `/{locale}/shop/{category}/p/{slug}` |
+| **Deprecated alternative** | `/shop/quote/{slug}` — removed 2026-05-20, 301 redirects to `/shop/catalog` |
+
+---
+
+## Product-render surface inventory (audited 2026-05-20)
+
+> Every file that renders product fields, grouped by shared-component usage.
+> **Canonical PDP:** `app/[locale]/shop/[category]/p/[slug]/page.tsx` (Sacred Surface #2).
+> **The deprecated `/shop/quote/` template was removed 2026-05-20** — 301 redirects to `/shop/catalog`.
+
+### Shared components (well-structured — no action needed)
+
+| Component | Path | Renders |
+|---|---|---|
+| ProductCard | `app/components/products/ProductCard.tsx` | Card: brand, name, image, price, finishes, availability |
+| ProductVisual | `app/components/product-visual.tsx` | Image with typography fallback |
+| SafeProductImage | `app/components/safe-product-image.tsx` | Image with brand/SKU fallback |
+| BrandSignatureTile | `app/[locale]/brands/[slug]/brand-signature-tile.tsx` | Featured product tile on brand pages |
+| PDPClient | `app/[locale]/shop/[category]/p/[slug]/pdp-client.tsx` | Full PDP detail (canonical) |
+
+### Pages that delegate to shared components (no action needed)
+
+| Surface | Path | How |
+|---|---|---|
+| Category page | `app/[locale]/shop/[category]/page.tsx` | Uses ShopCatalog → ProductCard |
+| Subcategory page | `app/[locale]/shop/[category]/[subcategory]/page.tsx` | Uses ShopCatalog → ProductCard |
+| Brand page | `app/[locale]/brands/[slug]/page.tsx` | Uses BrandSignatureTile |
+| Brand+category page | `app/[locale]/brands/[slug]/[category]/page.tsx` | Uses BrandSignatureTile |
+| Cart / order summary | `app/components/cart/order-summary.tsx` | Renders CartItem snapshots (not live product) |
+| Checkout stepper | `app/[locale]/checkout/checkout-stepper.tsx` | Form state, minimal product rendering |
+
+### One-off renderings (refactor candidates — Day 3 follow-up)
+
+| # | File | What it renders inline | Recommended fix |
+|---|---|---|---|
+| 1 | `app/[locale]/shop/catalog/catalog-view.tsx` | Full product cards (name, sku, brand, price, image, finishes, stock) | Extract to ProductCard variant or import ProductCard |
+| 2 | `app/[locale]/shop/catalog/product-drawer.tsx` | Product detail modal (name, sku, brand, price, finishes, image, stock) | Extract to shared drawer component using PDP subcomponents |
+| 3 | `app/(dashboard)/dashboard/(portal)/products/catalog-search.tsx` | Dashboard product tiles (same fields as #1) | Import ProductCard or create dashboard-specific ProductCardAdmin |
+| 4 | `app/(dashboard)/dashboard/(portal)/products/product-detail-panel.tsx` | Dashboard product detail panel (tabbed, all fields) | Extract to shared component |
+
+**Note:** Items 3–4 are dashboard-only (admin surfaces). They serve a different UX purpose than customer-facing cards, so a shared `ProductCardAdmin` variant may be more appropriate than forcing them to use the customer-facing `ProductCard`.
+
+### Minor one-offs (low priority — acceptable for launch)
+
+| File | What | Why acceptable |
+|---|---|---|
+| `app/components/cart/add-to-cart-button.tsx` | Reads `product.finishes` for finish-required check | Button logic, not visual rendering |
+| `app/(dashboard)/components/command-palette.tsx` | Search result snippets (name, sku, brand) | Compact search UI, intentionally minimal |
+| `app/(customer)/account/projects/[id]/page.tsx` | Project line items (name, brand, sku, price) | Renders CartItem snapshots, not live product |
+| `app/(dashboard)/components/product-insert-context.tsx` | Creates InsertableProduct snapshot | Data mapping, not rendering |
+
+### API routes (server-side only — no JSX rendering, not in scope)
+
+`stripe/checkout`, `dashboard/deals/[id]/line-items`, `dashboard/products/generate-description`, `checkout/quote` — read product fields for business logic only.
+
+---
+
 *Maintained by Joshua. Update when data sources change. This doc + `MASTER-PLAN.md` §6 are the two docs to open each morning.*

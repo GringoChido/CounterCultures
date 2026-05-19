@@ -6,7 +6,7 @@ import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { ArtisanProfiles } from "@/app/components/sections/artisan-profiles";
 import {
-  getQuoteCatalogBrands,
+  getCatalogBrands,
   getCatalogStats,
   searchProducts,
   type SearchResult,
@@ -113,7 +113,7 @@ const CatalogPage = async ({ params }: CatalogPageProps) => {
     ),
   ]);
   const [brandCounts, stats] = await Promise.all([
-    raceWithFallback(getQuoteCatalogBrands(), 2000, []),
+    raceWithFallback(getCatalogBrands(), 2000, []),
     statsPromise,
   ]);
 

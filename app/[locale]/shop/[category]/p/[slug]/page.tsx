@@ -1,3 +1,8 @@
+// Canonical PDP — all product detail rendering happens here.
+// Sacred Surface #2 — see docs/SURGICAL-RULES.md.
+// Data: ProductFull from products-full.ts (source: CC_Products_Full sheet per docs/data-sources-of-truth.md).
+// Renders: image, name, description, list price, brand, breadcrumb, related products,
+//          finish picker, qty selector, Add to Cart, Add to Project.
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { getServerSession } from "next-auth";

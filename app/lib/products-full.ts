@@ -817,96 +817,9 @@ export const getCatalogStats = async (): Promise<{
   };
 };
 
-// ── Public quote-catalog adapter ────────────────────────────────────────
-// The /shop/quote page uses the portal-wide `Product` shape. These helpers
-// adapt ProductFull → Product with a deterministic `p-{id}` slug. Price and
-// images are deliberately blank on the quote surface — customers request a
-// quote; they don't see MXN list prices.
+// ── Public catalog brand aggregation ────────────────────────────────────
 
-const slugFor = (id: string) => `p-${id}`;
-
-const toQuoteProduct = (p: ProductFull): Product => {
-  // Pull side-car content (scraped Spanish desc + features + gallery + spec sheet)
-  // when available. Falls back to lean fields if nothing has been staged yet.
-  const content = getProductContent(p.id);
-  const images = content?.gallery?.length
-    ? content.gallery
-    : p.imageSrc
-      ? [p.imageSrc]
-      : [];
-  return {
-    id: p.id,
-    sku: p.sku || `ODOO-${p.id}`,
-    brand: p.brand,
-    name: content?.title || p.name || p.sku || `Product ${p.id}`,
-    nameEn: p.name || p.sku || `Product ${p.id}`,
-    category: p.category,
-    subcategory: content?.breadcrumb?.[1] ?? "",
-    price: content?.price ?? 0,
-    currency: (p.currency === "USD" ? "USD" : "MXN") as "MXN" | "USD",
-    finishes: content?.variants ?? [],
-    images,
-    artisanal: false,
-    features: content?.features?.length ? content.features : undefined,
-    description: content?.descriptionEs ?? "",
-    descriptionEn: content?.descriptionEn ?? "",
-    specifications: content?.specSheetUrl
-      ? { specSheetUrl: content.specSheetUrl, ...(content.specSheetLocal ? { specSheetLocal: content.specSheetLocal } : {}) }
-      : undefined,
-    availability: "quote_only" as const,
-    slug: slugFor(p.id),
-    satCode: p.satCode,
-  };
-};
-
-export interface QuoteCatalogSearchOptions {
-  q?: string;
-  category?: ProductCategory;
-  brand?: string;
-  limit?: number;
-  offset?: number;
-}
-
-export interface QuoteCatalogSearchResult {
-  items: Product[];
-  total: number;
-  offset: number;
-  limit: number;
-  elapsedMs: number;
-}
-
-export const searchQuoteCatalog = async (
-  opts: QuoteCatalogSearchOptions = {}
-): Promise<QuoteCatalogSearchResult> => {
-  const { q, category, brand, limit = 48, offset = 0 } = opts;
-  const r = await searchProducts({
-    q,
-    brand,
-    category: category ?? "all",
-    saleOnly: true, // only sellable products on public catalog
-    limit,
-    offset,
-  });
-  return {
-    items: r.items.map(toQuoteProduct),
-    total: r.total,
-    offset: r.offset,
-    limit: r.limit,
-    elapsedMs: r.elapsedMs,
-  };
-};
-
-export const getQuoteCatalogBySlug = async (
-  slug: string
-): Promise<Product | null> => {
-  // slug format: "p-{odoo_id}"
-  if (!slug.startsWith("p-")) return null;
-  const id = slug.slice(2);
-  const p = await getProductById(id);
-  return p ? toQuoteProduct(p) : null;
-};
-
-export const getQuoteCatalogBrands = async (): Promise<BrandCount[]> => {
+export const getCatalogBrands = async (): Promise<BrandCount[]> => {
   const c = await getCache();
   // Only expose sellable-brand counts on public surface.
   const agg = new Map<string, number>();

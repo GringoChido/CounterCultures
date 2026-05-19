@@ -177,8 +177,6 @@ const sampleToProducts = (): Product[] =>
 
 let cachedProducts: Product[] | null = null;
 let cacheTimestamp = 0;
-let cachedQuoteProducts: Product[] | null = null;
-let quoteCacheTimestamp = 0;
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 const getAllProducts = async (): Promise<Product[]> => {
@@ -215,22 +213,6 @@ const getAllProducts = async (): Promise<Product[]> => {
   }
   cacheTimestamp = now;
   return cachedProducts;
-};
-
-const getAllQuoteProducts = async (): Promise<Product[]> => {
-  const now = Date.now();
-  if (cachedQuoteProducts && now - quoteCacheTimestamp < CACHE_TTL) {
-    return cachedQuoteProducts;
-  }
-  if (!isConfigured()) {
-    cachedQuoteProducts = [];
-    quoteCacheTimestamp = now;
-    return cachedQuoteProducts;
-  }
-  const rows = await fetchSheetData("Products_Quote!A2:R");
-  cachedQuoteProducts = rows.map(rowToProduct);
-  quoteCacheTimestamp = now;
-  return cachedQuoteProducts;
 };
 
 // ── Public API ────────────────────────────────────────────────────────
@@ -310,56 +292,6 @@ export const getProductsBySubcategory = async (
     });
   }
   return products;
-};
-
-export interface QuoteSearchOptions {
-  q?: string;
-  category?: string;
-  brand?: string;
-  limit?: number;
-  offset?: number;
-}
-
-export interface QuoteSearchResult {
-  items: Product[];
-  total: number;
-  offset: number;
-  limit: number;
-}
-
-export const searchQuoteProducts = async (
-  opts: QuoteSearchOptions = {}
-): Promise<QuoteSearchResult> => {
-  const { q = "", category, brand, limit = 48, offset = 0 } = opts;
-  const all = await getAllQuoteProducts();
-  const needle = q.trim().toLowerCase();
-  const matched = all.filter((p) => {
-    if (category && p.category !== category) return false;
-    if (brand && normalizeBrand(p.brand) !== normalizeBrand(brand)) return false;
-    if (!needle) return true;
-    const haystack = `${p.sku} ${p.name} ${p.nameEn} ${p.brand} ${p.description}`.toLowerCase();
-    return haystack.includes(needle);
-  });
-  return {
-    items: matched.slice(offset, offset + limit),
-    total: matched.length,
-    offset,
-    limit,
-  };
-};
-
-export const getQuoteProductBySlug = async (
-  slug: string
-): Promise<Product | null> => {
-  const all = await getAllQuoteProducts();
-  return all.find((p) => p.slug === slug) || null;
-};
-
-export const getAllQuoteBrands = async (): Promise<string[]> => {
-  const all = await getAllQuoteProducts();
-  const brands = new Set<string>();
-  all.forEach((p) => { if (p.brand) brands.add(p.brand); });
-  return [...brands].sort();
 };
 
 // ── Lead Operations ───────────────────────────────────────────────────
