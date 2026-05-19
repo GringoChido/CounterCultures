@@ -381,14 +381,16 @@ All three Day 1 items shipped. Details in §10 Change log. Audit lives at `docs/
 
 **8 open data-quality questions** moved to §8 for sequencing.
 
-#### Day 2 — Tue · PDP template consolidation + quick infrastructure
+#### Day 2 — Tue · ✅ COMPLETE 2026-05-20 (PDP consolidation)
 
-| Item | Effort | Notes |
+PDP template consolidation shipped. Details in §10 Change log. Remaining Day 2 items (fix/* branch triage, customer sign-in wire-up, Resend setup) carry forward to Day 3.
+
+| Item | Status | Notes |
 |---|---|---|
-| **PDP template consolidation audit + refactor** — find every place a product is rendered (PDPs, brand-page cards, project-page line items, search results), identify all templates, **declare ONE canonical PDP template, refactor everything else to use it**. **Smoke-checked 2026-05-19:** confirmed at least TWO PDP templates exist — `app/[locale]/shop/[category]/p/[slug]/page.tsx` (canonical, Sacred Surface #2) and `app/[locale]/shop/quote/[slug]/page.tsx` (deprecated quote-flow template). **The deprecated quote template is where the EN/ES per-PDP picker AND the "Request a Quote" CTA live (line 117 + neighbors).** Deprecating the quote template removes both in one move. | 2 days (spans Tue–Wed) | **NEW (v3.1).** Joshua: *"ONE template, no exceptions."* |
-| **Small `fix/*` branch triage** — execute decision per §4B for all 8 branches. **MERGE `fix/cart-discount-code-label`** (RF-4 superseded — see §3). | 1 hr | *(was A3)* |
-| **Customer sign-in: final wire-up** — set `GOOGLE_CLIENT_ID_CUSTOMER` + `GOOGLE_CLIENT_SECRET_CUSTOMER` in GCP + Netlify env | 30 min | NEW (v3). Closes visibility gap. |
-| **Resend setup — finish sandbox-mode rewrite** | 30 min | *(was B1)* P1.1 PARTIAL → DONE. |
+| **PDP template consolidation** | ✅ DONE — sha cfdc60b — 2026-05-20 | /shop/quote/ deprecated, 301 redirects added, toQuoteProduct removed, canonical PDP locked, product-render surface inventory documented. 4 one-off renderings found → Day 3 follow-up. |
+| **Small `fix/*` branch triage** | 🔴 PENDING — carries to Day 3 | *(was A3)* |
+| **Customer sign-in: final wire-up** | 🔴 PENDING — carries to Day 3 | NEW (v3). |
+| **Resend setup — finish sandbox-mode rewrite** | 🔴 PENDING — carries to Day 3 | *(was B1)* |
 
 #### Day 3 — Wed · PDP cleanup applies to the ONE template (propagates to all 354K PDPs)
 
@@ -805,6 +807,11 @@ git commit -m "docs(plan): consolidate to MASTER-PLAN.md, archive superseded pro
 
 ## 10. Change log
 
+- **2026-05-20 (Day 2 SHIPPED)** — PDP template consolidation. Single session, single commit.
+  - `cfdc60b` — `feat(pdp): consolidate to single canonical PDP template (Day 2)` — deleted /shop/quote/ route (6 files, ~1,061 lines), removed toQuoteProduct + searchQuoteCatalog + getQuoteCatalogBySlug from products-full.ts, removed orphaned quote functions from sheets.ts, renamed getQuoteCatalogBrands → getCatalogBrands, added 301 redirects for /shop/quote/* → /shop/catalog, added PDP contract header comment to canonical template, appended product-render surface inventory + PDP contract to data-sources-of-truth.md.
+  - Product-render audit found 4 one-off renderings: catalog-view.tsx, product-drawer.tsx, catalog-search.tsx (dashboard), product-detail-panel.tsx (dashboard). Documented for Day 3 follow-up (≥3 threshold = don't refactor in this session).
+  - §0 compliance: all four conditions met. Sacred Surface #2 behavior unchanged (form only — deprecated template removed, canonical template preserved). Smoke loop: cart ✓ PDP ✓ cmd-K ✓ checkout ✓ login ✓ redirect ✓.
+  - Tangle 1/Q4 (sidecar price on quote catalog) self-resolved as predicted — the only reader of sidecar `price` was `toQuoteProduct()`, now deleted.
 - **2026-05-19 (Day 1 audit follow-up — decisions locked)** — Joshua resolved all 8 open data-quality questions from the audit + the 3-option Sheets API mitigation plan. Folded into §6 schedule: Week 3 picks up Q2 (PDP H1 Spanish title) + Q3 (AI descriptions wired to resolver step 2.5). Week 4 picks up Q5 (`brand_id` column) + Q7 (hourly stock sync) + Sheets API mitigations (a) + (b). Week 5 picks up Q8 (proactive spec mirror) + mitigation (c). Q1 (CC_Products_Full refresh) needs no code — manual weekly sync pre-launch, fresh full sync before launch. Q6 (subcategory gap) accepted as launch-acceptable. All 8 moved to §8 "Resolved since v2." Zero incremental infrastructure cost for the mitigations.
 - **2026-05-19 (Day 1 SHIPPED)** — First execution session of the 7-week sprint. Three Day-1 items shipped per the architecture-first ordering.
   - `359203b` — `docs: add data sources-of-truth audit (Concern 0)` — new `docs/data-sources-of-truth.md` (281 lines, 16 data elements audited, 3 tangles identified, 8 open questions surfaced for Joshua)
