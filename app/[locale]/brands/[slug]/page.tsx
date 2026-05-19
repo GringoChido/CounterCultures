@@ -169,7 +169,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
     }
     // request state (and any unknown fallback)
     return {
-      label: isEs ? "Solicitar Cotización" : "Request a Quote",
+      label: isEs ? "Contáctanos" : "Contact Us",
       href: `/contact?brand=${slug}`,
     };
   })();
@@ -467,100 +467,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
           </section>
         )}
 
-        {/* Full Catalog — the Vault, filtered to this brand. Only show when
-            the brand actually has catalog items (avoids dead sections on
-            request-state brands with no Odoo footprint). */}
-        {catalogSummary.count > 0 && (
-          <section className="py-16 md:py-24 bg-brand-linen border-y border-brand-stone/10">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <div className="grid lg:grid-cols-[1fr_auto] gap-6 items-end mb-10">
-                <div>
-                  <p className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-copper uppercase">
-                    {isEs ? "Catálogo completo" : "Full Catalog"}
-                  </p>
-                  <h2 className="mt-3 font-display text-3xl md:text-5xl font-light tracking-wide text-brand-charcoal leading-[1.05]">
-                    {isEs ? (
-                      <>
-                        <span className="italic">
-                          {catalogSummary.count.toLocaleString("es-MX")} piezas
-                        </span>{" "}
-                        de {brand.name} disponibles para especificar.
-                      </>
-                    ) : (
-                      <>
-                        <span className="italic">
-                          {catalogSummary.count.toLocaleString("en-US")} {brand.name} pieces
-                        </span>{" "}
-                        available to specify.
-                      </>
-                    )}
-                  </h2>
-                  <p className="mt-4 font-body text-base text-dash-text-secondary max-w-xl">
-                    {isEs
-                      ? `Más allá de nuestra selección: cada pieza autorizada de ${brand.name} que podemos pedir directo de fábrica. Buscable por modelo, acabado o colección. Cotización en 24 horas.`
-                      : `Beyond our selection: every authorized ${brand.name} piece we can order direct from the factory. Searchable by model, finish, or collection. 24-hour quotes.`}
-                  </p>
-                </div>
-                <Link
-                  href={`/${locale}/shop/catalog?brand=${encodeURIComponent(brand.name)}`}
-                  className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-brand-charcoal text-white font-body font-semibold text-sm tracking-wide hover:bg-brand-charcoal/90 transition-colors whitespace-nowrap"
-                >
-                  {isEs ? "Abrir catálogo" : "Open catalog"} →
-                </Link>
-              </div>
-
-              {/* Category breakdown chips → editorial category landing pages */}
-              {Object.values(catalogSummary.categoryCounts).some((c) => c > 0) && (
-                <div className="mb-8 flex flex-wrap gap-2">
-                  {(["bathroom", "kitchen", "hardware"] as const)
-                    .filter((c) => catalogSummary.categoryCounts[c] > 0)
-                    .map((c) => (
-                      <Link
-                        key={c}
-                        href={`/${locale}/brands/${slug}/${c}`}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-dash-surface border border-brand-stone/20 hover:border-brand-copper transition-colors font-body text-xs"
-                      >
-                        <span className="text-[10px] tracking-[0.18em] uppercase text-dash-text-secondary">
-                          {isEs
-                            ? c === "bathroom" ? "Baño" : c === "kitchen" ? "Cocina" : "Herrajes"
-                            : c === "bathroom" ? "Bathroom" : c === "kitchen" ? "Kitchen" : "Hardware"}
-                        </span>
-                        <span className="font-mono text-[11px] text-brand-copper">
-                          {catalogSummary.categoryCounts[c].toLocaleString()}
-                        </span>
-                      </Link>
-                    ))}
-                </div>
-              )}
-
-              {/* Signature collection grid — featured or top N */}
-              {catalogSummary.signature.length > 0 && (
-                <>
-                  <p className="font-body text-[11px] tracking-[0.25em] text-dash-text-secondary uppercase mb-5">
-                    {isEs
-                      ? brand.featuredProductIds?.length
-                        ? "Selección del showroom"
-                        : "Del catálogo"
-                      : brand.featuredProductIds?.length
-                        ? "Signature selection"
-                        : "From the catalog"}
-                  </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {catalogSummary.signature.map((p) => (
-                      <BrandSignatureTile
-                        key={p.id}
-                        product={p}
-                        locale={locale as "en" | "es"}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          </section>
-        )}
-
-        {/* Request-a-Quote band — shown when no products (request-state or
+        {/* Contact band — shown when no products (request-state or
             stocked-with-empty-catalog). Sits between products and journal. */}
         {showQuoteCta && (
           <section className="py-16 md:py-20 bg-brand-sand/10 border-y border-brand-stone/10">
@@ -572,8 +479,8 @@ const BrandPage = async ({ params }: BrandPageProps) => {
               </p>
               <h2 className="mt-4 font-display text-3xl md:text-4xl font-light text-brand-charcoal">
                 {isEs
-                  ? `Solicita una cotización para ${brand.name}`
-                  : `Request a ${brand.name} Quote`}
+                  ? `Consulta sobre ${brand.name}`
+                  : `Inquire About ${brand.name}`}
               </h2>
               <p className="mt-4 font-body text-base text-dash-text-secondary leading-relaxed">
                 {isEs
@@ -584,7 +491,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
                 href={`/${locale}/contact?brand=${slug}`}
                 className="mt-8 inline-flex items-center gap-2 px-8 py-4 bg-brand-copper text-white font-body font-medium text-sm tracking-wider uppercase hover:bg-brand-copper/90 transition-colors"
               >
-                {isEs ? "Solicitar Cotización" : "Request a Quote"}
+                {isEs ? "Contáctanos" : "Contact Us"}
               </Link>
             </div>
           </section>

@@ -383,7 +383,7 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
                     href={`/${locale}/contact?brand=${slug}`}
                     className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-brand-charcoal text-brand-charcoal font-body font-medium text-sm tracking-wide hover:bg-brand-charcoal hover:text-white transition-colors"
                   >
-                    {isEs ? "Solicitar cotización" : "Request a quote"}
+                    {isEs ? "Contáctanos" : "Contact Us"}
                   </Link>
                 </div>
               </div>

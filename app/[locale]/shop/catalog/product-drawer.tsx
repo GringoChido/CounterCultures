@@ -35,7 +35,7 @@ type TabKey = "overview" | "variants" | "related" | "also_specified";
 const T = {
   en: {
     closeLabel: "Close",
-    quoteOnly: "Quote on request",
+    quoteOnly: "Price on request",
     listPrice: "List price",
     uom: "UoM",
     sku: "SKU",
@@ -50,13 +50,13 @@ const T = {
     noAlsoSpecified: "Not enough project history yet to pair this with anything.",
     alsoSpecifiedHint:
       "Products that consistently ship alongside this one — real pairings, not algorithmic guesses.",
-    requestQuote: "Request a quote",
-    priceNote: "Price includes IVA — final quote confirmed on request.",
+    requestQuote: "Add to Cart",
+    priceNote: "",
     variantsHint: "Same model, different finish or size. Click a tile to view.",
   },
   es: {
     closeLabel: "Cerrar",
-    quoteOnly: "Cotización bajo pedido",
+    quoteOnly: "Precio bajo consulta",
     listPrice: "Precio de lista",
     uom: "Unidad",
     sku: "SKU",
@@ -71,8 +71,8 @@ const T = {
     noAlsoSpecified: "Aún no hay suficiente historial para sugerir combinaciones.",
     alsoSpecifiedHint:
       "Productos que acompañan consistentemente a este — patrones reales de proyectos, no sugerencias algorítmicas.",
-    requestQuote: "Solicitar cotización",
-    priceNote: "Precio con IVA incluido — cotización final bajo pedido.",
+    requestQuote: "Agregar al Carrito",
+    priceNote: "",
     variantsHint: "Mismo modelo, distinto acabado o tamaño. Toca una ficha para verla.",
   },
 };
@@ -326,9 +326,6 @@ const ProductDrawer = ({
                   <div className="text-brand-charcoal capitalize">{product.category}</div>
                 </div>
               </div>
-              <p className="text-[11px] text-dash-text-secondary italic leading-relaxed">
-                {t.priceNote}
-              </p>
             </div>
           )}
 

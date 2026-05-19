@@ -252,21 +252,21 @@ git branch -D claude/objective-cartwright-0bf816
 
 If you are paranoid: tag it first (`git tag archive/cartwright-2026-05-10 claude/objective-cartwright-0bf816`) so the commits remain reachable for 90+ days. Then delete the branch.
 
-### 4B. Small fix branches — needs decision before merge OR drop
+### 4B. Small fix branches — ✅ TRIAGED 2026-05-21
 
-| Branch | sha | What | Decision required |
-|---|---|---|---|
-| `claude/amazing-zhukovsky-707d87` | 3 commits | P&L latest-month default + footer Maps link + `/shop` and `/returns` redirects | Three independent, low-risk fixes. **PR them** as three separate commits → main. |
-| `claude/gallant-khayyam-1d2480` | 1 commit | "P0 security — cron auth hardening, bootstrap closure, search dedup" | Likely *supersedes/overlaps* with the already-shipped P0.3 / P0.4 work. Diff against main first. If novel, PR it. If duplicate, delete. |
-| `claude/dazzling-gates-6178ba` | 1 commit | Link-checker GH Actions workflow | Main has a different sha for similar work (PR via `eloquent-stonebraker`). Diff both. Keep the better one. |
-| `fix/cart-share-email-error-handling` | `e091081` | `info@countercultures.com.mx` default + `@countercultures.com.mx` wildcard allowlist for cart-share | Touches Sacred Surface #5 (email). Confirms intent with Joshua: is `info@` the right default sender, or stick with `admin@`? Also: wildcard allowlist breaks the sandbox-only model documented in `p1-resend-setup.md`. **Joshua-decision item.** |
-| `fix/whatsapp-opt-out-default` | `ee9ba7e` | Flip WhatsApp messaging from opt-in to opt-out for new signups | **CONFLICTS with RF-5** (which shipped *unchecked* opt-in for LFPDPPP compliance). LFPDPPP requires explicit consent for marketing. **Do not merge without legal sign-off.** Recommended: drop. |
-| `fix/net-price-label-iva-wording` | `2f84baa` | PDP caption wording: "reflect IVA-included per Mexican law" | Same domain as the c5f28ff IVA-extract fix that landed 05-18. **Verify caption matches new behavior** — if the price displayed is now actually net (post-extraction), the caption should say "Precio neto · IVA incluido al finalizar" (current) vs. some new wording. Likely small Tailwind / string change. Either merge or drop. |
-| `fix/cart-discount-code-label` | `0dc2208` | Rename cart "Trade code" → "Discount Code" | ✅ **MERGE in Week 1.** RF-4 was SUPERSEDED 2026-05-19 — the field's purpose changed (it's no longer a trade-customer identifier; trade customers route via account login). New job: promo codes + F&F discounts. Rename is now correct. |
-| `fix/projects-404` | `e2fbcb7` | Remove incorrect locale prefix from project page URLs | Project pages are a Sacred Surface #1 sub-feature. Low-risk fix. **PR it.** |
-| `fix/cc-llc-color-scheme-reports-ap` | `a3efd33` | CC/LLC color coding for AP views | Antonina-facing finance UI. Likely supports P1.18 work that already shipped. Confirm not already done; if novel, PR it. |
-| `fix/local-delivery-signature` | `fad3ffc` | Miguel local scheduler + signature capture + delivery receipt | Net-new feature (Miguel = local courier). Not in any roadmap. **Joshua-decision: is this in scope for Phase 1? If yes, promote to a P2 fix file. If not, freeze branch.** |
-| `claude/eloquent-stonebraker-cc7e55` | 0/0 vs origin | Link checker CI (already PR'd #74) | Done. Delete worktree. |
+| Branch | Disposition | Notes |
+|---|---|---|
+| ~~`claude/amazing-zhukovsky-707d87`~~ | ✅ MERGED 2026-05-21 | P&L latest-month default + footer Maps link + `/shop` → `/shop/catalog` + `/returns` → `/returns-warranty`. |
+| ~~`claude/gallant-khayyam-1d2480`~~ | ❌ DROPPED 2026-05-21 | All 3 changes (cron auth, bootstrap, search dedup) already on main. Duplicate. |
+| ~~`claude/dazzling-gates-6178ba`~~ | ❌ DROPPED 2026-05-21 | Link checker already on main (different approach but same function). |
+| `fix/cart-share-email-error-handling` | 🟡 HOLD — Joshua-decision | Touches Sacred Surface #5 (email). `info@` vs `admin@` default sender? Wildcard allowlist breaks sandbox model. |
+| ~~`fix/whatsapp-opt-out-default`~~ | ❌ DROPPED 2026-05-21 | LFPDPPP conflict. Explicit consent required for marketing. |
+| ~~`fix/net-price-label-iva-wording`~~ | ❌ DROPPED 2026-05-21 | Stale — target file `product-detail.tsx` deleted Day 2, `order-summary.tsx` IVA wording already updated on main. |
+| ~~`fix/cart-discount-code-label`~~ | ✅ MERGED 2026-05-21 | RF-4 superseded. "Trade code" → "Discount Code". |
+| ~~`fix/projects-404`~~ | ✅ MERGED 2026-05-21 | Removed incorrect `/en/` locale prefix from project page URLs. |
+| ~~`fix/cc-llc-color-scheme-reports-ap`~~ | ✅ MERGED 2026-05-21 | Novel CC/LLC color coding for AP views (Antonina-facing). |
+| `fix/local-delivery-signature` | 🟡 HOLD — Joshua-decision | Net-new feature (Miguel local courier). Not in roadmap. Scope decision needed. |
+| ~~`claude/eloquent-stonebraker-cc7e55`~~ | ✅ DELETED 2026-05-21 | No unmerged commits. Worktree removed. |
 
 ### 4C. Stash & orphan commits
 
@@ -392,16 +392,18 @@ PDP template consolidation shipped. Details in §10 Change log. Remaining Day 2 
 | **Customer sign-in: final wire-up** | 🔴 PENDING — carries to Day 3 | NEW (v3). |
 | **Resend setup — finish sandbox-mode rewrite** | 🔴 PENDING — carries to Day 3 | *(was B1)* |
 
-#### Day 3 — Wed · PDP cleanup propagates + Day 2 carry-overs (~6 hrs)
+#### Day 3 — Wed · ✅ COMPLETE 2026-05-21 (PDP cleanup + branch triage + Resend verified)
 
-| Item | Effort | Notes |
+PDP cleanup propagated via canonical template. Branch triage executed per §4B. Resend sandbox verified. Customer sign-in partially blocked (missing env var). Details in §10 Change log.
+
+| Item | Status | Notes |
 |---|---|---|
-| **PDP cleanup pass** — applied once to the canonical template, propagates to all PDPs. Removes: SKU codes (e.g. "CAL-0185"), "PRICES IVA INCLUDED" badge, per-PDP EN/ES language picker (NEVER touch global header toggle — quote template already deleted Day 2, so picker should already be gone — verify), "Rodger Envira" credit-line contamination. Locks to **Add to Cart + Add to Project only** (strip Request a Quote everywhere). | 3 hrs | **NEW (v3.1).** Roger fixes #5 + #6. The architecture-first ordering means this work happens once. |
-| **Delete "Full Catalog X pieces" section from brand pages** — touches TWO routes: `app/[locale]/brands/[slug]/page.tsx:470` (brand page) AND `app/[locale]/brands/[slug]/[category]/page.tsx:546` (brand+category page). The specific copy ("Beyond our selection: every authorized X piece we can order direct from the factory…") is at `brands/[slug]/page.tsx:501`. | 30 min | **NEW (v3.1).** Roger fix #3. Smoke-checked 2026-05-19. |
+| **PDP cleanup pass** | ✅ DONE — 2026-05-21 | Removed: SKU visual display, "PRICES IVA INCLUDED" badge/priceNote, per-PDP EN/ES description picker, "Request a Quote" CTA everywhere (replaced with "Add to Cart" universally). Also cleaned product-drawer, project-list-bar, brand pages. Zero "Request a Quote" references remain in codebase (grep-verified). |
+| **Delete "Full Catalog X pieces" section from brand pages** | ✅ DONE — 2026-05-21 | Deleted ~90-line "Beyond our selection" block from `brands/[slug]/page.tsx`. Brand+category page confirmed: never had this section. |
 | ~~**"Rodger Envira" data cleanup**~~ | ~~30 min~~ | ⛔ **SKIPPED 2026-05-20.** Comprehensive search (Odoo + 6 sheets + sidecar + codebase = ~362K records) returned 0 matches. String doesn't exist in any reachable data source. Reopen only if Joshua confirms exact spelling or provides a sample PDP URL. |
-| **Carry-over: Small `fix/*` branch triage** — execute decision per §4B for all 8 branches. **MERGE `fix/cart-discount-code-label`** (RF-4 superseded — see §3). | 1 hr | Carried from Day 2. |
-| **Carry-over: Customer sign-in final wire-up** — set `GOOGLE_CLIENT_ID_CUSTOMER` + `GOOGLE_CLIENT_SECRET_CUSTOMER` in GCP + Netlify env | 30 min | Carried from Day 2. Closes the visibility gap from §1. |
-| **Carry-over: Resend setup — finish sandbox-mode rewrite** | 30 min | Carried from Day 2. P1.1 PARTIAL → DONE. |
+| **Carry-over: Small `fix/*` branch triage** | ✅ DONE — 2026-05-21 | **MERGED (4):** `fix/cart-discount-code-label`, `fix/projects-404`, `fix/cc-llc-color-scheme-reports-ap`, `claude/amazing-zhukovsky-707d87`. **DROPPED (4):** `fix/whatsapp-opt-out-default` (LFPDPPP), `fix/net-price-label-iva-wording` (stale), `claude/gallant-khayyam-1d2480` (duplicate), `claude/dazzling-gates-6178ba` (duplicate). **HOLD (2):** `fix/cart-share-email-error-handling` (Joshua-decision), `fix/local-delivery-signature` (Joshua-decision). |
+| **Carry-over: Customer sign-in final wire-up** | 🟡 PARTIAL — `GOOGLE_CLIENT_ID_CUSTOMER` set, `GOOGLE_CLIENT_SECRET_CUSTOMER` MISSING on Netlify | Code is complete. Joshua must: (1) go to GCP Console → `counter-portal-493716` → Credentials, (2) find OAuth client `374048983912-ss013d...`, (3) copy secret, (4) add as `GOOGLE_CLIENT_SECRET_CUSTOMER` on Netlify. Also verify redirect URI includes `https://countercultures.netlify.app/api/auth/callback/google-customer`. |
+| **Carry-over: Resend setup — finish sandbox-mode rewrite** | ✅ DONE — verified 2026-05-21 | `RESEND_FROM_TRANSACTIONAL=onboarding@resend.dev` set across all contexts. `STAGING_EMAIL_REDIRECT` limits delivery to `admin@` + `roger@countercultures.com.mx`. P1.1 COMPLETE. |
 
 #### Day 5 OR Day 6 — 4 one-off product rendering refactors (deferred from Day 2 audit)
 
@@ -816,6 +818,13 @@ git commit -m "docs(plan): consolidate to MASTER-PLAN.md, archive superseded pro
 
 ## 10. Change log
 
+- **2026-05-21 (Day 3 SHIPPED)** — PDP cleanup propagation + branch triage + Resend verified. Three sub-sessions.
+  - **PDP cleanup pass (Item 1):** Removed SKU visual display from PDP (JSON-LD sku/mpn still populated from data), deleted "PRICES IVA INCLUDED" priceNote from PDP + product-drawer, removed per-PDP EN/ES description language picker, replaced all "Request a Quote" CTAs with "Add to Cart" across PDP, AddToCartButton, product-drawer, project-list-bar, and both brand page routes. Grep-verified: zero "Request a Quote" or "Solicitar Cotización" CTA references remain. Brand pages: "Request a Quote" → "Contact Us"/"Contáctanos". Product-drawer: "Quote on request" → "Price on request"/"Precio bajo consulta".
+  - **Full Catalog section delete (Item 2):** Deleted ~90-line "Beyond our selection" block from `app/[locale]/brands/[slug]/page.tsx` (hero stats + category chips + signature grid + "Open catalog" CTA). Brand+category page confirmed never had this section (MASTER-PLAN line reference was incorrect).
+  - **Branch triage (Item 3 — §4B):** 11 branches processed. MERGED 4: `fix/cart-discount-code-label` (RF-4 superseded, "Trade code" → "Discount Code"), `fix/projects-404` (removes incorrect `/en/` prefix from project URLs), `fix/cc-llc-color-scheme-reports-ap` (CC/LLC color coding for AP views — Antonina-facing), `claude/amazing-zhukovsky-707d87` (P&L latest-month default + footer Maps link + `/shop` → `/shop/catalog` + `/returns` → `/returns-warranty` redirects). DROPPED 4: `fix/whatsapp-opt-out-default` (LFPDPPP conflict), `fix/net-price-label-iva-wording` (stale — `product-detail.tsx` deleted Day 2, `order-summary.tsx` already updated), `claude/gallant-khayyam-1d2480` (all 3 changes already on main), `claude/dazzling-gates-6178ba` (link checker already on main). DELETED 1: `claude/eloquent-stonebraker-cc7e55` (no unmerged commits). HOLD 2: `fix/cart-share-email-error-handling` (Joshua-decision — Sacred Surface #5), `fix/local-delivery-signature` (Joshua-decision — net-new feature). All worktrees for processed branches removed.
+  - **Customer sign-in (Item 4):** `GOOGLE_CLIENT_ID_CUSTOMER` already set on Netlify. `GOOGLE_CLIENT_SECRET_CUSTOMER` MISSING — Joshua must retrieve from GCP Console (`counter-portal-493716` project, OAuth client `374048983912-ss013d...`). Code side complete.
+  - **Resend P1.1 (Item 5):** Verified complete. `RESEND_FROM_TRANSACTIONAL=onboarding@resend.dev` across all Netlify contexts. `STAGING_EMAIL_REDIRECT` limits delivery to `admin@` + `roger@countercultures.com.mx`. P1.1 DONE.
+  - §0 compliance: all four conditions met. Sacred Surface #2 (PDP) form-change only — Add to Cart behavior unchanged, JSON-LD preserved. Sacred Surface #1 (cart) form-change only — "Trade code" label → "Discount Code". TypeScript type check passes clean after all merges.
 - **2026-05-20 (Day 2 SHIPPED)** — PDP template consolidation. Single session, single commit.
   - `cfdc60b` — `feat(pdp): consolidate to single canonical PDP template (Day 2)` — deleted /shop/quote/ route (6 files, ~1,061 lines), removed toQuoteProduct + searchQuoteCatalog + getQuoteCatalogBySlug from products-full.ts, removed orphaned quote functions from sheets.ts, renamed getQuoteCatalogBrands → getCatalogBrands, added 301 redirects for /shop/quote/* → /shop/catalog, added PDP contract header comment to canonical template, appended product-render surface inventory + PDP contract to data-sources-of-truth.md.
   - Product-render audit found 4 one-off renderings: catalog-view.tsx, product-drawer.tsx, catalog-search.tsx (dashboard), product-detail-panel.tsx (dashboard). Documented for Day 3 follow-up (≥3 threshold = don't refactor in this session).

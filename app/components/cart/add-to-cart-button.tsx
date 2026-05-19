@@ -12,18 +12,14 @@ const BUYABLE_THRESHOLD_MXN = 50_000;
 const T = {
   en: {
     addToCart: "Add to Cart",
-    addToQuote: "Add to Quote",
     added: "Added",
     selectFinish: "Select a finish first",
-    quoteTooltip: "Roger will send a formal quote within 24 hours.",
     currencyMismatch: "Cannot mix currencies in one cart",
   },
   es: {
     addToCart: "Agregar al Carrito",
-    addToQuote: "Agregar a Cotización",
     added: "Agregado",
     selectFinish: "Selecciona un acabado primero",
-    quoteTooltip: "Roger enviará una cotización formal en menos de 24 horas.",
     currencyMismatch: "No se pueden mezclar monedas en un carrito",
   },
 };
@@ -107,7 +103,6 @@ export const AddToCartButton = ({
             ? "bg-brand-terracotta text-white hover:bg-brand-copper disabled:bg-brand-copper"
             : "bg-brand-sage/20 text-brand-charcoal border border-brand-sage/40 hover:bg-brand-sage/30 disabled:bg-brand-sage/30"
         }`}
-        title={!buyable ? t.quoteTooltip : undefined}
       >
         {justAdded ? (
           <>
@@ -117,16 +112,10 @@ export const AddToCartButton = ({
         ) : (
           <>
             <ShoppingBag className="w-4 h-4" />
-            {buyable ? t.addToCart : t.addToQuote}
+            {t.addToCart}
           </>
         )}
       </button>
-
-      {!buyable && !error && (
-        <p className="mt-2 font-body text-xs text-dash-text-secondary">
-          {t.quoteTooltip}
-        </p>
-      )}
 
       {error && (
         <p className="mt-2 font-body text-xs text-red-600">

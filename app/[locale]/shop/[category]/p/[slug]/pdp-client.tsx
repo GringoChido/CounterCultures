@@ -75,16 +75,14 @@ const T = {
     home: "Home",
     catalog: "Catalog",
     addToCart: "Add to Cart",
-    addToQuote: "Request Quote",
     added: "Added",
     viewCart: "View Cart",
     saveToProject: "Save to Project",
     savedToProject: "Saved to Project",
     selectFinish: "Select a finish",
     currencyMismatch: "Cannot mix currencies in one cart",
-    quoteTooltip: "Roger will send a formal quote within 24 hours.",
     from: "from",
-    quote: "Quote on request",
+    quote: "Price on request",
     inShowroom: "In Showroom",
     inStock: "In Stock",
     specifiedCount: (n: number) => `${n} projects`,
@@ -92,8 +90,6 @@ const T = {
     finishes: "Available Finishes",
     specSheet: "Download Spec Sheet",
     related: "You may also like",
-    priceNote:
-      "Price includes IVA — final quote confirmed on request.",
     viewBrand: "View all",
     description: "Description",
   },
@@ -101,16 +97,14 @@ const T = {
     home: "Inicio",
     catalog: "Catálogo",
     addToCart: "Agregar al Carrito",
-    addToQuote: "Solicitar Cotización",
     added: "Agregado",
     viewCart: "Ver Carrito",
     saveToProject: "Guardar en Proyecto",
     savedToProject: "Guardado en Proyecto",
     selectFinish: "Selecciona un acabado",
     currencyMismatch: "No se pueden mezclar monedas en un carrito",
-    quoteTooltip: "Roger enviará una cotización formal en menos de 24 horas.",
     from: "desde",
-    quote: "Cotización bajo pedido",
+    quote: "Precio bajo consulta",
     inShowroom: "En Showroom",
     inStock: "En Existencia",
     specifiedCount: (n: number) => `${n} proyectos`,
@@ -118,8 +112,6 @@ const T = {
     finishes: "Acabados Disponibles",
     specSheet: "Descargar Ficha Técnica",
     related: "También te puede interesar",
-    priceNote:
-      "Precio con IVA incluido — cotización final bajo pedido.",
     viewBrand: "Ver todo",
     description: "Descripción",
   },
@@ -152,7 +144,6 @@ const PDPClient = ({
 }: PDPClientProps) => {
   const t = T[locale];
   const [activeImg, setActiveImg] = useState(0);
-  const [descLang, setDescLang] = useState<"en" | "es">(locale);
   const [qty, setQty] = useState(1);
   const [selectedFinish, setSelectedFinish] = useState<string | undefined>(
     finishes && finishes.length === 1 ? finishes[0] : undefined
@@ -173,9 +164,10 @@ const PDPClient = ({
   const images = gallery ?? [];
   const specHref = specSheetLocal ?? specSheetUrl;
 
-  const hasBothDescs = !!descriptionEs && !!descriptionEn;
-  const descText = descLang === "es" ? descriptionEs : descriptionEn;
-  const singleDesc = descriptionEs || descriptionEn;
+  const descText =
+    locale === "es"
+      ? descriptionEs || descriptionEn
+      : descriptionEn || descriptionEs;
 
   const BUYABLE_THRESHOLD_MXN = 50_000;
   const currency = (product.currency === "USD" ? "USD" : "MXN") as "MXN" | "USD";
@@ -342,12 +334,9 @@ const PDPClient = ({
 
         {/* ─── Product info ─── */}
         <div className="space-y-6">
-          {/* SKU + title + brand */}
+          {/* Title + brand */}
           <div>
-            <span className="font-mono text-xs text-dash-text-secondary">
-              {product.sku}
-            </span>
-            <h1 className="mt-2 font-display text-3xl md:text-4xl font-light text-brand-charcoal leading-tight">
+            <h1 className="font-display text-3xl md:text-4xl font-light text-brand-charcoal leading-tight">
               {product.name}
             </h1>
             {product.brand && (
@@ -410,9 +399,6 @@ const PDPClient = ({
                     </span>
                   </p>
                 )}
-                <p className="mt-1 font-body text-[11px] text-dash-text-secondary">
-                  {t.priceNote}
-                </p>
               </>
             ) : (
               <div className="inline-block px-3 py-1.5 border border-brand-terracotta text-brand-terracotta text-xs uppercase tracking-wider font-body">
@@ -483,7 +469,6 @@ const PDPClient = ({
                   ? "bg-brand-terracotta text-white hover:bg-brand-copper disabled:bg-brand-copper"
                   : "bg-brand-sage/20 text-brand-charcoal border border-brand-sage/40 hover:bg-brand-sage/30 disabled:bg-brand-sage/30"
               }`}
-              title={!buyable ? t.quoteTooltip : undefined}
             >
               {justAdded ? (
                 <>
@@ -493,7 +478,7 @@ const PDPClient = ({
               ) : (
                 <>
                   <ShoppingBag className="w-4 h-4" />
-                  {buyable ? t.addToCart : t.addToQuote}
+                  {t.addToCart}
                 </>
               )}
             </button>
@@ -521,12 +506,6 @@ const PDPClient = ({
               )}
             </button>
 
-            {!buyable && !error && (
-              <p className="font-body text-xs text-dash-text-secondary">
-                {t.quoteTooltip}
-              </p>
-            )}
-
             {error && (
               <p className="font-body text-xs text-red-600">{error}</p>
             )}
@@ -543,31 +522,13 @@ const PDPClient = ({
           </div>
 
           {/* Description */}
-          {singleDesc && (
+          {descText && (
             <div>
               <h2 className="font-body text-xs font-semibold tracking-[0.2em] uppercase text-dash-text-secondary mb-3">
                 {t.description}
               </h2>
-              {hasBothDescs && (
-                <div className="flex items-center gap-1 mb-3">
-                  {(["en", "es"] as const).map((l) => (
-                    <button
-                      key={l}
-                      type="button"
-                      onClick={() => setDescLang(l)}
-                      className={`px-2.5 py-1 text-xs font-body transition-colors cursor-pointer ${
-                        descLang === l
-                          ? "bg-brand-charcoal text-white"
-                          : "bg-brand-linen text-dash-text-secondary hover:text-brand-charcoal"
-                      }`}
-                    >
-                      {l.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
-              )}
               <div className="font-body text-sm text-brand-charcoal leading-relaxed whitespace-pre-line">
-                {hasBothDescs ? descText : singleDesc}
+                {descText}
               </div>
             </div>
           )}
