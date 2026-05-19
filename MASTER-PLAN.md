@@ -392,13 +392,22 @@ PDP template consolidation shipped. Details in §10 Change log. Remaining Day 2 
 | **Customer sign-in: final wire-up** | 🔴 PENDING — carries to Day 3 | NEW (v3). |
 | **Resend setup — finish sandbox-mode rewrite** | 🔴 PENDING — carries to Day 3 | *(was B1)* |
 
-#### Day 3 — Wed · PDP cleanup applies to the ONE template (propagates to all 354K PDPs)
+#### Day 3 — Wed · PDP cleanup propagates + Day 2 carry-overs (~6 hrs)
 
 | Item | Effort | Notes |
 |---|---|---|
-| **PDP cleanup pass** — applied once to the canonical template, propagates to all PDPs. Removes: SKU codes (e.g. "CAL-0185"), "PRICES IVA INCLUDED" badge, per-PDP EN/ES language picker (NEVER touch global header toggle), "Rodger Envira" credit-line contamination. Locks to **Add to Cart + Add to Project only** (strip Request a Quote everywhere). | 4 hrs | **NEW (v3.1).** Roger fixes #5 + #6. The architecture-first ordering means this work happens once. |
+| **PDP cleanup pass** — applied once to the canonical template, propagates to all PDPs. Removes: SKU codes (e.g. "CAL-0185"), "PRICES IVA INCLUDED" badge, per-PDP EN/ES language picker (NEVER touch global header toggle — quote template already deleted Day 2, so picker should already be gone — verify), "Rodger Envira" credit-line contamination. Locks to **Add to Cart + Add to Project only** (strip Request a Quote everywhere). | 3 hrs | **NEW (v3.1).** Roger fixes #5 + #6. The architecture-first ordering means this work happens once. |
 | **Delete "Full Catalog X pieces" section from brand pages** — touches TWO routes: `app/[locale]/brands/[slug]/page.tsx:470` (brand page) AND `app/[locale]/brands/[slug]/[category]/page.tsx:546` (brand+category page). The specific copy ("Beyond our selection: every authorized X piece we can order direct from the factory…") is at `brands/[slug]/page.tsx:501`. | 30 min | **NEW (v3.1).** Roger fix #3. Smoke-checked 2026-05-19. |
-| **"Rodger Envira" data cleanup** — Joshua to send sample URL → grep description sheet → strip contaminated rows → write back | 1 hr | **NEW (v3.1).** Coupled with description scrape work in Week 3. |
+| ~~**"Rodger Envira" data cleanup**~~ | ~~30 min~~ | ⛔ **SKIPPED 2026-05-20.** Comprehensive search (Odoo + 6 sheets + sidecar + codebase = ~362K records) returned 0 matches. String doesn't exist in any reachable data source. Reopen only if Joshua confirms exact spelling or provides a sample PDP URL. |
+| **Carry-over: Small `fix/*` branch triage** — execute decision per §4B for all 8 branches. **MERGE `fix/cart-discount-code-label`** (RF-4 superseded — see §3). | 1 hr | Carried from Day 2. |
+| **Carry-over: Customer sign-in final wire-up** — set `GOOGLE_CLIENT_ID_CUSTOMER` + `GOOGLE_CLIENT_SECRET_CUSTOMER` in GCP + Netlify env | 30 min | Carried from Day 2. Closes the visibility gap from §1. |
+| **Carry-over: Resend setup — finish sandbox-mode rewrite** | 30 min | Carried from Day 2. P1.1 PARTIAL → DONE. |
+
+#### Day 5 OR Day 6 — 4 one-off product rendering refactors (deferred from Day 2 audit)
+
+| Item | Effort | Notes |
+|---|---|---|
+| **Refactor 4 one-off product renderings** to use shared components from `app/components/pdp/*` or `app/components/products/*`. Surfaces: catalog-view, product-drawer, catalog-search, product-detail-panel. Inventory documented in `docs/data-sources-of-truth.md` per Day 2 audit. | 2–3 hrs | **NEW (v3.1).** Slotted into Day 5 visible-bug bash, or pulled into Day 6 polish if Day 5 fills with bug work. Non-customer-visible cleanup — safe to slip. |
 
 #### Day 4 — Thu · Trade Program Phase 1 (rendering pull) + Discount Code field
 
@@ -812,6 +821,15 @@ git commit -m "docs(plan): consolidate to MASTER-PLAN.md, archive superseded pro
   - Product-render audit found 4 one-off renderings: catalog-view.tsx, product-drawer.tsx, catalog-search.tsx (dashboard), product-detail-panel.tsx (dashboard). Documented for Day 3 follow-up (≥3 threshold = don't refactor in this session).
   - §0 compliance: all four conditions met. Sacred Surface #2 behavior unchanged (form only — deprecated template removed, canonical template preserved). Smoke loop: cart ✓ PDP ✓ cmd-K ✓ checkout ✓ login ✓ redirect ✓.
   - Tangle 1/Q4 (sidecar price on quote catalog) self-resolved as predicted — the only reader of sidecar `price` was `toQuoteProduct()`, now deleted.
+- **2026-05-20 (Envira investigation — null finding)** — Joshua's hypothesis that "Envira" might be a brand in Odoo. Direct Odoo JSON-RPC query (read-only) + Sheets API queries across every relevant tab confirmed: **"envira" does not exist in any reachable data source.** Coverage: Odoo brand models (don't exist) + `res.partner` (0) + `product.template` 354,449 records (0) + Brand Kit Sheet 168 rows (0) + CRM Products/Products_Odoo/Products_Quote/Product_Descriptions/Brand_NOM_Status/Brand_Lead_Times tabs (0) + CC_Products_Full 354,449 rows (0) + sidecar `product-content.json` 1.1 MB (0) + `app/` and `docs/` source (0). Total ~362K records searched. Day 3 Item 3 (Rodger Envira data cleanup) ⛔ SKIPPED. Reopen only with sample URL or corrected spelling. Investigation scripts archived in outputs.
+- **2026-05-20 (Day 2 SHIPPED — PDP template consolidation)** — Second execution session. Deprecated `/shop/quote/` template removed (6 route files + 1 API route deleted), `toQuoteProduct()` removed, canonical PDP at `app/[locale]/shop/[category]/p/[slug]/page.tsx` locked with header comment + contract documented in `docs/data-sources-of-truth.md`. Net diff: **+83 / −1,061 lines** (978 net deleted). Smoke loop clean on all 6 Sacred Surface steps. 301 redirect verified (`/en/shop/quote/p-12345 → /en/shop/catalog`).
+  - `cfdc60b` — `feat(pdp): consolidate to single canonical PDP template (Day 2)`
+  - `35b40f8` — `docs(master-plan): mark Week 1 Day 2 PDP consolidation DONE`
+  - **Q4 (sidecar-price-on-quote-catalog) self-resolved** as predicted — `toQuoteProduct()` is gone.
+  - **4 one-off product renderings discovered** during audit (catalog-view, product-drawer, catalog-search, product-detail-panel). Exceeded the ≥3 threshold, so per Day 2 prompt instruction the refactor was deferred. Documented in `docs/data-sources-of-truth.md` and slotted into Day 5–6 (§6).
+  - **Day 2 carry-overs** (fix/* branch triage, customer sign-in wire-up, Resend setup) moved to Day 3.
+  - **Pre-existing build failure** (Sheets API 429 on brand-category pre-render) confirmed unchanged. Mitigation scheduled Week 4 per §1 + §8.
+  - §0 compliance: all four conditions met. Sacred Surface #2 touched, form-change only, zero behavior change proven by smoke loop.
 - **2026-05-19 (Day 1 audit follow-up — decisions locked)** — Joshua resolved all 8 open data-quality questions from the audit + the 3-option Sheets API mitigation plan. Folded into §6 schedule: Week 3 picks up Q2 (PDP H1 Spanish title) + Q3 (AI descriptions wired to resolver step 2.5). Week 4 picks up Q5 (`brand_id` column) + Q7 (hourly stock sync) + Sheets API mitigations (a) + (b). Week 5 picks up Q8 (proactive spec mirror) + mitigation (c). Q1 (CC_Products_Full refresh) needs no code — manual weekly sync pre-launch, fresh full sync before launch. Q6 (subcategory gap) accepted as launch-acceptable. All 8 moved to §8 "Resolved since v2." Zero incremental infrastructure cost for the mitigations.
 - **2026-05-19 (Day 1 SHIPPED)** — First execution session of the 7-week sprint. Three Day-1 items shipped per the architecture-first ordering.
   - `359203b` — `docs: add data sources-of-truth audit (Concern 0)` — new `docs/data-sources-of-truth.md` (281 lines, 16 data elements audited, 3 tangles identified, 8 open questions surfaced for Joshua)
