@@ -368,13 +368,18 @@ Status legend: 🔴 PENDING · 🟡 IN PROGRESS · 🟢 DONE · ⛔ BLOCKED
 
 > **Ordering principle (v3.1):** consolidate sources/templates BEFORE individual fixes. Joshua's insight 2026-05-19 — *"I asked for the EN/ES picker to be removed weeks ago and it's still on some pages"* — is the textbook symptom of the multi-template problem. Whacking moles when there are multiple spawn points is infinite work. **Declare ONE canonical template + ONE canonical source first; cleanup then applies once and propagates everywhere.**
 
-#### Day 1 — Mon · Foundation audits (no cleanup yet)
+#### Day 1 — Mon · ✅ COMPLETE 2026-05-19
 
-| Item | Effort | Notes |
-|---|---|---|
-| **Source-of-Truth Audit** (Concern 0) — for every customer-facing data element (price, description, image, stock, spec sheet, slug, brand, category), name the ONE canonical source, find every read path in code, document where conflicts exist. Output: `docs/data-sources-of-truth.md`. | 1 day | ✅ DONE — sha 359203b — 2026-05-19 |
-| **PLAN.md correction** — flip Steps 5/6/7 to DONE, delete Steps 10/12, add banner pointing to MASTER-PLAN | 10 min | ✅ DONE — sha f5fd240 — 2026-05-19 |
-| **Cartwright stack — DELETE outright** | 15 min | ✅ DONE — branch deleted, tag `archive/cartwright-2026-05-10` preserved — 2026-05-19 |
+All three Day 1 items shipped. Details in §10 Change log. Audit lives at `docs/data-sources-of-truth.md` and is now the canonical reference for all data-source decisions.
+
+**Audit findings that change scope for subsequent days:**
+
+- **Image coverage is 1.2%** (4,236 of 354K). Concern 4 (Week 2 image scrape + brand-site fill-in) is more urgent than scoped.
+- **Description coverage is 0.3%** (1,215 of 354K). Concern 3 (Week 2 SS scrape + Week 3-5 AI + hand-edit) is more urgent than scoped.
+- **9 data sources, not 5.** Added: Local files, Brand Kit, Sidecar JSON, Gmail subject-line scanner.
+- **Build-time Sheets API 429 = launch risk.** Brand-category pre-render hit the rate limit. Needs mitigation before launch (longer TTLs + Sheets quota increase) — see §1 (Pre-launch infrastructure risks).
+
+**8 open data-quality questions** moved to §8 for sequencing.
 
 #### Day 2 — Tue · PDP template consolidation + quick infrastructure
 
@@ -502,6 +507,8 @@ Icons: Phosphor or Lucide icon library (free, consistent, professional).
 |---|---|---|
 | **SEO technical pass** — page titles, meta descriptions, canonicals, hreflang (EN/ES), Open Graph, sitemap index for 354K PDPs | 2 days | NEW (v3). |
 | **Scraped descriptions wired into PDPs** via existing `pdp-description.ts` resolver | 0.5 day | NEW (v3). Sacred Surface adjacent — verify resolver fallback chain still works. |
+| **PDP H1 uses sidecar Spanish title when available** — consistency with meta-title + JSON-LD (Q2 resolution) | 0.5 day | **NEW (v3.1).** Audit Q2. |
+| **AI descriptions wired into PDP resolver step 2.5** — `Product_Descriptions` (status=approved) reads added to `pdp-description.ts` between sidecar and CRM fallback. Keeps Roger approval gate, makes approvals actually render on PDPs (Q3 resolution). | 0.5 day | **NEW (v3.1).** Audit Q3. Necessary, not optional — Squarespace covers only 0.3% of catalog. |
 | **AI-generated descriptions: top 50,000 SKUs not covered by Squarespace** — input: partner spec data + product attributes; LLM: Claude Sonnet | 2 days + ~$50 inference | NEW (v3). |
 | **Brand-site image scrape: top-tier brands** (Brizo, Delta, California Faucets, Emtek — partner scrapers from git history) | 1 day | NEW (v3). |
 
@@ -515,6 +522,11 @@ Icons: Phosphor or Lucide icon library (free, consistent, professional).
 | **301 redirect map** — built from Squarespace sitemap → corresponding Netlify URLs. **Critical for Google ranking continuity.** | 1 day | NEW (v3). Ships as part of cutover (Week 7) but built now. |
 | **Long-tail AI descriptions** — remaining ~300K SKUs that were never on Squarespace | 1–2 days + ~$300 inference | NEW (v3). |
 | **Brand-site image fill-in** — remaining brands not covered Week 3 | 1 day | NEW (v3). |
+| **Add `brand_id` column to CC_Products_Full** + update brand-page reads (Q5 — fixes brand-rename fragility) | 0.5 day | **NEW (v3.1).** Audit Q5. |
+| **Bump `Odoo_Stock_Quants` sync to hourly** (Q7 — "In stock" badge accuracy) | 0.5 day | **NEW (v3.1).** Audit Q7. Confirm Odoo API can handle 24 daily read calls. |
+| **Sheets API mitigation (a)** — submit Google Cloud Console quota-increase request for Sheets API | 30 min request + days for approval | **NEW (v3.1).** $0 cost. |
+| **Sheets API mitigation (b)** — aggressive pre-render at build time + bump cache TTLs across product/brand readers | 1 day | **NEW (v3.1).** $0 cost. Trade-off: longer builds, no runtime fetches. |
+| **Fresh full CC_Products_Full manual sync** from Odoo (Q1 — weekly cadence pre-launch) | 30 min ops | **NEW (v3.1).** Audit Q1. Repeat before Week 5 and again before launch. |
 
 ---
 
@@ -523,7 +535,8 @@ Icons: Phosphor or Lucide icon library (free, consistent, professional).
 | Item | Effort | Notes |
 |---|---|---|
 | **Top 5,000 product descriptions hand-edited** — highest-traffic SKUs get a human pass | 2 days | NEW (v3). |
-| **Spec PDFs migrated to R2** + **new "Specs" section on every PDP** (downloadable spec sheets, install guides, NOM certs, dimension drawings, warranty docs) | 1 day | NEW (v3). |
+| **Proactive spec PDF mirror to R2** — ALL remote spec URLs from sidecar fetched and stored in R2 (Q8 — partner URLs can change/expire) + **new "Specs" section on every PDP** (downloadable spec sheets, install guides, NOM certs, dimension drawings, warranty docs) | 1.5 days | **Updated v3.1.** Audit Q8 — proactive vs on-first-access. |
+| **Sheets API mitigation (c)** — build-time JSON snapshot of CC_Products_Full written to disk; runtime reads from disk instead of Sheets API | 2 days | **NEW (v3.1).** $0 cost. Architectural insurance policy + sets up post-launch Postgres path. |
 | **AEO build** — `llms.txt` at root, FAQ blocks on category + brand pages, conversational content rewrites where needed for top-5K | 1 day | NEW (v3). |
 | **Core Web Vitals tuning** — LCP / FID / CLS targets met per Google ranking thresholds | 0.5 day | NEW (v3). |
 | **Email Campaigns activated** — connect Klaviyo (or selected vendor), import audience segments, build welcome / abandoned-cart / post-purchase templates | 1 day | NEW (v3). |
@@ -702,6 +715,12 @@ These are in the `Counter-Cultures-Halfway-Checkin-Roger.docx` deliverable. Don'
 10. **`fix/cart-share-email-error-handling` branch** — approve the wildcard `@countercultures.com.mx` allowlist + `info@` default sender? Changes the sandbox-only model documented in `p1-resend-setup.md`. If yes → fold into Week-1 Resend wrap-up.
 11. **Email campaign tooling vendor:** Klaviyo vs Mailchimp vs Customer.io vs ActiveCampaign? Decision happens once Roger approves the spend in #4. Recommended: Klaviyo (best e-commerce-Stripe integration, free up to 250 contacts).
 
+### Open data-quality questions from 2026-05-19 audit
+
+> All 8 questions from the audit have been resolved 2026-05-19. Decisions folded into §6 schedule.
+
+✅ All resolved. See "Resolved since v2" below for the decisions.
+
 ### Resolved since v2 — do not re-litigate
 
 - ~~Brand-partner outreach email template~~ → **DROPPED 2026-05-19.** Decision: scrape brand sites directly. Roger's bandwidth stays free; saves 1–2 weeks of waiting on replies.
@@ -712,6 +731,15 @@ These are in the `Counter-Cultures-Halfway-Checkin-Roger.docx` deliverable. Don'
 - ~~Webchat module retention~~ → **RETIRED 2026-05-19 (v3.1).** WhatsApp click-to-chat replaces webchat as the persistent corner widget. One channel, three surfaces.
 - ~~Schedule a Consultation booking tool (Calendly vs Google Calendar)~~ → **LOCKED on Google Calendar Appointment Scheduling.** Zero new SaaS cost; uses existing Workspace.
 - ~~Brand Partner application form scope~~ → **LOCKED on quick form.** 8 fields + optional line-sheet PDF upload to R2. Writes to `Brand_Applications` sheet + sales notification.
+- ~~Q1: CC_Products_Full refresh mechanism~~ → **RESOLVED 2026-05-19.** Prices set by partners, change rarely. **Manual weekly sync pre-launch, fresh full sync immediately before July 6.** No cron build needed.
+- ~~Q2: Product name bilingual split~~ → **RESOLVED 2026-05-19.** PDP H1 uses sidecar Spanish title when available (consistency with meta-title). Wire in Week 3.
+- ~~Q3: AI descriptions wiring~~ → **RESOLVED 2026-05-19.** Wire `Product_Descriptions` (approved-only) into PDP resolver chain at step 2.5 (after sidecar, before fallback). Keeps Roger approval gate, expands coverage. Coverage math context: Squarespace scrape covers only ~1,215 SKUs (0.3%); AI fills the remaining ~352K long tail. **AI descriptions are necessary, not optional, for launch credibility.** Schedule: Week 3.
+- ~~Q4: Sidecar price on quote catalog~~ → **SELF-RESOLVED.** Dies when `/shop/quote/` template is deprecated in Day 2-3 PDP consolidation.
+- ~~Q5: Brand name join fragility~~ → **RESOLVED 2026-05-19.** Add `brand_id` column to CC_Products_Full as part of Week 4 SEO/data work.
+- ~~Q6: Subcategory gap~~ → **RESOLVED 2026-05-19.** Acceptable for launch — search palette handles fine-grained discovery.
+- ~~Q7: Stock freshness~~ → **RESOLVED 2026-05-19.** Bump `Odoo_Stock_Quants` sync to hourly in Week 4. Operational caveat: confirm Odoo API can handle 24 daily read calls (almost certainly yes).
+- ~~Q8: Spec sheet mirroring strategy~~ → **RESOLVED 2026-05-19.** Proactive mirror — all remote spec URLs migrated to R2 in Week 5.
+- ~~Build-time Sheets API 429 mitigation~~ → **RESOLVED 2026-05-19. All three options approved, $0 incremental cost.** (a) Google Sheets API quota increase request — Week 4, 30-min request + auto-approval. (b) Aggressive pre-render + cache TTL bump — Week 4, 1 day. (c) Build-time JSON snapshot of CC_Products_Full — Week 5, 2 days. Postgres migration deferred to post-launch unless production measurements show we still need it.
 
 ---
 
@@ -777,6 +805,14 @@ git commit -m "docs(plan): consolidate to MASTER-PLAN.md, archive superseded pro
 
 ## 10. Change log
 
+- **2026-05-19 (Day 1 audit follow-up — decisions locked)** — Joshua resolved all 8 open data-quality questions from the audit + the 3-option Sheets API mitigation plan. Folded into §6 schedule: Week 3 picks up Q2 (PDP H1 Spanish title) + Q3 (AI descriptions wired to resolver step 2.5). Week 4 picks up Q5 (`brand_id` column) + Q7 (hourly stock sync) + Sheets API mitigations (a) + (b). Week 5 picks up Q8 (proactive spec mirror) + mitigation (c). Q1 (CC_Products_Full refresh) needs no code — manual weekly sync pre-launch, fresh full sync before launch. Q6 (subcategory gap) accepted as launch-acceptable. All 8 moved to §8 "Resolved since v2." Zero incremental infrastructure cost for the mitigations.
+- **2026-05-19 (Day 1 SHIPPED)** — First execution session of the 7-week sprint. Three Day-1 items shipped per the architecture-first ordering.
+  - `359203b` — `docs: add data sources-of-truth audit (Concern 0)` — new `docs/data-sources-of-truth.md` (281 lines, 16 data elements audited, 3 tangles identified, 8 open questions surfaced for Joshua)
+  - `f5fd240` — `docs(plan): mark Steps 5/6/7 DONE, delete Steps 10/12, mark file secondary`
+  - `c67dae4` — `docs(master-plan): mark Week 1 Day 1 items DONE`
+  - Cartwright branch deleted (`claude/objective-cartwright-0bf816` → archived as tag `archive/cartwright-2026-05-10`)
+  - §0 compliance: all four conditions met. No Sacred Surface behavior touched.
+  - **Audit findings that change scope:** image coverage 1.2% (was assumed higher); description coverage 0.3%; 9 data sources, not 5; build-time Sheets API 429 surfaced as launch risk (mitigation needed pre-launch via longer TTLs + Sheets quota increase). 8 open data-quality questions moved to §8 for sequencing.
 - **2026-05-19 (v3.1)** — Post-meeting rollup + architectural pivots. The Roger meeting happened; Joshua delivered 8 committed fixes + 4 strategic additions. Major changes:
   - **Architecture-first ordering principle** added to §6 Week 1 — *"declare ONE canonical template + ONE canonical source first; cleanup then applies once and propagates."* Triggered by Joshua's observation that the EN/ES picker is still on some PDPs *"weeks after I asked for it removed"* — the textbook multi-template symptom. Week 1 now leads with Source-of-Truth Audit + PDP template consolidation before any cleanup work.
   - **Concern 0 added — Source of Truth.** Five data sources currently in play with no canonical answer per element (Squarespace, Odoo, Sheets, Drive, manual). Concerns 3/4/5/7 all depend on this being resolved. Mon Wk-1 deliverable: `docs/data-sources-of-truth.md`.
