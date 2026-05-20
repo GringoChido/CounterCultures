@@ -36,20 +36,20 @@ export const NAV_LINKS = [
     ],
   },
   {
-    label: { en: "Brands & Makers", es: "Marcas y Artesanos" },
-    href: "/brands",
+    label: { en: "Trade", es: "Trade" },
+    href: "/trade",
   },
   {
-    label: { en: "Our Story", es: "Nuestra Historia" },
+    label: { en: "Projects", es: "Proyectos" },
+    href: "/account/projects",
+  },
+  {
+    label: { en: "About", es: "Nosotros" },
     href: "/our-story",
   },
   {
-    label: { en: "Insights", es: "Perspectivas" },
-    href: "/insights",
-  },
-  {
-    label: { en: "Resources", es: "Recursos" },
-    href: "/resources",
+    label: { en: "Contact", es: "Contacto" },
+    href: "/contact",
   },
 ] as const;
 

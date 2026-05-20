@@ -174,17 +174,9 @@ const Hero = ({ locale = "en" }: { locale?: string }) => {
                 {slide.subtitle[lang]}
               </p>
 
-              <div className="mt-6 md:mt-8 flex flex-col sm:flex-row items-start gap-3 md:gap-4">
-                <Button variant="primary" size="lg" href={slide.cta.href}>
-                  {slide.cta.label[lang]}
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="lg"
-                  href="/showroom"
-                  className="text-white hover:text-brand-copper"
-                >
-                  {lang === "en" ? "Visit Our Showroom" : "Visitar Showroom"}
+              <div className="mt-6 md:mt-8">
+                <Button variant="primary" size="lg" href="/shop/catalog">
+                  {lang === "en" ? "Browse the Catalog" : "Explorar el Catálogo"}
                 </Button>
               </div>
             </motion.div>

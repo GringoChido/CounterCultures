@@ -10,12 +10,11 @@ import {
   X,
   ChevronDown,
   ChevronRight,
-  MessageCircle,
   Sparkles,
   Search,
   KeyRound,
 } from "lucide-react";
-import { NAV_LINKS, SITE_CONFIG, PRODUCT_CATEGORIES } from "@/app/lib/constants";
+import { NAV_LINKS, PRODUCT_CATEGORIES } from "@/app/lib/constants";
 import { SearchPalette } from "@/app/components/search/search-palette";
 import { CartIconButton } from "@/app/components/cart/cart-icon-button";
 import { CartDrawer } from "@/app/components/cart/cart-drawer";
@@ -201,14 +200,17 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
                 );
               }
 
+              const bypassLocale = link.href.startsWith("/account") || link.href.startsWith("/dashboard");
+              const NavLink = bypassLocale ? NextLink : Link;
+
               return (
-                <Link
+                <NavLink
                   key={link.href}
                   href={link.href}
                   className={`font-body text-sm font-medium transition-colors duration-300 py-2 ${isTransparent ? "text-white hover:text-white/70" : "text-brand-charcoal hover:text-brand-terracotta"}`}
                 >
                   {link.label[lang]}
-                </Link>
+                </NavLink>
               );
             })}
           </div>
@@ -235,29 +237,19 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
               </kbd>
             </button>
 
-            <a
-              href={`https://wa.me/${SITE_CONFIG.showroom.whatsapp.replace(/\s+/g, "")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center w-11 h-11 text-vendor-whatsapp hover:text-vendor-whatsapp-dark transition-colors"
-              aria-label="WhatsApp"
-            >
-              <MessageCircle className="w-5 h-5" />
-            </a>
-
-            <MyProjectsDropdown locale={lang} />
-
             <NextLink
               href="/account/sign-in"
-              className={`hidden sm:flex items-center gap-1.5 h-9 px-3 border rounded-full text-xs font-body font-medium tracking-wider uppercase transition-colors ${
+              className={`flex items-center justify-center w-9 h-9 rounded-full transition-colors ${
                 isTransparent
-                  ? "border-white/25 text-white bg-white/10 hover:border-white/40"
-                  : "border-brand-copper/30 text-brand-copper bg-brand-copper/5 hover:bg-brand-copper/10 hover:border-brand-copper/50"
+                  ? "text-white hover:text-white/70"
+                  : "text-brand-copper hover:text-brand-copper/70"
               }`}
+              aria-label={lang === "es" ? "Iniciar sesión" : "Sign in"}
             >
-              <KeyRound className="w-3.5 h-3.5" />
-              Trade
+              <KeyRound className="w-4 h-4" />
             </NextLink>
+
+            <MyProjectsDropdown locale={lang} />
 
             <CartIconButton />
 
@@ -424,38 +416,30 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
                   );
                 }
 
+                const bypassLocale = link.href.startsWith("/account") || link.href.startsWith("/dashboard");
+                const MobileNavLink = bypassLocale ? NextLink : Link;
+
                 return (
-                  <Link
+                  <MobileNavLink
                     key={link.href}
                     href={link.href}
                     onClick={() => setMobileOpen(false)}
                     className="flex items-center py-3.5 min-h-[44px] font-body text-base font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors border-b border-brand-stone/5"
                   >
                     {link.label[lang]}
-                  </Link>
+                  </MobileNavLink>
                 );
               })}
 
-              {/* Trade Login in mobile */}
+              {/* Sign in — mobile */}
               <NextLink
                 href="/account/sign-in"
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-2 py-3.5 min-h-[44px] font-body text-base font-medium text-brand-copper border-b border-brand-stone/5"
               >
                 <KeyRound className="w-5 h-5" />
-                Trade Login
+                {lang === "es" ? "Iniciar sesión" : "Sign in"}
               </NextLink>
-
-              {/* WhatsApp in mobile */}
-              <a
-                href={`https://wa.me/${SITE_CONFIG.showroom.whatsapp.replace(/\s+/g, "")}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 py-3.5 min-h-[44px] font-body text-base font-medium text-vendor-whatsapp border-b border-brand-stone/5"
-              >
-                <MessageCircle className="w-5 h-5" />
-                WhatsApp
-              </a>
 
               <LanguageToggle variant="mobile" onSwitch={() => setMobileOpen(false)} />
 

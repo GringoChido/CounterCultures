@@ -23,6 +23,15 @@ const isAccountPath = (pathname: string) => pathname.startsWith("/account");
 // under /api/auth which is exempt below).
 const PUBLIC_DASHBOARD_PATHS = new Set(["/dashboard/login"]);
 
+const PUBLIC_ACCOUNT_PATHS = new Set([
+  "/account/sign-in",
+  "/account/check-email",
+  "/account/sign-out",
+]);
+
+const isProtectedAccountPath = (pathname: string) =>
+  pathname.startsWith("/account/projects");
+
 export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
@@ -40,6 +49,16 @@ export default async function middleware(req: NextRequest) {
 
   // Customer account pages bypass next-intl (separate from [locale])
   if (isAccountPath(pathname)) {
+    if (PUBLIC_ACCOUNT_PATHS.has(pathname)) {
+      return NextResponse.next();
+    }
+    if (isProtectedAccountPath(pathname)) {
+      if (!(await validateSessionEdge(req))) {
+        const signInUrl = new URL("/account/sign-in", req.url);
+        signInUrl.searchParams.set("callbackUrl", pathname);
+        return NextResponse.redirect(signInUrl);
+      }
+    }
     return NextResponse.next();
   }
 

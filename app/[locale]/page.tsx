@@ -9,7 +9,7 @@ import { ShopByRoom } from "@/app/components/sections/shop-by-room";
 import { FeaturedBrandsBand } from "@/app/components/sections/featured-brands-band";
 import { HowItWorksBand } from "@/app/components/sections/how-it-works-band";
 import { CatalogDepthBandAsync } from "@/app/components/sections/catalog-depth-band-async";
-import { TwoPathsBand } from "@/app/components/sections/two-paths-band";
+import { BuyerHub } from "@/app/components/sections/buyer-hub";
 import { FounderStory } from "@/app/components/sections/founder-story";
 import { HospitalityTeaser } from "@/app/components/sections/hospitality-teaser";
 import { Testimonial } from "@/app/components/sections/testimonial";
@@ -222,11 +222,12 @@ const HomePage = async ({ params }: HomePageProps) => {
       <Header />
       <main id="main" tabIndex={-1}>
         <Hero locale={lang} />
-        <ShopByRoom locale={lang} />
-        <FeaturedBrandsBand locale={lang} brands={featuredBrands} />
         <Suspense fallback={null}>
           <CatalogDepthBandAsync locale={lang} />
         </Suspense>
+        <BuyerHub locale={lang} />
+        <ShopByRoom locale={lang} />
+        <FeaturedBrandsBand locale={lang} brands={featuredBrands} />
         <HospitalityTeaser locale={lang} />
         <HowItWorksBand
           locale={lang}
@@ -238,7 +239,6 @@ const HomePage = async ({ params }: HomePageProps) => {
         />
         <FounderStory locale={lang} />
         <Testimonial locale={lang} />
-        <TwoPathsBand locale={lang} />
         <div id="cc-spec-fab-trigger" aria-hidden className="h-0 w-0 -mt-px pointer-events-none" />
         <ContactCTA locale={lang} />
         <NewsletterStrip locale={lang} />
