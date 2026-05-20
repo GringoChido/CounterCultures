@@ -32,7 +32,7 @@ export const SaveToProjectButton = ({
     category: product.category,
     sku: product.sku,
     qty: 1,
-    unitPrice: product.tradePrice ?? product.price,
+    unitPrice: product.price,
     currency: product.currency,
     imageSrc: product.images[0],
     productHref: pdpHref(locale, product),

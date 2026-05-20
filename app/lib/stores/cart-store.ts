@@ -219,11 +219,7 @@ export const useCartStore = create<CartState>()(
       subtotal: () => {
         const state = get();
         return state.items.reduce((sum, item) => {
-          const price =
-            item.tradePrice != null && item.tradePrice > 0
-              ? item.tradePrice
-              : item.listPrice;
-          return sum + price * item.quantity;
+          return sum + item.listPrice * item.quantity;
         }, 0);
       },
 

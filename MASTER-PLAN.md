@@ -415,7 +415,7 @@ PDP cleanup propagated via canonical template. Branch triage executed per §4B. 
 
 | Item | Effort | Notes |
 |---|---|---|
-| **Trade Program Phase 1 — pull rendering** — feature-flag trade-price display OFF on PDP + cart + checkout total. All users (including trade customers) see list prices. Trade customers still get cart and Add-to-Cart; "Pay Now" button temporarily replaced with placeholder "Contact us to finalize" until Phase 2 lands (Week 2). | 1 day | **NEW (v3.1).** Reverses Sacred Surface #3 rendering layer — §3 authorization noted. |
+| ✅ **Trade Program Phase 1 — pull rendering** — feature-flag trade-price display OFF on PDP + cart + checkout total. All users (including trade customers) see list prices. Trade customers still get cart and Add-to-Cart; "Pay Now" button temporarily replaced with disabled "Submit Order for Review — Coming Soon" placeholder until Phase 2 lands (Week 2). | 1 day | **DONE 2026-05-19.** Reverses Sacred Surface #3 rendering layer — §3 authorization noted. Feature flag: `NEXT_PUBLIC_TRADE_PRICE_DISPLAY` (default off). Engine (`trade-pricing.ts`) intact. |
 | **Discount Code field at checkout** — rename "Trade code" → "Discount Code" (per merged `fix/cart-discount-code-label` branch). Field's new purpose: promo + F&F codes. Builds on existing `Promo_Codes` sheet-tab scaffold + trade-program welcome-code writer. Add checkout-side UI + validation endpoint + Stripe re-quote. | 4–6 hrs | *(was B2)* P1.4. ⚠️ ENHANCE the existing scaffold (Promo_Codes is already a typed tab; trade-program route already writes to it). Do not restart. |
 
 #### Day 5 — Fri · Visible-bug bash + final cleanup

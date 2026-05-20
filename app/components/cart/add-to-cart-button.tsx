@@ -76,7 +76,7 @@ export const AddToCartButton = ({
       category: product.category,
       currency: product.currency,
       listPrice: product.price,
-      tradePrice: product.tradePrice,
+      tradePrice: undefined,
       quantity,
       selectedFinish: selectedFinish || undefined,
       imageSrc: product.images[0],

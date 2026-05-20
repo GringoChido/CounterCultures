@@ -28,6 +28,8 @@ import { customerAuthOptions } from "@/app/lib/customer-auth";
 import { getTradePrice } from "@/app/lib/trade-pricing";
 import { PDPClient, type PDPClientProps } from "./pdp-client";
 
+const TRADE_PRICE_DISPLAY = process.env.NEXT_PUBLIC_TRADE_PRICE_DISPLAY === "on";
+
 export const revalidate = 1800;
 
 const BASE_URL = "https://countercultures.mx";
@@ -130,7 +132,7 @@ const PDPPage = async ({ params }: PDPProps) => {
     | { isTrade?: boolean; tradeTier?: string }
     | undefined;
   let product = found;
-  if (customerUser?.isTrade) {
+  if (TRADE_PRICE_DISPLAY && customerUser?.isTrade) {
     const tier = customerUser.tradeTier ?? "default";
     const tp = await getTradePrice(product.id, tier);
     if (tp != null) product = { ...product, tradePrice: tp };
@@ -284,7 +286,7 @@ const PDPPage = async ({ params }: PDPProps) => {
             brand: product.brand,
             category: product.category,
             listPrice: product.listPrice,
-            tradePrice: product.tradePrice,
+            tradePrice: TRADE_PRICE_DISPLAY ? product.tradePrice : undefined,
             currency: product.currency,
             uom: product.uom,
             inStock: product.inStock ?? false,

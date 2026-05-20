@@ -125,6 +125,10 @@ const T = {
     shipFedexError: "Couldn't get a live rate — we'll quote it manually after order review.",
     customFreight: "Custom freight quote (oversized item)",
     customFreightDesc: "This order contains an oversized item (e.g., bathtub). Our team shops freight quotes from multiple carriers — we'll send you options within 24 hours.",
+    tradeReviewTitle: "Trade order review",
+    tradeReviewBody: "Counter Cultures will review your order and contact you to finalize pricing.",
+    tradeReviewCta: "Submit Order for Review",
+    tradeReviewCtaSub: "Coming soon",
   },
   es: {
     eyebrow: "Pago Seguro",
@@ -216,6 +220,10 @@ const T = {
     shipFedexError: "No pudimos obtener tarifa — la cotizaremos manualmente tras revisar tu pedido.",
     customFreight: "Cotización de flete especial (artículo sobredimensionado)",
     customFreightDesc: "Tu pedido contiene un artículo sobredimensionado (ej. bañera). Nuestro equipo busca las mejores opciones de flete — te enviaremos opciones en 24 horas.",
+    tradeReviewTitle: "Revisión de pedido trade",
+    tradeReviewBody: "Counter Cultures revisará tu pedido y te contactará para finalizar los precios.",
+    tradeReviewCta: "Enviar Pedido para Revisión",
+    tradeReviewCtaSub: "Próximamente",
   },
 };
 
@@ -303,7 +311,13 @@ interface BillingForm {
 
 const RFC_REGEX = /^([A-ZÑ&]{3,4})(\d{6})([A-Z\d]{3})$/;
 
-export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
+export const CheckoutStepper = ({
+  locale,
+  isTradeCustomer = false,
+}: {
+  locale: "en" | "es";
+  isTradeCustomer?: boolean;
+}) => {
   const t = T[locale];
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
@@ -1185,6 +1199,16 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
               {/* Step 3: Review */}
               {step === 3 && (
                 <div className="space-y-6">
+                  {isTradeCustomer && (
+                    <div className="px-4 py-3.5 bg-brand-copper/8 border-l-2 border-brand-copper">
+                      <p className="font-body text-xs font-semibold uppercase tracking-[0.15em] text-brand-copper mb-1">
+                        {t.tradeReviewTitle}
+                      </p>
+                      <p className="font-body text-sm text-brand-charcoal/80 leading-relaxed">
+                        {t.tradeReviewBody}
+                      </p>
+                    </div>
+                  )}
                   <ReviewBlock
                     label={t.contactSummary}
                     onEdit={() => setStep(0)}
@@ -1370,6 +1394,19 @@ export const CheckoutStepper = ({ locale }: { locale: "en" | "es" }) => {
                     {t.next}
                     <ChevronRight className="w-4 h-4" />
                   </button>
+                ) : isTradeCustomer ? (
+                  <div className="text-right">
+                    <button
+                      type="button"
+                      disabled
+                      className="px-8 py-3.5 bg-brand-stone/20 text-brand-charcoal/60 font-body text-sm font-medium tracking-[0.18em] uppercase cursor-default flex items-center gap-2 border border-brand-stone/30"
+                    >
+                      {t.tradeReviewCta}
+                    </button>
+                    <p className="mt-1.5 font-body text-[10px] uppercase tracking-[0.15em] text-brand-copper">
+                      {t.tradeReviewCtaSub}
+                    </p>
+                  </div>
                 ) : (
                   <button
                     type="button"

@@ -107,7 +107,7 @@ export const SaveCartButton = ({ locale }: SaveCartButtonProps) => {
             brand: i.brand,
             sku: i.sku,
             quantity: i.quantity,
-            unitPrice: i.tradePrice && i.tradePrice > 0 ? i.tradePrice : i.listPrice,
+            unitPrice: i.listPrice,
             currency: i.currency,
             imageSrc: i.imageSrc,
             selectedFinish: i.selectedFinish,

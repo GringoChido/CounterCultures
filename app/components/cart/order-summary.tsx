@@ -238,7 +238,7 @@ const SummaryRow = ({
 }: SummaryRowProps) => {
   const isQuoteOnly = item.availability === "quote_only" || !item.buyable;
 
-  const unitPrice = item.tradePrice != null && item.tradePrice > 0 ? item.tradePrice : item.listPrice;
+  const unitPrice = item.listPrice;
 
   if (density === "full") {
     return (
