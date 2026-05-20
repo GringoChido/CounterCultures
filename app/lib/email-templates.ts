@@ -218,9 +218,9 @@ export const applyTemplateVars = (
   text: string,
   vars: Record<string, string | undefined>
 ): string =>
-  text.replace(VAR_PATTERN, (match, key: string) => {
+  text.replace(VAR_PATTERN, (_match, key: string) => {
     const value = vars[key];
-    return typeof value === "string" && value.length > 0 ? value : match;
+    return typeof value === "string" && value.length > 0 ? value : "";
   });
 
 export interface AppliedTemplate {

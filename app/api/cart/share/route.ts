@@ -13,7 +13,12 @@ const STAGING_ALLOWLIST = STAGING_EMAIL_REDIRECT
 const redirectRecipient = (to: string): string => {
   if (!STAGING_ALLOWLIST.length) return to;
   if (STAGING_ALLOWLIST.includes(to.toLowerCase())) return to;
-  return STAGING_ALLOWLIST[0];
+  const fallback = STAGING_ALLOWLIST[0];
+  console.info(
+    `[cart/share] STAGING_EMAIL_REDIRECT active — recipient rewritten ` +
+      `(original: ${to}, delivered: ${fallback})`
+  );
+  return fallback;
 };
 
 interface ShareItem {

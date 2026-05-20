@@ -165,10 +165,16 @@ export const GET = async (request: NextRequest) => {
         const days = (now.getTime() - enteredAt) / (1000 * 60 * 60 * 24);
         if (days > 7) {
           try {
+            const holdDays = Math.floor(days);
             const result = await evaluateAndTransition(
               "nightly_sweep",
               deal.id,
-              { customs_hold_days: Math.floor(days) },
+              {
+                customs_hold_days: holdDays,
+                issue_type: "Customs hold exceeded threshold",
+                issue_summary: `Deal has been in customs for ${holdDays} days (threshold: 7 days)`,
+                recommended_action: "Contact broker for status update",
+              },
               "system"
             );
             if (result.type === "moved" || result.type === "pending_move") {

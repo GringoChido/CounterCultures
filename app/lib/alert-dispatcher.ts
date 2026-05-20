@@ -613,9 +613,30 @@ const dispatchOne = async (
 // Public entry point
 // ---------------------------------------------------------------------------
 
+const IS_STAGING = Boolean(process.env.STAGING_EMAIL_REDIRECT);
+const TEST_DEAL_PATTERN = /\btest\b/i;
+
+const isTestDeal = (deal: PipelineDeal): boolean =>
+  IS_STAGING &&
+  (TEST_DEAL_PATTERN.test(deal.name) ||
+    TEST_DEAL_PATTERN.test(deal.contactName));
+
 export const dispatchAlertsForTransition = async (
   input: AlertDispatchInput
 ): Promise<AlertDispatchResult> => {
+  if (isTestDeal(input.deal)) {
+    console.info(
+      `[alert-dispatcher] Skipping alerts for test deal ${input.dealId} (${input.ruleId})`
+    );
+    return {
+      ruleId: input.ruleId,
+      dealId: input.dealId,
+      customer: [],
+      roger: [],
+      finance: [],
+    };
+  }
+
   const route = ALERT_ROUTES[input.ruleId];
   if (!route) {
     // Unknown rule → no-op but still return a well-formed empty result
