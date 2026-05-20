@@ -459,6 +459,7 @@ Icons: Phosphor or Lucide icon library (free, consistent, professional).
 | **PDP H1 uses sidecar Spanish title when available** — consistency with meta-title + JSON-LD (Q2 resolution) | 0.5 day | **NEW (v3.1).** Audit Q2. |
 | **AI descriptions wired into PDP resolver step 2.5** — `Product_Descriptions` (status=approved) reads added to `pdp-description.ts` between sidecar and CRM fallback. Keeps Roger approval gate, makes approvals actually render on PDPs (Q3 resolution). | 0.5 day | **NEW (v3.1).** Audit Q3. Necessary, not optional — Squarespace covers only 0.3% of catalog. |
 | **AI-generated descriptions: top 50,000 SKUs not covered by Squarespace** — input: partner spec data + product attributes; LLM: Claude Sonnet | 2 days + ~$50 inference | NEW (v3). |
+| **Priority — 96 `Counter / Gaby- Cobre` products** (names lack "Cobre"): get "cobre/copper" into name/description early in this pass | folds into AI-desc work | **NEW (2026-05-20).** The artisan brand normalization (§10) dropped "Cobre" from their brand string → "cobre"/"copper" no longer findable (high-intent MX query) and the material isn't customer-visible. A tiny targeted tag-enrichment is a faster alternative if needed sooner. |
 | **Brand-site image scrape: top-tier brands** (Brizo, Delta, California Faucets, Emtek — partner scrapers from git history) | 1 day | NEW (v3). |
 
 ---
@@ -670,6 +671,10 @@ These are in the `Counter-Cultures-Halfway-Checkin-Roger.docx` deliverable. Don'
 
 ✅ All resolved. See "Resolved since v2" below for the decisions.
 
+### Surfaced 2026-05-20 — artisan / house brand formalization (Roger decision)
+
+13. **Formalize CC artisan / house brands?** The 2026-05-20 artisan normalization (§10) makes Santiago, Gaby, Meza, Independencia, Steven, and a "Counter Cultures" house brand (~34 products) display as clean brand text, but none have Brand Kit entries, so they render unlinked (no brand page — same as JCR/Waterworks). Decision for Roger: (a) add these as Brand Kit entries so they get brand pages, and/or (b) build a single "Counter Cultures — our artisans / house line" page instead of per-maker pages. **Not launch-blocking** — nice fast-follow. If yes → Week 4–5 or post-launch.
+
 ### Deferred — requires finance review
 
 12. **Odoo categ_id brand-category cleanup.** The `brand` column in CC_Products_Full is populated from `product.template.categ_id`, a many2one relational field — there is no dedicated brand field in Odoo. Reassigning categ_id is finance-affecting: expense accounts differ between junk categories (501.01.01 Costo de venta) and canonical brand categories (601.10.01 Otros gastos generales). Display-layer normalization (`BRAND_DISPLAY_MAP` in `products-full.ts`) shipped 2026-05-19 as a stopgap. The permanent fix (reassigning ~180 products across 13 junk categories to their correct brand categories in Odoo) requires Antonina's review of the accounting-property implications before any writes. **BLOCKED on Antonina review.**
@@ -758,6 +763,13 @@ git commit -m "docs(plan): consolidate to MASTER-PLAN.md, archive superseded pro
 
 ## 10. Change log
 
+- **2026-05-20 (artisan / house-line brand normalization SHIPPED)** — Extended `BRAND_DISPLAY_MAP` with Case 4 (CC artisan / house line). Read-layer only — no Odoo writes. Direct continuation of the 2026-05-19 brand work below.
+  - `6c12d0a` — `feat(products): extend BRAND_DISPLAY_MAP with CC artisan/house line (Case 4, +10 → 36)` (one file, +12/−1).
+  - 10 new entries (map 26 → 36) covering 486 products: `Counter / Santiago`→Santiago (245), `Counter / Gaby- Cobre`→Gaby (174), `Counter`→Counter Cultures (31), `Counter/Meza`→Meza (28), `COUNTER/CHINA`→Counter Cultures (3), `gaby`→Gaby (1), `independencia`→Independencia (1), `mosaico steven`→Steven (1); `cobuild`/`coobuild`→blank (2). Maker name is kept; the `Counter /` prefix and any material/provenance (Cobre, China) drops off the brand.
+  - **Verified:** type check clean (`tsc --noEmit`); dev-server `/api/products/search` confirms `byBrand` groups under clean names (Santiago 245, Gaby 176, Meza 28, Counter Cultures 45). Parity: 354,449 rows load, cache structure unchanged. New maker brands render as **unlinked text** (no Brand Kit entry → `brandSlug` null, no brand page, no 404 — same graceful degradation as JCR/Waterworks). Blank brands suppressed by the existing `brand && (...)` guards. `npm run build` again hit the pre-existing Sheets-API 429 at brand-category pre-render (§1/§6, "confirmed unchanged" on Day 2) — NOT caused by this read-layer edit; verified via tsc + dev smoke instead.
+  - **Net improvement, with one bounded regression (accepted, logged):** product search `scoreRow` scores `_brand` (weight 1), so the ~448 maker-name products gain clean-token search. BUT the **96 of 174** `Counter / Gaby- Cobre` products whose *names* lack "Cobre" lose "cobre"/"copper" findability — the brand string was the only place the material appeared. The 78 with "Cobre" in the name are unaffected (name match, weight 3). "Cobre" is a high-intent query on a MX bath site → flagged as a **priority** inside the Week 3 description pass.
+  - **Surfaced for decision:** whether to formalize the CC artisan / house brands (Santiago, Gaby, Meza, "Counter Cultures", etc.) as Brand Kit entries + brand pages — logged in §8 #13 (Roger decision, not launch-blocking).
+  - §0 compliance: all four conditions met. C3 — `products-full.ts` (in-motion 354K cache; Sacred Surface #2/#8) extended under the same recorded `BRAND_DISPLAY_MAP` authorization (2026-05-19, continued 2026-05-20). Gate (b) (material-in-name) tripped at ITEM 1 (44.8% of Gaby-Cobre names carry the material, 55.2% don't) and was cleared by explicit human go-ahead — not auto-proceed — with the 96-product copper gap logged as bounded content debt.
 - **2026-05-19 (brand normalization SHIPPED)** — Display-layer brand normalization via `BRAND_DISPLAY_MAP` in `products-full.ts`. Read-layer only — no Odoo writes.
   - `dac88b8` — `docs(diagnostics): brand-field data-quality audit` (diagnostic + cleanup plan at `docs/diagnostics/brand-field-audit-2026-05-19.md`)
   - `a9a9b2a` — `feat(products): display-layer brand normalization via BRAND_DISPLAY_MAP`
