@@ -387,7 +387,7 @@ The remaining ~305 products are either (a) genuinely unattributable hardware par
 
 ### How it works
 
-A `BRAND_DISPLAY_MAP` in `products-full.ts` intercepts the raw brand string at line 245 and normalizes it before the `ProductFull` object is constructed. Odoo data stays untouched. The map covers three cases:
+A 26-entry `BRAND_DISPLAY_MAP` in `products-full.ts` intercepts the raw brand string at the cache-build read point and normalizes it before the `ProductFull` object is constructed. Odoo data stays untouched. The map covers three cases:
 
 **Case 1 — Misspelling/abbreviation → canonical brand name:**
 

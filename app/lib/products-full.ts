@@ -30,10 +30,10 @@ const SHEET_ID = process.env.GOOGLE_SHEETS_ID_PRODUCTS_FULL ?? "";
 const TAB = "Products";
 const TTL_MS = 30 * 60 * 1000;
 
-// Display-layer brand normalization. The Odoo categ_id field (which populates
-// the sheet's "brand" column) contains misspellings, retailer names, and
-// accounting categories. This map corrects display names at read time without
-// touching Odoo. Permanent cleanup is a deferred finance-reviewed scope
+// Display-layer brand normalization (26 entries). The Odoo categ_id field
+// (which populates the sheet's "brand" column) contains misspellings, retailer
+// names, and accounting categories. This map corrects display names at read time
+// without touching Odoo. Permanent cleanup is a deferred finance-reviewed scope
 // (Gate 2: categ_id carries accounting properties that differ between categories).
 const BRAND_DISPLAY_MAP: Record<string, string> = {
   // Misspellings / abbreviations → canonical Brand Kit name
