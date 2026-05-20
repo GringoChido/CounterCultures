@@ -153,7 +153,7 @@ If C3 or C4 was knowingly broken without approval, the PR does not merge.
 
 **🎯 LAUNCH ANCHOR — Monday July 6, 2026 (added v3, 2026-05-19).** Joshua committed to a fixed July 6 launch. The plan is now a **7-week sprint** (May 18 → Jul 6) rather than an indefinite "until staging is ready" frame. Phase 2 cutover is no longer placeholder — it has dates. See §6 (Active Queue) for the week-by-week breakdown and §7 for the cutover plan.
 
-**Pre-Launch Foundation workstream (added v3, expanded v3.1).** Eight launch-critical concerns. **Concern 0 is foundational — everything else depends on it.**
+**Pre-Launch Foundation workstream (added v3, expanded v3.1; Concern 8 added v3.2).** Nine launch-critical concerns. **Concern 0 is foundational — everything else depends on it.**
 
 0. **Source of Truth — multi-source data tangle (added v3.1).** Five sources currently in play: Squarespace (being scraped), Odoo (ERP), Google Sheets (`CC_Products_Full`, `Trade Pricing`, `Customers`, etc.), Google Drive (brand kits, attachments), manual admin entries. No canonical answer for "where does *price X* / *description Y* / *image Z* come from." Concerns 3/4/5/7 (descriptions / images / spec sheets / prices) all assume this is solved. It isn't yet.
 1. Site loads slow (performance — CDN + ISR + keep-alive + search platform)
@@ -163,6 +163,7 @@ If C3 or C4 was knowingly broken without approval, the PR does not merge.
 5. Spec sheet scraping + new PDP "Specs" section
 6. Google Drive can't serve a 354K-product catalog — migrate to Cloudflare Images + R2
 7. Communication channels + site nav need cleanup and activation (nav IA, WhatsApp outbound, Email Campaigns, Social Hub out of demo mode)
+8. **Lead Engine (added v3.2, 2026-05-20).** The 6 homepage-hub tiles are 6 lead sources — the top of the marketing funnel — but a 2026-05-20 funnel audit found they leak: 2 of 6 work end-to-end, 3 dead-end into flat sheet rows needing manual pickup, 1 (Start a Project) loses the lead entirely. Every funnel must capture server-side + source-tag, create a Pipeline deal, auto-respond instantly, alert the team, and surface in one dashboard "Needs Outreach" queue. **Core ships by launch (Joshua, 2026-05-20);** nurture/outbound automation is the Week-5 marketing layer. Full spec + gap list in §6.
 
 Each is addressed in a specific week of §6.
 
@@ -430,30 +431,72 @@ Icons: Phosphor or Lucide icon library (free, consistent, professional).
 
 ---
 
-### Week 2 — May 26 – Jun 1 · Trade Program Phase 2 + Cloudflare + Squarespace scrape + WhatsApp kickoff
+### Lead Engine — funnel standardization (spec, added 2026-05-20)
 
-| Item | Effort | Notes |
-|---|---|---|
-| **Trade Program Phase 2 — workflow build** — real "Submit Order for Review" button, new endpoint `/api/checkout/trade-review`, customer confirmation page, account-page pending-orders view, sales-side dashboard queue, templated quote-out comms (email + WhatsApp + Stripe payment link), new lifecycle states `trade_review_pending → trade_quoted → trade_paid`, multi-project cart $100K CTA renamed to "Submit Project for Review" | 4–5 days | **NEW (v3.1).** Sacred Surface #3 reversal completes here. |
-| **Cloudflare Images + R2 set up** (accounts, API keys, Netlify env vars) | 1 day | NEW (v3). ~$30–35/month at launch. |
-| **Full Squarespace scrape run** — descriptions + images + spec PDF URLs across all live SS product pages | 1 day | NEW (v3). Largest single content-migration lever. |
-| **SKU matching** — deterministic + LLM-assisted disambiguation | 1 day | NEW (v3). |
-| **Image migration to CDN** — scraped images → Cloudflare Images; existing Drive images → Cloudflare Images | 1–2 days | NEW (v3). |
-| **Brand Partner form build** — quick form + R2 PDF upload + `Brand_Applications` sheet writer | 0.5 day | **NEW (v3.1).** |
-| **Schedule a Consultation — Google Calendar setup** — configure Appointment Scheduling, decide booking-routing (Roger's calendar / Javier-or-Ian round-robin / shared team), link the hub tile out | 1 hr config + 30 min frontend | **NEW (v3.1).** Zero new SaaS cost — uses existing Workspace. |
-| **Search platform migration** (Algolia / Meili / Typesense, feature-flagged, smoke loop verified) | 2–3 days | *(was B9)* — moved from Wk 1. |
-| **WhatsApp Business setup BEGINS** — Meta Business verification + API account + template submission (Meta approval async, takes 1–2 weeks; goes live Week 5) | 0.5 day active + async | NEW (v3). |
-| **Finance compliance** — wire Stripe payments into auto-factura + dual-ledger reconciliation (if Stripe access granted in Roger meeting) | 1–2 days | *(was B10 + B11)* — moved from Wk 1 if Stripe access took a week. |
-| **Dashboard reorganization** — role-based sidebar | 2 days | *(was B4)* — slips from Wk 1 if capacity tight. |
+The 6 hub tiles are the **top of the marketing funnel — 6 lead sources.** A read-only buyer-hub funnel audit (2026-05-20) found the funnels leak: **2 of 6 work end-to-end** (Apply for Trade; WhatsApp / Sacred Surface #10), **3 capture but dead-end** into flat sheet rows needing manual pickup (Showroom, Drop-a-Spec, Consultation), and **1 loses the lead entirely** (Start a Project — the submit API is a stub that returns 200, creates no deal, sends nothing, while the UI claims "Roger will reply in 24h"). **Decision (Joshua, 2026-05-20): the Lead Engine CORE ships by launch;** nurture/outbound automation is the Week-5 marketing layer (Klaviyo email + WhatsApp outbound + Social).
 
-> **⚠️ Week 2 scoping in progress (2026-05-20).** This is the heaviest week of the sprint. The table above is the v3.1 superset (a stale v3 subset block was removed in the 05-20 hygiene pass). Fold in the Week-1 carry-overs + slipped items listed above, then triage to ≤6 hrs/day — push overflow to Week 3 rather than overpacking. First execution prompt fires only after this scope is locked with Joshua.
+**Per-funnel "definition of done" (all 6 funnels must meet all 6):**
+
+1. **Capture server-side** + tag the **source** (which tile/campaign) — no localStorage-only.
+2. **Create a Pipeline deal + lifecycle stage** (`evaluateAndTransition()`) — one source of truth, not a flat sheet row.
+3. **Immediate auto-response to the lead** (email/WhatsApp) — acknowledgment + what's next.
+4. **Team alert** (email/WhatsApp) on new activity.
+5. **One unified "New Leads / Needs Outreach" dashboard queue** — owner + SLA, so reach-out is prompted, not remembered.
+6. **Feed the marketing layer** — source attribution + (Week 5) nurture cadence.
+
+Reference implementation to copy: **Apply for Trade** + **WhatsApp** already do the full loop.
+
+**Launch-critical gaps (from the audit, reslotted):**
+
+| # | Gap | Funnel | Week |
+|---|---|---|---|
+| G1 | Submit API `/api/projects/[id]/request-quote` is a STUB — the hub's flagship tile silently drops every lead. | Start a Project | **Wk 2 stop-gap** (honest capture + alert so nothing is lost) → **Wk 3 full** (Pipeline deal + auto-response, with Trade Phase 2 — this *is* its "submit for review" step). |
+| G3 | No sign-in gate on `/account/projects/`. | Start a Project | Wk 2 (with hub) |
+| G5 | Pre-fill the WhatsApp tile `?text=` (friction + auto-lead matching + attribution). | WhatsApp | Wk 2 (hub, zero cost) |
+| — | **Source tags** on every tile destination (attribution from launch day). | All | Wk 2 (hub) |
+| G2 | PDF spec drop has no server capture — extraction invisible to CC until a separate quote form. | Drop a Spec | Wk 3 |
+| G4 | Showroom + Consultation leads land in flat sheets — no Pipeline deal/lifecycle, manual pickup. | Showroom, Consultation | Wk 3 |
+| — | **Unified "Needs Outreach" dashboard queue** + standardized immediate auto-responders across all funnels. | All | Wk 3–4 (the "where it lives" + "instant ack" core). |
+| G6 | Trade-application dedup. | Apply for Trade | Post-launch |
+| G8 | Showroom gallery uses Unsplash placeholders. | Showroom | Wk 3 (content) |
+
+**Marketing layer (Week 5, already in plan):** Klaviyo email + WhatsApp outbound + Social Hub consume these now-attributed leads with nurture cadences + conversion-by-tile analytics. The Lead Engine core guarantees Week 5 has clean, attributed pipeline to nurture instead of dead air.
 
 ---
 
-### Week 3 — Jun 2 – 8 · SEO technical + descriptions wired
+### Week 2 — May 26 – Jun 1 · Homepage Hub + Nav + Search platform migration (ANCHORS) · scoped 2026-05-20
+
+> **Anchored on Hub + Nav and Search migration** — both Stripe-independent, so the week can't stall waiting on Roger. Stripe-gated work and the full content pipeline are deferred to Week 3 (Joshua's call, 2026-05-20). Triaged to ~6 hrs/day; the flag-gated Search tail may spill into Week 3 safely.
+
+**Morning-of asks (Joshua, Mon AM — before dev):**
+
+- **Stripe team access** (§8 #1) — unblocks Trade Phase 2 + Finance compliance for Week 3.
+- **Meta Business admin access** (§8 #2) — gates the WhatsApp submission below, which is async-critical for the Week 5 go-live.
+- Set `GOOGLE_CLIENT_SECRET_CUSTOMER` on Netlify (15 min) — closes the Week-1 customer-sign-in carry-over.
+
+| Day | Item | Effort | Notes |
+|---|---|---|---|
+| Mon | **Homepage Hub + Nav, part 1** — 6-tile buyer hub under hero, top nav cut to ≤5, Sign-in → top-right utility | ~1 day | Spec in the "Homepage Hub + Nav Simplification" section below. |
+| Tue | **Hub finish** — webchat → WhatsApp click-to-chat (retire `chat-widget*`), "Become a Brand Partner" section + form build (`Brand_Applications` sheet + sales email), Schedule-a-Consultation Google Calendar tile | ~1 day | Brand Partner + Consultation depend on the hub, so they ride here. Consultation = zero new SaaS cost. |
+| Mon–Tue (with hub) | **Lead Engine cheap wins** — source-tag every tile (attribution), pre-fill WhatsApp `?text=` (G5), add `/account/projects/` sign-in gate (G3), and a **G1 stop-gap**: honest capture + Roger alert on Start-a-Project submit so it never silently drops a lead | ~0.5 day | Launch-critical. Full G1 (Pipeline deal + auto-response) rides Trade Phase 2 in Week 3. See the Lead Engine spec above. |
+| Wed–Thu | **Search platform migration** (Algolia / Meili / Typesense, feature-flagged, smoke-loop verified) | 2 days | *(was B9)* Highest blast radius. Flag-gated tail may spill to Fri/Week 3 safely. |
+| Fri | **WhatsApp Business setup BEGINS** — Meta verification + API account + template submission (async; goes live Wk 5) | 0.5 day active | **ONLY if Meta access landed.** Start the 1–2 wk approval clock now or the Wk 5 go-live slips. |
+| Fri (if room) | **Cheap cleanup** — deprecated checkout/Stripe route cleanup (2 hr) *or* Drive dashboard fix (4 hr) | fill | Both Week-1 carry-overs. Slot only if Search finished early. |
+
+**Deferred to Week 3 (Joshua's call, 2026-05-20):** Trade Program Phase 2 (4–5 d, Stripe-gated — project-share v2 rides with it) · the full content pipeline (Cloudflare+R2, full Squarespace scrape run, SKU matching, image migration — ~4–5 d) · Finance compliance (Stripe-gated) · Dashboard reorganization · Analytics (kill hardcoded numbers) · Mexican fiscal fields · the 4 one-off product-render refactors · **Lead Engine core** (full G1 with Trade Phase 2, G2 spec capture, G4 pipeline-ize Showroom/Consultation, the unified "Needs Outreach" dashboard queue + standardized auto-responders).
+
+---
+
+### Week 3 — Jun 2 – 8 · Content pipeline (slipped from Wk 2) + SEO technical + descriptions
+
+> **⚠️ Over capacity (2026-05-20).** The full content pipeline slipped here from Week 2 (Joshua's call), on top of Week 3's existing SEO/description load — this is now ~2 weeks of work and will need its own triage when we reach it. The content pipeline is the prerequisite for everything else in Weeks 3–5, so it leads; expect the SEO-technical + AI-description rows to shift toward Week 4. **Plus the Lead Engine core** (full G1 with Trade Phase 2, G2/G4 pipeline-ization, the unified "Needs Outreach" dashboard queue + auto-responders — see the Lead Engine spec) **and Trade Phase 2 itself** now also target Week 3 → Weeks 3–4 are effectively one combined, over-capacity block. Sequence by dependency, cut overflow into Week 4 rather than overpacking, and re-triage at the top of Week 3 once Stripe access is known.
 
 | Item | Effort | Notes |
 |---|---|---|
+| **Cloudflare Images + R2 set up** (accounts, API keys, Netlify env vars) | 1 day | Slipped from Wk 2. ~$30–35/mo at launch. Prerequisite for image migration. |
+| **Squarespace scrape — resurrect + verify, then full run** — descriptions + images + spec PDF URLs across live SS product pages | ~2 days | Slipped from Wk 2 (+ the Wk-1 resurrect/verify of `scripts/scrape/`, 01→12). Largest single content lever. |
+| **SKU matching** — deterministic + LLM-assisted disambiguation (`05b-llm-match.ts`) | 1 day | Slipped from Wk 2. |
+| **Image migration to CDN** — scraped + existing Drive images → Cloudflare Images (writes new URL to catalog sheet) | 1–2 days | Slipped from Wk 2. **§0/C2:** touches the `products-full.ts` read path — ENHANCE around the shipped `BRAND_DISPLAY_MAP`, do not clobber. |
 | **SEO technical pass** — page titles, meta descriptions, canonicals, hreflang (EN/ES), Open Graph, sitemap index for 354K PDPs | 2 days | NEW (v3). |
 | **Scraped descriptions wired into PDPs** via existing `pdp-description.ts` resolver | 0.5 day | NEW (v3). Sacred Surface adjacent — verify resolver fallback chain still works. |
 | **PDP H1 uses sidecar Spanish title when available** — consistency with meta-title + JSON-LD (Q2 resolution) | 0.5 day | **NEW (v3.1).** Audit Q2. |
@@ -553,7 +596,7 @@ See §7 for full Phase 2 / cutover detail. Summary:
 
 ---
 
-### The 7 concerns — quick mapping to weeks (for the Roger doc audience)
+### The concerns — quick mapping to weeks (for the Roger doc audience)
 
 | Concern | Addressed |
 |---|---|
@@ -564,6 +607,7 @@ See §7 for full Phase 2 / cutover detail. Summary:
 | 5. Spec sheets | Wk 2 (SS scrape pulls links) · Wk 5 (R2 migration + PDP "Specs" UI) |
 | 6. Drive scalability | Wk 2 (Cloudflare set up + image migration) |
 | 7. Comms channels + nav | Wk 1 (nav cleanup) · Wk 2 (WhatsApp Business kickoff) · Wk 5 (Email + Social + WhatsApp outbound live) |
+| 8. Lead Engine (funnels → CRM → outreach) | Wk 2 (hub source-tags + G1 stop-gap + G3 gate + WhatsApp prefill) · Wk 3–4 (core: pipeline-ize all funnels + unified "Needs Outreach" dashboard queue + auto-responders) · Wk 5 (nurture/outbound automation) |
 
 ---
 
@@ -763,6 +807,9 @@ git commit -m "docs(plan): consolidate to MASTER-PLAN.md, archive superseded pro
 
 ## 10. Change log
 
+- **2026-05-20 (buyer-hub funnel audit + Lead Engine decision)** — Read-only end-to-end audit of the 6 hub funnels (entry → capture → Pipeline → auto-response → team alert → close). Finding: **2 of 6 work end-to-end** (Apply for Trade; WhatsApp / Sacred Surface #10); **3 dead-end** into flat sheet rows needing manual pickup (Showroom, Drop-a-Spec, Consultation); **1 loses the lead entirely** (Start a Project — `/api/projects/[id]/request-quote` is a stub returning 200 while the UI claims "Roger will reply in 24h").
+  - **Decision (Joshua):** stand up a **Lead Engine** — every funnel must capture server-side + source-tag, create a Pipeline deal + lifecycle, auto-respond instantly, alert the team, and surface in one dashboard "Needs Outreach" queue. **Core ships by launch;** nurture/outbound = Week-5 marketing layer. Logged as **Concern 8** (§1) + the **"Lead Engine — funnel standardization"** spec (§6). Gaps reslotted: cheap hub items + G1 stop-gap → Week 2; core (full G1 with Trade Phase 2, G2/G4 pipeline-ization, dashboard queue, auto-responders) → Week 3–4; nurture → Week 5. Weeks 3–4 flagged as a combined over-capacity block.
+  - Read-only — no code changed. The Day-1 hub build proceeds independently.
 - **2026-05-20 (artisan / house-line brand normalization SHIPPED)** — Extended `BRAND_DISPLAY_MAP` with Case 4 (CC artisan / house line). Read-layer only — no Odoo writes. Direct continuation of the 2026-05-19 brand work below.
   - `6c12d0a` — `feat(products): extend BRAND_DISPLAY_MAP with CC artisan/house line (Case 4, +10 → 36)` (one file, +12/−1).
   - 10 new entries (map 26 → 36) covering 486 products: `Counter / Santiago`→Santiago (245), `Counter / Gaby- Cobre`→Gaby (174), `Counter`→Counter Cultures (31), `Counter/Meza`→Meza (28), `COUNTER/CHINA`→Counter Cultures (3), `gaby`→Gaby (1), `independencia`→Independencia (1), `mosaico steven`→Steven (1); `cobuild`/`coobuild`→blank (2). Maker name is kept; the `Counter /` prefix and any material/provenance (Cobre, China) drops off the brand.
