@@ -334,6 +334,8 @@ export const CheckoutStepper = ({
   const cartMode = useCartStore((s) => s.cartMode());
   const cartSessionId = useCartStore((s) => s.cartSessionId);
   const tradeCode = useCartStore((s) => s.tradeCode);
+  const discountCode = useCartStore((s) => s.discountCode);
+  const discountAmt = useCartStore((s) => s.discountAmount());
   const clear = useCartStore((s) => s.clear);
   const hasOversized = useCartStore((s) => s.hasOversized());
   const setShipping = useCartStore((s) => s.setShipping);
@@ -474,10 +476,11 @@ export const CheckoutStepper = ({
   }
 
   const isMxShipTo = address.country === "MX";
-  const { iva: ivaAmount, subtotal: productSubtotal } = computeIva(subtotal, address.country);
+  const discountedSubtotal = subtotal - discountAmt;
+  const { iva: ivaAmount, subtotal: productSubtotal } = computeIva(discountedSubtotal, address.country);
   const effectiveShippingCost =
     shippingMethod === "ship" && shippingQuote != null ? shippingQuote : 0;
-  const total = subtotal + effectiveShippingCost;
+  const total = discountedSubtotal + effectiveShippingCost;
   const isBuyPath =
     !hasOversized &&
     cartMode === "all_buyable" &&
@@ -609,6 +612,7 @@ export const CheckoutStepper = ({
       })),
       cartSessionId,
       tradeCode: tradeCode ?? null,
+      discountCode: discountCode ?? null,
       mode: isBuyPath ? "buy" : "quote",
       subtotal,
       ivaAmount,
@@ -751,7 +755,8 @@ export const CheckoutStepper = ({
               density="full"
               isMxShipTo={isMxShipTo}
               ivaAmount={ivaAmount}
-              productSubtotal={productSubtotal}
+              productSubtotal={computeIva(subtotal, address.country).subtotal}
+              discountAmount={discountAmt}
               shippingMethod={shippingMethod}
               shippingCost={effectiveShippingCost > 0 ? effectiveShippingCost : undefined}
             />
@@ -1473,6 +1478,7 @@ export const CheckoutStepper = ({
                 isMxShipTo={isMxShipTo}
                 ivaAmount={ivaAmount}
                 productSubtotal={productSubtotal}
+                discountAmount={discountAmt}
                 shippingMethod={shippingMethod}
                 shippingCost={effectiveShippingCost > 0 ? effectiveShippingCost : undefined}
               />

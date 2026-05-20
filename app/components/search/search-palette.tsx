@@ -145,6 +145,7 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
       setProductResults([]);
       return;
     }
+    setProductResults([]);
     setProductLoading(true);
     const myReq = ++productReqRef.current;
     const timer = setTimeout(async () => {
@@ -176,6 +177,8 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
 
   useEffect(() => {
     if (open) {
+      setQuery("");
+      setProductResults([]);
       setActiveIndex(0);
       const id = window.setTimeout(() => inputRef.current?.focus(), 50);
       return () => window.clearTimeout(id);

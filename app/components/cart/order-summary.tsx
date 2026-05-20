@@ -13,6 +13,8 @@ interface OrderSummaryProps {
   ivaAmount?: number;
   /** Product cost before tax (published total minus IVA) */
   productSubtotal?: number;
+  /** Discount amount applied (IVA-inclusive reduction) */
+  discountAmount?: number;
   shippingMethod?: ShippingMethod;
   shippingCost?: number;
   variant?: "panel" | "inline";
@@ -50,6 +52,7 @@ const T = {
     shippingNote: "Quoted after order review",
     total: "Total (IVA included)",
     tradeApplied: "Trade pricing active",
+    discount: "Discount",
     each: "each",
     finish: "Finish",
     quoteOnly: "Quote",
@@ -66,6 +69,7 @@ const T = {
     shippingNote: "Cotizado tras revisión",
     total: "Total (IVA incluido)",
     tradeApplied: "Precio trade activo",
+    discount: "Descuento",
     each: "c/u",
     finish: "Acabado",
     quoteOnly: "Cotización",
@@ -79,6 +83,7 @@ export const OrderSummary = ({
   isMxShipTo = false,
   ivaAmount = 0,
   productSubtotal,
+  discountAmount = 0,
   shippingMethod,
   shippingCost,
   variant = "panel",
@@ -88,8 +93,7 @@ export const OrderSummary = ({
   const sl = SHIPPING_LABELS[locale];
   const items = useCartStore((s) => s.items);
   const publishedTotal = useCartStore((s) => s.subtotal());
-  const tradeCode = useCartStore((s) => s.tradeCode);
-  const tradePartnerName = useCartStore((s) => s.tradePartnerName);
+  const discountCode = useCartStore((s) => s.discountCode);
 
   const sourceCurrency = items[0]?.currency ?? "MXN";
   const { format: formatted, converted, fxNote } = useDisplayedMoney({
@@ -99,7 +103,7 @@ export const OrderSummary = ({
 
   const shippingAmount = shippingCost ?? 0;
   const displaySubtotal = productSubtotal ?? publishedTotal;
-  const total = publishedTotal + shippingAmount;
+  const total = publishedTotal - discountAmount + shippingAmount;
   const itemCount = items.reduce((acc, i) => acc + i.quantity, 0);
 
   const wrapperClass =
@@ -120,13 +124,12 @@ export const OrderSummary = ({
         </div>
       )}
 
-      {/* Trade applied badge */}
-      {tradeCode && (
+      {/* Discount applied badge */}
+      {discountCode && (
         <div className="flex items-center gap-2 px-3 py-2 mb-5 bg-brand-sage/10 border-l-2 border-brand-sage">
           <Tag className="w-3.5 h-3.5 text-brand-sage shrink-0" />
           <span className="font-body text-xs text-brand-charcoal">
-            {t.tradeApplied}
-            {tradePartnerName && ` · ${tradePartnerName}`}
+            {t.discount} · {discountCode}
           </span>
         </div>
       )}
@@ -158,6 +161,17 @@ export const OrderSummary = ({
             {formatted(displaySubtotal)}
           </dd>
         </div>
+
+        {discountAmount > 0 && (
+          <div className="flex items-baseline justify-between">
+            <dt className="font-body text-sm text-brand-sage">
+              {t.discount}
+            </dt>
+            <dd className="font-mono text-sm text-brand-sage tabular-nums">
+              −{formatted(discountAmount)}
+            </dd>
+          </div>
+        )}
 
         {showIva && (
           <div className="flex items-baseline justify-between">

@@ -40,11 +40,17 @@ export type ShippingMethod =
   | "ship"
   | "custom_freight";
 
+export type DiscountType = "percent" | "fixed";
+
 export interface CartState {
   items: CartItem[];
   tradeCode?: string;
   tradeDiscountPct?: number;
   tradePartnerName?: string;
+  discountCode?: string;
+  discountPct?: number;
+  discountType?: DiscountType;
+  discountFixed?: number;
   cartSessionId: string;
   shippingMethod?: ShippingMethod;
   shippingQuoteMXN?: number;
@@ -57,6 +63,9 @@ export interface CartState {
   has: (id: string) => boolean;
   applyTradeCode: (code: string) => Promise<{ ok: boolean; message: string }>;
   clearTradeCode: () => void;
+  applyDiscountCode: (code: string) => Promise<{ ok: boolean; message: string }>;
+  clearDiscountCode: () => void;
+  discountAmount: () => number;
   setShipping: (method: ShippingMethod, quoteMXN?: number) => void;
   subtotal: () => number;
   cartMode: () => CartMode;
@@ -111,6 +120,10 @@ export const useCartStore = create<CartState>()(
       tradeCode: undefined,
       tradeDiscountPct: undefined,
       tradePartnerName: undefined,
+      discountCode: undefined,
+      discountPct: undefined,
+      discountType: undefined,
+      discountFixed: undefined,
       shippingMethod: undefined,
       shippingQuoteMXN: undefined,
       cartSessionId: generateSessionId(),
@@ -177,6 +190,10 @@ export const useCartStore = create<CartState>()(
           tradeCode: undefined,
           tradeDiscountPct: undefined,
           tradePartnerName: undefined,
+          discountCode: undefined,
+          discountPct: undefined,
+          discountType: undefined,
+          discountFixed: undefined,
           shippingMethod: undefined,
           shippingQuoteMXN: undefined,
           cartSessionId: generateSessionId(),
@@ -212,6 +229,51 @@ export const useCartStore = create<CartState>()(
           tradeDiscountPct: undefined,
           tradePartnerName: undefined,
         }),
+
+      applyDiscountCode: async (code) => {
+        try {
+          const cartSubtotal = get().subtotal();
+          const res = await fetch("/api/checkout/discount-validate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code, cartSubtotal }),
+          });
+          const data = await res.json();
+          if (data.valid) {
+            set({
+              discountCode: data.codeName ?? code,
+              discountPct: data.discountPct ?? 0,
+              discountType: data.discountType ?? "percent",
+              discountFixed: data.discountFixed ?? 0,
+            });
+            return { ok: true, message: `${data.discountPct ?? 0}% off` };
+          }
+          return { ok: false, message: data.reason || "Invalid code" };
+        } catch {
+          return { ok: false, message: "Network error" };
+        }
+      },
+
+      clearDiscountCode: () =>
+        set({
+          discountCode: undefined,
+          discountPct: undefined,
+          discountType: undefined,
+          discountFixed: undefined,
+        }),
+
+      discountAmount: () => {
+        const state = get();
+        if (!state.discountCode) return 0;
+        const total = state.subtotal();
+        if (state.discountType === "fixed" && state.discountFixed) {
+          return Math.min(state.discountFixed, total);
+        }
+        if (state.discountPct) {
+          return Math.round(total * state.discountPct / 100);
+        }
+        return 0;
+      },
 
       setShipping: (method, quoteMXN) =>
         set({ shippingMethod: method, shippingQuoteMXN: quoteMXN }),

@@ -32,11 +32,13 @@ const T = {
       "Browse the showroom and add the pieces you'd like to spec for your project.",
     browseCta: "Browse Shop",
     contactCta: "Talk to a specialist",
-    tradeCode: "Discount Code",
+    discountCode: "Discount Code",
     applyCode: "Apply",
     removeCode: "Remove",
-    tradeApplied: "Trade pricing active",
-    tradeHint: "",
+    discountApplied: "Discount applied",
+    discountHint: "",
+    invalidCode: "Invalid discount code",
+    expiredCode: "This code has expired",
     mixedBanner:
       "This selection includes quote-only pieces. Checkout will route to a quote request — no card required.",
     finish: "Finish",
@@ -59,11 +61,13 @@ const T = {
       "Explora el showroom y agrega las piezas que quieras especificar para tu proyecto.",
     browseCta: "Ver Tienda",
     contactCta: "Hablar con un especialista",
-    tradeCode: "Código de descuento",
+    discountCode: "Código de descuento",
     applyCode: "Aplicar",
     removeCode: "Quitar",
-    tradeApplied: "Precio trade activo",
-    tradeHint: "",
+    discountApplied: "Descuento aplicado",
+    discountHint: "",
+    invalidCode: "Código de descuento inválido",
+    expiredCode: "Este código ha expirado",
     mixedBanner:
       "Esta selección incluye piezas que requieren cotización. El pago generará una solicitud — sin tarjeta requerida.",
     finish: "Acabado",
@@ -88,10 +92,11 @@ export const CartPageClient = ({ locale }: { locale: "en" | "es" }) => {
   const remove = useCartStore((s) => s.remove);
   const subtotal = useCartStore((s) => s.subtotal());
   const mode = useCartStore((s) => s.cartMode());
-  const tradeCode = useCartStore((s) => s.tradeCode);
-  const tradePartnerName = useCartStore((s) => s.tradePartnerName);
-  const applyTradeCode = useCartStore((s) => s.applyTradeCode);
-  const clearTradeCode = useCartStore((s) => s.clearTradeCode);
+  const discountCode = useCartStore((s) => s.discountCode);
+  const discountPct = useCartStore((s) => s.discountPct);
+  const discountAmt = useCartStore((s) => s.discountAmount());
+  const applyDiscountCode = useCartStore((s) => s.applyDiscountCode);
+  const clearDiscountCode = useCartStore((s) => s.clearDiscountCode);
 
   const [codeInput, setCodeInput] = useState("");
   const [codeError, setCodeError] = useState<string | null>(null);
@@ -127,7 +132,7 @@ export const CartPageClient = ({ locale }: { locale: "en" | "es" }) => {
     if (!codeInput.trim()) return;
     setCodeLoading(true);
     setCodeError(null);
-    const result = await applyTradeCode(codeInput.trim());
+    const result = await applyDiscountCode(codeInput.trim());
     setCodeLoading(false);
     if (!result.ok) setCodeError(result.message);
     else setCodeInput("");
@@ -335,22 +340,23 @@ export const CartPageClient = ({ locale }: { locale: "en" | "es" }) => {
           ))}
         </ul>
 
-        {/* Trade code */}
+        {/* Discount code */}
         <div className="mt-6">
-          {tradeCode ? (
+          {discountCode ? (
             <div className="cc-surface-card p-4 flex items-center gap-3">
               <Tag className="w-4 h-4 text-brand-sage shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="font-body text-sm text-brand-charcoal">
-                  {t.tradeApplied}
-                  {tradePartnerName && (
-                    <span className="text-dash-text-secondary"> · {tradePartnerName}</span>
-                  )}
+                  {t.discountApplied}
+                  <span className="text-dash-text-secondary">
+                    {" · "}{discountCode}
+                    {discountPct ? ` (${discountPct}%)` : ""}
+                  </span>
                 </p>
               </div>
               <button
                 type="button"
-                onClick={clearTradeCode}
+                onClick={clearDiscountCode}
                 className="text-dash-text-secondary hover:text-brand-terracotta transition-colors cursor-pointer p-1 -m-1"
                 aria-label={t.removeCode}
               >
@@ -364,11 +370,11 @@ export const CartPageClient = ({ locale }: { locale: "en" | "es" }) => {
                   <Tag className="w-4 h-4 text-brand-copper" />
                   <div>
                     <span className="font-body text-sm font-medium text-brand-charcoal">
-                      {t.tradeCode}
+                      {t.discountCode}
                     </span>
-                    {t.tradeHint && (
+                    {t.discountHint && (
                       <span className="font-body text-xs text-dash-text-secondary ml-2 hidden sm:inline">
-                        {t.tradeHint}
+                        {t.discountHint}
                       </span>
                     )}
                   </div>
@@ -384,7 +390,7 @@ export const CartPageClient = ({ locale }: { locale: "en" | "es" }) => {
                   }
                   onKeyDown={(e) => e.key === "Enter" && handleApplyCode()}
                   className="flex-1 px-3 py-2.5 font-mono text-sm bg-white border border-brand-stone/25 focus:border-brand-copper focus:outline-none focus:ring-1 focus:ring-brand-copper/20 tracking-wider"
-                  placeholder="CC-TRADE-XXX"
+                  placeholder="CC-XXXXXXXX"
                 />
                 <button
                   type="button"
@@ -411,8 +417,9 @@ export const CartPageClient = ({ locale }: { locale: "en" | "es" }) => {
             variant="panel"
             density="compact"
             isMxShipTo
-            ivaAmount={computeIva(subtotal, "MX").iva}
+            ivaAmount={computeIva(subtotal - discountAmt, "MX").iva}
             productSubtotal={computeIva(subtotal, "MX").subtotal}
+            discountAmount={discountAmt}
           />
         </div>
 
