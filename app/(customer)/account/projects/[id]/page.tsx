@@ -20,6 +20,7 @@ import {
 import { useCartStore } from "@/app/lib/stores/cart-store";
 import { computeIva } from "@/app/lib/iva";
 import { useUiStore } from "@/app/lib/stores/ui-store";
+import { ShareProjectButton } from "@/app/components/projects/share-project-button";
 
 const fmtMXN = (n: number) =>
   new Intl.NumberFormat("es-MX", {
@@ -430,6 +431,12 @@ const ProjectDetailPage = ({
               <ShoppingBag className="w-4 h-4" />
               Move All to Cart
             </button>
+
+            <ShareProjectButton
+              project={project}
+              subtotal={subtotal}
+              locale="en"
+            />
           </div>
         )}
 
