@@ -195,7 +195,7 @@ export const SaveCartButton = ({ locale }: SaveCartButtonProps) => {
           </button>
         </div>
         {emailState === "error" && (
-          <p className="font-body text-xs text-red-600 mb-3">{t.sendError}</p>
+          <p className="font-body text-xs text-dash-danger mb-3">{t.sendError}</p>
         )}
 
         {/* WhatsApp + Copy link */}

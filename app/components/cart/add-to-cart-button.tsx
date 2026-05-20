@@ -118,7 +118,7 @@ export const AddToCartButton = ({
       </button>
 
       {error && (
-        <p className="mt-2 font-body text-xs text-red-600">
+        <p className="mt-2 font-body text-xs text-dash-danger">
           {error}
         </p>
       )}
