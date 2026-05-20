@@ -29,6 +29,7 @@ const tiles: {
   icon: typeof FolderPlus;
   label: { en: string; es: string };
   desc: { en: string; es: string };
+  cta: { en: string; es: string };
   href: string;
   kind: TileKind;
 }[] = [
@@ -39,6 +40,7 @@ const tiles: {
       en: "Collect pieces, request a quote",
       es: "Reúne piezas, solicita cotización",
     },
+    cta: { en: "Get Started", es: "Comenzar" },
     href: "/account/projects?src=hub_start_project",
     kind: "raw",
   },
@@ -49,6 +51,7 @@ const tiles: {
       en: "Exclusive pricing for professionals",
       es: "Precios exclusivos para profesionales",
     },
+    cta: { en: "Apply Now", es: "Solicitar" },
     href: "/trade?src=hub_trade",
     kind: "locale",
   },
@@ -59,6 +62,7 @@ const tiles: {
       en: "Upload a PDF, we match your items",
       es: "Sube un PDF, encontramos tus piezas",
     },
+    cta: { en: "Upload File", es: "Subir Archivo" },
     href: "",
     kind: "pdf",
   },
@@ -69,6 +73,7 @@ const tiles: {
       en: "San Miguel de Allende, by appointment",
       es: "San Miguel de Allende, con cita previa",
     },
+    cta: { en: "Get Directions", es: "Cómo Llegar" },
     href: "/showroom?src=hub_showroom",
     kind: "locale",
   },
@@ -79,6 +84,7 @@ const tiles: {
       en: "Quick answers, real people",
       es: "Respuestas rápidas, personas reales",
     },
+    cta: { en: "Open WhatsApp", es: "Abrir WhatsApp" },
     href: "",
     kind: "external",
   },
@@ -89,6 +95,7 @@ const tiles: {
       en: "We'll walk you through options",
       es: "Te guiamos entre las opciones",
     },
+    cta: { en: "Book Now", es: "Agendar" },
     href: "/contact?src=hub_consult",
     kind: "locale",
   },
@@ -106,99 +113,89 @@ const BuyerHub = ({ locale }: BuyerHubProps) => {
 
   return (
     <>
-      <section className="py-14 md:py-20 bg-brand-charcoal">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <AnimatedSection>
-            <p className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-copper uppercase mb-3">
-              {isEs ? "¿Cómo podemos ayudarte?" : "How can we help?"}
-            </p>
-            <h2 className="font-display text-2xl md:text-4xl font-light tracking-wide text-white mb-10 md:mb-14">
-              {isEs
-                ? "Tu punto de partida."
-                : "Your starting point."}
-            </h2>
-          </AnimatedSection>
+      <div className="mt-14 md:mt-20">
+        <AnimatedSection>
+          <p className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-copper uppercase mb-3">
+            {isEs ? "¿Cómo podemos ayudarte?" : "How can we help?"}
+          </p>
+          <h2 className="font-display text-2xl md:text-4xl font-light tracking-wide text-brand-charcoal mb-10 md:mb-14">
+            {isEs ? "Tu punto de partida." : "Your starting point."}
+          </h2>
+        </AnimatedSection>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-white/10">
-            {tiles.map((tile, i) => {
-              const Icon = tile.icon;
-              const label = tile.label[locale];
-              const desc = tile.desc[locale];
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+          {tiles.map((tile, i) => {
+            const Icon = tile.icon;
+            const label = tile.label[locale];
+            const desc = tile.desc[locale];
+            const ctaLabel = tile.cta[locale];
 
-              const ctaLabel =
-                tile.kind === "pdf"
-                  ? isEs ? "Subir archivo" : "Upload file"
-                  : tile.kind === "external"
-                    ? isEs ? "Abrir WhatsApp" : "Open WhatsApp"
-                    : isEs ? "Continuar" : "Continue";
-
-              const inner = (
-                <AnimatedSection delay={i * 0.05}>
-                  <div className="flex items-start gap-4">
-                    <Icon className="w-5 h-5 text-brand-copper mt-0.5 shrink-0" />
-                    <div className="min-w-0">
-                      <h3 className="font-display text-lg md:text-xl font-light tracking-wide text-white leading-tight">
-                        {label}
-                      </h3>
-                      <p className="mt-1.5 font-body text-sm text-white/60 leading-relaxed">
-                        {desc}
-                      </p>
-                      <span className="inline-flex items-center gap-1.5 mt-4 font-body text-xs font-semibold tracking-wide text-brand-copper group-hover:text-white transition-colors">
-                        {ctaLabel}
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </span>
-                    </div>
+            const inner = (
+              <AnimatedSection delay={i * 0.05}>
+                <div className="flex flex-col items-start">
+                  <div className="w-11 h-11 md:w-[46px] md:h-[46px] rounded-full bg-brand-copper flex items-center justify-center shrink-0">
+                    <Icon className="w-5 h-5 md:w-[22px] md:h-[22px] text-white" strokeWidth={1.75} />
                   </div>
-                </AnimatedSection>
-              );
+                  <h3 className="mt-4 font-display text-lg md:text-xl font-light tracking-wide text-brand-charcoal leading-tight">
+                    {label}
+                  </h3>
+                  <p className="mt-1.5 font-body text-sm text-dash-text-secondary leading-relaxed">
+                    {desc}
+                  </p>
+                  <span className="inline-flex items-center gap-1.5 mt-4 font-body text-[11px] font-semibold tracking-[0.15em] uppercase text-brand-copper group-hover:text-brand-charcoal transition-colors">
+                    {ctaLabel}
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </span>
+                </div>
+              </AnimatedSection>
+            );
 
-              const cellClass =
-                "group bg-brand-charcoal p-6 md:p-8 hover:bg-brand-charcoal/80 transition-colors cursor-pointer";
+            const cellClass =
+              "group bg-white rounded-lg border border-brand-stone/20 p-6 md:p-7 hover:border-brand-copper/40 hover:shadow-sm transition-all cursor-pointer";
 
-              if (tile.kind === "pdf") {
-                return (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setPdfOpen(true)}
-                    className={`${cellClass} text-left`}
-                  >
-                    {inner}
-                  </button>
-                );
-              }
-
-              if (tile.kind === "external") {
-                return (
-                  <a
-                    key={i}
-                    href={waHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={cellClass}
-                  >
-                    {inner}
-                  </a>
-                );
-              }
-
-              if (tile.kind === "raw") {
-                return (
-                  <NextLink key={i} href={tile.href} className={cellClass}>
-                    {inner}
-                  </NextLink>
-                );
-              }
-
+            if (tile.kind === "pdf") {
               return (
-                <Link key={i} href={tile.href} className={cellClass}>
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setPdfOpen(true)}
+                  className={`${cellClass} text-left`}
+                >
                   {inner}
-                </Link>
+                </button>
               );
-            })}
-          </div>
+            }
+
+            if (tile.kind === "external") {
+              return (
+                <a
+                  key={i}
+                  href={waHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cellClass}
+                >
+                  {inner}
+                </a>
+              );
+            }
+
+            if (tile.kind === "raw") {
+              return (
+                <NextLink key={i} href={tile.href} className={cellClass}>
+                  {inner}
+                </NextLink>
+              );
+            }
+
+            return (
+              <Link key={i} href={tile.href} className={cellClass}>
+                {inner}
+              </Link>
+            );
+          })}
         </div>
-      </section>
+      </div>
 
       <PdfDropModal
         open={pdfOpen}

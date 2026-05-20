@@ -9,7 +9,6 @@ import { ShopByRoom } from "@/app/components/sections/shop-by-room";
 import { FeaturedBrandsBand } from "@/app/components/sections/featured-brands-band";
 import { HowItWorksBand } from "@/app/components/sections/how-it-works-band";
 import { CatalogDepthBandAsync } from "@/app/components/sections/catalog-depth-band-async";
-import { BuyerHub } from "@/app/components/sections/buyer-hub";
 import { FounderStory } from "@/app/components/sections/founder-story";
 import { HospitalityTeaser } from "@/app/components/sections/hospitality-teaser";
 import { Testimonial } from "@/app/components/sections/testimonial";
@@ -225,7 +224,6 @@ const HomePage = async ({ params }: HomePageProps) => {
         <Suspense fallback={null}>
           <CatalogDepthBandAsync locale={lang} />
         </Suspense>
-        <BuyerHub locale={lang} />
         <ShopByRoom locale={lang} />
         <FeaturedBrandsBand locale={lang} brands={featuredBrands} />
         <HospitalityTeaser locale={lang} />

@@ -1,9 +1,11 @@
-import { Link } from "@/app/i18n/navigation";
+import type { ReactNode } from "react";
 import Image from "next/image";
+import { CatalogSearchInput } from "./catalog-search-input";
 
 interface CatalogDepthBandProps {
   locale: "en" | "es";
   totalCatalog: number;
+  children?: ReactNode;
 }
 
 const SIGNAL_BRANDS = [
@@ -17,7 +19,7 @@ const SIGNAL_BRANDS = [
   "Villeroy & Boch",
 ];
 
-const CatalogDepthBand = ({ locale, totalCatalog }: CatalogDepthBandProps) => {
+const CatalogDepthBand = ({ locale, totalCatalog, children }: CatalogDepthBandProps) => {
   const isEs = locale === "es";
   const numFmt = isEs ? "es-MX" : "en-US";
   if (!totalCatalog) return null;
@@ -26,7 +28,6 @@ const CatalogDepthBand = ({ locale, totalCatalog }: CatalogDepthBandProps) => {
     <section className="relative bg-brand-linen overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 md:py-24">
         <div className="grid lg:grid-cols-[1.1fr_1fr] gap-10 lg:gap-16 items-center">
-          {/* Image — flagship faucet shot stands in for catalog breadth */}
           <div className="relative aspect-[4/3] lg:aspect-[5/4] rounded-lg overflow-hidden">
             <Image
               src="/images/kitchen/faucets.webp"
@@ -42,7 +43,6 @@ const CatalogDepthBand = ({ locale, totalCatalog }: CatalogDepthBandProps) => {
             <div className="absolute inset-0 bg-gradient-to-tr from-black/15 to-transparent pointer-events-none" />
           </div>
 
-          {/* Stat-led copy block */}
           <div>
             <h2 className="font-body font-semibold text-[11px] tracking-[0.25em] text-brand-copper uppercase">
               {isEs ? "Catálogo completo" : "The full catalog"}
@@ -71,15 +71,9 @@ const CatalogDepthBand = ({ locale, totalCatalog }: CatalogDepthBandProps) => {
                 ? "Cada SKU especificado por nosotros y entregado por nosotros. Sin intermediarios, sin sorpresas."
                 : "Every SKU spec'd through us and delivered through us. No middlemen, no surprises."}
             </p>
-            <Link
-              href="/shop/catalog"
-              className="mt-7 inline-flex items-center gap-2 font-body text-sm font-semibold tracking-wide text-brand-copper hover:text-brand-charcoal transition-colors"
-            >
-              {isEs ? "Buscar el catálogo" : "Search the catalog"}{" "}
-              <span aria-hidden>→</span>
-            </Link>
 
-            {/* Quiet depth signal — names only, no cards, no stats */}
+            <CatalogSearchInput locale={locale} totalCatalog={totalCatalog} />
+
             <div className="mt-8 pt-6 border-t border-brand-stone/15">
               <p className="font-body text-[10px] tracking-[0.2em] uppercase text-dash-text-secondary mb-3">
                 {isEs ? "Incluye" : "Includes"}
@@ -93,6 +87,8 @@ const CatalogDepthBand = ({ locale, totalCatalog }: CatalogDepthBandProps) => {
             </div>
           </div>
         </div>
+
+        {children}
       </div>
     </section>
   );
