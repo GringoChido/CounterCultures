@@ -30,7 +30,7 @@ const SHEET_ID = process.env.GOOGLE_SHEETS_ID_PRODUCTS_FULL ?? "";
 const TAB = "Products";
 const TTL_MS = 30 * 60 * 1000;
 
-// Display-layer brand normalization (26 entries). The Odoo categ_id field
+// Display-layer brand normalization (36 entries). The Odoo categ_id field
 // (which populates the sheet's "brand" column) contains misspellings, retailer
 // names, and accounting categories. This map corrects display names at read time
 // without touching Odoo. Permanent cleanup is a deferred finance-reviewed scope
@@ -66,6 +66,17 @@ const BRAND_DISPLAY_MAP: Record<string, string> = {
   "Commercial": "",
   "Personal": "",
   "IMP-02": "",
+  // CC artisan / house line → maker name (material/provenance drops to product name)
+  "Counter / Santiago": "Santiago",
+  "Counter / Gaby- Cobre": "Gaby",
+  "Counter/Meza": "Meza",
+  "gaby": "Gaby",
+  "Counter": "Counter Cultures",
+  "COUNTER/CHINA": "Counter Cultures",
+  "independencia": "Independencia",
+  "mosaico steven": "Steven",
+  "cobuild": "",
+  "coobuild": "",
 };
 
 // Local product image inventory. ~4.2k JPGs in public/products/odoo/<id>.jpg
