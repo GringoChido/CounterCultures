@@ -302,11 +302,12 @@ export const submitLead = async (lead: {
   phone: string;
   source: string;
   message: string;
+  hubSource?: string;
 }): Promise<void> => {
   const leadId = `LEAD-${Date.now()}`;
   const now = new Date().toISOString();
 
-  await appendSheetData("Leads!A:K", [
+  await appendSheetData("Leads!A:L", [
     [
       leadId,
       lead.name,
@@ -319,6 +320,7 @@ export const submitLead = async (lead: {
       now,
       now,
       lead.message,
+      lead.hubSource ?? "",
     ],
   ]);
 };

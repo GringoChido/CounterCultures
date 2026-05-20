@@ -10,6 +10,7 @@ const schema = z.object({
   date: z.string().max(20).optional().default(""),
   time: z.string().max(20).optional().default(""),
   notes: z.string().max(2000).optional().default(""),
+  src: z.string().max(100).optional().default(""),
 });
 
 export const POST = async (request: Request) => {
@@ -24,7 +25,7 @@ export const POST = async (request: Request) => {
       );
     }
 
-    const { name, email, phone, date, time, notes } = result.data;
+    const { name, email, phone, date, time, notes, src } = result.data;
 
     await submitShowroomBooking({ name, email, phone, date, time, notes });
 
@@ -35,6 +36,7 @@ export const POST = async (request: Request) => {
       phone,
       source: "Showroom Booking",
       message: `Visit requested${date ? ` for ${date}` : ""}${time ? ` at ${time}` : ""}${notes ? `\n\n${notes}` : ""}`,
+      hubSource: src,
     }).catch((err) => {
       console.error("[Showroom] Leads mirror failed:", err);
     });

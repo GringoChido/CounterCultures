@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { TradeContent } from "./trade-content";
 
@@ -217,7 +218,9 @@ const TradePage = async ({ params }: TradePageProps) => {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <TradeContent />
+      <Suspense fallback={null}>
+        <TradeContent />
+      </Suspense>
     </>
   );
 };

@@ -14,6 +14,7 @@ const schema = z.object({
   website: z.string().max(200).optional().default(""),
   license: z.string().max(100).optional().default(""),
   message: z.string().max(5000).optional().default(""),
+  src: z.string().max(100).optional().default(""),
 });
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -23,7 +24,7 @@ export const POST = async (request: Request) => {
     const formData = await request.formData();
 
     const fields: Record<string, string> = {};
-    for (const key of ["firstName", "lastName", "company", "profession", "email", "phone", "website", "license", "message"]) {
+    for (const key of ["firstName", "lastName", "company", "profession", "email", "phone", "website", "license", "message", "src"]) {
       const val = formData.get(key);
       if (typeof val === "string") fields[key] = val;
     }
@@ -36,7 +37,7 @@ export const POST = async (request: Request) => {
       );
     }
 
-    const { firstName, lastName, company, profession, email, phone, website, license, message } = result.data;
+    const { firstName, lastName, company, profession, email, phone, website, license, message, src } = result.data;
     const name = `${firstName} ${lastName}`.trim();
 
     // Upload constancia fiscal to Drive if provided
@@ -82,6 +83,7 @@ export const POST = async (request: Request) => {
       phone,
       source: "Trade Program",
       message: `${company}${profession ? ` · ${profession}` : ""}${website ? ` · ${website}` : ""}${license ? ` · License ${license}` : ""}${constanciaLink ? `\nConstancia: ${constanciaLink}` : ""}${message ? `\n\n${message}` : ""}`,
+      hubSource: src,
     }).catch((err) => {
       console.error("[Trade] Leads mirror failed:", err);
     });

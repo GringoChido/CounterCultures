@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { useSearchParams } from "next/navigation";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { CategoryHero } from "@/app/components/sections/category-hero";
@@ -81,6 +82,7 @@ const galleryImages = [
 
 export const ShowroomContent = () => {
   const locale = useLocale() as "en" | "es";
+  const searchParams = useSearchParams();
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -100,6 +102,7 @@ export const ShowroomContent = () => {
           date: data.get("date"),
           time: data.get("time"),
           notes: data.get("notes"),
+          src: searchParams.get("src") ?? "",
         }),
       });
 

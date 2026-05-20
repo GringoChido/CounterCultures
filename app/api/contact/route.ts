@@ -10,6 +10,7 @@ const schema = z.object({
   phone: z.string().max(30).optional().default(""),
   type: z.string().max(50).optional().default("general"),
   message: z.string().max(5000).optional().default(""),
+  src: z.string().max(100).optional().default(""),
 });
 
 export const POST = async (request: Request) => {
@@ -24,7 +25,7 @@ export const POST = async (request: Request) => {
       );
     }
 
-    const { firstName, lastName, email, phone, type, message } = result.data;
+    const { firstName, lastName, email, phone, type, message, src } = result.data;
     const name = `${firstName} ${lastName}`.trim();
 
     await submitLead({
@@ -33,6 +34,7 @@ export const POST = async (request: Request) => {
       phone,
       source: `contact-form:${type}`,
       message,
+      hubSource: src,
     });
 
     // Fire-and-forget: confirmation email + internal notifications

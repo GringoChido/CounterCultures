@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { ShowroomContent } from "./showroom-content";
 
@@ -202,7 +203,9 @@ const ShowroomPage = async ({ params }: ShowroomPageProps) => {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <ShowroomContent />
+      <Suspense fallback={null}>
+        <ShowroomContent />
+      </Suspense>
     </>
   );
 };

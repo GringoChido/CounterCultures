@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { useSearchParams } from "next/navigation";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
@@ -54,6 +55,7 @@ const t = {
 
 export const ContactContent = () => {
   const locale = useLocale() as "en" | "es";
+  const searchParams = useSearchParams();
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -73,6 +75,7 @@ export const ContactContent = () => {
           phone: data.get("phone"),
           type: data.get("type"),
           message: data.get("message"),
+          src: searchParams.get("src") ?? "",
         }),
       });
 

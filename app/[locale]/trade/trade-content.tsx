@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, type FormEvent } from "react";
+import { useSearchParams } from "next/navigation";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { CategoryHero } from "@/app/components/sections/category-hero";
@@ -152,6 +153,7 @@ const steps = [
 
 export const TradeContent = () => {
   const locale = useLocale() as "en" | "es";
+  const searchParams = useSearchParams();
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [fileName, setFileName] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -163,6 +165,7 @@ export const TradeContent = () => {
     const data = new FormData(form);
 
     try {
+      data.set("src", searchParams.get("src") ?? "");
       const res = await fetch("/api/trade", {
         method: "POST",
         body: data,

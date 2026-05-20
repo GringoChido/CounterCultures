@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { ContactContent } from "./contact-content";
 
@@ -141,7 +142,9 @@ const ContactPage = async ({ params }: ContactPageProps) => {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <ContactContent />
+      <Suspense fallback={null}>
+        <ContactContent />
+      </Suspense>
     </>
   );
 };
