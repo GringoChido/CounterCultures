@@ -18,6 +18,7 @@
 import { GoogleAuth } from "google-auth-library";
 import { sheets as sheetsApi } from "@googleapis/sheets";
 import { getGooglePrivateKey } from "./google-private-key";
+import { ensureColumns } from "./sheet-migrations";
 import type { Product, ProductFilter } from "./types";
 import { SAMPLE_PRODUCTS, PRODUCT_CATEGORIES, SUBCATEGORY_CATALOG_QUERY } from "./constants";
 import type { CategoryKey } from "./constants";
@@ -355,6 +356,7 @@ export const submitLead = async (lead: {
     hub_source: lead.hubSource ?? "",
   };
 
+  await ensureColumns("Leads", ["hub_source"]);
   await appendSheetData("Leads!A:U", [
     SUBMIT_LEAD_COLUMNS.map((c) => row[c]),
   ]);
