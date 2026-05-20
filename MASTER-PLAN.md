@@ -364,86 +364,39 @@ Status legend: 🔴 PENDING · 🟡 IN PROGRESS · 🟢 DONE · ⛔ BLOCKED
 
 ---
 
-### Week 1 — May 18–25 · Architecture FIRST, then cleanup propagates
+### Week 1 — CLOSED ✅ (May 18–25) · Architecture FIRST, then cleanup propagated
 
-> **Ordering principle (v3.1):** consolidate sources/templates BEFORE individual fixes. Joshua's insight 2026-05-19 — *"I asked for the EN/ES picker to be removed weeks ago and it's still on some pages"* — is the textbook symptom of the multi-template problem. Whacking moles when there are multiple spawn points is infinite work. **Declare ONE canonical template + ONE canonical source first; cleanup then applies once and propagates everywhere.**
+> **Ordering principle (v3.1) — kept for the record:** consolidate sources/templates BEFORE individual fixes. *"I asked for the EN/ES picker to be removed weeks ago and it's still on some pages"* is the textbook multi-template symptom — declare ONE canonical template + ONE canonical source first; cleanup then applies once and propagates.
 
-#### Day 1 — Mon · ✅ COMPLETE 2026-05-19
+**All sequential Day 1–7 items shipped and pushed to `main`** (Day 1 `c67dae4` → Day 7 `4219b3b`). Full per-day detail lives in §10 Change log. Per §0.3 (DELETE-WHEN-DONE), completed rows are removed here; only unfinished work carries forward below. Day-1 audit findings that still drive scope: image coverage 1.2% and description coverage 0.3% (both more urgent than scoped → Week 2 scrape); 9 data sources, not 5; build-time Sheets API 429 = launch risk (mitigation Week 4).
 
-All three Day 1 items shipped. Details in §10 Change log. Audit lives at `docs/data-sources-of-truth.md` and is now the canonical reference for all data-source decisions.
-
-**Audit findings that change scope for subsequent days:**
-
-- **Image coverage is 1.2%** (4,236 of 354K). Concern 4 (Week 2 image scrape + brand-site fill-in) is more urgent than scoped.
-- **Description coverage is 0.3%** (1,215 of 354K). Concern 3 (Week 2 SS scrape + Week 3-5 AI + hand-edit) is more urgent than scoped.
-- **9 data sources, not 5.** Added: Local files, Brand Kit, Sidecar JSON, Gmail subject-line scanner.
-- **Build-time Sheets API 429 = launch risk.** Brand-category pre-render hit the rate limit. Needs mitigation before launch (longer TTLs + Sheets quota increase) — see §1 (Pre-launch infrastructure risks).
-
-**8 open data-quality questions** moved to §8 for sequencing.
-
-#### Day 2 — Tue · ✅ COMPLETE 2026-05-20 (PDP consolidation)
-
-PDP template consolidation shipped. Details in §10 Change log. Remaining Day 2 items (fix/* branch triage, customer sign-in wire-up, Resend setup) carry forward to Day 3.
-
-| Item | Status | Notes |
-|---|---|---|
-| **PDP template consolidation** | ✅ DONE — sha cfdc60b — 2026-05-20 | /shop/quote/ deprecated, 301 redirects added, toQuoteProduct removed, canonical PDP locked, product-render surface inventory documented. 4 one-off renderings found → Day 3 follow-up. |
-| **Small `fix/*` branch triage** | 🔴 PENDING — carries to Day 3 | *(was A3)* |
-| **Customer sign-in: final wire-up** | 🔴 PENDING — carries to Day 3 | NEW (v3). |
-| **Resend setup — finish sandbox-mode rewrite** | 🔴 PENDING — carries to Day 3 | *(was B1)* |
-
-#### Day 3 — Wed · ✅ COMPLETE 2026-05-21 (PDP cleanup + branch triage + Resend verified)
-
-PDP cleanup propagated via canonical template. Branch triage executed per §4B. Resend sandbox verified. Customer sign-in partially blocked (missing env var). Details in §10 Change log.
-
-| Item | Status | Notes |
-|---|---|---|
-| **PDP cleanup pass** | ✅ DONE — 2026-05-21 | Removed: SKU visual display, "PRICES IVA INCLUDED" badge/priceNote, per-PDP EN/ES description picker, "Request a Quote" CTA everywhere (replaced with "Add to Cart" universally). Also cleaned product-drawer, project-list-bar, brand pages. Zero "Request a Quote" references remain in codebase (grep-verified). |
-| **Delete "Full Catalog X pieces" section from brand pages** | ✅ DONE — 2026-05-21 | Deleted ~90-line "Beyond our selection" block from `brands/[slug]/page.tsx`. Brand+category page confirmed: never had this section. |
-| ~~**"Rodger Envira" data cleanup**~~ | ~~30 min~~ | ⛔ **SKIPPED 2026-05-20.** Comprehensive search (Odoo + 6 sheets + sidecar + codebase = ~362K records) returned 0 matches. String doesn't exist in any reachable data source. Reopen only if Joshua confirms exact spelling or provides a sample PDP URL. |
-| **Carry-over: Small `fix/*` branch triage** | ✅ DONE — 2026-05-21 | **MERGED (4):** `fix/cart-discount-code-label`, `fix/projects-404`, `fix/cc-llc-color-scheme-reports-ap`, `claude/amazing-zhukovsky-707d87`. **DROPPED (4):** `fix/whatsapp-opt-out-default` (LFPDPPP), `fix/net-price-label-iva-wording` (stale), `claude/gallant-khayyam-1d2480` (duplicate), `claude/dazzling-gates-6178ba` (duplicate). **HOLD (2):** `fix/cart-share-email-error-handling` (Joshua-decision), `fix/local-delivery-signature` (Joshua-decision). |
-| **Carry-over: Customer sign-in final wire-up** | 🟡 PARTIAL — `GOOGLE_CLIENT_ID_CUSTOMER` set, `GOOGLE_CLIENT_SECRET_CUSTOMER` MISSING on Netlify | Code is complete. Joshua must: (1) go to GCP Console → `counter-portal-493716` → Credentials, (2) find OAuth client `374048983912-ss013d...`, (3) copy secret, (4) add as `GOOGLE_CLIENT_SECRET_CUSTOMER` on Netlify. Also verify redirect URI includes `https://countercultures.netlify.app/api/auth/callback/google-customer`. |
-| **Carry-over: Resend setup — finish sandbox-mode rewrite** | ✅ DONE — verified 2026-05-21 | `RESEND_FROM_TRANSACTIONAL=onboarding@resend.dev` set across all contexts. `STAGING_EMAIL_REDIRECT` limits delivery to `admin@` + `roger@countercultures.com.mx`. P1.1 COMPLETE. |
-
-#### Day 5 OR Day 6 — 4 one-off product rendering refactors (deferred from Day 2 audit)
+#### Week 1 carry-overs → fold into Week 2
 
 | Item | Effort | Notes |
 |---|---|---|
-| **Refactor 4 one-off product renderings** to use shared components from `app/components/pdp/*` or `app/components/products/*`. Surfaces: catalog-view, product-drawer, catalog-search, product-detail-panel. Inventory documented in `docs/data-sources-of-truth.md` per Day 2 audit. | 2–3 hrs | **NEW (v3.1).** Slotted into Day 5 visible-bug bash, or pulled into Day 6 polish if Day 5 fills with bug work. Non-customer-visible cleanup — safe to slip. |
-
-#### Day 4 — Thu · ✅ COMPLETE 2026-05-22 (Trade Phase 1 + Discount Code)
-
-Both Day 4 items shipped. Details in §10 Change log.
-
-#### Day 5 — Fri · Visible-bug bash + final cleanup
-
-| Item | Effort | Notes |
-|---|---|---|
+| **Customer sign-in — final wire-up** (Joshua manual step) | 15 min (Joshua) | Code complete. Add `GOOGLE_CLIENT_SECRET_CUSTOMER` on Netlify: GCP Console → `counter-portal-493716` → Credentials → OAuth client `374048983912-ss013d...` → copy secret. Verify redirect URI includes `https://countercultures.netlify.app/api/auth/callback/google-customer`. |
+| **Refactor 4 one-off product renderings** → shared `app/components/pdp/*` / `products/*`. Surfaces: catalog-view, product-drawer, catalog-search, product-detail-panel | 2–3 hrs | Inventory in `docs/data-sources-of-truth.md`. Non-customer-visible — safe to slip. |
 | **Drive dashboard page fix** ("Failed to load") | 4 hrs | *(was B6)* P1.15. |
-| ✅ **Doc archive sweep** — move §5A files, delete §5B duplicates, retire §5C deprecated | 30 min | **DONE 2026-05-25 (Day 7).** 20 files archived, 5 duplicates deleted, 1 deprecated retired, 15 superpowers specs archived. |
-| ✅ **Worktree prune** — drop the ~42 merged worktrees | 30 min | **DONE 2026-05-25 (Day 7).** 40 merged worktrees removed (54→14), 78 merged branches deleted. ~15 GB recovered. |
+| **Project-share public viewable-link v2** — bundle with Trade Phase 2 (both touch project actions) | TBD | v1 (email + WhatsApp share from project detail) shipped Day 7 (`3b60ea2`). v2 adds a public viewable link. |
+| **CC-Image-Library 2/ duplicate review** (Joshua) | 15 min (Joshua) | Flagged during Day 7 archive sweep — confirm it is not a pure duplicate before any delete (§9). |
 
-#### Spans Week 1 (parallel background work)
+#### Slipped from Week 1 — place during Week 2 scoping
 
-| Item | Effort | Notes |
-|---|---|---|
-| **Homepage Hub + Nav Simplification** — buyer-focused 6-tile hub immediately under hero, separate "Become a Brand Partner" section lower (different audience), top nav reduces to ≤5 items, WhatsApp click-to-chat replaces persistent webchat, Sign in moves to top-right utility position. | 1.5 days | **NEW (v3.1).** Spec below. Spans Wed–Thu. |
-| **Resurrect Squarespace scrape scripts from git history** (in parallel — sets up Week 2's scrape run) | ~2 days background | NEW (v3). Verify scripts still match current SS HTML; patch if needed. |
-| **Deprecated checkout/Stripe routes cleanup** (3 concurrent implementations) | 2 hrs | *(was B7)* P1.16. Touches the consolidation work; do during Tue–Wed PDP refactor. |
-
-#### Slips to Week 2 if Week 1 is over capacity (acceptable, not launch-critical for Wk 1)
+> **Verified 2026-05-20:** none of these reached `main` (clean working tree, no stash/branch, live code in pre-work state). They are unfinished, not done.
 
 | Item | Effort | Notes |
 |---|---|---|
-| **Dashboard reorganization** — role-based sidebar (Joshua / Roger / Antonina / Sales), kill stub routes, fix SOON badges | 2 days | *(was B4)* P1.9. Bundles P2.11 + P2.12. |
-| **Sales / Marketing / Website analytics — kill hardcoded numbers** | 1 day | *(was B5)* P1.14. |
-| **Mexican fiscal fields** (SAT codes) | 1 day | *(was B8)* P1.12. **Unblocks Factura↔Stripe.** |
-| **Search platform migration begins** (Algolia / Meili / Typesense, feature-flagged) | 2–3 days | *(was B9)* P1.11. Highest blast radius — fits better as Week 2 main focus. |
-| **Finance compliance (Stripe-dependent)** — wire auto-factura + consolidate dual ledgers | 1–2 days | ⛔ Contingent on Stripe access from Roger meeting. |
+| **Homepage Hub + Nav Simplification** — 6-tile buyer hub under hero, separate Brand Partner section lower, top nav ≤5, WhatsApp click-to-chat replaces persistent webchat, Sign-in → top-right utility | 1.5 days | **Spec below.** Foundational — the Brand Partner section, Consultation tile, and WhatsApp click-to-chat already listed in Week 2 all hang off this. Webchat still wired (`chat-widget-lazy` imported in `app/[locale]/layout.tsx`). |
+| **Squarespace scrape — resurrect + verify** | ~1 day | `scripts/scrape/` pipeline (01→12, incl. `05b-llm-match.ts`) exists from `ee9a0ae` (May 11). ENHANCE, do not rebuild (§0/C2): verify against current SS HTML + patch BEFORE Week 2's full scrape run. |
+| **Deprecated checkout/Stripe route cleanup** | 2 hrs | *(was B7)* P1.16. Multiple concurrent paths still live: `checkout/{buy,submit,quote,discount-validate}`, `stripe/{checkout,payment-intent,create-payment-link,…}`. `checkout/quote` dangles post `/shop/quote/` deprecation. |
+| **Sales / Marketing / Website analytics — kill hardcoded numbers** | 1 day | *(was B5)* P1.14. Conditional Wk-1 slip that didn't ship — needs a Week 2+ home. |
+| **Mexican fiscal fields** (SAT codes) | 1 day | *(was B8)* P1.12. **Unblocks Factura↔Stripe.** Conditional Wk-1 slip that didn't ship. |
+
+*(Dashboard reorganization, Search platform migration, and Finance compliance were also conditional Wk-1 slips that didn't ship — all three already appear in Week 2 below.)*
 
 ---
 
-### Homepage Hub + Nav Simplification — spec (Week 1 build, ~1.5 days)
+### Homepage Hub + Nav Simplification — spec (slipped from Week 1 → Week 2 build, ~1.5 days)
 
 **Architecture:**
 
@@ -493,18 +446,7 @@ Icons: Phosphor or Lucide icon library (free, consistent, professional).
 | **Finance compliance** — wire Stripe payments into auto-factura + dual-ledger reconciliation (if Stripe access granted in Roger meeting) | 1–2 days | *(was B10 + B11)* — moved from Wk 1 if Stripe access took a week. |
 | **Dashboard reorganization** — role-based sidebar | 2 days | *(was B4)* — slips from Wk 1 if capacity tight. |
 
----
-
-### Week 2 — May 26 – Jun 1 · Cloudflare + Squarespace scrape + WhatsApp kickoff
-
-| Item | Effort | Notes |
-|---|---|---|
-| **Cloudflare Images + R2 set up** (accounts, API keys, Netlify env vars) | 1 day | NEW (v3). $30–35/month at launch. |
-| **Full Squarespace scrape run** — descriptions + images + spec PDF URLs across all live SS product pages | 1 day | NEW (v3). Largest single content-migration lever in the project. |
-| **SKU matching** — deterministic match + LLM-assisted disambiguation for ambiguous cases (script `05b-llm-match.ts` resurrected) | 1 day | NEW (v3). |
-| **Image migration to CDN** — scraped images → Cloudflare Images; existing Drive images → Cloudflare Images (script writes new URL to catalog sheet) | 1–2 days | NEW (v3). |
-| **Search platform migration finishes** (rollout behind feature flag, smoke loop verified) | 0.5 day | Tail of Week 1 work. |
-| **WhatsApp Business setup BEGINS** — Meta Business verification + WhatsApp Business API account + message template submission (Meta approval takes 1–2 weeks; runs async) | 0.5 day active + async | NEW (v3). Goes live in Week 5. |
+> **⚠️ Week 2 scoping in progress (2026-05-20).** This is the heaviest week of the sprint. The table above is the v3.1 superset (a stale v3 subset block was removed in the 05-20 hygiene pass). Fold in the Week-1 carry-overs + slipped items listed above, then triage to ≤6 hrs/day — push overflow to Week 3 rather than overpacking. First execution prompt fires only after this scope is locked with Joshua.
 
 ---
 
@@ -817,7 +759,9 @@ git commit -m "docs(plan): consolidate to MASTER-PLAN.md, archive superseded pro
 ## 10. Change log
 
 - **2026-05-19 (brand normalization SHIPPED)** — Display-layer brand normalization via `BRAND_DISPLAY_MAP` in `products-full.ts`. Read-layer only — no Odoo writes.
+  - `dac88b8` — `docs(diagnostics): brand-field data-quality audit` (diagnostic + cleanup plan at `docs/diagnostics/brand-field-audit-2026-05-19.md`)
   - `a9a9b2a` — `feat(products): display-layer brand normalization via BRAND_DISPLAY_MAP`
+  - `d1ae6fd` — `docs: update brand map count to 26, add §10 change log entry`
   - 26-entry map: 9 misspellings → canonical Brand Kit names (V&B→Villeroy & Boch, CALIFIORNIA→California Faucets, etc.), 2 retailer hybrids → real manufacturer (Build / Kingston Brass→Kingston Brass, Build / Delta→Delta), 15 junk/retailer/accounting strings → blank (Amazon, Build, Lamp Plus, Lamps Plus, All, service, MISC, etc.). The 2 entries beyond the original 24-string plan are "Lamp Plus" and "Lamps Plus" — retailer spelling variants discovered during implementation, same blanking category.
   - Empty brands excluded from `brandCounts` and `ProductFilter` facet list. All render sites guarded: ProductCard, ui/product-card, PDP meta+OG+JSON-LD, cart-drawer, product-drawer, product-detail-panel, search-palette. JSON-LD `brand` property omitted entirely for blank-brand products.
   - **Sleeper win:** brand page exact-string-match join (`product.brand === brandKit.name`) now works for previously-mismatched products — Villeroy & Boch page went from 7 to 24 products, Kingston Brass from 142 to 164.
@@ -834,6 +778,13 @@ git commit -m "docs(plan): consolidate to MASTER-PLAN.md, archive superseded pro
   - **Cart save/share (Item 1):** Investigated three candidate root causes per §6. Finding: the original RF-6 bug (Resend SDK v6 error silently discarded) was already fixed on main via `93294ba`. Deployed staging endpoint confirmed working — both allowlisted and non-allowlisted emails return 200 OK. Held branch `fix/cart-share-email-error-handling` (§4B/§8) NOT needed for the fix — it adds enhancements (wildcard allowlist + `info@` default sender) that remain on Joshua-decision hold. Added redirect logging to `app/api/cart/share/route.ts` for observability parity with `app/lib/email.ts`. Sacred Surface #1 (Cart) behavior unchanged. `STAGING_EMAIL_REDIRECT` confirmed intact start-to-end.
   - **Notifications template-literal leak (Item 2):** Root cause: `applyTemplateVars` returned raw `{token}` when vars were missing. R-14-issue template uses `{issue_type}`, `{issue_summary}`, `{recommended_action}` — none of which were populated by any call site. Fix: (1) `applyTemplateVars` now strips unresolved tokens (returns `""` instead of raw `{token}`) — prevents ALL template-literal leaks across every template. (2) T-14 dispatch in `stale-deal-sweep/route.ts` now passes the three vars with meaningful content (issue type, summary, recommended action). (3) Test-deal filter added to `dispatchAlertsForTransition` — skips all alert sends when deal name or contact contains "test" (case-insensitive). Prevents inbox pollution during staging dev work.
   - §0 compliance: all four conditions met. Sacred Surface #1 (Cart) verified working — no behavior change. Sacred Surface #5 (Email infra) — `app/lib/email.ts` NOT modified. `STAGING_EMAIL_REDIRECT` intact. No in-motion process (§0.4) disrupted. Build passes. Lint clean on changed files.
+- **2026-05-23 (Day 5 SHIPPED)** — Discount Code build + search-palette stale-results fix.
+  - `90118c2` — `feat(checkout): discount code build + search palette stale-results fix (Day 5)` — Discount Code functionality wired (the field renamed Day 3 via `fix/cart-discount-code-label` now validates through `/api/checkout/discount-validate`); search-palette stale-results bug fixed.
+  - `076a1b1` — `docs(master-plan): mark Week 1 Day 5 DONE`.
+  - §0 compliance: all four conditions met. Sacred Surface #1 (Cart) + #7 (Search palette) — form/behavior verified. Discount Code = promo + F&F codes (RF-4 superseded; not a trade identifier).
+- **2026-05-22 (Day 4 SHIPPED)** — Trade Program Phase 1 — rendering pull.
+  - `cae07f1` — `feat(trade): pull trade-price rendering — Phase 1 (Day 4)` — Sacred Surface #3 partial reversal Phase 1: customer-facing trade-price rendering + auto-charge path pulled; trade customers now see list prices on PDP/cart/checkout (engine + data retained). Phase 2 (workflow build — "Submit Order for Review") is Week 2. (The Discount Code *label* rename shipped Day 3 via `fix/cart-discount-code-label`; the Discount Code *build* shipped Day 5 — above.)
+  - §0 compliance: all four conditions met. Sacred Surface #3 reversal authorized in §1 (2026-05-19). Engine untouched; only customer-facing rendering pulled.
 - **2026-05-21 (Day 3 SHIPPED)** — PDP cleanup propagation + branch triage + Resend verified. Three sub-sessions.
   - **PDP cleanup pass (Item 1):** Removed SKU visual display from PDP (JSON-LD sku/mpn still populated from data), deleted "PRICES IVA INCLUDED" priceNote from PDP + product-drawer, removed per-PDP EN/ES description language picker, replaced all "Request a Quote" CTAs with "Add to Cart" across PDP, AddToCartButton, product-drawer, project-list-bar, and both brand page routes. Grep-verified: zero "Request a Quote" or "Solicitar Cotización" CTA references remain. Brand pages: "Request a Quote" → "Contact Us"/"Contáctanos". Product-drawer: "Quote on request" → "Price on request"/"Precio bajo consulta".
   - **Full Catalog section delete (Item 2):** Deleted ~90-line "Beyond our selection" block from `app/[locale]/brands/[slug]/page.tsx` (hero stats + category chips + signature grid + "Open catalog" CTA). Brand+category page confirmed never had this section (MASTER-PLAN line reference was incorrect).
@@ -841,13 +792,8 @@ git commit -m "docs(plan): consolidate to MASTER-PLAN.md, archive superseded pro
   - **Customer sign-in (Item 4):** `GOOGLE_CLIENT_ID_CUSTOMER` already set on Netlify. `GOOGLE_CLIENT_SECRET_CUSTOMER` MISSING — Joshua must retrieve from GCP Console (`counter-portal-493716` project, OAuth client `374048983912-ss013d...`). Code side complete.
   - **Resend P1.1 (Item 5):** Verified complete. `RESEND_FROM_TRANSACTIONAL=onboarding@resend.dev` across all Netlify contexts. `STAGING_EMAIL_REDIRECT` limits delivery to `admin@` + `roger@countercultures.com.mx`. P1.1 DONE.
   - §0 compliance: all four conditions met. Sacred Surface #2 (PDP) form-change only — Add to Cart behavior unchanged, JSON-LD preserved. Sacred Surface #1 (cart) form-change only — "Trade code" label → "Discount Code". TypeScript type check passes clean after all merges.
-- **2026-05-20 (Day 2 SHIPPED)** — PDP template consolidation. Single session, single commit.
-  - `cfdc60b` — `feat(pdp): consolidate to single canonical PDP template (Day 2)` — deleted /shop/quote/ route (6 files, ~1,061 lines), removed toQuoteProduct + searchQuoteCatalog + getQuoteCatalogBySlug from products-full.ts, removed orphaned quote functions from sheets.ts, renamed getQuoteCatalogBrands → getCatalogBrands, added 301 redirects for /shop/quote/* → /shop/catalog, added PDP contract header comment to canonical template, appended product-render surface inventory + PDP contract to data-sources-of-truth.md.
-  - Product-render audit found 4 one-off renderings: catalog-view.tsx, product-drawer.tsx, catalog-search.tsx (dashboard), product-detail-panel.tsx (dashboard). Documented for Day 3 follow-up (≥3 threshold = don't refactor in this session).
-  - §0 compliance: all four conditions met. Sacred Surface #2 behavior unchanged (form only — deprecated template removed, canonical template preserved). Smoke loop: cart ✓ PDP ✓ cmd-K ✓ checkout ✓ login ✓ redirect ✓.
-  - Tangle 1/Q4 (sidecar price on quote catalog) self-resolved as predicted — the only reader of sidecar `price` was `toQuoteProduct()`, now deleted.
 - **2026-05-20 (Envira investigation — null finding)** — Joshua's hypothesis that "Envira" might be a brand in Odoo. Direct Odoo JSON-RPC query (read-only) + Sheets API queries across every relevant tab confirmed: **"envira" does not exist in any reachable data source.** Coverage: Odoo brand models (don't exist) + `res.partner` (0) + `product.template` 354,449 records (0) + Brand Kit Sheet 168 rows (0) + CRM Products/Products_Odoo/Products_Quote/Product_Descriptions/Brand_NOM_Status/Brand_Lead_Times tabs (0) + CC_Products_Full 354,449 rows (0) + sidecar `product-content.json` 1.1 MB (0) + `app/` and `docs/` source (0). Total ~362K records searched. Day 3 Item 3 (Rodger Envira data cleanup) ⛔ SKIPPED. Reopen only with sample URL or corrected spelling. Investigation scripts archived in outputs.
-- **2026-05-20 (Day 2 SHIPPED — PDP template consolidation)** — Second execution session. Deprecated `/shop/quote/` template removed (6 route files + 1 API route deleted), `toQuoteProduct()` removed, canonical PDP at `app/[locale]/shop/[category]/p/[slug]/page.tsx` locked with header comment + contract documented in `docs/data-sources-of-truth.md`. Net diff: **+83 / −1,061 lines** (978 net deleted). Smoke loop clean on all 6 Sacred Surface steps. 301 redirect verified (`/en/shop/quote/p-12345 → /en/shop/catalog`).
+- **2026-05-20 (Day 2 SHIPPED — PDP template consolidation)** — Deprecated `/shop/quote/` template removed (6 route files + 1 API route deleted), `toQuoteProduct()` removed, canonical PDP at `app/[locale]/shop/[category]/p/[slug]/page.tsx` locked with header comment + contract documented in `docs/data-sources-of-truth.md`. Net diff: **+83 / −1,061 lines** (978 net deleted). Smoke loop clean on all 6 Sacred Surface steps. 301 redirect verified (`/en/shop/quote/p-12345 → /en/shop/catalog`).
   - `cfdc60b` — `feat(pdp): consolidate to single canonical PDP template (Day 2)`
   - `35b40f8` — `docs(master-plan): mark Week 1 Day 2 PDP consolidation DONE`
   - **Q4 (sidecar-price-on-quote-catalog) self-resolved** as predicted — `toQuoteProduct()` is gone.
