@@ -411,23 +411,17 @@ PDP cleanup propagated via canonical template. Branch triage executed per §4B. 
 |---|---|---|
 | **Refactor 4 one-off product renderings** to use shared components from `app/components/pdp/*` or `app/components/products/*`. Surfaces: catalog-view, product-drawer, catalog-search, product-detail-panel. Inventory documented in `docs/data-sources-of-truth.md` per Day 2 audit. | 2–3 hrs | **NEW (v3.1).** Slotted into Day 5 visible-bug bash, or pulled into Day 6 polish if Day 5 fills with bug work. Non-customer-visible cleanup — safe to slip. |
 
-#### Day 4 — Thu · Trade Program Phase 1 (rendering pull) + Discount Code field
+#### Day 4 — Thu · ✅ COMPLETE 2026-05-22 (Trade Phase 1 + Discount Code)
 
-| Item | Effort | Notes |
-|---|---|---|
-| ✅ **Trade Program Phase 1 — pull rendering** — feature-flag trade-price display OFF on PDP + cart + checkout total. All users (including trade customers) see list prices. Trade customers still get cart and Add-to-Cart; "Pay Now" button temporarily replaced with disabled "Submit Order for Review — Coming Soon" placeholder until Phase 2 lands (Week 2). | 1 day | **DONE 2026-05-19.** Reverses Sacred Surface #3 rendering layer — §3 authorization noted. Feature flag: `NEXT_PUBLIC_TRADE_PRICE_DISPLAY` (default off). Engine (`trade-pricing.ts`) intact. |
-| ✅ **Discount Code field at checkout** — rename "Trade code" → "Discount Code" (per merged `fix/cart-discount-code-label` branch). Field's new purpose: promo + F&F codes. Builds on existing `Promo_Codes` sheet-tab scaffold + trade-program welcome-code writer. Add checkout-side UI + validation endpoint + Stripe re-quote. | 4–6 hrs | **DONE 2026-05-19.** Validation endpoint at `/api/checkout/discount-validate`. Server re-validates in buy route; per-line Stripe distribution with drift reconciliation. Activity_Log redemption logging. Bilingual UI (EN/ES). |
+Both Day 4 items shipped. Details in §10 Change log.
 
 #### Day 5 — Fri · Visible-bug bash + final cleanup
 
 | Item | Effort | Notes |
 |---|---|---|
-| ✅ **Search palette stale-results investigation + fix** | 4 hrs | **DONE 2026-05-19.** Root cause: `productResults` React state not cleared on query change (stale results persisted across 250ms debounce). Fix: clear on new query + reset on palette re-open. `cachedFetch` TTL was NOT the cause (URL-keyed). `search-index.ts` untouched. |
-| ✅ **Cart save/share investigation + fix** | 4 hrs | **DONE 2026-05-24.** Root cause was candidate (c) — endpoint bug: Resend SDK v6 error silently discarded. Already fixed on main via `93294ba`. Deployed staging endpoint confirmed working (200 OK from Resend). Held branch `fix/cart-share-email-error-handling` NOT needed for fix (enhancements only — remains on §8 hold). Added redirect logging to cart-share route for observability parity. |
-| ✅ **Notifications template-literal leak** (`{issue_type}` literal rendering) + test-deal filter | 4 hrs | **DONE 2026-05-24.** `applyTemplateVars` now strips unresolved tokens (empty string instead of raw `{token}`). T-14 dispatch in stale-deal-sweep now passes `issue_type`, `issue_summary`, `recommended_action` vars. Test-deal filter added to `dispatchAlertsForTransition` — skips alerts when deal name or contact contains "test". |
 | **Drive dashboard page fix** ("Failed to load") | 4 hrs | *(was B6)* P1.15. |
-| **Doc archive sweep** — move §5A files, delete §5B duplicates, retire §5C deprecated | 30 min | *(was A4)* See §9 script. |
-| **Worktree prune** — drop the ~42 merged worktrees | 30 min | *(was A5)* Recovers ~15 GB. |
+| ✅ **Doc archive sweep** — move §5A files, delete §5B duplicates, retire §5C deprecated | 30 min | **DONE 2026-05-25 (Day 7).** 20 files archived, 5 duplicates deleted, 1 deprecated retired, 15 superpowers specs archived. |
+| ✅ **Worktree prune** — drop the ~42 merged worktrees | 30 min | **DONE 2026-05-25 (Day 7).** 40 merged worktrees removed (54→14), 78 merged branches deleted. ~15 GB recovered. |
 
 #### Spans Week 1 (parallel background work)
 
@@ -818,6 +812,12 @@ git commit -m "docs(plan): consolidate to MASTER-PLAN.md, archive superseded pro
 
 ## 10. Change log
 
+- **2026-05-25 (Day 7 SHIPPED — Week 1 COMPLETE)** — Project email+WhatsApp share + doc archive + worktree/branch prune + lint fixes.
+  - **Project Share (Item 1):** New `ShareProjectButton` component on project detail page with two tabs — Email (recipient, sender name, optional note → Resend branded HTML via `/api/projects/[id]/share`) and WhatsApp (`wa.me/?text=` pre-filled summary, no phone number — sender picks recipient). Reuses cart-share Resend pattern exactly (93294ba {data,error} destructure, STAGING_EMAIL_REDIRECT, computeIva, branded HTML with hero image + item table + IVA breakdown). Bilingual EN/ES via T translation object. All design tokens (brand-copper, dash-border, vendor-whatsapp, etc.) — no raw hex.
+  - **Doc archive sweep (Item 2a):** 20 files moved from root to `docs/archive/prompts/`, 15 superpowers specs to `docs/archive/superpowers/`, 5 duplicates deleted (2 git-tracked + 3 gitignored docx), 1 deprecated fix file retired. 3 files HELD at root per §9 (PROMPT-MASTER, product-category-audit, pedimento-customs-module). `CC-Image-Library 2/` flagged for Joshua review (not a pure duplicate).
+  - **Worktree + branch prune (Item 2b):** 40 merged worktrees removed (54→14 remaining). 78 merged branches deleted. 2 expected holdbacks: `feat/ap-tab-and-doc-viewer` (remote tracking mismatch), `pedimento-prompt` (locked to worktree).
+  - **Lint fixes (Item 3):** `text-red-600` → `text-dash-danger` in `add-to-cart-button.tsx` and `save-cart-button.tsx`. Pre-existing errors, now clean.
+  - §0 compliance: all four conditions met. Sacred Surface #1 (Cart) NOT modified. Sacred Surface #5 (Email infra) — `app/lib/email.ts` NOT modified; new project-share endpoint is a standalone copy of the cart-share pattern. `STAGING_EMAIL_REDIRECT` intact start-to-end. No in-motion process (§0.4) disrupted. TypeScript check passes clean. Lint clean on all changed files.
 - **2026-05-24 (Day 6 SHIPPED)** — Cart save/share investigation + Notifications template-literal fix + test-deal filter.
   - **Cart save/share (Item 1):** Investigated three candidate root causes per §6. Finding: the original RF-6 bug (Resend SDK v6 error silently discarded) was already fixed on main via `93294ba`. Deployed staging endpoint confirmed working — both allowlisted and non-allowlisted emails return 200 OK. Held branch `fix/cart-share-email-error-handling` (§4B/§8) NOT needed for the fix — it adds enhancements (wildcard allowlist + `info@` default sender) that remain on Joshua-decision hold. Added redirect logging to `app/api/cart/share/route.ts` for observability parity with `app/lib/email.ts`. Sacred Surface #1 (Cart) behavior unchanged. `STAGING_EMAIL_REDIRECT` confirmed intact start-to-end.
   - **Notifications template-literal leak (Item 2):** Root cause: `applyTemplateVars` returned raw `{token}` when vars were missing. R-14-issue template uses `{issue_type}`, `{issue_summary}`, `{recommended_action}` — none of which were populated by any call site. Fix: (1) `applyTemplateVars` now strips unresolved tokens (returns `""` instead of raw `{token}`) — prevents ALL template-literal leaks across every template. (2) T-14 dispatch in `stale-deal-sweep/route.ts` now passes the three vars with meaningful content (issue type, summary, recommended action). (3) Test-deal filter added to `dispatchAlertsForTransition` — skips all alert sends when deal name or contact contains "test" (case-insensitive). Prevents inbox pollution during staging dev work.
