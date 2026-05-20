@@ -44,7 +44,7 @@ const ProductFilter = ({
     const priceMax = Math.max(...products.map((p) => p.price), 100000);
 
     products.forEach((p) => {
-      brands.add(p.brand);
+      if (p.brand) brands.add(p.brand);
       categories.add(p.category);
       availability.add(p.availability);
       p.finishes.forEach((f) => colors.add(f));

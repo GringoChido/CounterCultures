@@ -105,6 +105,7 @@ For background and evidence behind any fix, see `docs/baseline/` (the read-mostl
 | P2.14 | **WhatsApp Business setup** — currently dry-run mode | [`docs/fixes/p2-whatsapp-setup.md`](docs/fixes/p2-whatsapp-setup.md) | 🔴 PENDING | 1 day |
 | P2.15 | **Race conditions on Sheets writes** — add optimistic locking pattern | [`docs/fixes/p2-sheets-race-conditions.md`](docs/fixes/p2-sheets-race-conditions.md) | 🔴 PENDING | 1 day |
 | P2.16 | **PDP link 404s** — ProductFull missing slug → every catalog card links to `/p/undefined` | [`docs/fixes/p2-pdp-link-404s.md`](docs/fixes/p2-pdp-link-404s.md) | 🟢 DONE 2026-05-14 | 1 hr |
+| P2.17 | **Odoo categ_id brand-category cleanup** — Reassign ~310 products from junk/misspelled Odoo categories to canonical brand categories. BLOCKED: Gate 2 showed expense accounts differ between junk (501.01.01) and canonical (601.10.01) categories — requires Antonina review before any categ_id writes. Display-layer normalization (BRAND_DISPLAY_MAP) shipped 2026-05-19 as interim fix. See [`docs/diagnostics/brand-field-audit-2026-05-19.md`](docs/diagnostics/brand-field-audit-2026-05-19.md) §10-12 | — | 🔴 BLOCKED (finance review) | 4 hrs |
 
 ---
 

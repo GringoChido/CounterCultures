@@ -58,9 +58,11 @@ const ProductCard = ({ product, locale = "en" }: ProductCardProps) => {
       </div>
 
       <div className="mt-4 space-y-2">
-        <p className="font-body font-semibold text-xs text-dash-text-secondary tracking-wide uppercase">
-          {product.brand}
-        </p>
+        {product.brand && (
+          <p className="font-body font-semibold text-xs text-dash-text-secondary tracking-wide uppercase">
+            {product.brand}
+          </p>
+        )}
 
         <h3 className="font-body text-sm font-medium text-brand-charcoal group-hover:text-brand-terracotta transition-colors duration-300 leading-snug line-clamp-2 min-h-[2.5rem]">
           {product.nameEn}

@@ -427,7 +427,7 @@ const ProductDetailPanel = ({
         <header className="flex items-start justify-between gap-3 px-6 py-4 border-b border-dash-border">
           <div className="min-w-0">
             <div className="text-[11px] uppercase tracking-wider text-dash-text-secondary mb-0.5">
-              {product.brand || "—"} &middot; {product.category}
+              {product.brand ? `${product.brand} · ${product.category}` : product.category}
             </div>
             <h3 className="text-lg font-semibold text-dash-text leading-tight">
               {product.name || product.sku}

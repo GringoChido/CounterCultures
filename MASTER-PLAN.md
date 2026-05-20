@@ -728,6 +728,10 @@ These are in the `Counter-Cultures-Halfway-Checkin-Roger.docx` deliverable. Don'
 
 ✅ All resolved. See "Resolved since v2" below for the decisions.
 
+### Deferred — requires finance review
+
+12. **Odoo categ_id brand-category cleanup.** The `brand` column in CC_Products_Full is populated from `product.template.categ_id`, a many2one relational field — there is no dedicated brand field in Odoo. Reassigning categ_id is finance-affecting: expense accounts differ between junk categories (501.01.01 Costo de venta) and canonical brand categories (601.10.01 Otros gastos generales). Display-layer normalization (`BRAND_DISPLAY_MAP` in `products-full.ts`) shipped 2026-05-19 as a stopgap. The permanent fix (reassigning ~180 products across 13 junk categories to their correct brand categories in Odoo) requires Antonina's review of the accounting-property implications before any writes. **BLOCKED on Antonina review.**
+
 ### Resolved since v2 — do not re-litigate
 
 - ~~Brand-partner outreach email template~~ → **DROPPED 2026-05-19.** Decision: scrape brand sites directly. Roger's bandwidth stays free; saves 1–2 weeks of waiting on replies.

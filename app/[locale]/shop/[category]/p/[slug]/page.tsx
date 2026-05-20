@@ -93,7 +93,9 @@ export const generateMetadata = async ({
       : undefined;
 
   return {
-    title: `${title} — ${product.brand} | Counter Cultures`,
+    title: product.brand
+      ? `${title} — ${product.brand} | Counter Cultures`
+      : `${title} | Counter Cultures`,
     description: desc.slice(0, 160),
     robots: { index: true, follow: true },
     alternates: {
@@ -105,7 +107,7 @@ export const generateMetadata = async ({
       },
     },
     openGraph: {
-      title: `${title} — ${product.brand}`,
+      title: product.brand ? `${title} — ${product.brand}` : title,
       description: desc.slice(0, 160),
       url: canonical,
       siteName: "Counter Cultures",
@@ -201,7 +203,7 @@ const PDPPage = async ({ params }: PDPProps) => {
     description: resolvedDescription.primary,
     sku: product.sku,
     mpn: product.sku,
-    brand: { "@type": "Brand", name: product.brand },
+    ...(product.brand && { brand: { "@type": "Brand", name: product.brand } }),
     ...(images.length > 0 && {
       image: images.map((img) =>
         img.startsWith("http") ? img : `${BASE_URL}${img}`

@@ -180,10 +180,10 @@ export const CartDrawer = ({ locale = "en" }: { locale?: "en" | "es" }) => {
                           {item.name}
                         </p>
                         <div className="mt-0.5 flex items-center gap-1.5 font-body text-xs text-brand-stone">
-                          <span className="truncate">{item.brand}</span>
+                          {item.brand && <span className="truncate">{item.brand}</span>}
                           {item.selectedFinish && (
                             <>
-                              <span className="text-brand-stone/40">·</span>
+                              {item.brand && <span className="text-brand-stone/40">·</span>}
                               <FinishSwatch finish={item.selectedFinish} />
                               <span className="truncate">
                                 {item.selectedFinish}

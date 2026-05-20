@@ -30,6 +30,44 @@ const SHEET_ID = process.env.GOOGLE_SHEETS_ID_PRODUCTS_FULL ?? "";
 const TAB = "Products";
 const TTL_MS = 30 * 60 * 1000;
 
+// Display-layer brand normalization. The Odoo categ_id field (which populates
+// the sheet's "brand" column) contains misspellings, retailer names, and
+// accounting categories. This map corrects display names at read time without
+// touching Odoo. Permanent cleanup is a deferred finance-reviewed scope
+// (Gate 2: categ_id carries accounting properties that differ between categories).
+const BRAND_DISPLAY_MAP: Record<string, string> = {
+  // Misspellings / abbreviations → canonical Brand Kit name
+  "V&B": "Villeroy & Boch",
+  "SVB": "Sun Valley Bronze",
+  "CALIFIORNIA": "California Faucets",
+  "RUBATI": "Ruvati",
+  "NAMEEK´S": "Nameeks",  // acute accent variant
+  "Watermarkfixtures": "Watermark",
+  "Inifinity Drains": "Infinity Drain",
+  "HOUSE ROHL": "Rohl",
+  "Original Misson Tile": "Original Mission Tile",
+  // Retailer hybrids → extract real manufacturer
+  "Build / Kingston Brass": "Kingston Brass",
+  "Build / Delta": "Delta",
+  // Retailers / marketplaces → blank (not a manufacturer)
+  "Amazon": "",
+  "Build": "",
+  "AJ MADISSON": "",
+  "quality bath": "",
+  "Lamp Plus": "",
+  "Lamps Plus": "",
+  // Accounting / non-product categories → blank
+  "All": "",
+  "All / Expenses": "",
+  "All / Saleable / Booking Fees": "",
+  "Operating expenses": "",
+  "service": "",
+  "MISC": "",
+  "Commercial": "",
+  "Personal": "",
+  "IMP-02": "",
+};
+
 // Local product image inventory. ~4.2k JPGs in public/products/odoo/<id>.jpg
 // where <id> matches the Odoo product id used as ProductFull.id. We import a
 // pre-generated JSON manifest instead of readdirSync'ing the directory — that
@@ -242,7 +280,8 @@ const load = async (): Promise<Cache> => {
   for (const row of data) {
     const name = (row[iName] ?? "").toString();
     const sku = (row[iSku] ?? "").toString();
-    const brand = (row[iBrand] ?? "").toString();
+    const rawBrand = (row[iBrand] ?? "").toString();
+    const brand = BRAND_DISPLAY_MAP[rawBrand] ?? rawBrand;
     const category = normalizeCategory((row[iCat] ?? "").toString());
     const id = (row[iId] ?? "").toString();
     const stockQty = stockMap.get(id) ?? 0;
@@ -289,7 +328,7 @@ const load = async (): Promise<Cache> => {
       _brand: normalize(brand),
     };
     products.push(p);
-    brandAgg.set(brand, (brandAgg.get(brand) ?? 0) + 1);
+    if (brand) brandAgg.set(brand, (brandAgg.get(brand) ?? 0) + 1);
     categoryCounts[category]++;
   }
 

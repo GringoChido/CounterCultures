@@ -296,4 +296,181 @@ Full JSON output from the audit script is at `/tmp/brand-audit-output.json` (eph
 
 ---
 
-*Audit performed by Claude Code. No product data, code, or Odoo records were modified.*
+## 10. Phase B — Surgical investigation (2026-05-19)
+
+### Discovery: "brand" = Odoo `categ_id`
+
+The sheet's "brand" column is populated from `product.template.categ_id`, a **many2one relational field** pointing to `product.category`. There is no dedicated brand field in Odoo. When the sheet says brand = "Amazon," it means the product's `categ_id` points to a category named "Amazon."
+
+This means "fixing the brand" = reassigning `categ_id` in Odoo. That is a write to a relational field that carries downstream implications.
+
+### Gate 1 — Category routing coupling: CLEAR
+
+The site's browsing category (bathroom / kitchen / hardware) comes from a **separate** column in CC_Products_Full (column index 4), mapped by `normalizeCategory()` in `products-full.ts:186-189`. It does NOT read from `categ_id`.
+
+**Verdict:** Changing `categ_id` in Odoo will NOT affect site URLs, catalog filters, or browsing categories.
+
+### Gate 2 — Accounting/valuation coupling: FAILED
+
+Every `product.category` record carries full accounting configuration:
+
+- `property_account_income_categ_id` (income account)
+- `property_account_expense_categ_id` (expense account)
+- `property_stock_account_input_categ_id` / `_output_categ_id` (stock valuation)
+- `property_cost_method` (costing method)
+- `property_valuation` (valuation type)
+- `removal_strategy` (inventory removal)
+
+**Critical difference:** Some junk categories use expense account **501.01.01 (Costo de venta / COGS)** while canonical brand categories use **601.10.01 (Otros gastos generales)**. Reassigning `categ_id` would change which expense account applies to affected products.
+
+Per `CLAUDE-FINANCE-RULES.md`, this is a finance-affecting change. It cannot proceed without Antonina's review.
+
+**Verdict:** Odoo `categ_id` reassignment is blocked until accounting implications are cleared with finance.
+
+### Inference pass results
+
+Sampled all ~314 products across 15 junk categories. Only **9 products** had manufacturer names inferable from their product name or SKU:
+
+| Source category | Product ID | Inferred brand |
+|---|---|---|
+| Amazon | 2046800 | Kohler |
+| Amazon | 2047946 | Delta |
+| Build | 2047517 | Kingston Brass |
+| Build | 2047564 | Moen |
+| Build | 2047960 | Kohler |
+| Build | 2048108 | Blanco |
+| All | 2048671 | Sun Valley Bronze |
+| All | 2048769 | Emtek |
+| All | 2048923 | Delta |
+
+The remaining ~305 products are either (a) genuinely unattributable hardware parts, (b) accounting/service line items, or (c) CC artisan products.
+
+### Canonical target category IDs
+
+| Target brand | Odoo category ID | Match type |
+|---|---|---|
+| California Faucets | 5 | exact |
+| Villeroy & Boch | 45 | exact |
+| Sun Valley Bronze | 51 | exact |
+| Infinity Drain | 65 | exact |
+| Ruvati | 97 | case match ("RUVATI") |
+| Rohl | 55 | exact |
+| Watermark | 115 | exact |
+| Kingston Brass | 32 | exact |
+| Delta | 37 | exact |
+| Kohler | 30 | exact |
+| Emtek | 6 | exact |
+| Baldwin | 7 | exact |
+| Brizo | 29 | exact |
+| **Nameeks** | — | **NOT FOUND** |
+| **Original Mission Tile** | — | **NOT FOUND** |
+
+### Misspelling source → target mapping
+
+| Misspelled category (ID) | Canonical target (ID) |
+|---|---|
+| V&B (27) | Villeroy & Boch (45) |
+| SVB (16) | Sun Valley Bronze (51) |
+| CALIFIORNIA (95) | California Faucets (5) |
+| RUBATI (159) | Ruvati (97) |
+| NAMEEK'S (144) | Nameeks (—) |
+| Watermarkfixtures (177) | Watermark (115) |
+| Inifinity Drains (135) | Infinity Drain (65) |
+| HOUSE ROHL (167) | Rohl (55) |
+| Original Misson Tile (171) | Original Mission Tile (—) |
+
+---
+
+## 11. Recommendation: Option B — Display-layer normalization map
+
+**Gate 2 failed.** Odoo `categ_id` reassignment changes expense accounts and is blocked until finance reviews. We recommend **Option B: a display-layer normalization map** in `products-full.ts` that translates junk category names to correct brand display names at read time, without touching Odoo.
+
+### How it works
+
+A `BRAND_DISPLAY_MAP` in `products-full.ts` intercepts the raw brand string at line 245 and normalizes it before the `ProductFull` object is constructed. Odoo data stays untouched. The map covers three cases:
+
+**Case 1 — Misspelling/abbreviation → canonical brand name:**
+
+```
+"V&B"                → "Villeroy & Boch"
+"SVB"                → "Sun Valley Bronze"
+"CALIFIORNIA"        → "California Faucets"
+"RUBATI"             → "Ruvati"
+"NAMEEK´S"           → "Nameeks"
+"Watermarkfixtures"  → "Watermark"
+"Inifinity Drains"   → "Infinity Drain"
+"HOUSE ROHL"         → "Rohl"
+"Original Misson Tile" → "Original Mission Tile"
+```
+
+**Case 2 — Retailer hybrid → extract real brand:**
+
+```
+"Build / Kingston Brass" → "Kingston Brass"
+"Build / Delta"          → "Delta"
+```
+
+**Case 3 — Junk/retailer/accounting → blank (empty string):**
+
+```
+"Amazon"                      → ""
+"Build"                       → ""
+"All"                         → ""
+"All / Expenses"              → ""
+"All / Saleable / Booking Fees" → ""
+"Operating expenses"          → ""
+"service"                     → ""
+"MISC"                        → ""
+"Commercial"                  → ""
+"Personal"                    → ""
+"IMP-02"                      → ""
+"AJ MADISSON"                 → ""
+"quality bath"                → ""
+"Lamp Plus"                   → ""
+"Lamps Plus"                  → ""
+```
+
+### What this fixes
+
+- 40 products with misspelled brands now display their correct canonical brand name.
+- 27 products with "Build / X" hybrids now display the real manufacturer.
+- ~147 products with retailer/accounting/junk brands now display a blank brand instead of a misleading one.
+- PDP is already guarded against blank brands. ProductCard needs a guard added (shows empty line today).
+- No Odoo data modified. No accounting implications. No finance review required.
+- Fully reversible — delete the map and you're back to raw Odoo values.
+
+### What this does NOT fix
+
+- The underlying Odoo data quality (products still in wrong categories).
+- The 9 inferable-but-unknown products (Kohler in Amazon, Moen in Build, etc.) — these would need manual product-by-product review with Roger.
+- CC artisan lines (Counter/Santiago, etc.) — separate branding decision, out of scope.
+- Legitimate manufacturers not in Brand Kit (~1,090 products) — separate Brand Kit expansion task.
+
+### Future: Odoo cleanup (Phase C, deferred)
+
+Once Antonina reviews the accounting implications, a future session can:
+1. Align expense accounts between junk and canonical categories (or confirm the difference is intentional).
+2. Reassign `categ_id` for the 9 inferable products to their correct manufacturer category.
+3. Mark pure accounting/service items as `sale_ok=false` to remove them from the product catalog entirely.
+
+This is a separate scope requiring finance sign-off per `CLAUDE-FINANCE-RULES.md`.
+
+---
+
+## 12. Execution plan (awaiting approval)
+
+**Scope:** Add `BRAND_DISPLAY_MAP` to `products-full.ts`. One code change, one file.
+
+**Steps:**
+1. Add the normalization map (Record<string, string>) near the top of `products-full.ts`.
+2. Apply the map at line 245 where `brand` is read: `const brand = BRAND_DISPLAY_MAP[rawBrand] ?? rawBrand`.
+3. Add a blank-brand guard to `ProductCard` (match PDP's existing guard).
+4. Verify via dev server that affected products now display correctly.
+
+**Not in scope:** Odoo writes, Brand Kit changes, artisan-line decisions, sale_ok changes.
+
+**Awaiting Joshua's explicit "execute" before any code changes.**
+
+---
+
+*Phase B investigation performed by Claude Code. No product data, code, or Odoo records were modified.*

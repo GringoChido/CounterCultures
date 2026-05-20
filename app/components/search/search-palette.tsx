@@ -215,7 +215,7 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
       type: "product" as const,
       slug: p.id,
       name: p.name || p.sku,
-      subtitle: `${p.brand} · ${p.sku}`,
+      subtitle: [p.brand, p.sku].filter(Boolean).join(" · "),
 
       hrefSuffix: pdpPath({ slug: p.slug, name: p.name, sku: p.sku, category: p.category }),
       score: Math.max(0.5, 5 - idx * 0.6),

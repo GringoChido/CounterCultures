@@ -216,7 +216,7 @@ const ProductDrawer = ({
         <header className="px-6 py-5 border-b border-brand-stone/10 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="text-[10px] tracking-[0.2em] uppercase text-brand-copper font-body font-semibold">
-              {product.brand || "—"} &middot; {product.category}
+              {product.brand ? `${product.brand} · ${product.category}` : product.category}
             </div>
             <h3 className="mt-1 font-display text-2xl font-light tracking-wide text-brand-charcoal leading-tight">
               {product.name || product.sku}
