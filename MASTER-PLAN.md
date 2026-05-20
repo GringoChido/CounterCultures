@@ -416,13 +416,13 @@ PDP cleanup propagated via canonical template. Branch triage executed per §4B. 
 | Item | Effort | Notes |
 |---|---|---|
 | ✅ **Trade Program Phase 1 — pull rendering** — feature-flag trade-price display OFF on PDP + cart + checkout total. All users (including trade customers) see list prices. Trade customers still get cart and Add-to-Cart; "Pay Now" button temporarily replaced with disabled "Submit Order for Review — Coming Soon" placeholder until Phase 2 lands (Week 2). | 1 day | **DONE 2026-05-19.** Reverses Sacred Surface #3 rendering layer — §3 authorization noted. Feature flag: `NEXT_PUBLIC_TRADE_PRICE_DISPLAY` (default off). Engine (`trade-pricing.ts`) intact. |
-| **Discount Code field at checkout** — rename "Trade code" → "Discount Code" (per merged `fix/cart-discount-code-label` branch). Field's new purpose: promo + F&F codes. Builds on existing `Promo_Codes` sheet-tab scaffold + trade-program welcome-code writer. Add checkout-side UI + validation endpoint + Stripe re-quote. | 4–6 hrs | *(was B2)* P1.4. ⚠️ ENHANCE the existing scaffold (Promo_Codes is already a typed tab; trade-program route already writes to it). Do not restart. |
+| ✅ **Discount Code field at checkout** — rename "Trade code" → "Discount Code" (per merged `fix/cart-discount-code-label` branch). Field's new purpose: promo + F&F codes. Builds on existing `Promo_Codes` sheet-tab scaffold + trade-program welcome-code writer. Add checkout-side UI + validation endpoint + Stripe re-quote. | 4–6 hrs | **DONE 2026-05-19.** Validation endpoint at `/api/checkout/discount-validate`. Server re-validates in buy route; per-line Stripe distribution with drift reconciliation. Activity_Log redemption logging. Bilingual UI (EN/ES). |
 
 #### Day 5 — Fri · Visible-bug bash + final cleanup
 
 | Item | Effort | Notes |
 |---|---|---|
-| **Search palette stale-results investigation + fix** | 4 hrs | **NEW (v3.1).** Roger fix #2. Sacred Surface #7 bug. Investigate `productReqRef` coalescing + frontend state clearing. Capture before/after evidence per §0/C1. |
+| ✅ **Search palette stale-results investigation + fix** | 4 hrs | **DONE 2026-05-19.** Root cause: `productResults` React state not cleared on query change (stale results persisted across 250ms debounce). Fix: clear on new query + reset on palette re-open. `cachedFetch` TTL was NOT the cause (URL-keyed). `search-index.ts` untouched. |
 | **Cart save/share investigation + fix** | 4 hrs | **NEW (v3.1).** Roger fix #8. Sacred Surface #1 RF-6 broken. Check: Resend sandbox restriction, the unmerged `fix/cart-share-email-error-handling` branch in §4B, or actual endpoint bug. |
 | **Notifications template-literal leak** (`{issue_type}` literal rendering) + test-deal filter | 4 hrs | *(was B3)* P1.7. Bug at `app/lib/email-templates.ts:881-882`. |
 | **Drive dashboard page fix** ("Failed to load") | 4 hrs | *(was B6)* P1.15. |
