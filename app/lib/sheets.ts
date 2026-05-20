@@ -296,6 +296,30 @@ export const getProductsBySubcategory = async (
 
 // ── Lead Operations ───────────────────────────────────────────────────
 
+const SUBMIT_LEAD_COLUMNS = [
+  "id",
+  "name",
+  "email",
+  "phone",
+  "source",
+  "status",
+  "contact_type",
+  "interest",
+  "value",
+  "created_at",
+  "next_followup",
+  "last_contact_date",
+  "brand_slugs",
+  "notes",
+  "source_message_id",
+  "classifier_brands",
+  "classifier_skus",
+  "classifier_profession",
+  "classifier_confidence",
+  "classifier_run_at",
+  "hub_source",
+] as const;
+
 export const submitLead = async (lead: {
   name: string;
   email: string;
@@ -307,21 +331,32 @@ export const submitLead = async (lead: {
   const leadId = `LEAD-${Date.now()}`;
   const now = new Date().toISOString();
 
-  await appendSheetData("Leads!A:L", [
-    [
-      leadId,
-      lead.name,
-      lead.email,
-      lead.phone,
-      lead.source,
-      "new",
-      "", // assigned rep
-      "0",
-      now,
-      now,
-      lead.message,
-      lead.hubSource ?? "",
-    ],
+  const row: Record<(typeof SUBMIT_LEAD_COLUMNS)[number], string> = {
+    id: leadId,
+    name: lead.name,
+    email: lead.email,
+    phone: lead.phone,
+    source: lead.source,
+    status: "new",
+    contact_type: "",
+    interest: "",
+    value: "",
+    created_at: now,
+    next_followup: "",
+    last_contact_date: now,
+    brand_slugs: "",
+    notes: lead.message,
+    source_message_id: "",
+    classifier_brands: "",
+    classifier_skus: "",
+    classifier_profession: "",
+    classifier_confidence: "",
+    classifier_run_at: "",
+    hub_source: lead.hubSource ?? "",
+  };
+
+  await appendSheetData("Leads!A:U", [
+    SUBMIT_LEAD_COLUMNS.map((c) => row[c]),
   ]);
 };
 
