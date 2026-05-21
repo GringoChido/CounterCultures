@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { routing } from "@/app/i18n/routing";
-import { ChatWidgetLazy } from "@/app/components/ui/chat-widget-lazy";
+import { WhatsAppFloat } from "@/app/components/ui/whatsapp-float";
 import { SkipToMain } from "@/app/components/ui/skip-to-main";
 import { ProjectListGlobal } from "@/app/components/project-list-global";
 import "../globals.css";
@@ -287,7 +287,7 @@ const LocaleLayout = async ({ children, params }: LocaleLayoutProps) => {
         <SkipToMain />
         {children}
         <ProjectListGlobal />
-        <ChatWidgetLazy locale={locale} />
+        <WhatsAppFloat locale={locale} />
       </NextIntlClientProvider>
     </div>
   );
