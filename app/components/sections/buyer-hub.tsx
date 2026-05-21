@@ -22,6 +22,7 @@ interface BuyerHubProps {
 }
 
 const WA_NUMBER = SITE_CONFIG.showroom.whatsapp.replace(/\s+/g, "");
+const CONSULTATION_URL = process.env.NEXT_PUBLIC_CONSULTATION_BOOKING_URL ?? "";
 
 type TileKind = "locale" | "raw" | "external" | "pdf";
 
@@ -41,7 +42,7 @@ const tiles: {
       es: "Reúne piezas, solicita cotización",
     },
     cta: { en: "Get Started", es: "Comenzar" },
-    href: "/account/projects?src=hub_start_project",
+    href: "/account/projects/new?src=hub_start_project",
     kind: "raw",
   },
   {
@@ -130,6 +131,15 @@ const BuyerHub = ({ locale }: BuyerHubProps) => {
             const desc = tile.desc[locale];
             const ctaLabel = tile.cta[locale];
 
+            // Consultation tile: override to external booking URL when configured
+            const isConsultation = tile.icon === CalendarCheck;
+            const effectiveKind: TileKind =
+              isConsultation && CONSULTATION_URL ? "external" : tile.kind;
+            const effectiveHref =
+              isConsultation && CONSULTATION_URL
+                ? `${CONSULTATION_URL}${CONSULTATION_URL.includes("?") ? "&" : "?"}src=hub_consultation`
+                : tile.href;
+
             const inner = (
               <AnimatedSection delay={i * 0.05}>
                 <div className="flex flex-col items-start">
@@ -153,7 +163,7 @@ const BuyerHub = ({ locale }: BuyerHubProps) => {
             const cellClass =
               "group bg-white rounded-lg border border-brand-stone/20 p-6 md:p-7 hover:border-brand-copper/40 hover:shadow-sm transition-all cursor-pointer";
 
-            if (tile.kind === "pdf") {
+            if (effectiveKind === "pdf") {
               return (
                 <button
                   key={i}
@@ -166,11 +176,12 @@ const BuyerHub = ({ locale }: BuyerHubProps) => {
               );
             }
 
-            if (tile.kind === "external") {
+            if (effectiveKind === "external") {
+              const externalHref = tile.icon === MessageCircle ? waHref : effectiveHref;
               return (
                 <a
                   key={i}
-                  href={waHref}
+                  href={externalHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={cellClass}
@@ -180,16 +191,16 @@ const BuyerHub = ({ locale }: BuyerHubProps) => {
               );
             }
 
-            if (tile.kind === "raw") {
+            if (effectiveKind === "raw") {
               return (
-                <NextLink key={i} href={tile.href} className={cellClass}>
+                <NextLink key={i} href={effectiveHref} className={cellClass}>
                   {inner}
                 </NextLink>
               );
             }
 
             return (
-              <Link key={i} href={tile.href} className={cellClass}>
+              <Link key={i} href={effectiveHref} className={cellClass}>
                 {inner}
               </Link>
             );
