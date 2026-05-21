@@ -22,7 +22,7 @@ import {
   getOdooStockQuants,
   getOdooStockLocations,
 } from "./odoo-sheets";
-import { readFileSync, existsSync, readdirSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { gunzipSync } from "node:zlib";
 import { resolve } from "node:path";
 import type { Product } from "./types";
@@ -151,34 +151,18 @@ const loadFromSheets = async (): Promise<Cache> => {
   return buildCacheFromProducts(snapProducts, stockMap);
 };
 
-const SNAPSHOT_CANDIDATES = [
-  resolve(__dirname, "generated/products-snapshot.json.gz"),
-  resolve(/* turbopackIgnore: true */ process.cwd(), "app/lib/generated/products-snapshot.json.gz"),
-  resolve(/* turbopackIgnore: true */ process.cwd(), ".next/server/app/lib/generated/products-snapshot.json.gz"),
-];
-
-const findSnapshot = (): string | null => {
-  for (const p of SNAPSHOT_CANDIDATES) {
-    if (existsSync(p)) return p;
-  }
-  return null;
-};
+const SNAPSHOT_PATH = resolve(__dirname, "generated/products-snapshot.json.gz");
 
 const loadFromSnapshot = async (): Promise<Cache | null> => {
   try {
-    const snapshotPath = findSnapshot();
-    if (!snapshotPath) {
-      const genDir = resolve(__dirname, "generated");
-      const genContents = existsSync(genDir)
-        ? readdirSync(genDir).join(", ")
-        : "(dir missing)";
+    if (!existsSync(SNAPSHOT_PATH)) {
       console.warn(
-        `[products-full] Snapshot NOT found — tried: ${SNAPSHOT_CANDIDATES.join(", ")} — __dirname=${__dirname} cwd=${process.cwd()} generated/=[${genContents}] — falling back to Sheets`,
+        `[products-full] Snapshot NOT found at ${SNAPSHOT_PATH} — __dirname=${__dirname} — falling back to Sheets`,
       );
       return null;
     }
     const t0 = Date.now();
-    const gzipped = readFileSync(snapshotPath);
+    const gzipped = readFileSync(SNAPSHOT_PATH);
     const json = gunzipSync(gzipped).toString("utf-8");
     const snapProducts: SnapshotProduct[] = JSON.parse(json);
     if (!Array.isArray(snapProducts) || snapProducts.length === 0) {
@@ -188,7 +172,7 @@ const loadFromSnapshot = async (): Promise<Cache | null> => {
     const stockMap = await buildStockMap();
     const c = buildCacheFromProducts(snapProducts, stockMap);
     console.warn(
-      `[products-full] Hydrated ${c.products.length} products from snapshot (${snapshotPath}) in ${Date.now() - t0}ms`,
+      `[products-full] Hydrated ${c.products.length} products from snapshot in ${Date.now() - t0}ms`,
     );
     return c;
   } catch (err) {
