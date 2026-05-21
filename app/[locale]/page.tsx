@@ -14,6 +14,7 @@ import { HospitalityTeaser } from "@/app/components/sections/hospitality-teaser"
 import { Testimonial } from "@/app/components/sections/testimonial";
 import { ContactCTA } from "@/app/components/sections/contact-cta";
 import { NewsletterStrip } from "@/app/components/sections/newsletter-strip";
+import { BrandPartnerSection } from "@/app/components/sections/brand-partner-section";
 import { getFeaturedBrands } from "@/app/lib/featured-brands";
 
 const BASE_URL = "https://countercultures.mx";
@@ -227,6 +228,7 @@ const HomePage = async ({ params }: HomePageProps) => {
         <ShopByRoom locale={lang} />
         <FeaturedBrandsBand locale={lang} brands={featuredBrands} />
         <HospitalityTeaser locale={lang} />
+        <BrandPartnerSection locale={lang} />
         <HowItWorksBand
           locale={lang}
           eyebrow={{ en: "From inquiry to install", es: "De la consulta a la instalación" }}
