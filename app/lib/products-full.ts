@@ -18,74 +18,33 @@ import { sheets as sheetsApi } from "@googleapis/sheets";
 import { getGooglePrivateKey } from "./google-private-key";
 import { normalize, scoreNormalized } from "./search-utils";
 import { toSlug } from "./slug";
-import productImageManifest from "./product-image-manifest.json";
 import {
   getOdooStockQuants,
   getOdooStockLocations,
 } from "./odoo-sheets";
-import { getProductContent } from "./product-content";
+import { readFileSync, existsSync } from "node:fs";
+import { gunzipSync } from "node:zlib";
+import { resolve } from "node:path";
 import type { Product } from "./types";
+import {
+  mapRowsToProducts,
+  buildCacheFromProducts,
+  BRAND_DISPLAY_MAP,
+  type ProductFull,
+  type ProductCategory,
+  type BrandCount,
+  type IndexedProduct,
+  type SnapshotProduct,
+  type Cache,
+} from "./products-mapping";
+
+// Re-export types + constants so all existing consumers keep working.
+export { BRAND_DISPLAY_MAP };
+export type { ProductFull, ProductCategory, BrandCount };
 
 const SHEET_ID = process.env.GOOGLE_SHEETS_ID_PRODUCTS_FULL ?? "";
 const TAB = "Products";
 const TTL_MS = 30 * 60 * 1000;
-
-// Display-layer brand normalization (36 entries). The Odoo categ_id field
-// (which populates the sheet's "brand" column) contains misspellings, retailer
-// names, and accounting categories. This map corrects display names at read time
-// without touching Odoo. Permanent cleanup is a deferred finance-reviewed scope
-// (Gate 2: categ_id carries accounting properties that differ between categories).
-const BRAND_DISPLAY_MAP: Record<string, string> = {
-  // Misspellings / abbreviations → canonical Brand Kit name
-  "V&B": "Villeroy & Boch",
-  "SVB": "Sun Valley Bronze",
-  "CALIFIORNIA": "California Faucets",
-  "RUBATI": "Ruvati",
-  "NAMEEK´S": "Nameeks",  // acute accent variant
-  "Watermarkfixtures": "Watermark",
-  "Inifinity Drains": "Infinity Drain",
-  "HOUSE ROHL": "Rohl",
-  "Original Misson Tile": "Original Mission Tile",
-  // Retailer hybrids → extract real manufacturer
-  "Build / Kingston Brass": "Kingston Brass",
-  "Build / Delta": "Delta",
-  // Retailers / marketplaces → blank (not a manufacturer)
-  "Amazon": "",
-  "Build": "",
-  "AJ MADISSON": "",
-  "quality bath": "",
-  "Lamp Plus": "",
-  "Lamps Plus": "",
-  // Accounting / non-product categories → blank
-  "All": "",
-  "All / Expenses": "",
-  "All / Saleable / Booking Fees": "",
-  "Operating expenses": "",
-  "service": "",
-  "MISC": "",
-  "Commercial": "",
-  "Personal": "",
-  "IMP-02": "",
-  // CC artisan / house line → maker name (material/provenance drops to product name)
-  "Counter / Santiago": "Santiago",
-  "Counter / Gaby- Cobre": "Gaby",
-  "Counter/Meza": "Meza",
-  "gaby": "Gaby",
-  "Counter": "Counter Cultures",
-  "COUNTER/CHINA": "Counter Cultures",
-  "independencia": "Independencia",
-  "mosaico steven": "Steven",
-  "cobuild": "",
-  "coobuild": "",
-};
-
-// Local product image inventory. ~4.2k JPGs in public/products/odoo/<id>.jpg
-// where <id> matches the Odoo product id used as ProductFull.id. We import a
-// pre-generated JSON manifest instead of readdirSync'ing the directory — that
-// caused Next.js outputFileTracing to bundle the entire 388 MB image folder
-// into the Lambda handler, busting Netlify's function upload limit. Regenerate
-// with: ls public/products/odoo | sed 's/\\.jpg$//' | jq -R . | jq -s . > app/lib/product-image-manifest.json
-const productImageIds: Set<string> = new Set(productImageManifest as string[]);
 
 /**
  * Builds a Map<product_id, totalQty> by summing stock quants across all
@@ -129,61 +88,6 @@ const buildStockMap = async (): Promise<Map<string, number>> => {
   return out;
 };
 
-export type ProductCategory = "bathroom" | "kitchen" | "hardware";
-
-export interface ProductFull {
-  id: string;
-  name: string;
-  sku: string;
-  brand: string;
-  category: ProductCategory;
-  listPrice: number;
-  currency: string;
-  uom: string;
-  active: boolean;
-  saleOk: boolean;
-  /** Total units across CC's internal warehouse locations
-   *  (CC own warehouse + Laredo consolidators). Surfaced as
-   *  the "In stock" badge on the public catalog. Optional so
-   *  manually-constructed ProductFull objects (preview UIs,
-   *  fixtures) don't have to provide it. */
-  stockQty?: number;
-  /** Convenience flag — `stockQty > 0`. Optional same as above. */
-  inStock?: boolean;
-  /** True when any image source is available (manifest or gallery).
-   *  False means the UI should skip image loading entirely. */
-  hasImage?: boolean;
-  /** Public path to the product thumbnail when one exists locally
-   *  (`/products/odoo/<id>.jpg`). Undefined when no image is bundled
-   *  so the UI can fall back to typography without trying a 404. */
-  imageSrc?: string;
-  /** SAT product/service code (clave de producto/servicio) for CFDI. */
-  satCode?: string;
-  /** Spanish marketing description from countercultures.com.mx scrape.
-   *  Populated by scripts/scrape/06-build-product-content.ts. */
-  descriptionEs?: string;
-  /** English description from partner-site scrape. */
-  descriptionEn?: string;
-  /** Bulleted features (CARACTERÍSTICAS) from legacy site. */
-  features?: string[];
-  /** Hi-res gallery images keyed under /products/odoo-gallery/<id>/. */
-  gallery?: string[];
-  /** Variant labels (Color: dropdown). */
-  variantLabels?: string[];
-  /** Manufacturer spec sheet PDF (remote URL). */
-  specSheetUrl?: string;
-  /** Locally mirrored spec sheet at /specs/odoo/<id>.pdf. */
-  specSheetLocal?: string;
-  tradePrice?: number;
-  slug: string;
-  shippingClass?: "standard" | "oversized";
-}
-
-interface IndexedProduct extends ProductFull {
-  _sku: string;  // lowercased sku
-  _name: string; // lowercased name
-  _brand: string; // lowercased brand
-}
 
 const crmToProductFull = (p: Product): ProductFull => ({
   id: p.id,
@@ -207,18 +111,6 @@ const crmToProductFull = (p: Product): ProductFull => ({
   slug: p.slug,
 });
 
-export interface BrandCount {
-  brand: string;
-  count: number;
-}
-
-interface Cache {
-  products: IndexedProduct[];
-  byBrand: Map<string, IndexedProduct[]>;
-  brandCounts: BrandCount[];
-  categoryCounts: Record<ProductCategory, number>;
-  ts: number;
-}
 
 let cache: Cache | null = null;
 let loading: Promise<Cache> | null = null;
@@ -232,13 +124,7 @@ const EMPTY_CACHE: Cache = {
   ts: 0,
 };
 
-const normalizeCategory = (c: string): ProductCategory => {
-  if (c === "kitchen" || c === "hardware") return c;
-  return "bathroom";
-};
-
-const load = async (): Promise<Cache> => {
-  // SHEET_ID presence is guarded by getCache; this is a second belt.
+const loadFromSheets = async (): Promise<Cache> => {
   if (!SHEET_ID) return EMPTY_CACHE;
 
   const auth = new GoogleAuth({
@@ -250,7 +136,6 @@ const load = async (): Promise<Cache> => {
   });
   const sheets = sheetsApi({ version: "v4", auth });
 
-  // Single call — 354k rows × 10 cols comes back in ~10-20s.
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SHEET_ID,
     range: `${TAB}!A:L`,
@@ -261,107 +146,40 @@ const load = async (): Promise<Cache> => {
     return EMPTY_CACHE;
   }
 
-  const [header, ...data] = rows;
-  const idx = (col: string) => header.indexOf(col);
-  const iId = idx("id");
-  const iName = idx("name");
-  const iSku = idx("sku");
-  const iBrand = idx("brand");
-  const iCat = idx("category");
-  const iPrice = idx("list_price");
-  const iCur = idx("currency");
-  const iUom = idx("uom");
-  const iActive = idx("active");
-  const iSaleOk = idx("sale_ok");
-  const iSatCode = idx("sat_code");
-  const iShippingClass = idx("shipping_class");
-
-  const products: IndexedProduct[] = [];
-  const brandAgg = new Map<string, number>();
-  const categoryCounts: Record<ProductCategory, number> = {
-    bathroom: 0,
-    kitchen: 0,
-    hardware: 0,
-  };
-
-  // Stock map fetched in parallel with the product rows so the join is
-  // hot when we walk the rows.
+  const snapProducts = mapRowsToProducts(rows as string[][]);
   const stockMap = await buildStockMap();
+  return buildCacheFromProducts(snapProducts, stockMap);
+};
 
-  for (const row of data) {
-    const name = (row[iName] ?? "").toString();
-    const sku = (row[iSku] ?? "").toString();
-    const rawBrand = (row[iBrand] ?? "").toString();
-    const brand = BRAND_DISPLAY_MAP[rawBrand] ?? rawBrand;
-    const category = normalizeCategory((row[iCat] ?? "").toString());
-    const id = (row[iId] ?? "").toString();
-    const stockQty = stockMap.get(id) ?? 0;
-    // Side-car content from the legacy CC.mx scrape (Spanish copy, gallery,
-    // spec sheet). Merged here so downstream search + detail views can read
-    // a unified ProductFull without each consumer hitting product-content.
-    const content = getProductContent(id);
-    // imageSrc resolution priority:
-    //   1. Canonical Odoo thumbnail at /products/odoo/<id>.jpg (manifest is
-    //      regenerated from disk — guaranteed to exist when in the set).
-    //   2. First gallery image when no thumbnail is bundled (scraped
-    //      products that only have hi-res gallery shots).
-    //   3. undefined — UI falls back to typography placeholder.
-    const imageSrc = productImageIds.has(id)
-      ? `/products/odoo/${id}.jpg`
-      : content?.gallery?.[0];
-    const p: IndexedProduct = {
-      id,
-      name,
-      sku,
-      brand,
-      category,
-      listPrice: Number(row[iPrice]) || 0,
-      currency: (row[iCur] ?? "MXN").toString(),
-      uom: (row[iUom] ?? "Units").toString(),
-      active: (row[iActive] ?? "").toString() === "true",
-      saleOk: (row[iSaleOk] ?? "").toString() === "true",
-      satCode: iSatCode >= 0 ? (row[iSatCode] ?? "").toString() || undefined : undefined,
-      shippingClass: iShippingClass >= 0 && (row[iShippingClass] ?? "").toString() === "oversized" ? "oversized" : "standard",
-      descriptionEs: content?.descriptionEs || undefined,
-      descriptionEn: content?.descriptionEn || undefined,
-      features: content?.features?.length ? content.features : undefined,
-      gallery: content?.gallery?.length ? content.gallery : undefined,
-      variantLabels: content?.variants?.length ? content.variants : undefined,
-      specSheetUrl: content?.specSheetUrl || undefined,
-      specSheetLocal: content?.specSheetLocal || undefined,
-      stockQty,
-      inStock: stockQty > 0,
-      hasImage: !!imageSrc,
-      imageSrc,
-      slug: toSlug(name, sku),
-      _sku: normalize(sku),
-      _name: normalize(name),
-      _brand: normalize(brand),
-    };
-    products.push(p);
-    if (brand) brandAgg.set(brand, (brandAgg.get(brand) ?? 0) + 1);
-    categoryCounts[category]++;
+const SNAPSHOT_PATH = resolve(__dirname, "generated/products-snapshot.json.gz");
+
+const loadFromSnapshot = async (): Promise<Cache | null> => {
+  try {
+    if (!existsSync(SNAPSHOT_PATH)) return null;
+    const t0 = Date.now();
+    const gzipped = readFileSync(SNAPSHOT_PATH);
+    const json = gunzipSync(gzipped).toString("utf-8");
+    const snapProducts: SnapshotProduct[] = JSON.parse(json);
+    if (!Array.isArray(snapProducts) || snapProducts.length === 0) return null;
+    const stockMap = await buildStockMap();
+    const c = buildCacheFromProducts(snapProducts, stockMap);
+    console.log(
+      `[products-full] Hydrated ${c.products.length} products from snapshot in ${Date.now() - t0}ms`,
+    );
+    return c;
+  } catch (err) {
+    console.warn(
+      "[products-full] Snapshot hydrate failed — falling back to Sheets:",
+      err instanceof Error ? err.message : err,
+    );
+    return null;
   }
+};
 
-  const brandCounts: BrandCount[] = [...brandAgg.entries()]
-    .map(([brand, count]) => ({ brand, count }))
-    .sort((a, b) => b.count - a.count);
-
-  // Group by brand once, reused by browse-by-brand paths.
-  const byBrand = new Map<string, IndexedProduct[]>();
-  for (const p of products) {
-    const list = byBrand.get(p.brand);
-    if (list) list.push(p);
-    else byBrand.set(p.brand, [p]);
-  }
-
-  return {
-    products,
-    byBrand,
-    brandCounts,
-    categoryCounts,
-    ts: Date.now(),
-  };
+const load = async (): Promise<Cache> => {
+  const fromSnapshot = await loadFromSnapshot();
+  if (fromSnapshot) return fromSnapshot;
+  return loadFromSheets();
 };
 
 // Kicks off a refresh if one isn't already in flight. The returned promise
