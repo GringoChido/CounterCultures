@@ -72,6 +72,9 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  outputFileTracingIncludes: {
+    "/*": ["./app/lib/generated/products-snapshot.json.gz"],
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [

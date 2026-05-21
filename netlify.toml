@@ -9,6 +9,7 @@
 # esbuild under the hood; external_node_modules tells it to require() these
 # at runtime instead of inlining them.
 [functions]
+  included_files = ["app/lib/generated/**"]
   external_node_modules = [
     "@googleapis/sheets",
     "@googleapis/drive",
