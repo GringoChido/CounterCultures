@@ -151,18 +151,30 @@ const loadFromSheets = async (): Promise<Cache> => {
   return buildCacheFromProducts(snapProducts, stockMap);
 };
 
-const SNAPSHOT_PATH = resolve(__dirname, "generated/products-snapshot.json.gz");
+const snapshotCandidates = () => [
+  resolve(__dirname, "generated/products-snapshot.json.gz"),
+  resolve(/* turbopackIgnore: true */ process.cwd(), "app/lib/generated/products-snapshot.json.gz"),
+  resolve(/* turbopackIgnore: true */ process.cwd(), ".next/server/app/lib/generated/products-snapshot.json.gz"),
+];
+
+const findSnapshot = (): string | null => {
+  for (const p of snapshotCandidates()) {
+    if (existsSync(p)) return p;
+  }
+  return null;
+};
 
 const loadFromSnapshot = async (): Promise<Cache | null> => {
   try {
-    if (!existsSync(SNAPSHOT_PATH)) {
+    const snapshotPath = findSnapshot();
+    if (!snapshotPath) {
       console.warn(
-        `[products-full] Snapshot NOT found at ${SNAPSHOT_PATH} — __dirname=${__dirname} — falling back to Sheets`,
+        `[products-full] Snapshot NOT found — __dirname=${__dirname} cwd=${/* turbopackIgnore: true */ process.cwd()} — falling back to Sheets`,
       );
       return null;
     }
     const t0 = Date.now();
-    const gzipped = readFileSync(SNAPSHOT_PATH);
+    const gzipped = readFileSync(snapshotPath);
     const json = gunzipSync(gzipped).toString("utf-8");
     const snapProducts: SnapshotProduct[] = JSON.parse(json);
     if (!Array.isArray(snapProducts) || snapProducts.length === 0) {
@@ -172,7 +184,7 @@ const loadFromSnapshot = async (): Promise<Cache | null> => {
     const stockMap = await buildStockMap();
     const c = buildCacheFromProducts(snapProducts, stockMap);
     console.warn(
-      `[products-full] Hydrated ${c.products.length} products from snapshot in ${Date.now() - t0}ms`,
+      `[products-full] Hydrated ${c.products.length} products from snapshot (${snapshotPath}) in ${Date.now() - t0}ms`,
     );
     return c;
   } catch (err) {
