@@ -24,7 +24,8 @@ import {
 } from "./odoo-sheets";
 import { readFileSync, existsSync } from "node:fs";
 import { gunzipSync } from "node:zlib";
-import { resolve } from "node:path";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { Product } from "./types";
 import {
   mapRowsToProducts,
@@ -151,25 +152,18 @@ const loadFromSheets = async (): Promise<Cache> => {
   return buildCacheFromProducts(snapProducts, stockMap);
 };
 
-const snapshotCandidates = () => [
+const metaDir = dirname(fileURLToPath(import.meta.url));
+const SNAPSHOT_CANDIDATES = [
+  resolve(metaDir, "generated/products-snapshot.json.gz"),
   resolve(__dirname, "generated/products-snapshot.json.gz"),
-  resolve(/* turbopackIgnore: true */ process.cwd(), "app/lib/generated/products-snapshot.json.gz"),
-  resolve(/* turbopackIgnore: true */ process.cwd(), ".next/server/app/lib/generated/products-snapshot.json.gz"),
 ];
-
-const findSnapshot = (): string | null => {
-  for (const p of snapshotCandidates()) {
-    if (existsSync(p)) return p;
-  }
-  return null;
-};
 
 const loadFromSnapshot = async (): Promise<Cache | null> => {
   try {
-    const snapshotPath = findSnapshot();
+    const snapshotPath = SNAPSHOT_CANDIDATES.find((p) => existsSync(p));
     if (!snapshotPath) {
       console.warn(
-        `[products-full] Snapshot NOT found — __dirname=${__dirname} cwd=${/* turbopackIgnore: true */ process.cwd()} — falling back to Sheets`,
+        `[products-full] Snapshot NOT found — metaDir=${metaDir} __dirname=${__dirname} — falling back to Sheets`,
       );
       return null;
     }
