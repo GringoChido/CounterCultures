@@ -22,7 +22,7 @@ import {
   getOdooStockQuants,
   getOdooStockLocations,
 } from "./odoo-sheets";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { gunzipSync } from "node:zlib";
 import { resolve } from "node:path";
 import type { Product } from "./types";
@@ -153,8 +153,8 @@ const loadFromSheets = async (): Promise<Cache> => {
 
 const SNAPSHOT_CANDIDATES = [
   resolve(__dirname, "generated/products-snapshot.json.gz"),
-  resolve(process.cwd(), "app/lib/generated/products-snapshot.json.gz"),
-  resolve(process.cwd(), ".next/server/app/lib/generated/products-snapshot.json.gz"),
+  resolve(/* turbopackIgnore: true */ process.cwd(), "app/lib/generated/products-snapshot.json.gz"),
+  resolve(/* turbopackIgnore: true */ process.cwd(), ".next/server/app/lib/generated/products-snapshot.json.gz"),
 ];
 
 const findSnapshot = (): string | null => {
@@ -168,8 +168,12 @@ const loadFromSnapshot = async (): Promise<Cache | null> => {
   try {
     const snapshotPath = findSnapshot();
     if (!snapshotPath) {
+      const genDir = resolve(__dirname, "generated");
+      const genContents = existsSync(genDir)
+        ? readdirSync(genDir).join(", ")
+        : "(dir missing)";
       console.warn(
-        `[products-full] Snapshot NOT found — tried: ${SNAPSHOT_CANDIDATES.join(", ")} — falling back to Sheets`,
+        `[products-full] Snapshot NOT found — tried: ${SNAPSHOT_CANDIDATES.join(", ")} — __dirname=${__dirname} cwd=${process.cwd()} generated/=[${genContents}] — falling back to Sheets`,
       );
       return null;
     }
