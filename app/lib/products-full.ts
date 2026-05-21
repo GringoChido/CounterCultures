@@ -155,15 +155,21 @@ const SNAPSHOT_PATH = resolve(__dirname, "generated/products-snapshot.json.gz");
 
 const loadFromSnapshot = async (): Promise<Cache | null> => {
   try {
-    if (!existsSync(SNAPSHOT_PATH)) return null;
+    if (!existsSync(SNAPSHOT_PATH)) {
+      console.warn(`[products-full] Snapshot NOT found at ${SNAPSHOT_PATH} — falling back to Sheets`);
+      return null;
+    }
     const t0 = Date.now();
     const gzipped = readFileSync(SNAPSHOT_PATH);
     const json = gunzipSync(gzipped).toString("utf-8");
     const snapProducts: SnapshotProduct[] = JSON.parse(json);
-    if (!Array.isArray(snapProducts) || snapProducts.length === 0) return null;
+    if (!Array.isArray(snapProducts) || snapProducts.length === 0) {
+      console.warn("[products-full] Snapshot parsed but empty — falling back to Sheets");
+      return null;
+    }
     const stockMap = await buildStockMap();
     const c = buildCacheFromProducts(snapProducts, stockMap);
-    console.log(
+    console.warn(
       `[products-full] Hydrated ${c.products.length} products from snapshot in ${Date.now() - t0}ms`,
     );
     return c;
