@@ -362,7 +362,7 @@ const InvoicesPage = () => {
           onChange={(e) => setPaymentState(e.target.value as PaymentStateFilter)}
           className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
         >
-          <option value="all">All payment states</option>
+          <option value="all">All payment statuses</option>
           <option value="open">Open (not paid / partial)</option>
           <option value="overdue">Overdue</option>
           <option value="paid">Paid</option>

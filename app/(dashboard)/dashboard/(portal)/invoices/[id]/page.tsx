@@ -732,7 +732,7 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 <tr>
                   <th className="text-left p-3">#</th>
                   <th className="text-left p-3">Date</th>
-                  <th className="text-left p-3">State</th>
+                  <th className="text-left p-3">Status</th>
                   <th className="text-left p-3">Journal</th>
                   <th className="text-left p-3">Memo</th>
                   <th className="text-right p-3">Amount</th>

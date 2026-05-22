@@ -276,7 +276,7 @@ const PaymentDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                   <th className="text-left p-3">#</th>
                   <th className="text-left p-3">Type</th>
                   <th className="text-left p-3">Date</th>
-                  <th className="text-left p-3">State</th>
+                  <th className="text-left p-3">Status</th>
                   <th className="text-left p-3">Payment</th>
                   <th className="text-right p-3">Total</th>
                   <th className="text-right p-3">Balance</th>

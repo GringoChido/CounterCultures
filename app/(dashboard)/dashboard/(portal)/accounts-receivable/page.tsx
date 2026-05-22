@@ -709,7 +709,7 @@ const requestColumns = [
     ),
   }),
   requestColumnHelper.accessor("state", {
-    header: "State",
+    header: "Status",
     cell: (info) => (
       <StatusBadge
         label={stateLabel(info.getValue())}
@@ -1626,7 +1626,7 @@ const AccountsReceivablePage = () => {
               onChange={(e) => setStateFilter(e.target.value as StateFilter)}
               className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
             >
-              <option value="all">All states</option>
+              <option value="all">All statuses</option>
               <option value="pending">Pending</option>
               <option value="draft">Draft</option>
               <option value="issued">Issued</option>

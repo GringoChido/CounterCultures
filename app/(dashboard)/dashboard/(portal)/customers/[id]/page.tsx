@@ -447,7 +447,7 @@ const OrdersList = ({
           <tr>
             <th className="text-left p-3">#</th>
             <th className="text-left p-3">Date</th>
-            <th className="text-left p-3">State</th>
+            <th className="text-left p-3">Status</th>
             <th className="text-left p-3">Invoice status</th>
             <th className="text-right p-3">Total</th>
           </tr>
@@ -504,7 +504,7 @@ const InvoicesList = ({
             <th className="text-left p-3">#</th>
             <th className="text-left p-3">Date</th>
             <th className="text-left p-3">Due</th>
-            <th className="text-left p-3">State</th>
+            <th className="text-left p-3">Status</th>
             <th className="text-left p-3">Payment</th>
             <th className="text-left p-3">CFDI UUID</th>
             <th className="text-left p-3">Policy</th>
@@ -576,7 +576,7 @@ const PaymentsList = ({ payments }: { payments: OdooPayment[] }) => {
           <tr>
             <th className="text-left p-3">#</th>
             <th className="text-left p-3">Date</th>
-            <th className="text-left p-3">State</th>
+            <th className="text-left p-3">Status</th>
             <th className="text-left p-3">Method</th>
             <th className="text-left p-3">Memo</th>
             <th className="text-right p-3">Amount</th>

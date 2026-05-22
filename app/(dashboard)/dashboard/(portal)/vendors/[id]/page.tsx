@@ -317,7 +317,7 @@ const VendorDetailPage = ({
                 <tr>
                   <th className="text-left p-3">PO #</th>
                   <th className="text-left p-3">Date</th>
-                  <th className="text-left p-3">State</th>
+                  <th className="text-left p-3">Status</th>
                   <th className="text-left p-3">For SO</th>
                   <th className="text-left p-3">Bill status</th>
                   <th className="text-right p-3">Total</th>
@@ -369,7 +369,7 @@ const VendorDetailPage = ({
                   <th className="text-left p-3">Payment #</th>
                   <th className="text-left p-3">Date</th>
                   <th className="text-left p-3">Journal</th>
-                  <th className="text-left p-3">State</th>
+                  <th className="text-left p-3">Status</th>
                   <th className="text-left p-3">Memo</th>
                   <th className="text-right p-3">Amount</th>
                 </tr>
@@ -415,7 +415,7 @@ const VendorDetailPage = ({
                   <th className="text-left p-3">Bill #</th>
                   <th className="text-left p-3">Issued</th>
                   <th className="text-left p-3">PO ref</th>
-                  <th className="text-left p-3">State</th>
+                  <th className="text-left p-3">Status</th>
                   <th className="text-left p-3">Payment</th>
                   <th className="text-right p-3">Total</th>
                   <th className="text-right p-3">Balance</th>
