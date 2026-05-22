@@ -10,6 +10,9 @@ import {
   ExternalLink,
   FileText,
   Truck,
+  Eye,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { AttachmentsPanel } from "@/app/(dashboard)/components/attachments-panel";
@@ -225,6 +228,14 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
         </div>
         <div className="shrink-0 flex flex-wrap items-center gap-2">
+          <Link
+            href={`/dashboard/orders/${order.id}/preview`}
+            target="_blank"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs border border-dash-border bg-dash-surface rounded hover:border-brand-copper hover:text-brand-copper transition-colors text-dash-text-secondary"
+          >
+            <Eye className="w-3.5 h-3.5" />
+            Preview as customer
+          </Link>
           <DownloadReportButton
             reportName="sale.report_saleorder"
             recordId={order.id}
@@ -311,18 +322,7 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
         </section>
 
-        <section className="bg-dash-surface border border-dash-border p-5 rounded">
-          <h2 className="font-display text-sm uppercase tracking-wider text-dash-text-secondary mb-3">
-            Notes
-          </h2>
-          {rawOrder.note ? (
-            <p className="text-sm text-dash-text whitespace-pre-wrap line-clamp-6">
-              {stripHtml(rawOrder.note)}
-            </p>
-          ) : (
-            <p className="text-sm text-dash-text-secondary italic">No notes on this order.</p>
-          )}
-        </section>
+        <TermsSection note={rawOrder.note} />
       </div>
 
       {/* Lines */}
@@ -537,6 +537,48 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
       <AttachmentsPanel resModel="sale.order" resId={order.id} />
       <MessagesPanel mode={{ resModel: "sale.order", resId: order.id }} />
     </div>
+  );
+};
+
+const TermsSection = ({ note }: { note: string }) => {
+  const text = note ? stripHtml(note) : "";
+  const isLong = text.length > 300;
+  const [expanded, setExpanded] = useState(!isLong);
+
+  return (
+    <section className="bg-dash-surface border border-dash-border p-5 rounded">
+      <h2 className="font-display text-sm uppercase tracking-wider text-dash-text-secondary mb-3">
+        Terms and Conditions
+      </h2>
+      {text ? (
+        <>
+          <p className={`text-sm text-dash-text whitespace-pre-wrap ${!expanded ? "line-clamp-4" : ""}`}>
+            {text}
+          </p>
+          {isLong && (
+            <button
+              type="button"
+              onClick={() => setExpanded((v) => !v)}
+              className="mt-2 inline-flex items-center gap-1 text-xs text-brand-copper hover:text-brand-copper/80 transition-colors cursor-pointer"
+            >
+              {expanded ? (
+                <>
+                  <ChevronUp className="w-3 h-3" />
+                  Show less
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-3 h-3" />
+                  Show full terms
+                </>
+              )}
+            </button>
+          )}
+        </>
+      ) : (
+        <p className="text-sm text-dash-text-secondary italic">No terms on this order.</p>
+      )}
+    </section>
   );
 };
 
