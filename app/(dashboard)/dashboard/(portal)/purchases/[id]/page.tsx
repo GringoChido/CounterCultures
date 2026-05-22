@@ -4,7 +4,7 @@ import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
-  Truck,
+  Package,
   Loader2,
   AlertCircle,
   ExternalLink,
@@ -13,6 +13,8 @@ import {
   ShieldAlert,
   CreditCard,
   FilePlus,
+  Truck,
+  Printer,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useFeatures } from "@/app/lib/use-features";
@@ -45,6 +47,7 @@ interface POLine {
   id: string;
   name: string;
   product_id: string;
+  product_id_id: string;
   product_qty: string;
   qty_received: string;
   qty_invoiced: string;
@@ -300,12 +303,12 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
       </Link>
 
       <header className="mb-6 flex items-start gap-4">
-        <div className="p-3 bg-dash-surface border border-dash-border rounded">
-          <Truck className="w-6 h-6 text-dash-accent" />
+        <div className="p-3 bg-dash-surface border border-dash-border rounded" title="Purchase Order">
+          <Package className="w-6 h-6 text-dash-accent" />
         </div>
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-2 mb-1">
-            <h1 className="font-display text-2xl text-dash-text">{order.name}</h1>
+            <h1 className="font-display text-3xl font-semibold text-dash-text">{order.name}</h1>
             <CompanyBadge company={order.company} />
             <StatusBadge label={stateLabel(order.rawState)} variant={stateVariant(order.rawState)} />
             {order.invoiceStatus && order.invoiceStatus !== "no" && (
@@ -366,10 +369,19 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
               Create bill
             </button>
           )}
+          <Link
+            href={`/dashboard/purchases/${order.id}/print`}
+            target="_blank"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs border border-dash-border bg-dash-surface rounded hover:border-brand-copper hover:text-brand-copper transition-colors text-dash-text-secondary"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            PDF
+          </Link>
           <DownloadReportButton
             reportName="purchase.report_purchaseorder"
             recordId={order.id}
             fileName={`${order.name}.pdf`}
+            label="Odoo PDF"
           />
 
         </div>
@@ -503,7 +515,6 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
           <table className="w-full text-sm">
             <thead className="border-b border-dash-border text-xs uppercase tracking-wider text-dash-text-secondary">
               <tr>
-                <th className="text-left p-3">Description</th>
                 <th className="text-left p-3">Product</th>
                 <th className="text-right p-3">Ordered</th>
                 <th className="text-right p-3">Received</th>
@@ -516,18 +527,29 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
             <tbody>
               {lines.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-6 text-center text-dash-text-secondary">
+                  <td colSpan={7} className="p-6 text-center text-dash-text-secondary">
                     No line items.
                   </td>
                 </tr>
               ) : (
                 lines.map((l) => (
-                  <tr key={l.id} className="border-b border-dash-border/50">
+                  <tr key={l.id} className="border-b border-dash-border/50 align-top">
                     <td className="p-3 text-xs max-w-md">
-                      <span className="line-clamp-2">{l.name}</span>
-                    </td>
-                    <td className="p-3 text-xs text-dash-text-secondary line-clamp-1">
-                      {l.product_id || "—"}
+                      <div className="flex items-start gap-2.5">
+                        {l.product_id_id && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={`/products/odoo/${l.product_id_id}.jpg`}
+                            alt=""
+                            className="w-10 h-10 rounded object-cover shrink-0 border border-dash-border bg-dash-bg"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="line-clamp-2">{l.name}</div>
+                          <div className="text-dash-text-secondary mt-0.5 line-clamp-1">{l.product_id || "—"}</div>
+                        </div>
+                      </div>
                     </td>
                     <td className="p-3 text-right text-xs">{num(l.product_qty).toLocaleString()}</td>
                     <td className="p-3 text-right text-xs text-dash-text-secondary">{num(l.qty_received).toLocaleString()}</td>
