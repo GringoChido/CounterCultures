@@ -239,12 +239,28 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
 
             <NextLink
               href="/account/sign-in"
-              className={`flex items-center justify-center w-9 h-9 rounded-full transition-colors ${
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`hidden sm:inline-flex items-center gap-1.5 h-9 px-3 rounded-full text-xs font-body font-semibold tracking-wide transition-colors ${
+                isTransparent
+                  ? "text-white border border-white/25 bg-white/10 hover:border-white/40"
+                  : "text-brand-copper border border-brand-copper/30 bg-brand-copper/5 hover:bg-brand-copper/10 hover:border-brand-copper/50"
+              }`}
+              aria-label={lang === "es" ? "Abrir portal" : "Open portal"}
+            >
+              <KeyRound className="w-3.5 h-3.5" />
+              Portal
+            </NextLink>
+            <NextLink
+              href="/account/sign-in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`sm:hidden flex items-center justify-center w-9 h-9 rounded-full transition-colors ${
                 isTransparent
                   ? "text-white hover:text-white/70"
                   : "text-brand-copper hover:text-brand-copper/70"
               }`}
-              aria-label={lang === "es" ? "Iniciar sesión" : "Sign in"}
+              aria-label={lang === "es" ? "Abrir portal" : "Open portal"}
             >
               <KeyRound className="w-4 h-4" />
             </NextLink>
@@ -434,11 +450,13 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
               {/* Sign in — mobile */}
               <NextLink
                 href="/account/sign-in"
+                target="_blank"
+                rel="noopener noreferrer"
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-2 py-3.5 min-h-[44px] font-body text-base font-medium text-brand-copper border-b border-brand-stone/5"
               >
                 <KeyRound className="w-5 h-5" />
-                {lang === "es" ? "Iniciar sesión" : "Sign in"}
+                Portal
               </NextLink>
 
               <LanguageToggle variant="mobile" onSwitch={() => setMobileOpen(false)} />
