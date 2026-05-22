@@ -178,9 +178,13 @@ const columns = [
 
 const PipelineHero = ({
   pipeline,
+  activeState,
+  activeInvoiceStatus,
   onBucketClick,
 }: {
   pipeline: Pipeline;
+  activeState: OrderStateFilter;
+  activeInvoiceStatus: InvoiceStatusFilter;
   onBucketClick: (filter: {
     state?: OrderStateFilter;
     invoiceStatus?: InvoiceStatusFilter;
@@ -204,6 +208,7 @@ const PipelineHero = ({
       icon: Clock,
       iconClass: "text-brand-copper",
       description: `${pipeline.draft.count} draft + ${pipeline.sent.count} sent`,
+      active: activeState === "quote" && activeInvoiceStatus === "all",
       onClick: () => onBucketClick({ state: "quote" }),
     },
     {
@@ -214,6 +219,7 @@ const PipelineHero = ({
       icon: CheckCircle2,
       iconClass: "text-brand-sage",
       description: "Confirmed sales orders",
+      active: activeState === "sale" && activeInvoiceStatus === "all",
       onClick: () => onBucketClick({ state: "sale" }),
     },
     {
@@ -224,6 +230,7 @@ const PipelineHero = ({
       icon: FileText,
       iconClass: "text-brand-terracotta",
       description: "To invoice",
+      active: activeInvoiceStatus === "to invoice" && activeState === "all",
       onClick: () => onBucketClick({ invoiceStatus: "to invoice" }),
     },
   ];
@@ -236,7 +243,11 @@ const PipelineHero = ({
           <button
             key={b.key}
             onClick={b.onClick}
-            className="bg-dash-surface border border-dash-border p-4 rounded text-left hover:border-dash-accent transition-colors"
+            className={`p-4 rounded text-left transition-colors border ${
+              b.active
+                ? "bg-dash-accent/10 border-dash-accent ring-2 ring-dash-accent/30"
+                : "bg-dash-surface border-dash-border hover:border-dash-accent"
+            }`}
           >
             <div className="flex items-center gap-2 mb-2">
               <Icon className={`w-4 h-4 ${b.iconClass}`} />
@@ -309,8 +320,15 @@ const OrdersPage = () => {
     state?: OrderStateFilter;
     invoiceStatus?: InvoiceStatusFilter;
   }) => {
-    setState(f.state ?? "all");
-    setInvoiceStatus(f.invoiceStatus ?? "all");
+    const nextState = f.state ?? "all";
+    const nextInv = f.invoiceStatus ?? "all";
+    if (nextState === state && nextInv === invoiceStatus) {
+      setState("all");
+      setInvoiceStatus("all");
+    } else {
+      setState(nextState);
+      setInvoiceStatus(nextInv);
+    }
   };
 
   const activeFilters = useMemo(() => {
@@ -355,7 +373,14 @@ const OrdersPage = () => {
         </p>
       </header>
 
-      {pipeline && <PipelineHero pipeline={pipeline} onBucketClick={applyBucket} />}
+      {pipeline && (
+        <PipelineHero
+          pipeline={pipeline}
+          activeState={state}
+          activeInvoiceStatus={invoiceStatus}
+          onBucketClick={applyBucket}
+        />
+      )}
 
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-3 mb-4">
