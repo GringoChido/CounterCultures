@@ -44,6 +44,8 @@ interface OrderRow {
   linkedInvoiceCount: number;
   daysOpen: number;
   isStale: boolean;
+  isPaid: boolean;
+  isDelivered: boolean;
 }
 
 interface Pipeline {
@@ -121,8 +123,10 @@ const columns = [
     cell: (info) => {
       const r = info.row.original;
       return (
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-wrap">
           <StatusBadge label={info.getValue()} variant={stateVariant(info.getValue())} />
+          {r.isPaid && <StatusBadge label="Paid" variant="success" />}
+          {r.isDelivered && <StatusBadge label="Delivered" variant="in-progress" />}
           {r.isStale && (
             <span
               title={`Quote open ${r.daysOpen} days`}

@@ -1608,6 +1608,8 @@ export interface OrderListRow {
   linkedInvoiceCount: number;
   daysOpen: number;
   isStale: boolean; // quote sitting too long
+  isPaid: boolean;
+  isDelivered: boolean;
   origin: string;
   company: EntityCompany;
 }
@@ -1615,7 +1617,9 @@ export interface OrderListRow {
 const toOrderListRow = (
   o: OdooSaleOrder,
   now: Date = today(),
-  invoiceIndex: Map<string, number> = new Map()
+  invoiceIndex: Map<string, number> = new Map(),
+  paidIndex: Map<string, boolean> = new Map(),
+  deliveredIndex: Map<string, boolean> = new Map(),
 ): OrderListRow => {
   const invoiceIds = (o.invoice_ids || "")
     .split(",")
@@ -1644,6 +1648,8 @@ const toOrderListRow = (
     linkedInvoiceCount: invoiceIndex.get(o.id) ?? linkedInvoiceCount,
     daysOpen: days,
     isStale: isQuote && days > 30,
+    isPaid: paidIndex.get(o.id) ?? false,
+    isDelivered: deliveredIndex.get(o.id) ?? false,
     origin: "",
     company: detectCompanyFromCurrency(o.currency_id),
   };
@@ -1693,7 +1699,11 @@ export const getOrderList = async (
   } = filters;
 
   const now = today();
-  const orders = await getOdooSaleOrders();
+  const [orders, invoices, lines] = await Promise.all([
+    getOdooSaleOrders(),
+    getOdooInvoices(),
+    getOdooSaleOrderLines(),
+  ]);
 
   // Build an invoice_ids -> count index by splitting comma-joined references
   const invoiceIndex = new Map<string, number>();
@@ -1702,7 +1712,37 @@ export const getOrderList = async (
     invoiceIndex.set(o.id, ids.length);
   }
 
-  const allRows = orders.map((o) => toOrderListRow(o, now, invoiceIndex));
+  // Build paid index: order is paid when it has posted invoices and all are paid/in_payment
+  const invoiceById = new Map(invoices.map((i) => [i.id, i]));
+  const paidIndex = new Map<string, boolean>();
+  for (const o of orders) {
+    const ids = (o.invoice_ids || "").split(",").map((s) => s.trim()).filter(Boolean);
+    const linked = ids.map((id) => invoiceById.get(id)).filter(Boolean);
+    const posted = linked.filter((i) => i!.state === "posted");
+    paidIndex.set(
+      o.id,
+      posted.length > 0 && posted.every((i) => i!.payment_state === "paid" || i!.payment_state === "in_payment"),
+    );
+  }
+
+  // Build delivered index: order is delivered when all lines with qty > 0 are fully delivered
+  const linesByOrder = new Map<string, OdooSaleOrderLine[]>();
+  for (const l of lines) {
+    const arr = linesByOrder.get(l.order_id_id) ?? [];
+    arr.push(l);
+    linesByOrder.set(l.order_id_id, arr);
+  }
+  const deliveredIndex = new Map<string, boolean>();
+  for (const o of orders) {
+    const ol = linesByOrder.get(o.id) ?? [];
+    const productLines = ol.filter((l) => num(l.product_uom_qty) > 0);
+    deliveredIndex.set(
+      o.id,
+      productLines.length > 0 && productLines.every((l) => num(l.qty_delivered) >= num(l.product_uom_qty) - 0.001),
+    );
+  }
+
+  const allRows = orders.map((o) => toOrderListRow(o, now, invoiceIndex, paidIndex, deliveredIndex));
 
   // Pipeline summary (always computed over the full set)
   const addBy = (bucket: Record<string, number>, cur: string, amt: number) => {
@@ -1838,7 +1878,14 @@ export const getOrderDetail = async (orderId: string): Promise<OrderDetail | nul
   // partner's email/phone isn't populated in Odoo.
   const partner = partners.find((p) => p.id === o.partner_id_id);
 
-  const row = toOrderListRow(o);
+  const postedInvs = linkedInvoices.filter((i) => i.state === "posted");
+  const isPaid = postedInvs.length > 0 && postedInvs.every((i) => i.payment_state === "paid" || i.payment_state === "in_payment");
+  const productLines = orderLines.filter((l) => num(l.product_uom_qty) > 0);
+  const isDelivered = productLines.length > 0 && productLines.every((l) => num(l.qty_delivered) >= num(l.product_uom_qty) - 0.001);
+
+  const paidIdx = new Map<string, boolean>([[o.id, isPaid]]);
+  const delivIdx = new Map<string, boolean>([[o.id, isDelivered]]);
+  const row = toOrderListRow(o, undefined, undefined, paidIdx, delivIdx);
   return {
     order: { ...row, rawState: o.state },
     rawOrder: o,

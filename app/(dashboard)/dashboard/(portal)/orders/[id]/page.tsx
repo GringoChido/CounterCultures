@@ -43,6 +43,8 @@ interface OrderRow {
   linkedInvoiceCount: number;
   daysOpen: number;
   isStale: boolean;
+  isPaid: boolean;
+  isDelivered: boolean;
   company: string;
   rawState: string;
 }
@@ -209,6 +211,8 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 variant={order.invoiceStatus === "invoiced" ? "success" : "warning"}
               />
             )}
+            {order.isPaid && <StatusBadge label="Paid" variant="success" />}
+            {order.isDelivered && <StatusBadge label="Delivered" variant="in-progress" />}
             {order.isStale && (
               <StatusBadge label={`stale · ${order.daysOpen}d`} variant="danger" />
             )}
