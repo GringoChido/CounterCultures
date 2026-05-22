@@ -16,6 +16,7 @@ import {
   Check,
   Minus,
   Plus,
+  ChevronLeft,
 } from "lucide-react";
 import { ProductVisual } from "@/app/components/product-visual";
 import { useCartStore } from "@/app/lib/stores/cart-store";
@@ -293,7 +294,7 @@ const PDPClient = ({
           {images.length > 0 ? (
             <>
               <div
-                className="relative w-full overflow-hidden bg-brand-linen border border-brand-stone/15"
+                className="group relative w-full overflow-hidden bg-brand-linen border border-brand-stone/15"
                 style={{ aspectRatio: "4/3" }}
               >
                 <img
@@ -307,6 +308,29 @@ const PDPClient = ({
                   projectCount={projectCount}
                   t={t}
                 />
+                {images.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setActiveImg((i) => (i - 1 + images.length) % images.length)}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center bg-white/80 hover:bg-white text-brand-charcoal rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                      aria-label="Previous image"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveImg((i) => (i + 1) % images.length)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center bg-white/80 hover:bg-white text-brand-charcoal rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                      aria-label="Next image"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                    <span className="absolute bottom-3 right-3 px-2 py-0.5 bg-black/50 text-white font-mono text-[10px] rounded-full backdrop-blur-sm">
+                      {activeImg + 1} / {images.length}
+                    </span>
+                  </>
+                )}
               </div>
               {images.length > 1 && (
                 <div className="flex gap-2 overflow-x-auto pb-1">
