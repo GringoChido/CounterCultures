@@ -11,6 +11,7 @@ import {
   searchProducts,
   type SearchResult,
 } from "@/app/lib/products-full";
+import { formatCatalogCount } from "@/app/lib/format-catalog-count";
 import {
   getMostSpecifiedScores,
   getInShowroomIds,
@@ -170,7 +171,7 @@ const CatalogPage = async ({ params }: CatalogPageProps) => {
               {isEs ? (
                 <>
                   <span className="tabular-nums">
-                    {stats.total.toLocaleString("es-MX")}
+                    {formatCatalogCount(stats.total, "es")}
                   </span>{" "}
                   <span className="italic text-brand-copper">piezas</span>
                   <span className="text-white/40"> · </span>
@@ -180,7 +181,7 @@ const CatalogPage = async ({ params }: CatalogPageProps) => {
               ) : (
                 <>
                   <span className="tabular-nums">
-                    {stats.total.toLocaleString("en-US")}
+                    {formatCatalogCount(stats.total, "en")}
                   </span>{" "}
                   <span className="italic text-brand-copper">pieces</span>
                   <span className="text-white/40"> · </span>

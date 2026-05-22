@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "@/app/i18n/navigation";
 import { Search } from "lucide-react";
+import { formatCatalogCount } from "@/app/lib/format-catalog-count";
 
 interface CatalogSearchInputProps {
   locale: "en" | "es";
@@ -14,7 +15,7 @@ const CatalogSearchInput = ({ locale, totalCatalog }: CatalogSearchInputProps) =
   const router = useRouter();
   const isEs = locale === "es";
   const numFmt = isEs ? "es-MX" : "en-US";
-  const count = totalCatalog.toLocaleString(numFmt);
+  const count = formatCatalogCount(totalCatalog, locale);
 
   const placeholder = isEs
     ? `Busca entre ${count} piezas…`

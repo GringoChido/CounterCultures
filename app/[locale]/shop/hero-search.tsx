@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
+import { formatCatalogCount } from "@/app/lib/format-catalog-count";
 
 interface HeroSearchProps {
   locale: "en" | "es";
@@ -13,12 +14,12 @@ const T = {
   en: {
     placeholder: "Search by brand, model, or finish…",
     cta: "Open catalog",
-    hint: (n: string) => `Search ${n} pieces across 160 brands`,
+    hint: (n: string) => `Search ${n} pieces across 160+ brands`,
   },
   es: {
     placeholder: "Busca por marca, modelo o acabado…",
     cta: "Abrir catálogo",
-    hint: (n: string) => `Busca ${n} piezas en 160 marcas`,
+    hint: (n: string) => `Busca ${n} piezas en 160+ marcas`,
   },
 };
 
@@ -58,7 +59,7 @@ const HeroSearch = ({ locale, catalogSize }: HeroSearchProps) => {
         </button>
       </div>
       <p className="mt-2 text-[11px] font-body text-dash-text-secondary">
-        {t.hint(catalogSize.toLocaleString(locale === "es" ? "es-MX" : "en-US"))}
+        {t.hint(formatCatalogCount(catalogSize, locale))}
       </p>
     </form>
   );

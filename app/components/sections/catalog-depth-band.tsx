@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
+import { formatCatalogCount } from "@/app/lib/format-catalog-count";
 import { CatalogSearchInput } from "./catalog-search-input";
 
 interface CatalogDepthBandProps {
@@ -48,7 +49,7 @@ const CatalogDepthBand = ({ locale, totalCatalog, children }: CatalogDepthBandPr
               {isEs ? "Catálogo completo" : "The full catalog"}
             </h2>
             <p className="mt-4 font-display text-6xl md:text-7xl lg:text-8xl font-light text-brand-charcoal tabular-nums leading-[0.95]">
-              {totalCatalog.toLocaleString(numFmt)}
+              {formatCatalogCount(totalCatalog, locale)}
             </p>
             <p className="mt-3 font-body text-sm md:text-base text-dash-text-secondary uppercase tracking-[0.15em]">
               {isEs ? "piezas autorizadas" : "authorized pieces"}
