@@ -23,6 +23,7 @@ import { MessagesPanel } from "@/app/(dashboard)/components/messages-panel";
 import { CreditPanel } from "@/app/(dashboard)/components/partner/credit-panel";
 import { PartnerHierarchy } from "@/app/(dashboard)/components/partner/partner-hierarchy";
 import { AgingBuckets } from "@/app/(dashboard)/components/partner/aging-buckets";
+import { formatDate } from "@/app/lib/format-date";
 
 interface OdooPartner {
   id: string;
@@ -148,7 +149,6 @@ const fmtMulti = (by: Record<string, number>) => {
   return entries.map(([cur, amt]) => fmt(amt, cur)).join(" + ");
 };
 
-const dateOnly = (s: string) => (s ? s.slice(0, 10) : "—");
 
 const stateVariant = (state: string): BadgeVariant => {
   if (state === "posted" || state === "sale" || state === "done") return "success";
@@ -306,9 +306,9 @@ const CustomerDetailPage = ({
         <div className="bg-dash-surface border border-dash-border p-4 rounded">
           <div className="text-xs uppercase tracking-wider text-dash-text-secondary">First → Last</div>
           <div className="text-xs text-dash-text mt-1">
-            {dateOnly(metrics.firstOrderDate ?? "")}
+            {formatDate(metrics.firstOrderDate ?? "")}
             <br />
-            {dateOnly(metrics.lastOrderDate ?? "")}
+            {formatDate(metrics.lastOrderDate ?? "")}
           </div>
         </div>
         <div className="bg-dash-surface border border-dash-border p-4 rounded">
@@ -471,7 +471,7 @@ const OrdersList = ({
                   {o.name}
                 </Link>
               </td>
-              <td className="p-3 text-xs">{dateOnly(o.date_order)}</td>
+              <td className="p-3 text-xs">{formatDate(o.date_order)}</td>
               <td className="p-3">
                 <StatusBadge label={o.state} variant={stateVariant(o.state)} />
               </td>
@@ -533,8 +533,8 @@ const InvoicesList = ({
                     {i.name}
                   </Link>
                 </td>
-                <td className="p-3 text-xs">{dateOnly(i.invoice_date)}</td>
-                <td className="p-3 text-xs">{dateOnly(i.invoice_date_due)}</td>
+                <td className="p-3 text-xs">{formatDate(i.invoice_date)}</td>
+                <td className="p-3 text-xs">{formatDate(i.invoice_date_due)}</td>
                 <td className="p-3">
                   <StatusBadge label={i.state} variant={stateVariant(i.state)} />
                 </td>
@@ -601,7 +601,7 @@ const PaymentsList = ({ payments }: { payments: OdooPayment[] }) => {
                   {p.name}
                 </Link>
               </td>
-              <td className="p-3 text-xs">{dateOnly(p.date)}</td>
+              <td className="p-3 text-xs">{formatDate(p.date)}</td>
               <td className="p-3">
                 <StatusBadge label={p.state} variant={stateVariant(p.state)} />
               </td>

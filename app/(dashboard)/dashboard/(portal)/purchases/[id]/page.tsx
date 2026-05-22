@@ -23,6 +23,7 @@ import { MessagesPanel } from "@/app/(dashboard)/components/messages-panel";
 import { DownloadReportButton } from "@/app/(dashboard)/components/download-report-button";
 import { CompanyBadge, EntityTintedCard } from "@/app/(dashboard)/components/company-badge";
 import { stripHtml } from "@/app/lib/strip-html";
+import { formatDate } from "@/app/lib/format-date";
 
 interface PORow {
   id: string;
@@ -341,9 +342,9 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
             )}
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-dash-text-secondary">
-            <span>Ordered {order.dateOrder || "—"}</span>
-            {rawOrder.date_approve && <span>Approved {rawOrder.date_approve.slice(0, 10)}</span>}
-            {rawOrder.date_planned && <span>Expected {rawOrder.date_planned.slice(0, 10)}</span>}
+            <span>Ordered {formatDate(order.dateOrder)}</span>
+            {rawOrder.date_approve && <span>Approved {formatDate(rawOrder.date_approve)}</span>}
+            {rawOrder.date_planned && <span>Expected {formatDate(rawOrder.date_planned)}</span>}
             <span>Currency {order.currency}</span>
           </div>
         </div>
@@ -430,7 +431,7 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
                 <>
                   <span className="text-dash-text-secondary text-xs">·</span>
                   <span className="text-xs text-dash-text-secondary">
-                    {linkedSaleOrder.date_order.slice(0, 10)}
+                    {formatDate(linkedSaleOrder.date_order)}
                   </span>
                 </>
               )}
@@ -576,7 +577,7 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
                         {b.name}
                       </Link>
                     </td>
-                    <td className="p-3 text-xs">{(b.invoice_date || "").slice(0, 10)}</td>
+                    <td className="p-3 text-xs">{formatDate(b.invoice_date)}</td>
                     <td className="p-3">
                       <StatusBadge label={b.state} variant={stateVariant(b.state)} />
                     </td>
@@ -628,7 +629,7 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
                         {pay.name}
                       </Link>
                     </td>
-                    <td className="p-3 text-xs">{(pay.date || "").slice(0, 10)}</td>
+                    <td className="p-3 text-xs">{formatDate(pay.date)}</td>
                     <td className="p-3">
                       <StatusBadge label={pay.state} variant={stateVariant(pay.state)} />
                     </td>

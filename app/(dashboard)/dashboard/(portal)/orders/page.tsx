@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
+import { formatDate } from "@/app/lib/format-date";
 
 import { useCurrentUser } from "@/app/lib/use-current-user";
 import {
@@ -113,7 +114,7 @@ const columns = [
   }),
   columnHelper.accessor("dateOrder", {
     header: "Date",
-    cell: (info) => <span className="text-xs">{info.getValue() || "—"}</span>,
+    cell: (info) => <span className="text-xs">{formatDate(info.getValue())}</span>,
   }),
   columnHelper.accessor("state", {
     header: "Status",

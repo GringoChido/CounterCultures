@@ -44,10 +44,7 @@ const formatCurrency = (n: number, cur: string) => {
   return `$${Math.round(n).toLocaleString()} ${cur}`;
 };
 
-const formatDate = (iso: string | null) => {
-  if (!iso) return "—";
-  return iso.slice(0, 10);
-};
+import { formatDate } from "@/app/lib/format-date";
 
 const columnHelper = createColumnHelper<CustomerListRow>();
 

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
+import { formatDate } from "@/app/lib/format-date";
 
 
 type PaymentTypeFilter = "all" | "inbound" | "outbound";
@@ -94,7 +95,7 @@ const columns = [
   }),
   columnHelper.accessor("date", {
     header: "Date",
-    cell: (info) => <span className="text-xs">{info.getValue() || "—"}</span>,
+    cell: (info) => <span className="text-xs">{formatDate(info.getValue())}</span>,
   }),
   columnHelper.accessor("partnerName", {
     header: "Partner",

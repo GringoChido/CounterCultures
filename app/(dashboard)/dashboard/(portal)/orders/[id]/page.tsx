@@ -21,6 +21,7 @@ import { SendQuoteButton } from "@/app/(dashboard)/components/orders/send-quote-
 import { DownloadReportButton } from "@/app/(dashboard)/components/download-report-button";
 import { CompanyBadge, EntityTintedCard } from "@/app/(dashboard)/components/company-badge";
 import { stripHtml } from "@/app/lib/strip-html";
+import { formatDate } from "@/app/lib/format-date";
 
 interface OrderRow {
   id: string;
@@ -213,9 +214,9 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
             )}
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-dash-text-secondary">
-            <span>Date {order.dateOrder || "—"}</span>
-            {order.validityDate && <span>Validity {order.validityDate}</span>}
-            {order.commitmentDate && <span>Commitment {order.commitmentDate}</span>}
+            <span>Date {formatDate(order.dateOrder)}</span>
+            {order.validityDate && <span>Validity {formatDate(order.validityDate)}</span>}
+            {order.commitmentDate && <span>Commitment {formatDate(order.commitmentDate)}</span>}
             <span>Currency {order.currency}</span>
           </div>
         </div>
@@ -451,7 +452,7 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                       </Link>
                     </td>
                     <td className="p-3 text-xs">{po.partner_id || "—"}</td>
-                    <td className="p-3 text-xs">{(po.date_order || "").slice(0, 10) || "—"}</td>
+                    <td className="p-3 text-xs">{formatDate(po.date_order)}</td>
                     <td className="p-3">
                       <StatusBadge label={po.state} variant={stateVariant(po.state)} />
                     </td>
@@ -503,7 +504,7 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                         {inv.name}
                       </Link>
                     </td>
-                    <td className="p-3 text-xs">{(inv.invoice_date || "").slice(0, 10)}</td>
+                    <td className="p-3 text-xs">{formatDate(inv.invoice_date)}</td>
                     <td className="p-3">
                       <StatusBadge label={inv.state} variant={stateVariant(inv.state)} />
                     </td>

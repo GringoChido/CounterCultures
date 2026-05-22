@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { CreditPanel } from "@/app/(dashboard)/components/partner/credit-panel";
+import { formatDate } from "@/app/lib/format-date";
 import { PartnerHierarchy } from "@/app/(dashboard)/components/partner/partner-hierarchy";
 import { AgingBuckets } from "@/app/(dashboard)/components/partner/aging-buckets";
 import { BulkPaySelector } from "@/app/(dashboard)/components/partner/bulk-pay-selector";
@@ -234,10 +235,10 @@ const VendorDetailPage = ({
               </span>
             )}
             {metrics.lastPoDate && (
-              <span>Last PO {metrics.lastPoDate.slice(0, 10)}</span>
+              <span>Last PO {formatDate(metrics.lastPoDate)}</span>
             )}
             {metrics.lastPaymentDate && (
-              <span>Last payment {metrics.lastPaymentDate.slice(0, 10)}</span>
+              <span>Last payment {formatDate(metrics.lastPaymentDate)}</span>
             )}
           </div>
         </div>
@@ -332,7 +333,7 @@ const VendorDetailPage = ({
                         <ExternalLink className="w-3 h-3 opacity-60" />
                       </Link>
                     </td>
-                    <td className="p-3 text-xs">{(p.date_order || "").slice(0, 10) || "—"}</td>
+                    <td className="p-3 text-xs">{formatDate(p.date_order)}</td>
                     <td className="p-3">
                       <StatusBadge label={p.state} variant={stateVariant(p.state)} />
                     </td>
@@ -382,7 +383,7 @@ const VendorDetailPage = ({
                         {pay.name}
                       </Link>
                     </td>
-                    <td className="p-3 text-xs">{(pay.date || "").slice(0, 10) || "—"}</td>
+                    <td className="p-3 text-xs">{formatDate(pay.date)}</td>
                     <td className="p-3 text-xs text-dash-text-secondary">{pay.journal_id || "—"}</td>
                     <td className="p-3">
                       <StatusBadge label={pay.state} variant={paymentStateVariant(pay.state)} />
@@ -429,7 +430,7 @@ const VendorDetailPage = ({
                         {b.name}
                       </Link>
                     </td>
-                    <td className="p-3 text-xs">{(b.invoice_date || "").slice(0, 10) || "—"}</td>
+                    <td className="p-3 text-xs">{formatDate(b.invoice_date)}</td>
                     <td className="p-3 text-xs text-dash-text-secondary">{b.invoice_origin || "—"}</td>
                     <td className="p-3">
                       <StatusBadge label={b.state} variant={stateVariant(b.state)} />

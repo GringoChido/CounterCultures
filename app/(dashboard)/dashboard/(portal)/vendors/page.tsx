@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Building2, Search, Loader2 } from "lucide-react";
+import { formatDate } from "@/app/lib/format-date";
 
 interface VendorRow {
   partnerId: string;
@@ -180,7 +181,7 @@ const VendorsPage = () => {
                       <span className="text-dash-text-secondary">—</span>
                     )}
                   </td>
-                  <td className="p-3 text-xs">{(v.lastPoDate ?? "").slice(0, 10) || "—"}</td>
+                  <td className="p-3 text-xs">{formatDate(v.lastPoDate)}</td>
                 </tr>
               ))}
             </tbody>

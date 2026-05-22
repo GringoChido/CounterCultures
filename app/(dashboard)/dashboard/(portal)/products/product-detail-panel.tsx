@@ -22,6 +22,7 @@ import { CustomerCombobox } from "@/app/(dashboard)/components/customer-combobox
 import { ProductVisual } from "@/app/components/product-visual";
 import { SATCodeCombobox } from "@/app/(dashboard)/components/sat-code-combobox";
 import { findSATCode } from "@/app/lib/sat-codes";
+import { formatDate } from "@/app/lib/format-date";
 
 interface DealOption {
   id: string;
@@ -743,7 +744,7 @@ const ProductDetailPanel = ({
                           {history.orders.map((o) => (
                             <tr key={o.orderId} className="border-t border-dash-border">
                               <td className="px-3 py-2 text-dash-text-secondary">
-                                {o.dateOrder || "—"}
+                                {formatDate(o.dateOrder)}
                               </td>
                               <td className="px-3 py-2">
                                 <div className="truncate max-w-[220px]">{o.partnerName}</div>

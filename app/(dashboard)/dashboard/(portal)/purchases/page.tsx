@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
+import { formatDate } from "@/app/lib/format-date";
 
 
 type POStateFilter = "all" | "draft" | "sent" | "purchase" | "done" | "cancel";
@@ -103,7 +104,7 @@ const columns = [
   }),
   columnHelper.accessor("dateOrder", {
     header: "Ordered",
-    cell: (info) => <span className="text-xs">{info.getValue() || "—"}</span>,
+    cell: (info) => <span className="text-xs">{formatDate(info.getValue())}</span>,
   }),
   columnHelper.accessor("state", {
     header: "Status",

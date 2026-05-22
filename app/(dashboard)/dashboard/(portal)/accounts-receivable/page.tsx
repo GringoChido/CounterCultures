@@ -35,6 +35,7 @@ import {
   getCompanyConfig,
 } from "@/app/(dashboard)/components/company-badge";
 import { useFeatures } from "@/app/lib/use-features";
+import { formatDate } from "@/app/lib/format-date";
 
 // ---------------------------------------------------------------------------
 // Types mirroring ar-factura.ts
@@ -194,19 +195,6 @@ const applicationLabel = (a: string): string => {
   return map[a] ?? a;
 };
 
-const shortDate = (iso: string): string => {
-  if (!iso) return "—";
-  try {
-    const d = new Date(iso);
-    return d.toLocaleDateString("en-US", {
-      day: "numeric",
-      month: "short",
-      year: "2-digit",
-    });
-  } catch {
-    return iso.slice(0, 10);
-  }
-};
 
 // ---------------------------------------------------------------------------
 // Summary cards
@@ -762,7 +750,7 @@ const requestColumns = [
     header: "Requested",
     cell: (info) => (
       <span className="text-xs text-dash-text-secondary">
-        {shortDate(info.getValue())}
+        {formatDate(info.getValue())}
       </span>
     ),
   }),
@@ -827,7 +815,7 @@ const cnColumns = [
     header: "Created",
     cell: (info) => (
       <span className="text-xs text-dash-text-secondary">
-        {shortDate(info.getValue())}
+        {formatDate(info.getValue())}
       </span>
     ),
   }),
@@ -1022,9 +1010,9 @@ const ARDetailPanel = ({
 
           {/* Metadata */}
           <section className="text-xs text-dash-text-secondary space-y-1">
-            <div>Requested by {request.requestedBy || "—"} on {shortDate(request.requestedAt)}</div>
+            <div>Requested by {request.requestedBy || "—"} on {formatDate(request.requestedAt)}</div>
             {request.issuedAt && (
-              <div>Issued by {request.issuedBy || "—"} on {shortDate(request.issuedAt)}</div>
+              <div>Issued by {request.issuedBy || "—"} on {formatDate(request.issuedAt)}</div>
             )}
             {request.invoiceId && <div>Invoice: {request.invoiceId}</div>}
             {request.notes && <div>Original notes: {request.notes}</div>}
@@ -1528,7 +1516,7 @@ const AccountsReceivablePage = () => {
                         className="border-b border-dash-border/50 hover:bg-dash-surface/50 transition-colors"
                       >
                         <td className="py-2 px-2 text-dash-text-secondary whitespace-nowrap">
-                          {shortDate(d.date)}
+                          {formatDate(d.date)}
                         </td>
                         <td className="py-2 px-2 font-mono text-xs">{d.reference}</td>
                         <td className="py-2 px-2 text-dash-text line-clamp-1 max-w-[200px]">

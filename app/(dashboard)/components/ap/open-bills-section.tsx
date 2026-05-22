@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { FileText, AlertCircle } from "lucide-react";
 import { CompanyBadge } from "@/app/(dashboard)/components/company-badge";
+import { formatDate } from "@/app/lib/format-date";
 
 interface BillRow {
   id: string;
@@ -153,8 +154,8 @@ const OpenBillsSection = () => {
               </div>
               <div className="text-xs text-dash-text font-medium truncate">{b.partnerName}</div>
               <div><CompanyBadge company={b.company} size="xs" /></div>
-              <div className="text-xs text-dash-text-secondary">{b.date}</div>
-              <div className="text-xs text-dash-text-secondary">{b.dueDate || "—"}</div>
+              <div className="text-xs text-dash-text-secondary">{formatDate(b.date)}</div>
+              <div className="text-xs text-dash-text-secondary">{formatDate(b.dueDate)}</div>
               <div className="text-xs">
                 {b.isOverdue ? (
                   <span className="inline-flex items-center gap-1 text-brand-terracotta">

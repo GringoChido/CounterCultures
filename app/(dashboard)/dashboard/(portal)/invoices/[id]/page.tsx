@@ -22,6 +22,7 @@ import { MessagesPanel } from "@/app/(dashboard)/components/messages-panel";
 import { MarkPaidButton } from "@/app/(dashboard)/components/payments/mark-paid-button";
 import { PaymentLinkButton } from "@/app/(dashboard)/components/payments/payment-link-button";
 import { InvoiceWorkflowPanel } from "@/app/(dashboard)/components/cfdi/invoice-workflow-panel";
+import { formatDate } from "@/app/lib/format-date";
 
 import { DownloadReportButton } from "@/app/(dashboard)/components/download-report-button";
 import { CompanyBadge, EntityTintedCard } from "@/app/(dashboard)/components/company-badge";
@@ -493,8 +494,8 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-dash-text-secondary">
             <span>{moveTypeLabel(invoice.moveType)}</span>
-            <span>Issued {invoice.date || "—"}</span>
-            <span>Due {invoice.dueDate || "—"}</span>
+            <span>Issued {formatDate(invoice.date)}</span>
+            <span>Due {formatDate(invoice.dueDate)}</span>
             {invoice.origin && (
               <Link
                 href={`/dashboard/orders?q=${encodeURIComponent(invoice.origin)}`}
@@ -746,7 +747,7 @@ const InvoiceDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                         {p.name}
                       </Link>
                     </td>
-                    <td className="p-3 text-xs">{(p.date || "").slice(0, 10)}</td>
+                    <td className="p-3 text-xs">{formatDate(p.date)}</td>
                     <td className="p-3">
                       <StatusBadge label={p.state} variant={stateVariant(p.state)} />
                     </td>
