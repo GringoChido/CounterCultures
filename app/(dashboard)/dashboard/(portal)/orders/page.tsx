@@ -179,63 +179,52 @@ const PipelineHero = ({
   onBucketClick: (filter: {
     state?: OrderStateFilter;
     invoiceStatus?: InvoiceStatusFilter;
-    staleOnly?: boolean;
   }) => void;
 }) => {
-  const openQuotesCount = pipeline.draft.count + pipeline.sent.count;
-  const openQuotesTotal: Record<string, number> = {};
+  const quotesCount = pipeline.draft.count + pipeline.sent.count;
+  const quotesTotal: Record<string, number> = {};
   for (const [cur, amt] of Object.entries(pipeline.draft.totalByCurrency)) {
-    openQuotesTotal[cur] = (openQuotesTotal[cur] ?? 0) + amt;
+    quotesTotal[cur] = (quotesTotal[cur] ?? 0) + amt;
   }
   for (const [cur, amt] of Object.entries(pipeline.sent.totalByCurrency)) {
-    openQuotesTotal[cur] = (openQuotesTotal[cur] ?? 0) + amt;
+    quotesTotal[cur] = (quotesTotal[cur] ?? 0) + amt;
   }
 
   const buckets = [
     {
       key: "quotes",
-      label: "Open Quotes",
-      count: openQuotesCount,
-      total: openQuotesTotal,
+      label: "Quotes",
+      count: quotesCount,
+      total: quotesTotal,
       icon: Clock,
       iconClass: "text-brand-copper",
       description: `${pipeline.draft.count} draft + ${pipeline.sent.count} sent`,
       onClick: () => onBucketClick({ state: "quote" }),
     },
     {
-      key: "confirmed",
-      label: "Confirmed",
+      key: "sales",
+      label: "Sales",
       count: pipeline.sale.count,
       total: pipeline.sale.totalByCurrency,
       icon: CheckCircle2,
       iconClass: "text-brand-sage",
-      description: "In fulfillment",
+      description: "Confirmed sales orders",
       onClick: () => onBucketClick({ state: "sale" }),
     },
     {
-      key: "to_invoice",
-      label: "To Invoice",
+      key: "invoices",
+      label: "Invoices",
       count: pipeline.toInvoice.count,
       total: pipeline.toInvoice.totalByCurrency,
       icon: FileText,
       iconClass: "text-brand-terracotta",
-      description: "Delivered, not billed",
+      description: "To invoice",
       onClick: () => onBucketClick({ invoiceStatus: "to invoice" }),
-    },
-    {
-      key: "stale",
-      label: "Stale Quotes",
-      count: pipeline.staleQuotes.count,
-      total: pipeline.staleQuotes.totalByCurrency,
-      icon: AlertTriangle,
-      iconClass: "text-brand-terracotta",
-      description: "Quote > 30 days old",
-      onClick: () => onBucketClick({ staleOnly: true }),
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+    <div className="grid grid-cols-3 gap-3 mb-6">
       {buckets.map((b) => {
         const Icon = b.icon;
         return (
@@ -266,7 +255,6 @@ const OrdersPage = () => {
   const [query, setQuery] = useState("");
   const [state, setState] = useState<OrderStateFilter>("all");
   const [invoiceStatus, setInvoiceStatus] = useState<InvoiceStatusFilter>("all");
-  const [staleOnly, setStaleOnly] = useState(false);
   const [sortBy, setSortBy] = useState<SortBy>("date_desc");
   const [rows, setRows] = useState<OrderRow[]>([]);
   const [total, setTotal] = useState(0);
@@ -286,10 +274,8 @@ const OrdersPage = () => {
     const sp = new URLSearchParams(window.location.search);
     const urlState = sp.get("state");
     const urlInv = sp.get("invoiceStatus");
-    const urlStale = sp.get("staleOnly");
     if (urlState) setState(urlState as OrderStateFilter);
     if (urlInv) setInvoiceStatus(urlInv as InvoiceStatusFilter);
-    if (urlStale === "true") setStaleOnly(true);
   }, []);
 
   useEffect(() => {
@@ -300,7 +286,6 @@ const OrdersPage = () => {
         if (query) p.set("q", query);
         p.set("state", state);
         p.set("invoiceStatus", invoiceStatus);
-        if (staleOnly) p.set("staleOnly", "true");
         p.set("sort", sortBy);
         p.set("limit", "200");
         const res = await fetch(`/api/dashboard/orders?${p.toString()}`);
@@ -313,26 +298,23 @@ const OrdersPage = () => {
       }
     }, 200);
     return () => clearTimeout(timer);
-  }, [query, state, invoiceStatus, staleOnly, sortBy]);
+  }, [query, state, invoiceStatus, sortBy]);
 
   const applyBucket = (f: {
     state?: OrderStateFilter;
     invoiceStatus?: InvoiceStatusFilter;
-    staleOnly?: boolean;
   }) => {
     setState(f.state ?? "all");
     setInvoiceStatus(f.invoiceStatus ?? "all");
-    setStaleOnly(!!f.staleOnly);
   };
 
   const activeFilters = useMemo(() => {
     const out: string[] = [];
     if (state !== "all") out.push(state);
     if (invoiceStatus !== "all") out.push(`invoice:${invoiceStatus}`);
-    if (staleOnly) out.push("stale only");
     if (repMode === "mine" && currentUser?.name) out.push(`mine (${currentUser.name})`);
     return out;
-  }, [state, invoiceStatus, staleOnly, repMode, currentUser?.name]);
+  }, [state, invoiceStatus, repMode, currentUser?.name]);
 
   // Apply Mine filter client-side. matchesUser handles the canonical email
   // and accent-normalized name match (consistent with leads + pipeline).
@@ -409,15 +391,6 @@ const OrdersPage = () => {
           <option value="invoiced">Fully invoiced</option>
           <option value="upselling">Upselling</option>
         </select>
-        <label className="inline-flex items-center gap-2 text-xs text-dash-text-secondary px-3 py-2 border border-dash-border bg-dash-surface rounded cursor-pointer">
-          <input
-            type="checkbox"
-            checked={staleOnly}
-            onChange={(e) => setStaleOnly(e.target.checked)}
-            className="cursor-pointer"
-          />
-          Stale only
-        </label>
         <MineAllToggle
           user={currentUser}
           scope="orders"
