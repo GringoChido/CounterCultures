@@ -29,6 +29,8 @@ interface BrandCardData {
 interface BrandsGridProps {
   locale: "en" | "es";
   brands: BrandCardData[];
+  /** Flagship brands rendered above the grid — included in the A-Z index so letter jumps reach them. */
+  flagshipBrands?: BrandCardData[];
   /** Total count of brands marked stocked across the entire catalog (not just nonFlagship). Drives the counter copy. */
   totalStockedCount: number;
   /** Total brand count across the catalog. */
@@ -51,6 +53,7 @@ const CATEGORY_OPTIONS: Array<CategorySlug | "all"> = [
 export const BrandsGrid = ({
   locale,
   brands,
+  flagshipBrands = [],
   totalStockedCount,
   totalBrandCount,
 }: BrandsGridProps) => {
@@ -102,15 +105,18 @@ export const BrandsGrid = ({
     });
   }, [brands, query, category, stockedOnly]);
 
-  // Build A-Z anchor index (only letters that appear in the filtered set)
+  // Build A-Z anchor index — includes flagship brands so letter jumps reach them
   const letterToFirstSlug = useMemo(() => {
+    const all = [...flagshipBrands, ...filtered].sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
     const map = new Map<string, string>();
-    for (const b of filtered) {
+    for (const b of all) {
       const letter = b.name.charAt(0).toUpperCase();
       if (!map.has(letter)) map.set(letter, b.slug);
     }
     return map;
-  }, [filtered]);
+  }, [filtered, flagshipBrands]);
 
   const scrollToLetter = (letter: string) => {
     const slug = letterToFirstSlug.get(letter);

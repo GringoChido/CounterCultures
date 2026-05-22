@@ -68,6 +68,8 @@ type Bilingual = { en: string; es: string };
 
 interface Artisan {
   name: string;
+  /** Exact product brand string (post BRAND_DISPLAY_MAP) used to filter the catalog. */
+  productBrand: string;
   location: Bilingual;
   specialty: Bilingual;
   image: string;
@@ -78,6 +80,7 @@ interface Artisan {
 const artisans: Artisan[] = [
   {
     name: "Mistoa Studio",
+    productBrand: "Mistoa Studio",
     location: { en: "Guanajuato", es: "Guanajuato" },
     specialty: {
       en: "Ceramic basins in 10 colorways",
@@ -95,6 +98,7 @@ const artisans: Artisan[] = [
   },
   {
     name: "Santa Clara del Cobre",
+    productBrand: "Santa Clara del Cobre",
     location: { en: "Michoacán", es: "Michoacán" },
     specialty: {
       en: "Hand-hammered copper vessels",
@@ -112,6 +116,7 @@ const artisans: Artisan[] = [
   },
   {
     name: "Stone Artisans",
+    productBrand: "Stone Artisans",
     location: { en: "Querétaro", es: "Querétaro" },
     specialty: {
       en: "Riolita stone & travertine sinks",
@@ -125,6 +130,24 @@ const artisans: Artisan[] = [
     story: {
       en: "Quarried from the volcanic highlands, each stone sink is carved by hand and polished to reveal the natural grain — no two pieces are alike.",
       es: "Extraída de las tierras altas volcánicas, cada pieza de piedra se talla a mano y se pule para revelar la veta natural — no hay dos iguales.",
+    },
+  },
+  {
+    name: "Santiago — Bronze Hardware",
+    productBrand: "Santiago — Bronze Hardware",
+    location: { en: "Mexico", es: "México" },
+    specialty: {
+      en: "Hand-cast bronze pulls & hardware",
+      es: "Jaladeras y herrajes de bronce a mano",
+    },
+    image: "/products/odoo/2045767.jpg",
+    alt: {
+      en: "Hand-cast bronze cabinet pull with branch texture — Counter Cultures Santiago line",
+      es: "Jaladera de bronce con textura de rama — línea Santiago de Counter Cultures",
+    },
+    story: {
+      en: "Solid bronze pulls, levers, and hardware cast and finished by hand — from branch-textured jaladeras to half-moon pulls. No two castings are quite alike.",
+      es: "Jaladeras, tiradores y herrajes de bronce macizo, fundidos y terminados a mano — de jaladeras con textura de rama a tiradores de media luna. No hay dos piezas idénticas.",
     },
   },
 ];
@@ -466,18 +489,19 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
               {artisans.map((artisan) => (
-                <div
+                <Link
                   key={artisan.name}
-                  className="group relative bg-dash-surface overflow-hidden"
+                  href={`/${locale}/shop/catalog?brand=${encodeURIComponent(artisan.productBrand)}`}
+                  className="group relative bg-dash-surface overflow-hidden block transition-shadow duration-300 hover:shadow-lg"
                 >
                   <div className="relative aspect-[3/4] overflow-hidden">
                     <Image
                       src={artisan.image}
                       alt={artisan.alt[localeKey]}
                       fill
-                      sizes="(max-width: 768px) 100vw, 33vw"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                       className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-brand-charcoal/70 via-brand-charcoal/20 to-transparent" />
@@ -499,8 +523,23 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
                     <p className="font-body text-sm text-dash-text-secondary leading-relaxed">
                       {artisan.story[localeKey]}
                     </p>
+                    <span className="inline-flex items-center gap-2 mt-4 font-body font-medium text-xs text-dash-text-secondary/60 group-hover:text-brand-terracotta transition-colors duration-300 tracking-wide uppercase">
+                      {isEs ? "Ver colección" : "View collection"}
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M7 17L17 7M17 7H7M17 7V17" />
+                      </svg>
+                    </span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
@@ -563,6 +602,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
                 {flagship.map((brand) => (
                   <Link
                     key={brand.slug}
+                    id={`brand-${brand.slug}`}
                     href={brand.internalHref}
                     className="group relative bg-dash-surface border border-brand-stone/8 overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-brand-copper/20 hover:-translate-y-0.5"
                   >
@@ -632,6 +672,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
               <BrandsGrid
                 locale={localeKey}
                 brands={nonFlagship}
+                flagshipBrands={flagship}
                 totalStockedCount={totalStockedCount}
                 totalBrandCount={totalBrandCount}
               />
