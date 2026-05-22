@@ -57,9 +57,10 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "Today", href: "/dashboard/overview", icon: LayoutDashboard, section: "Home", feature: "view_today" },
 
-  { label: "Customers", href: "/dashboard/customers", icon: Users, section: "Sales", feature: "view_customers" },
+  { label: "Leads", href: "/dashboard/leads", icon: Users, section: "Sales", feature: "view_leads" },
+  { label: "Customers", href: "/dashboard/customers", icon: Users, feature: "view_customers" },
   { label: "Contacts", href: "/dashboard/contacts", icon: ContactRound, feature: "view_contacts" },
-  { label: "Orders", href: "/dashboard/orders", icon: Kanban, feature: "view_orders" },
+  { label: "Orders & Quotes", href: "/dashboard/orders", icon: Kanban, feature: "view_orders" },
   { label: "Invoices", href: "/dashboard/invoices", icon: FileText, feature: "view_invoices" },
   { label: "Payments", href: "/dashboard/payments", icon: CreditCard, feature: "view_payments" },
   { label: "Accounts Receivable", href: "/dashboard/accounts-receivable", icon: Wallet, feature: "view_ar" },
@@ -84,8 +85,7 @@ const navItems: NavItem[] = [
 const moreNavItems: NavItem[] = [
   { label: "Weekly Review", href: "/dashboard/weekly-review", icon: CalendarCheck, section: "Reviews", feature: "view_today" },
 
-  { label: "Leads", href: "/dashboard/leads", icon: Users, section: "Pipeline", feature: "view_leads" },
-  { label: "Pipeline", href: "/dashboard/pipeline", icon: Kanban, feature: "view_pipeline" },
+  { label: "Pipeline", href: "/dashboard/pipeline", icon: Kanban, section: "Pipeline", feature: "view_pipeline" },
   { label: "WhatsApp", href: "/dashboard/whatsapp", icon: MessageCircle, comingSoon: true, feature: "view_inbox" },
 
   { label: "Brands", href: "/dashboard/brands", icon: Award, section: "Catalog Admin", feature: "view_brands" },
