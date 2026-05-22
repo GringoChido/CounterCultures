@@ -19,6 +19,7 @@ import { SearchPalette } from "@/app/components/search/search-palette";
 import { CartIconButton } from "@/app/components/cart/cart-icon-button";
 import { CartDrawer } from "@/app/components/cart/cart-drawer";
 import { MyProjectsDropdown } from "@/app/components/nav/my-projects-dropdown";
+import { ProjectListIconButton } from "@/app/components/nav/project-list-icon-button";
 
 const setLocaleCookie = (locale: string) => {
   document.cookie = `NEXT_LOCALE=${locale}; path=/; SameSite=lax; max-age=31536000`;
@@ -266,6 +267,8 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
             </NextLink>
 
             <MyProjectsDropdown locale={lang} />
+
+            <ProjectListIconButton />
 
             <CartIconButton />
 
