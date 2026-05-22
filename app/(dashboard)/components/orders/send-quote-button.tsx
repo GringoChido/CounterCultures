@@ -10,6 +10,7 @@ import {
   Copy,
   Mail,
   MessageCircle,
+  Paperclip,
 } from "lucide-react";
 import { useFeatures } from "@/app/lib/use-features";
 
@@ -130,21 +131,32 @@ const SendQuoteButton = ({
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ to: to.trim(), subject, body }),
+      body: JSON.stringify({
+        to: to.trim(),
+        subject,
+        body,
+        attachReport: {
+          report: "sale.report_saleorder",
+          id: String(orderId),
+          fileName: `${orderName}.pdf`,
+        },
+      }),
     });
     setSending(false);
     if (!r.ok) {
       const data = await r.json().catch(() => ({}));
       if (r.status === 409 || data.error === "Gmail not connected") {
         toast.error(
-          "Connect your Gmail in Settings, then try again — or use Email/Copy below."
+          "Connect your Gmail in Settings, then try again — or use Copy/Email app below."
         );
       } else {
         toast.error(data.error || "Send failed");
       }
       return;
     }
-    toast.success(`Quote sent to ${partnerName}`);
+    const result = await r.json().catch(() => ({}));
+    const pdfNote = result.pdfAttached ? " with PDF attached" : " (PDF could not be attached)";
+    toast.success(`Quote sent to ${partnerName}${pdfNote}`);
     setOpen(false);
     router.refresh();
   };
@@ -196,9 +208,9 @@ const SendQuoteButton = ({
               </button>
             </div>
             <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
-              <div className="bg-dash-bg/60 border border-dash-border rounded p-3 text-xs text-dash-text-secondary">
-                Tip: Download the PDF first, then attach it in your email client.
-                The quote PDF is available via the download button in the header.
+              <div className="bg-brand-copper/5 border border-brand-copper/20 rounded p-3 text-xs text-dash-text-secondary flex items-center gap-2">
+                <Paperclip className="w-3.5 h-3.5 text-brand-copper shrink-0" />
+                <span>The quote PDF (<span className="font-medium text-dash-text">{orderName}.pdf</span>) will be auto-attached when sent via Gmail.</span>
               </div>
               <div>
                 <label className="block text-[11px] font-medium text-dash-text-muted uppercase tracking-wider mb-1.5">
@@ -274,13 +286,6 @@ const SendQuoteButton = ({
                   Copy
                 </button>
                 <a
-                  href={mailto}
-                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs border border-dash-border bg-dash-surface rounded hover:border-brand-copper transition-colors text-dash-text"
-                >
-                  <Mail className="w-3 h-3" />
-                  mailto
-                </a>
-                <a
                   href={wa}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -288,6 +293,14 @@ const SendQuoteButton = ({
                 >
                   <MessageCircle className="w-3 h-3" />
                   WhatsApp
+                </a>
+                <a
+                  href={mailto}
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs border border-dash-border bg-dash-surface rounded hover:border-dash-border transition-colors text-dash-text-secondary"
+                  title="Opens your email app — cannot attach the PDF automatically"
+                >
+                  <Mail className="w-3 h-3" />
+                  Email app (no PDF)
                 </a>
               </div>
               <div className="flex items-center gap-2">
