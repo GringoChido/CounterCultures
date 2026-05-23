@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
+import Link from "next/link";
+import { Plus } from "lucide-react";
 import { NeedsYou } from "@/app/(dashboard)/components/needs-you";
 import { NewSinceLastCheck } from "@/app/(dashboard)/components/new-since-last-check";
 import { TodayActiveDeals } from "@/app/(dashboard)/components/today-active-deals";
@@ -11,6 +13,7 @@ import { ActivityFeed } from "@/app/(dashboard)/components/activity-feed";
 import { CommandCenter } from "@/app/(dashboard)/components/command-center";
 import { MorningBrief } from "@/app/(dashboard)/components/morning-brief";
 import { useCurrentUser } from "@/app/lib/use-current-user";
+import { hasFeature } from "@/app/lib/features";
 
 const greetingFor = (date: Date): string => {
   const h = date.getHours();
@@ -41,11 +44,27 @@ const OverviewPage = () => {
       : `· ${greeting}`
     : "";
 
+  const canCreateQuote = user && hasFeature(
+    { role: user.role, featureOverrides: user.featureOverrides },
+    "create_quote"
+  );
+
   return (
     <div className="space-y-6">
-      <div className="flex items-baseline gap-3 flex-wrap">
-        <h1 className="font-display text-3xl text-dash-text">{day}</h1>
-        <p className="text-sm text-dash-text-secondary">{greetingLine}</p>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-baseline gap-3 flex-wrap">
+          <h1 className="font-display text-3xl text-dash-text">{day}</h1>
+          <p className="text-sm text-dash-text-secondary">{greetingLine}</p>
+        </div>
+        {canCreateQuote && (
+          <Link
+            href="/dashboard/orders/new"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-brand-copper text-white text-sm font-medium rounded-lg hover:bg-brand-copper/90 transition-colors shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            New Quote
+          </Link>
+        )}
       </div>
 
       <CommandCenter />

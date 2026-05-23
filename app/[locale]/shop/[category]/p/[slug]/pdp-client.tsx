@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { pdpHref } from "@/app/lib/pdp-href";
 import {
   MapPin,
@@ -10,10 +11,12 @@ import {
   ShoppingBag,
   Bookmark,
   FileDown,
+  FileUp,
   ChevronRight,
   Check,
   Minus,
   Plus,
+  ChevronLeft,
 } from "lucide-react";
 import { ProductVisual } from "@/app/components/product-visual";
 import { useCartStore } from "@/app/lib/stores/cart-store";
@@ -21,6 +24,7 @@ import { useProjectStore } from "@/app/lib/stores/project-store";
 import { useUiStore } from "@/app/lib/stores/ui-store";
 import { FinishSwatch } from "@/app/components/cart/finish-swatch";
 import { focusRing } from "@/app/components/ui/focus-ring";
+import { PdfDropModal, type PdfDropResult } from "@/app/components/pdf-drop-modal";
 
 interface SerializedProduct {
   id: string;
@@ -150,6 +154,7 @@ const PDPClient = ({
   );
   const [justAdded, setJustAdded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pdfOpen, setPdfOpen] = useState(false);
 
   const cartAdd = useCartStore((s) => s.add);
   const cartHas = useCartStore((s) => s.has);
@@ -217,6 +222,26 @@ const PDPClient = ({
     }, 600);
   };
 
+  const handlePdfCommit = (results: PdfDropResult[]) => {
+    for (const r of results) {
+      projectAdd({
+        id: r.product.id,
+        sku: r.product.sku,
+        name: r.product.name,
+        brand: r.product.brand,
+        category: r.product.category,
+        currency: (r.product.currency === "USD" ? "USD" : "MXN") as "MXN" | "USD",
+        listPrice: r.product.listPrice,
+        quantity: r.quantity,
+        productHref: "/shop",
+      });
+    }
+    const msg = locale === "es"
+      ? `${results.length} artículo${results.length === 1 ? "" : "s"} del PDF`
+      : `Added ${results.length} item${results.length === 1 ? "" : "s"} from PDF`;
+    toast.success(msg);
+  };
+
   const handleSaveToProject = () => {
     if (inProject) return;
     projectAdd({
@@ -269,7 +294,7 @@ const PDPClient = ({
           {images.length > 0 ? (
             <>
               <div
-                className="relative w-full overflow-hidden bg-brand-linen border border-brand-stone/15"
+                className="group relative w-full overflow-hidden bg-brand-linen border border-brand-stone/15"
                 style={{ aspectRatio: "4/3" }}
               >
                 <img
@@ -280,10 +305,32 @@ const PDPClient = ({
                 />
                 <BadgeCluster
                   inShowroom={inShowroom}
-                  inStock={product.inStock}
                   projectCount={projectCount}
                   t={t}
                 />
+                {images.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setActiveImg((i) => (i - 1 + images.length) % images.length)}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center bg-white/80 hover:bg-white text-brand-charcoal rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                      aria-label="Previous image"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveImg((i) => (i + 1) % images.length)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center bg-white/80 hover:bg-white text-brand-charcoal rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                      aria-label="Next image"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                    <span className="absolute bottom-3 right-3 px-2 py-0.5 bg-black/50 text-white font-mono text-[10px] rounded-full backdrop-blur-sm">
+                      {activeImg + 1} / {images.length}
+                    </span>
+                  </>
+                )}
               </div>
               {images.length > 1 && (
                 <div className="flex gap-2 overflow-x-auto pb-1">
@@ -324,7 +371,6 @@ const PDPClient = ({
               />
               <BadgeCluster
                 inShowroom={inShowroom}
-                inStock={product.inStock}
                 projectCount={projectCount}
                 t={t}
               />
@@ -404,6 +450,12 @@ const PDPClient = ({
               <div className="inline-block px-3 py-1.5 border border-brand-terracotta text-brand-terracotta text-xs uppercase tracking-wider font-body">
                 {t.quote}
               </div>
+            )}
+            {product.inStock && (
+              <p className="mt-2 font-body text-xs text-brand-sage flex items-center gap-1">
+                <Package className="w-3.5 h-3.5" />
+                {t.inStock}
+              </p>
             )}
           </div>
 
@@ -566,18 +618,36 @@ const PDPClient = ({
             </div>
           )}
 
-          {/* Spec sheet */}
-          {specHref && (
-            <a
-              href={specHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-body text-brand-charcoal border border-brand-stone/30 hover:border-brand-copper hover:text-brand-copper transition-colors"
+          {/* Spec sheet + PDF upload */}
+          <div className="flex flex-wrap gap-3">
+            {specHref && (
+              <a
+                href={specHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-body text-brand-charcoal border border-brand-stone/30 hover:border-brand-copper hover:text-brand-copper transition-colors"
+              >
+                <FileDown className="w-4 h-4" />
+                {t.specSheet}
+              </a>
+            )}
+            <button
+              type="button"
+              onClick={() => setPdfOpen(true)}
+              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-body text-brand-charcoal border border-brand-stone/30 hover:border-brand-copper hover:text-brand-copper transition-colors cursor-pointer"
             >
-              <FileDown className="w-4 h-4" />
-              {t.specSheet}
-            </a>
-          )}
+              <FileUp className="w-4 h-4" />
+              {locale === "es" ? "Subir PDF de especificación" : "Upload spec PDF"}
+            </button>
+          </div>
+
+          <PdfDropModal
+            open={pdfOpen}
+            onClose={() => setPdfOpen(false)}
+            onCommit={handlePdfCommit}
+            locale={locale}
+            theme="public"
+          />
         </div>
       </div>
 
@@ -629,30 +699,22 @@ const PDPClient = ({
 
 const BadgeCluster = ({
   inShowroom,
-  inStock,
   projectCount,
   t,
 }: {
   inShowroom: boolean;
-  inStock: boolean;
   projectCount: number;
   t: (typeof T)["en"];
 }) => (
   <>
-    <div className="absolute top-3 left-3 flex flex-col gap-1.5">
-      {inShowroom && (
+    {inShowroom && (
+      <div className="absolute top-3 left-3">
         <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-brand-charcoal/90 text-white font-body text-[10px] tracking-[0.1em] uppercase backdrop-blur-sm">
           <MapPin className="w-3 h-3" />
           {t.inShowroom}
         </span>
-      )}
-      {inStock && (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-brand-sage/95 text-white font-body text-[10px] tracking-[0.1em] uppercase backdrop-blur-sm">
-          <Package className="w-3 h-3" />
-          {t.inStock}
-        </span>
-      )}
-    </div>
+      </div>
+    )}
     {projectCount > 1 && (
       <span className="absolute top-3 right-3 inline-flex items-center gap-1 px-2.5 py-1 bg-brand-copper/95 text-white font-body text-[10px] tracking-[0.1em] uppercase backdrop-blur-sm">
         <TrendingUp className="w-3 h-3" />

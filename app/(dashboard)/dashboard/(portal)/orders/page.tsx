@@ -11,11 +11,15 @@ import {
   CheckCircle2,
   Clock,
   AlertTriangle,
+  Plus,
 } from "lucide-react";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
+import { CompanyBadge } from "@/app/(dashboard)/components/company-badge";
+import { formatDate } from "@/app/lib/format-date";
 
 import { useCurrentUser } from "@/app/lib/use-current-user";
+import { hasFeature } from "@/app/lib/features";
 import {
   MineAllToggle,
   matchesUser,
@@ -25,6 +29,7 @@ import {
 
 type OrderStateFilter = "all" | "quote" | "draft" | "sent" | "sale" | "done" | "cancel";
 type InvoiceStatusFilter = "all" | "no" | "to invoice" | "invoiced" | "upselling";
+type CompanyFilter = "all" | "cc" | "llc";
 type SortBy = "date_desc" | "date_asc" | "total_desc" | "days_open_desc" | "partner";
 
 interface OrderRow {
@@ -43,6 +48,9 @@ interface OrderRow {
   linkedInvoiceCount: number;
   daysOpen: number;
   isStale: boolean;
+  isPaid: boolean;
+  isDelivered: boolean;
+  company: string;
 }
 
 interface Pipeline {
@@ -97,6 +105,10 @@ const columns = [
       );
     },
   }),
+  columnHelper.accessor("company", {
+    header: "Entity",
+    cell: (info) => <CompanyBadge company={info.getValue()} size="xs" />,
+  }),
   columnHelper.accessor("partnerName", {
     header: "Customer",
     cell: (info) => {
@@ -113,15 +125,17 @@ const columns = [
   }),
   columnHelper.accessor("dateOrder", {
     header: "Date",
-    cell: (info) => <span className="text-xs">{info.getValue() || "—"}</span>,
+    cell: (info) => <span className="text-xs">{formatDate(info.getValue())}</span>,
   }),
   columnHelper.accessor("state", {
-    header: "State",
+    header: "Status",
     cell: (info) => {
       const r = info.row.original;
       return (
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-wrap">
           <StatusBadge label={info.getValue()} variant={stateVariant(info.getValue())} />
+          {r.isPaid && <StatusBadge label="Paid" variant="success" />}
+          {r.isDelivered && <StatusBadge label="Delivered" variant="in-progress" />}
           {r.isStale && (
             <span
               title={`Quote open ${r.daysOpen} days`}
@@ -173,76 +187,76 @@ const columns = [
 
 const PipelineHero = ({
   pipeline,
+  activeState,
+  activeInvoiceStatus,
   onBucketClick,
 }: {
   pipeline: Pipeline;
+  activeState: OrderStateFilter;
+  activeInvoiceStatus: InvoiceStatusFilter;
   onBucketClick: (filter: {
     state?: OrderStateFilter;
     invoiceStatus?: InvoiceStatusFilter;
-    staleOnly?: boolean;
   }) => void;
 }) => {
-  const openQuotesCount = pipeline.draft.count + pipeline.sent.count;
-  const openQuotesTotal: Record<string, number> = {};
+  const quotesCount = pipeline.draft.count + pipeline.sent.count;
+  const quotesTotal: Record<string, number> = {};
   for (const [cur, amt] of Object.entries(pipeline.draft.totalByCurrency)) {
-    openQuotesTotal[cur] = (openQuotesTotal[cur] ?? 0) + amt;
+    quotesTotal[cur] = (quotesTotal[cur] ?? 0) + amt;
   }
   for (const [cur, amt] of Object.entries(pipeline.sent.totalByCurrency)) {
-    openQuotesTotal[cur] = (openQuotesTotal[cur] ?? 0) + amt;
+    quotesTotal[cur] = (quotesTotal[cur] ?? 0) + amt;
   }
 
   const buckets = [
     {
       key: "quotes",
-      label: "Open Quotes",
-      count: openQuotesCount,
-      total: openQuotesTotal,
+      label: "Quotes",
+      count: quotesCount,
+      total: quotesTotal,
       icon: Clock,
       iconClass: "text-brand-copper",
       description: `${pipeline.draft.count} draft + ${pipeline.sent.count} sent`,
+      active: activeState === "quote" && activeInvoiceStatus === "all",
       onClick: () => onBucketClick({ state: "quote" }),
     },
     {
-      key: "confirmed",
-      label: "Confirmed",
+      key: "sales",
+      label: "Sales",
       count: pipeline.sale.count,
       total: pipeline.sale.totalByCurrency,
       icon: CheckCircle2,
       iconClass: "text-brand-sage",
-      description: "In fulfillment",
+      description: "Confirmed sales orders",
+      active: activeState === "sale" && activeInvoiceStatus === "all",
       onClick: () => onBucketClick({ state: "sale" }),
     },
     {
-      key: "to_invoice",
-      label: "To Invoice",
+      key: "invoices",
+      label: "Invoices",
       count: pipeline.toInvoice.count,
       total: pipeline.toInvoice.totalByCurrency,
       icon: FileText,
       iconClass: "text-brand-terracotta",
-      description: "Delivered, not billed",
+      description: "To invoice",
+      active: activeInvoiceStatus === "to invoice" && activeState === "all",
       onClick: () => onBucketClick({ invoiceStatus: "to invoice" }),
-    },
-    {
-      key: "stale",
-      label: "Stale Quotes",
-      count: pipeline.staleQuotes.count,
-      total: pipeline.staleQuotes.totalByCurrency,
-      icon: AlertTriangle,
-      iconClass: "text-brand-terracotta",
-      description: "Quote > 30 days old",
-      onClick: () => onBucketClick({ staleOnly: true }),
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+    <div className="grid grid-cols-3 gap-3 mb-6">
       {buckets.map((b) => {
         const Icon = b.icon;
         return (
           <button
             key={b.key}
             onClick={b.onClick}
-            className="bg-dash-surface border border-dash-border p-4 rounded text-left hover:border-dash-accent transition-colors"
+            className={`p-4 rounded text-left transition-colors border ${
+              b.active
+                ? "bg-dash-accent/10 border-dash-accent ring-2 ring-dash-accent/30"
+                : "bg-dash-surface border-dash-border hover:border-dash-accent"
+            }`}
           >
             <div className="flex items-center gap-2 mb-2">
               <Icon className={`w-4 h-4 ${b.iconClass}`} />
@@ -266,7 +280,7 @@ const OrdersPage = () => {
   const [query, setQuery] = useState("");
   const [state, setState] = useState<OrderStateFilter>("all");
   const [invoiceStatus, setInvoiceStatus] = useState<InvoiceStatusFilter>("all");
-  const [staleOnly, setStaleOnly] = useState(false);
+  const [companyFilter, setCompanyFilter] = useState<CompanyFilter>("all");
   const [sortBy, setSortBy] = useState<SortBy>("date_desc");
   const [rows, setRows] = useState<OrderRow[]>([]);
   const [total, setTotal] = useState(0);
@@ -286,10 +300,8 @@ const OrdersPage = () => {
     const sp = new URLSearchParams(window.location.search);
     const urlState = sp.get("state");
     const urlInv = sp.get("invoiceStatus");
-    const urlStale = sp.get("staleOnly");
     if (urlState) setState(urlState as OrderStateFilter);
     if (urlInv) setInvoiceStatus(urlInv as InvoiceStatusFilter);
-    if (urlStale === "true") setStaleOnly(true);
   }, []);
 
   useEffect(() => {
@@ -300,7 +312,6 @@ const OrdersPage = () => {
         if (query) p.set("q", query);
         p.set("state", state);
         p.set("invoiceStatus", invoiceStatus);
-        if (staleOnly) p.set("staleOnly", "true");
         p.set("sort", sortBy);
         p.set("limit", "200");
         const res = await fetch(`/api/dashboard/orders?${p.toString()}`);
@@ -313,45 +324,51 @@ const OrdersPage = () => {
       }
     }, 200);
     return () => clearTimeout(timer);
-  }, [query, state, invoiceStatus, staleOnly, sortBy]);
+  }, [query, state, invoiceStatus, sortBy]);
 
   const applyBucket = (f: {
     state?: OrderStateFilter;
     invoiceStatus?: InvoiceStatusFilter;
-    staleOnly?: boolean;
   }) => {
-    setState(f.state ?? "all");
-    setInvoiceStatus(f.invoiceStatus ?? "all");
-    setStaleOnly(!!f.staleOnly);
+    const nextState = f.state ?? "all";
+    const nextInv = f.invoiceStatus ?? "all";
+    if (nextState === state && nextInv === invoiceStatus) {
+      setState("all");
+      setInvoiceStatus("all");
+    } else {
+      setState(nextState);
+      setInvoiceStatus(nextInv);
+    }
   };
 
   const activeFilters = useMemo(() => {
     const out: string[] = [];
     if (state !== "all") out.push(state);
     if (invoiceStatus !== "all") out.push(`invoice:${invoiceStatus}`);
-    if (staleOnly) out.push("stale only");
+    if (companyFilter !== "all") out.push(companyFilter === "cc" ? "CC" : "R&F");
     if (repMode === "mine" && currentUser?.name) out.push(`mine (${currentUser.name})`);
     return out;
-  }, [state, invoiceStatus, staleOnly, repMode, currentUser?.name]);
+  }, [state, invoiceStatus, companyFilter, repMode, currentUser?.name]);
 
-  // Apply Mine filter client-side. matchesUser handles the canonical email
-  // and accent-normalized name match (consistent with leads + pipeline).
-  // Word-overlap fallback stays in for orders specifically because the
-  // salesperson string comes from Odoo and can drift from the portal user's
-  // display name (e.g. "Roger F Williams" vs "Roger Williams").
   const visibleRows = useMemo(() => {
-    if (repMode !== "mine" || !currentUser) return rows;
-    const meName = (currentUser.name ?? "").toLowerCase();
-    const meParts = meName.split(/\s+/).filter(Boolean);
-    return rows.filter((r) => {
-      const sp = r.salesperson ?? "";
-      if (matchesUser(sp, currentUser)) return true;
-      if (!meName) return false;
-      const spLower = sp.toLowerCase();
-      if (!spLower) return false;
-      return meParts.length > 0 && meParts.every((part) => spLower.includes(part));
-    });
-  }, [rows, repMode, currentUser]);
+    let filtered = rows;
+    if (companyFilter !== "all") {
+      filtered = filtered.filter((r) => r.company === companyFilter);
+    }
+    if (repMode === "mine" && currentUser) {
+      const meName = (currentUser.name ?? "").toLowerCase();
+      const meParts = meName.split(/\s+/).filter(Boolean);
+      filtered = filtered.filter((r) => {
+        const sp = r.salesperson ?? "";
+        if (matchesUser(sp, currentUser)) return true;
+        if (!meName) return false;
+        const spLower = sp.toLowerCase();
+        if (!spLower) return false;
+        return meParts.length > 0 && meParts.every((part) => spLower.includes(part));
+      });
+    }
+    return filtered;
+  }, [rows, companyFilter, repMode, currentUser]);
 
   return (
     <div className="p-6 max-w-[1500px] mx-auto">
@@ -361,14 +378,33 @@ const OrdersPage = () => {
             <ShoppingCart className="w-6 h-6 text-dash-accent" />
             <h1 className="font-display text-2xl">Orders & Quotes</h1>
           </div>
-
+          {currentUser &&
+            hasFeature(
+              { role: currentUser.role, featureOverrides: currentUser.featureOverrides },
+              "create_quote"
+            ) && (
+              <Link
+                href="/dashboard/orders/new"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-brand-copper text-white text-sm font-medium rounded-lg hover:bg-brand-copper/90 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                New Quote
+              </Link>
+            )}
         </div>
         <p className="text-sm text-dash-text-secondary">
           Full sales pipeline — quotes, confirmed orders, and fulfillment status from the live Odoo snapshot.
         </p>
       </header>
 
-      {pipeline && <PipelineHero pipeline={pipeline} onBucketClick={applyBucket} />}
+      {pipeline && (
+        <PipelineHero
+          pipeline={pipeline}
+          activeState={state}
+          activeInvoiceStatus={invoiceStatus}
+          onBucketClick={applyBucket}
+        />
+      )}
 
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-3 mb-4">
@@ -390,7 +426,7 @@ const OrdersPage = () => {
           onChange={(e) => setState(e.target.value as OrderStateFilter)}
           className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
         >
-          <option value="all">All states</option>
+          <option value="all">All statuses</option>
           <option value="quote">Quotes (draft + sent)</option>
           <option value="draft">Draft</option>
           <option value="sent">Sent</option>
@@ -409,15 +445,15 @@ const OrdersPage = () => {
           <option value="invoiced">Fully invoiced</option>
           <option value="upselling">Upselling</option>
         </select>
-        <label className="inline-flex items-center gap-2 text-xs text-dash-text-secondary px-3 py-2 border border-dash-border bg-dash-surface rounded cursor-pointer">
-          <input
-            type="checkbox"
-            checked={staleOnly}
-            onChange={(e) => setStaleOnly(e.target.checked)}
-            className="cursor-pointer"
-          />
-          Stale only
-        </label>
+        <select
+          value={companyFilter}
+          onChange={(e) => setCompanyFilter(e.target.value as CompanyFilter)}
+          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
+        >
+          <option value="all">All entities</option>
+          <option value="cc">CC</option>
+          <option value="llc">R&F</option>
+        </select>
         <MineAllToggle
           user={currentUser}
           scope="orders"

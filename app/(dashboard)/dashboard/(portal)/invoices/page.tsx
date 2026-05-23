@@ -17,6 +17,7 @@ import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 
 import { useFeatures } from "@/app/lib/use-features";
+import { formatDate } from "@/app/lib/format-date";
 
 type MoveTypeFilter = "all" | "customer" | "vendor" | "refund";
 type PaymentStateFilter = "all" | "open" | "paid" | "overdue";
@@ -115,7 +116,7 @@ const columns = [
   }),
   columnHelper.accessor("date", {
     header: "Issued",
-    cell: (info) => <span className="text-xs">{info.getValue() || "—"}</span>,
+    cell: (info) => <span className="text-xs">{formatDate(info.getValue())}</span>,
   }),
   columnHelper.accessor("dueDate", {
     header: "Due",
@@ -125,7 +126,7 @@ const columns = [
       if (!v) return <span className="text-xs text-dash-text-secondary">—</span>;
       return (
         <span className={`text-xs ${r.isOverdue ? "text-brand-terracotta font-medium" : ""}`}>
-          {v}
+          {formatDate(v)}
           {r.isOverdue && (
             <span className="ml-1 text-[10px]">({r.daysOverdue}d late)</span>
           )}
@@ -362,7 +363,7 @@ const InvoicesPage = () => {
           onChange={(e) => setPaymentState(e.target.value as PaymentStateFilter)}
           className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
         >
-          <option value="all">All payment states</option>
+          <option value="all">All payment statuses</option>
           <option value="open">Open (not paid / partial)</option>
           <option value="overdue">Overdue</option>
           <option value="paid">Paid</option>

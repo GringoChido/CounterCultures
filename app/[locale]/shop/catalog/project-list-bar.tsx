@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Bookmark, X, Trash2, Loader2, Send, Check, FileUp, ShoppingBag } from "lucide-react";
+import { useState } from "react";
+import { X, Trash2, Loader2, Send, Check, FileUp, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { useProjectStore } from "@/app/lib/stores/project-store";
 import { useCartStore } from "@/app/lib/stores/cart-store";
@@ -29,8 +29,7 @@ const T = {
     error: "Could not send the request. Please try again or email equipo@countercultures.com.mx",
     moveToCart: "Move to Cart",
     movedToCart: "Moved to cart",
-    viewList: "View list",
-    dropPdf: "Drop spec PDF",
+    dropPdf: "Upload spec PDF",
     addedFromPdf: (n: number) => `Added ${n} item${n === 1 ? "" : "s"} from PDF`,
   },
   es: {
@@ -53,18 +52,16 @@ const T = {
     error: "No pudimos enviar la solicitud. Intenta de nuevo o escribe a equipo@countercultures.com.mx",
     moveToCart: "Mover al Carrito",
     movedToCart: "Movido al carrito",
-    viewList: "Ver lista",
-    dropPdf: "Soltar PDF de especificación",
+    dropPdf: "Subir PDF de especificación",
     addedFromPdf: (n: number) => `${n} artículo${n === 1 ? "" : "s"} agregado${n === 1 ? "" : "s"} del PDF`,
   },
 };
 
 interface ProjectListBarProps {
   locale: "en" | "es";
-  revealTriggerSelector?: string;
 }
 
-const ProjectListBar = ({ locale, revealTriggerSelector }: ProjectListBarProps) => {
+const ProjectListBar = ({ locale }: ProjectListBarProps) => {
   const t = T[locale];
   const items = useProjectStore((s) => s.items);
   const add = useProjectStore((s) => s.add);
@@ -75,46 +72,9 @@ const ProjectListBar = ({ locale, revealTriggerSelector }: ProjectListBarProps) 
   const cartAdd = useCartStore((s) => s.add);
   const cartHas = useCartStore((s) => s.has);
 
-  const chatOpen = useUiStore((s) => s.chatOpen);
+  const expanded = useUiStore((s) => s.projectPanelOpen);
+  const closePanel = useUiStore((s) => s.closeProjectPanel);
 
-  const [expanded, setExpanded] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [armed, setArmed] = useState(!revealTriggerSelector);
-  const armedRef = useRef(armed);
-
-  useEffect(() => {
-    const next = !revealTriggerSelector;
-    setArmed(next);
-    armedRef.current = next;
-  }, [revealTriggerSelector]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setMounted(true), 300);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 200);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  useEffect(() => {
-    if (!revealTriggerSelector || armedRef.current || !mounted) return;
-    const el = document.querySelector(revealTriggerSelector);
-    if (!el) return;
-    const check = () => {
-      const rect = el.getBoundingClientRect();
-      if (rect.top < window.innerHeight * 0.9) {
-        setArmed(true);
-        armedRef.current = true;
-        window.removeEventListener("scroll", check);
-      }
-    };
-    window.addEventListener("scroll", check, { passive: true });
-    return () => window.removeEventListener("scroll", check);
-  }, [revealTriggerSelector, mounted]);
   const [pdfOpen, setPdfOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [name, setName] = useState("");
@@ -199,7 +159,7 @@ const ProjectListBar = ({ locale, revealTriggerSelector }: ProjectListBarProps) 
       setTimeout(() => {
         clear();
         setFormOpen(false);
-        setExpanded(false);
+        closePanel();
         setSubmitted(false);
         setName("");
         setEmail("");
@@ -217,40 +177,6 @@ const ProjectListBar = ({ locale, revealTriggerSelector }: ProjectListBarProps) 
 
   return (
     <>
-      {!expanded && (armed || items.length > 0) && (
-        <div
-          className={`fixed z-40 left-4 right-auto flex flex-col items-start bottom-[calc(env(safe-area-inset-bottom,0px)+1rem)] md:left-1/2 md:-translate-x-1/2 md:bottom-6 md:items-center gap-2 transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none ${mounted && !chatOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}`}
-          aria-hidden={chatOpen || !mounted}
-        >
-          {items.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setExpanded(true)}
-              className={`flex items-center gap-3 px-5 py-3 bg-brand-copper text-white hover:bg-brand-copper/90 transition-colors cursor-pointer rounded-full ${scrolled ? "shadow-xl" : "shadow-lg"}`}
-            >
-              <Bookmark className="w-4 h-4" />
-              <span className="font-body text-sm font-medium">
-                {t.itemCount(items.length)}
-              </span>
-              <span className="font-body text-xs opacity-80">{t.viewList} →</span>
-            </button>
-          )}
-          {armed && (
-            <button
-              type="button"
-              onClick={() => setPdfOpen(true)}
-              className={`flex items-center gap-2 px-4 py-2.5 bg-brand-charcoal text-white hover:bg-brand-charcoal/90 transition-colors cursor-pointer rounded-full ${scrolled ? "shadow-xl" : "shadow-lg"}`}
-              title={t.dropPdf}
-            >
-              <FileUp className="w-4 h-4" />
-              <span className="font-body text-xs font-medium tracking-wide">
-                {t.dropPdf}
-              </span>
-            </button>
-          )}
-        </div>
-      )}
-
       <PdfDropModal
         open={pdfOpen}
         onClose={() => setPdfOpen(false)}
@@ -266,7 +192,7 @@ const ProjectListBar = ({ locale, revealTriggerSelector }: ProjectListBarProps) 
           <div
             className="absolute inset-0 bg-black/40"
             onClick={() => {
-              setExpanded(false);
+              closePanel();
               setFormOpen(false);
             }}
             aria-hidden
@@ -284,7 +210,7 @@ const ProjectListBar = ({ locale, revealTriggerSelector }: ProjectListBarProps) 
               <button
                 type="button"
                 onClick={() => {
-                  setExpanded(false);
+                  closePanel();
                   setFormOpen(false);
                 }}
                 className="p-1.5 text-dash-text-secondary hover:text-brand-charcoal cursor-pointer shrink-0"
@@ -421,6 +347,15 @@ const ProjectListBar = ({ locale, revealTriggerSelector }: ProjectListBarProps) 
                       className="px-3 py-2.5 text-xs text-dash-text-secondary hover:text-dash-danger font-body cursor-pointer"
                     >
                       {t.clearAll}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPdfOpen(true)}
+                      className="flex items-center gap-1.5 px-3 py-2.5 text-xs text-dash-text-secondary hover:text-brand-copper font-body cursor-pointer"
+                      title={t.dropPdf}
+                    >
+                      <FileUp className="w-3.5 h-3.5" />
+                      {t.dropPdf}
                     </button>
                     <button
                       type="button"

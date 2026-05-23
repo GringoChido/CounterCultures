@@ -10,6 +10,9 @@ import {
   ExternalLink,
   FileText,
   Truck,
+  Eye,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { AttachmentsPanel } from "@/app/(dashboard)/components/attachments-panel";
@@ -21,6 +24,7 @@ import { SendQuoteButton } from "@/app/(dashboard)/components/orders/send-quote-
 import { DownloadReportButton } from "@/app/(dashboard)/components/download-report-button";
 import { CompanyBadge, EntityTintedCard } from "@/app/(dashboard)/components/company-badge";
 import { stripHtml } from "@/app/lib/strip-html";
+import { formatDate } from "@/app/lib/format-date";
 
 interface OrderRow {
   id: string;
@@ -42,6 +46,8 @@ interface OrderRow {
   linkedInvoiceCount: number;
   daysOpen: number;
   isStale: boolean;
+  isPaid: boolean;
+  isDelivered: boolean;
   company: string;
   rawState: string;
 }
@@ -208,18 +214,28 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 variant={order.invoiceStatus === "invoiced" ? "success" : "warning"}
               />
             )}
+            {order.isPaid && <StatusBadge label="Paid" variant="success" />}
+            {order.isDelivered && <StatusBadge label="Delivered" variant="in-progress" />}
             {order.isStale && (
               <StatusBadge label={`stale · ${order.daysOpen}d`} variant="danger" />
             )}
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-dash-text-secondary">
-            <span>Date {order.dateOrder || "—"}</span>
-            {order.validityDate && <span>Validity {order.validityDate}</span>}
-            {order.commitmentDate && <span>Commitment {order.commitmentDate}</span>}
+            <span>Date {formatDate(order.dateOrder)}</span>
+            {order.validityDate && <span>Validity {formatDate(order.validityDate)}</span>}
+            {order.commitmentDate && <span>Commitment {formatDate(order.commitmentDate)}</span>}
             <span>Currency {order.currency}</span>
           </div>
         </div>
         <div className="shrink-0 flex flex-wrap items-center gap-2">
+          <Link
+            href={`/dashboard/orders/${order.id}/preview`}
+            target="_blank"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs border border-dash-border bg-dash-surface rounded hover:border-brand-copper hover:text-brand-copper transition-colors text-dash-text-secondary"
+          >
+            <Eye className="w-3.5 h-3.5" />
+            Preview as customer
+          </Link>
           <DownloadReportButton
             reportName="sale.report_saleorder"
             recordId={order.id}
@@ -306,18 +322,7 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
         </section>
 
-        <section className="bg-dash-surface border border-dash-border p-5 rounded">
-          <h2 className="font-display text-sm uppercase tracking-wider text-dash-text-secondary mb-3">
-            Notes
-          </h2>
-          {rawOrder.note ? (
-            <p className="text-sm text-dash-text whitespace-pre-wrap line-clamp-6">
-              {stripHtml(rawOrder.note)}
-            </p>
-          ) : (
-            <p className="text-sm text-dash-text-secondary italic">No notes on this order.</p>
-          )}
-        </section>
+        <TermsSection note={rawOrder.note} />
       </div>
 
       {/* Lines */}
@@ -433,7 +438,7 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                   <th className="text-left p-3">PO #</th>
                   <th className="text-left p-3">Vendor</th>
                   <th className="text-left p-3">Date</th>
-                  <th className="text-left p-3">State</th>
+                  <th className="text-left p-3">Status</th>
                   <th className="text-left p-3">Bill status</th>
                   <th className="text-right p-3">Total</th>
                 </tr>
@@ -451,7 +456,7 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                       </Link>
                     </td>
                     <td className="p-3 text-xs">{po.partner_id || "—"}</td>
-                    <td className="p-3 text-xs">{(po.date_order || "").slice(0, 10) || "—"}</td>
+                    <td className="p-3 text-xs">{formatDate(po.date_order)}</td>
                     <td className="p-3">
                       <StatusBadge label={po.state} variant={stateVariant(po.state)} />
                     </td>
@@ -486,7 +491,7 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 <tr>
                   <th className="text-left p-3">#</th>
                   <th className="text-left p-3">Date</th>
-                  <th className="text-left p-3">State</th>
+                  <th className="text-left p-3">Status</th>
                   <th className="text-left p-3">Payment</th>
                   <th className="text-right p-3">Total</th>
                   <th className="text-right p-3">Balance</th>
@@ -503,7 +508,7 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                         {inv.name}
                       </Link>
                     </td>
-                    <td className="p-3 text-xs">{(inv.invoice_date || "").slice(0, 10)}</td>
+                    <td className="p-3 text-xs">{formatDate(inv.invoice_date)}</td>
                     <td className="p-3">
                       <StatusBadge label={inv.state} variant={stateVariant(inv.state)} />
                     </td>
@@ -532,6 +537,48 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
       <AttachmentsPanel resModel="sale.order" resId={order.id} />
       <MessagesPanel mode={{ resModel: "sale.order", resId: order.id }} />
     </div>
+  );
+};
+
+const TermsSection = ({ note }: { note: string }) => {
+  const text = note ? stripHtml(note) : "";
+  const isLong = text.length > 300;
+  const [expanded, setExpanded] = useState(!isLong);
+
+  return (
+    <section className="bg-dash-surface border border-dash-border p-5 rounded">
+      <h2 className="font-display text-sm uppercase tracking-wider text-dash-text-secondary mb-3">
+        Terms and Conditions
+      </h2>
+      {text ? (
+        <>
+          <p className={`text-sm text-dash-text whitespace-pre-wrap ${!expanded ? "line-clamp-4" : ""}`}>
+            {text}
+          </p>
+          {isLong && (
+            <button
+              type="button"
+              onClick={() => setExpanded((v) => !v)}
+              className="mt-2 inline-flex items-center gap-1 text-xs text-brand-copper hover:text-brand-copper/80 transition-colors cursor-pointer"
+            >
+              {expanded ? (
+                <>
+                  <ChevronUp className="w-3 h-3" />
+                  Show less
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-3 h-3" />
+                  Show full terms
+                </>
+              )}
+            </button>
+          )}
+        </>
+      ) : (
+        <p className="text-sm text-dash-text-secondary italic">No terms on this order.</p>
+      )}
+    </section>
   );
 };
 

@@ -6,7 +6,7 @@ type Company = "cc" | "llc";
 
 const COMPANY_CONFIG = {
   cc: {
-    label: "CC Mexico",
+    label: "CC",
     short: "CC",
     bg: "bg-company-cc-soft",
     text: "text-company-cc-text",
@@ -17,8 +17,8 @@ const COMPANY_CONFIG = {
     tintBorder: "border-company-cc/20",
   },
   llc: {
-    label: "LLC USA",
-    short: "LLC",
+    label: "R&F",
+    short: "R&F",
     bg: "bg-company-llc-soft",
     text: "text-company-llc-text",
     border: "border-company-llc/30",

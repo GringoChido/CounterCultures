@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { EditPaymentModal } from "@/app/(dashboard)/components/payments/edit-payment-modal";
+import { formatDate } from "@/app/lib/format-date";
 
 interface PaymentRow {
   id: string;
@@ -185,7 +186,7 @@ const PaymentDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
             </span>
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-dash-text-secondary">
-            <span>{payment.date}</span>
+            <span>{formatDate(payment.date)}</span>
             <span>{payment.journalName}</span>
             {payment.methodName && <span>{payment.methodName}</span>}
           </div>
@@ -276,7 +277,7 @@ const PaymentDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                   <th className="text-left p-3">#</th>
                   <th className="text-left p-3">Type</th>
                   <th className="text-left p-3">Date</th>
-                  <th className="text-left p-3">State</th>
+                  <th className="text-left p-3">Status</th>
                   <th className="text-left p-3">Payment</th>
                   <th className="text-right p-3">Total</th>
                   <th className="text-right p-3">Balance</th>
@@ -299,7 +300,7 @@ const PaymentDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
                       {m.move_type === "in_invoice" && "Vendor bill"}
                       {m.move_type === "in_refund" && "Vendor credit"}
                     </td>
-                    <td className="p-3 text-xs">{(m.invoice_date || "").slice(0, 10)}</td>
+                    <td className="p-3 text-xs">{formatDate(m.invoice_date)}</td>
                     <td className="p-3">
                       <StatusBadge label={m.state} variant={stateVariant(m.state)} />
                     </td>

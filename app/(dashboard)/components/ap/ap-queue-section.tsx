@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Clock, ShieldAlert } from "lucide-react";
 import { CompanyBadge } from "@/app/(dashboard)/components/company-badge";
+import { formatDate } from "@/app/lib/format-date";
 
 export interface APQueueRow {
   label: string;
@@ -92,7 +93,7 @@ const APQueueSection = () => {
                 : fmt(r.poAmount, r.currency)}
             </div>
             <div className="text-xs text-dash-text">
-              {r.dueDate || <span className="text-dash-text-secondary">—</span>}
+              {r.dueDate ? formatDate(r.dueDate) : <span className="text-dash-text-secondary">—</span>}
             </div>
             <div>
               {r.blocksSend ? (

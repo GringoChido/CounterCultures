@@ -15,10 +15,13 @@ import {
 } from "lucide-react";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
+import { CompanyBadge } from "@/app/(dashboard)/components/company-badge";
+import { formatDate } from "@/app/lib/format-date";
 
 
 type POStateFilter = "all" | "draft" | "sent" | "purchase" | "done" | "cancel";
 type POInvoiceFilter = "all" | "no" | "to invoice" | "invoiced";
+type CompanyFilter = "all" | "cc" | "llc";
 type SortBy = "date_desc" | "date_asc" | "total_desc" | "days_open_desc" | "vendor";
 
 interface PORow {
@@ -33,6 +36,7 @@ interface PORow {
   invoiceStatus: string;
   daysOpen: number;
   isOverdue: boolean;
+  company: string;
 }
 
 interface Pipeline {
@@ -62,6 +66,15 @@ const stateVariant = (s: string): BadgeVariant => {
   return "info";
 };
 
+const poStateLabel = (s: string) => {
+  if (s === "draft") return "RFQ";
+  if (s === "sent") return "Sent";
+  if (s === "purchase") return "Confirmed";
+  if (s === "done") return "Done";
+  if (s === "cancel") return "Cancelled";
+  return s;
+};
+
 const invoiceStatusVariant = (s: string): BadgeVariant => {
   if (s === "invoiced") return "success";
   if (s === "to invoice") return "warning";
@@ -85,6 +98,10 @@ const columns = [
       );
     },
   }),
+  columnHelper.accessor("company", {
+    header: "Entity",
+    cell: (info) => <CompanyBadge company={info.getValue()} size="xs" />,
+  }),
   columnHelper.accessor("vendorName", {
     header: "Vendor",
     cell: (info) => {
@@ -103,15 +120,15 @@ const columns = [
   }),
   columnHelper.accessor("dateOrder", {
     header: "Ordered",
-    cell: (info) => <span className="text-xs">{info.getValue() || "—"}</span>,
+    cell: (info) => <span className="text-xs">{formatDate(info.getValue())}</span>,
   }),
   columnHelper.accessor("state", {
-    header: "State",
+    header: "Status",
     cell: (info) => {
       const r = info.row.original;
       return (
         <div className="flex items-center gap-1.5">
-          <StatusBadge label={info.getValue()} variant={stateVariant(info.getValue())} />
+          <StatusBadge label={poStateLabel(info.getValue())} variant={stateVariant(info.getValue())} />
           {r.isOverdue && (
             <span
               title={`Open ${r.daysOpen} days`}
@@ -169,7 +186,7 @@ const PipelineHero = ({
       total: openTotal,
       icon: Clock,
       iconClass: "text-brand-copper",
-      description: `${pipeline.draft.count + pipeline.sent.count} drafts + ${pipeline.purchase.count} confirmed`,
+      description: `${pipeline.draft.count + pipeline.sent.count} RFQs + ${pipeline.purchase.count} confirmed`,
       onClick: () => onBucketClick({}),
     },
     {
@@ -238,6 +255,7 @@ const PurchasesPage = () => {
   const [state, setState] = useState<POStateFilter>("all");
   const [invoiceStatus, setInvoiceStatus] = useState<POInvoiceFilter>("all");
   const [stuckOnly, setStuckOnly] = useState(false);
+  const [companyFilter, setCompanyFilter] = useState<CompanyFilter>("all");
   const [sortBy, setSortBy] = useState<SortBy>("date_desc");
   const [rows, setRows] = useState<PORow[]>([]);
   const [total, setTotal] = useState(0);
@@ -288,13 +306,19 @@ const PurchasesPage = () => {
     setStuckOnly(!!f.stuckOnly);
   };
 
+  const visibleRows = useMemo(() => {
+    if (companyFilter === "all") return rows;
+    return rows.filter((r) => r.company === companyFilter);
+  }, [rows, companyFilter]);
+
   const activeFilters = useMemo(() => {
     const out: string[] = [];
     if (state !== "all") out.push(state);
     if (invoiceStatus !== "all") out.push(`invoice:${invoiceStatus}`);
+    if (companyFilter !== "all") out.push(companyFilter === "cc" ? "CC" : "R&F");
     if (stuckOnly) out.push("stuck only");
     return out;
-  }, [state, invoiceStatus, stuckOnly]);
+  }, [state, invoiceStatus, companyFilter, stuckOnly]);
 
   return (
     <div className="p-6 max-w-[1500px] mx-auto">
@@ -332,8 +356,8 @@ const PurchasesPage = () => {
           onChange={(e) => setState(e.target.value as POStateFilter)}
           className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
         >
-          <option value="all">All states</option>
-          <option value="draft">Draft</option>
+          <option value="all">All statuses</option>
+          <option value="draft">RFQ</option>
           <option value="sent">Sent to vendor</option>
           <option value="purchase">Confirmed</option>
           <option value="done">Done</option>
@@ -348,6 +372,15 @@ const PurchasesPage = () => {
           <option value="no">Nothing to bill</option>
           <option value="to invoice">To bill</option>
           <option value="invoiced">Billed</option>
+        </select>
+        <select
+          value={companyFilter}
+          onChange={(e) => setCompanyFilter(e.target.value as CompanyFilter)}
+          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
+        >
+          <option value="all">All entities</option>
+          <option value="cc">CC</option>
+          <option value="llc">R&F</option>
         </select>
         <label className="inline-flex items-center gap-2 text-xs text-dash-text-secondary px-3 py-2 border border-dash-border bg-dash-surface rounded cursor-pointer">
           <input
@@ -372,14 +405,14 @@ const PurchasesPage = () => {
       </div>
 
       <div className="mb-2 text-xs text-dash-text-secondary">
-        {total.toLocaleString()} PO{total === 1 ? "" : "s"}
+        {visibleRows.length.toLocaleString()} of {total.toLocaleString()} PO{total === 1 ? "" : "s"}
         {activeFilters.length > 0 && <> · filtered: {activeFilters.join(", ")}</>}
       </div>
 
       <div className="bg-dash-surface border border-dash-border rounded">
         <DataTable
           columns={columns}
-          data={rows}
+          data={visibleRows}
           onRowClick={(row) => router.push(`/dashboard/purchases/${row.id}`)}
         />
       </div>

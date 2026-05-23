@@ -6,6 +6,7 @@ import { Eye } from "lucide-react";
 import type { Product } from "@/app/lib/types";
 import { pdpHref } from "@/app/lib/pdp-href";
 import { SafeProductImage } from "@/app/components/safe-product-image";
+import { ARTISAN_BRANDS } from "@/app/lib/products-mapping";
 
 interface ProductCardProps {
   product: Product;
@@ -35,9 +36,9 @@ const ProductCard = ({ product, locale = "en" }: ProductCardProps) => {
           imageClassName="transition-transform duration-500 ease-in-out group-hover:scale-105"
         />
 
-        {product.artisanal && (
+        {ARTISAN_BRANDS.has(product.brand) && (
           <span className="absolute top-3 left-3 font-body font-semibold text-[10px] tracking-[0.15em] uppercase bg-brand-copper text-white px-2.5 py-1 z-20">
-            Artisanal
+            {locale === "es" ? "Artesanal" : "Artisanal"}
           </span>
         )}
 

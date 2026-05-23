@@ -122,10 +122,11 @@ export const BRAND_DISPLAY_MAP: Record<string, string> = {
   "Commercial": "",
   "Personal": "",
   "IMP-02": "",
-  "Counter / Santiago": "Santiago",
-  "Counter / Gaby- Cobre": "Gaby",
-  "Counter/Meza": "Meza",
-  "gaby": "Gaby",
+  "Counter / Santiago": "Manriquez",
+  "Counter / Gaby- Cobre": "Castro",
+  "Counter/Meza": "Familia Meza",
+  "gaby": "Castro",
+  "Mistoa": "Mistoa",
   "Counter": "Counter Cultures",
   "COUNTER/CHINA": "Counter Cultures",
   "independencia": "Independencia",
@@ -133,6 +134,13 @@ export const BRAND_DISPLAY_MAP: Record<string, string> = {
   "cobuild": "",
   "coobuild": "",
 };
+
+export const ARTISAN_BRANDS: ReadonlySet<string> = new Set([
+  "Mistoa",
+  "Familia Meza",
+  "Castro",
+  "Manriquez",
+]);
 
 export const normalizeCategory = (c: string): ProductCategory => {
   if (c === "kitchen" || c === "hardware") return c;

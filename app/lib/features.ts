@@ -87,6 +87,8 @@ const FINANCE_FEATURES: Feature[] = [
   "register_payment",
   "edit_payment",
   "send_payment_link",
+  "create_quote",
+  "send_quote",
 ];
 
 const SALES_FEATURES: Feature[] = [

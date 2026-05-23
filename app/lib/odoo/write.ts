@@ -184,26 +184,107 @@ export const registerPayment = async (
   };
 };
 
-// ── Quotes & Invoices (Cut #3 follow-on, stubs typed for next iteration) ──
+// ── Customers ─────────────────────────────────────────────────────
+
+export interface CreateCustomerInput {
+  name: string;
+  email?: string;
+  phone?: string;
+  company?: string;
+}
+
+export interface CreateCustomerResult {
+  partnerId: number;
+  partnerName: string;
+}
+
+export const createCustomer = async (
+  input: CreateCustomerInput
+): Promise<CreateCustomerResult> => {
+  requireOdooConfigured();
+  const uid = await getUid();
+
+  const vals: Record<string, unknown> = {
+    name: input.name,
+    customer_rank: 1,
+  };
+  if (input.email) vals.email = input.email;
+  if (input.phone) vals.phone = input.phone;
+  if (input.company) {
+    vals.company_name = input.company;
+  }
+
+  const partnerId = (await execute(uid, "res.partner", "create", [vals])) as number;
+
+  const [record] = (await execute(uid, "res.partner", "read", [[partnerId]], {
+    fields: ["id", "name"],
+  })) as { id: number; name: string }[];
+
+  return { partnerId: record.id, partnerName: record.name };
+};
+
+// ── Quotes & Invoices ─────────────────────────────────────────────
 
 export interface CreateQuoteInput {
   partnerId: number;
-  lines: { productId: number; quantity: number; priceUnit?: number }[];
+  lines: { productId: number; quantity: number; priceUnit?: number; discount?: number }[];
   validity_date?: string;
   payment_term_id?: number;
   pricelist_id?: number;
+  companyId?: number;
+  salespersonId?: number;
+  note?: string;
 }
 
-/**
- * Creates a draft quote on Odoo. NOT YET WIRED into the dashboard UI —
- * lives here so the next iteration just plugs in the button. Validates the
- * shape, leaves the Odoo call as a TODO until we have the customer-facing
- * quote builder UI.
- */
+export interface CreateQuoteResult {
+  orderId: number;
+  orderName: string;
+}
+
 export const createQuote = async (
-  _input: CreateQuoteInput
-): Promise<{ orderId: number; orderName: string }> => {
-  throw new Error("createQuote not yet wired — see Cut #3 follow-on");
+  input: CreateQuoteInput
+): Promise<CreateQuoteResult> => {
+  requireOdooConfigured();
+  const uid = await getUid();
+
+  const orderLines = input.lines.map((l) => [
+    0,
+    0,
+    {
+      product_id: l.productId,
+      product_uom_qty: l.quantity,
+      ...(l.priceUnit != null ? { price_unit: l.priceUnit } : {}),
+      ...(l.discount != null && l.discount > 0 ? { discount: l.discount } : {}),
+    },
+  ]);
+
+  const vals: Record<string, unknown> = {
+    partner_id: input.partnerId,
+    order_line: orderLines,
+  };
+  if (input.validity_date) vals.validity_date = input.validity_date;
+  if (input.payment_term_id) vals.payment_term_id = input.payment_term_id;
+  if (input.pricelist_id) vals.pricelist_id = input.pricelist_id;
+  if (input.companyId) vals.company_id = input.companyId;
+  if (input.salespersonId) vals.user_id = input.salespersonId;
+  if (input.note != null) vals.note = input.note;
+
+  const orderId = (await execute(uid, "sale.order", "create", [vals])) as number;
+
+  const [record] = (await execute(uid, "sale.order", "read", [[orderId]], {
+    fields: ["id", "name"],
+  })) as { id: number; name: string }[];
+
+  try {
+    await syncSaleOrderInMirror(record.id);
+  } catch (err) {
+    console.warn(
+      "[odoo/write] post-createQuote mirror sync failed (non-fatal):",
+      err instanceof Error ? err.message : err
+    );
+  }
+
+  return { orderId: record.id, orderName: record.name };
 };
 
 export interface ConfirmAndInvoiceResult {

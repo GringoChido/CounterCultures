@@ -4,7 +4,7 @@ import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
-  Truck,
+  Package,
   Loader2,
   AlertCircle,
   ExternalLink,
@@ -13,6 +13,8 @@ import {
   ShieldAlert,
   CreditCard,
   FilePlus,
+  Truck,
+  Printer,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useFeatures } from "@/app/lib/use-features";
@@ -23,6 +25,7 @@ import { MessagesPanel } from "@/app/(dashboard)/components/messages-panel";
 import { DownloadReportButton } from "@/app/(dashboard)/components/download-report-button";
 import { CompanyBadge, EntityTintedCard } from "@/app/(dashboard)/components/company-badge";
 import { stripHtml } from "@/app/lib/strip-html";
+import { formatDate } from "@/app/lib/format-date";
 
 interface PORow {
   id: string;
@@ -44,6 +47,7 @@ interface POLine {
   id: string;
   name: string;
   product_id: string;
+  product_id_id: string;
   product_qty: string;
   qty_received: string;
   qty_invoiced: string;
@@ -136,7 +140,7 @@ const paymentStateVariant = (ps: string): BadgeVariant => {
 };
 
 const stateLabel = (s: string) => {
-  if (s === "draft") return "Draft";
+  if (s === "draft") return "RFQ";
   if (s === "sent") return "Sent to vendor";
   if (s === "purchase") return "Confirmed";
   if (s === "done") return "Done";
@@ -299,12 +303,12 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
       </Link>
 
       <header className="mb-6 flex items-start gap-4">
-        <div className="p-3 bg-dash-surface border border-dash-border rounded">
-          <Truck className="w-6 h-6 text-dash-accent" />
+        <div className="p-3 bg-dash-surface border border-dash-border rounded" title="Purchase Order">
+          <Package className="w-6 h-6 text-dash-accent" />
         </div>
         <div className="flex-1">
           <div className="flex flex-wrap items-center gap-2 mb-1">
-            <h1 className="font-display text-2xl text-dash-text">{order.name}</h1>
+            <h1 className="font-display text-3xl font-semibold text-dash-text">{order.name}</h1>
             <CompanyBadge company={order.company} />
             <StatusBadge label={stateLabel(order.rawState)} variant={stateVariant(order.rawState)} />
             {order.invoiceStatus && order.invoiceStatus !== "no" && (
@@ -341,9 +345,9 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
             )}
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-dash-text-secondary">
-            <span>Ordered {order.dateOrder || "—"}</span>
-            {rawOrder.date_approve && <span>Approved {rawOrder.date_approve.slice(0, 10)}</span>}
-            {rawOrder.date_planned && <span>Expected {rawOrder.date_planned.slice(0, 10)}</span>}
+            <span>Ordered {formatDate(order.dateOrder)}</span>
+            {rawOrder.date_approve && <span>Approved {formatDate(rawOrder.date_approve)}</span>}
+            {rawOrder.date_planned && <span>Expected {formatDate(rawOrder.date_planned)}</span>}
             <span>Currency {order.currency}</span>
           </div>
         </div>
@@ -365,10 +369,19 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
               Create bill
             </button>
           )}
+          <Link
+            href={`/dashboard/purchases/${order.id}/print`}
+            target="_blank"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs border border-dash-border bg-dash-surface rounded hover:border-brand-copper hover:text-brand-copper transition-colors text-dash-text-secondary"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            PDF
+          </Link>
           <DownloadReportButton
             reportName="purchase.report_purchaseorder"
             recordId={order.id}
             fileName={`${order.name}.pdf`}
+            label="Odoo PDF"
           />
 
         </div>
@@ -430,7 +443,7 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
                 <>
                   <span className="text-dash-text-secondary text-xs">·</span>
                   <span className="text-xs text-dash-text-secondary">
-                    {linkedSaleOrder.date_order.slice(0, 10)}
+                    {formatDate(linkedSaleOrder.date_order)}
                   </span>
                 </>
               )}
@@ -502,7 +515,6 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
           <table className="w-full text-sm">
             <thead className="border-b border-dash-border text-xs uppercase tracking-wider text-dash-text-secondary">
               <tr>
-                <th className="text-left p-3">Description</th>
                 <th className="text-left p-3">Product</th>
                 <th className="text-right p-3">Ordered</th>
                 <th className="text-right p-3">Received</th>
@@ -515,18 +527,29 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
             <tbody>
               {lines.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-6 text-center text-dash-text-secondary">
+                  <td colSpan={7} className="p-6 text-center text-dash-text-secondary">
                     No line items.
                   </td>
                 </tr>
               ) : (
                 lines.map((l) => (
-                  <tr key={l.id} className="border-b border-dash-border/50">
+                  <tr key={l.id} className="border-b border-dash-border/50 align-top">
                     <td className="p-3 text-xs max-w-md">
-                      <span className="line-clamp-2">{l.name}</span>
-                    </td>
-                    <td className="p-3 text-xs text-dash-text-secondary line-clamp-1">
-                      {l.product_id || "—"}
+                      <div className="flex items-start gap-2.5">
+                        {l.product_id_id && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={`/products/odoo/${l.product_id_id}.jpg`}
+                            alt=""
+                            className="w-10 h-10 rounded object-cover shrink-0 border border-dash-border bg-dash-bg"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="line-clamp-2">{l.name}</div>
+                          <div className="text-dash-text-secondary mt-0.5 line-clamp-1">{l.product_id || "—"}</div>
+                        </div>
+                      </div>
                     </td>
                     <td className="p-3 text-right text-xs">{num(l.product_qty).toLocaleString()}</td>
                     <td className="p-3 text-right text-xs text-dash-text-secondary">{num(l.qty_received).toLocaleString()}</td>
@@ -559,7 +582,7 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
                 <tr>
                   <th className="text-left p-3">#</th>
                   <th className="text-left p-3">Date</th>
-                  <th className="text-left p-3">State</th>
+                  <th className="text-left p-3">Status</th>
                   <th className="text-left p-3">Payment</th>
                   <th className="text-right p-3">Total</th>
                   <th className="text-right p-3">Balance</th>
@@ -576,7 +599,7 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
                         {b.name}
                       </Link>
                     </td>
-                    <td className="p-3 text-xs">{(b.invoice_date || "").slice(0, 10)}</td>
+                    <td className="p-3 text-xs">{formatDate(b.invoice_date)}</td>
                     <td className="p-3">
                       <StatusBadge label={b.state} variant={stateVariant(b.state)} />
                     </td>
@@ -615,7 +638,7 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
                 <tr>
                   <th className="text-left p-3">#</th>
                   <th className="text-left p-3">Date</th>
-                  <th className="text-left p-3">State</th>
+                  <th className="text-left p-3">Status</th>
                   <th className="text-left p-3">Journal</th>
                   <th className="text-right p-3">Amount</th>
                 </tr>
@@ -628,7 +651,7 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
                         {pay.name}
                       </Link>
                     </td>
-                    <td className="p-3 text-xs">{(pay.date || "").slice(0, 10)}</td>
+                    <td className="p-3 text-xs">{formatDate(pay.date)}</td>
                     <td className="p-3">
                       <StatusBadge label={pay.state} variant={stateVariant(pay.state)} />
                     </td>

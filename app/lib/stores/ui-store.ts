@@ -12,6 +12,11 @@ interface UiState {
   closeCart: () => void;
   toggleCart: () => void;
 
+  // Project list panel open state — ephemeral, not persisted.
+  projectPanelOpen: boolean;
+  openProjectPanel: () => void;
+  closeProjectPanel: () => void;
+
   // Chat widget open state — lets FABs yield when chat is expanded.
   chatOpen: boolean;
   setChatOpen: (open: boolean) => void;
@@ -33,6 +38,10 @@ export const useUiStore = create<UiState>()(
       openCart: () => set({ cartOpen: true }),
       closeCart: () => set({ cartOpen: false }),
       toggleCart: () => set((s) => ({ cartOpen: !s.cartOpen })),
+
+      projectPanelOpen: false,
+      openProjectPanel: () => set({ projectPanelOpen: true }),
+      closeProjectPanel: () => set({ projectPanelOpen: false }),
 
       chatOpen: false,
       setChatOpen: (open) => set({ chatOpen: open }),

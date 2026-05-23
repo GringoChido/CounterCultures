@@ -47,7 +47,7 @@ const STOCK_FILTER_OPTIONS: StockFilter[] = [
 ];
 
 const STOCK_LABELS: Record<StockFilter, string> = {
-  all: "All stock states",
+  all: "All stock statuses",
   stocked: "Stocked",
   request: "On request",
   external: "External",

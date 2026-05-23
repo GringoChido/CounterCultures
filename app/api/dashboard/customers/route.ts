@@ -4,7 +4,7 @@ import { getCustomerList } from "@/app/lib/odoo-sheets";
 export const GET = async (req: NextRequest) => {
   const sp = req.nextUrl.searchParams;
   const q = sp.get("q")?.toLowerCase().trim() ?? "";
-  const type = sp.get("type") ?? "all"; // all | customer | vendor | open_ar
+  const type = sp.get("type") ?? "customer"; // customer | open_ar
   const sortBy = sp.get("sort") ?? "activity"; // activity | name | outstanding | invoiced
   const limit = Math.min(Number(sp.get("limit") ?? 100), 1000);
   const offset = Math.max(Number(sp.get("offset") ?? 0), 0);
@@ -12,9 +12,9 @@ export const GET = async (req: NextRequest) => {
   try {
     let rows = await getCustomerList();
 
-    if (type === "customer") rows = rows.filter((r) => r.customerRank > 0);
-    else if (type === "vendor") rows = rows.filter((r) => r.supplierRank > 0);
-    else if (type === "open_ar") rows = rows.filter((r) => r.outstanding > 0);
+    const isCustomer = (r: typeof rows[number]) => r.customerRank > 0 || r.orderCount > 0;
+    if (type === "open_ar") rows = rows.filter((r) => isCustomer(r) && r.outstanding > 0);
+    else rows = rows.filter(isCustomer);
 
     if (q) {
       rows = rows.filter((r) => {

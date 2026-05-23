@@ -29,13 +29,11 @@ interface CustomerListRow {
   lastActivity: string | null;
 }
 
-type TypeFilter = "all" | "customer" | "vendor" | "open_ar";
+type TypeFilter = "customer" | "open_ar";
 type SortBy = "activity" | "name" | "outstanding" | "invoiced";
 
 const typeLabels: Record<TypeFilter, string> = {
-  all: "All",
-  customer: "Customers",
-  vendor: "Vendors",
+  customer: "All Customers",
   open_ar: "Open AR",
 };
 
@@ -44,10 +42,7 @@ const formatCurrency = (n: number, cur: string) => {
   return `$${Math.round(n).toLocaleString()} ${cur}`;
 };
 
-const formatDate = (iso: string | null) => {
-  if (!iso) return "—";
-  return iso.slice(0, 10);
-};
+import { formatDate } from "@/app/lib/format-date";
 
 const columnHelper = createColumnHelper<CustomerListRow>();
 
@@ -189,7 +184,7 @@ const CustomersPage = () => {
           <h1 className="font-display text-2xl">Customers</h1>
         </div>
         <p className="text-sm text-dash-text-secondary">
-          All {total.toLocaleString()} partners from Odoo, with full order + invoice + payment history.
+          {total.toLocaleString()} customers with order + invoice + payment history.
         </p>
       </header>
 
@@ -242,7 +237,7 @@ const CustomersPage = () => {
           )}
         </div>
         <div className="flex gap-2">
-          {(["all", "customer", "vendor", "open_ar"] as TypeFilter[]).map((t) => (
+          {(["customer", "open_ar"] as TypeFilter[]).map((t) => (
             <button
               key={t}
               onClick={() => setTypeFilter(t)}

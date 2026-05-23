@@ -114,7 +114,6 @@ const ShopCatalog = ({ initialProducts, initialCategory }: ShopCatalogProps) => 
                     category={product.category}
                     subcategory={product.subcategory}
                     slug={product.slug}
-                    artisanal={product.artisanal}
                   />
                 ))}
               </div>

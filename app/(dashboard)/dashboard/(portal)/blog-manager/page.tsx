@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { SlideOut } from "@/app/(dashboard)/components/slide-out";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
+import { formatDate } from "@/app/lib/format-date";
 import { NotesPanel } from "@/app/(dashboard)/components/notes-panel";
 import { ShareButton } from "@/app/(dashboard)/components/share-button";
 import { articles } from "@/app/lib/articles";
@@ -120,7 +121,7 @@ const columns = [
   }),
   columnHelper.accessor("date", {
     header: "Date",
-    cell: (info) => format(new Date(info.getValue()), "MMM d, yyyy"),
+    cell: (info) => formatDate(info.getValue()),
   }),
   columnHelper.accessor("views", {
     header: "Views",
