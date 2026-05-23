@@ -2,6 +2,7 @@ import { Link } from "@/app/i18n/navigation";
 import Image from "next/image";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 import { ArrowRight } from "lucide-react";
+import { formatCatalogCount } from "@/app/lib/format-catalog-count";
 
 const categories = [
   {
@@ -47,8 +48,8 @@ const ShopByRoom = ({ locale: localeProp = "en" }: { locale?: string }) => {
         </h2>
         <p className="text-center font-body text-dash-text-secondary mb-8 md:mb-12 max-w-2xl mx-auto">
           {locale === "en"
-            ? "Kitchen, bathroom, and architectural hardware from 19 authorized brands and Mexican artisans. Browse over 354,000 SKUs in the full catalog or explore our curated selection — delivery nationwide."
-            : "Cocina, baño y herrajes arquitectónicos de 19 marcas autorizadas y artesanos mexicanos. Explora más de 354,000 SKUs en el catálogo completo o nuestra selección curada — entrega en todo el país."}
+            ? `Kitchen, bathroom, and architectural hardware from 19 authorized brands and Mexican artisans. Browse over ${formatCatalogCount(354_000, "en")} SKUs in the full catalog or explore our curated selection — delivery nationwide.`
+            : `Cocina, baño y herrajes arquitectónicos de 19 marcas autorizadas y artesanos mexicanos. Explora más de ${formatCatalogCount(354_000, "es")} SKUs en el catálogo completo o nuestra selección curada — entrega en todo el país.`}
         </p>
       </AnimatedSection>
 
