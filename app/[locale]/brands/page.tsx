@@ -68,86 +68,63 @@ type Bilingual = { en: string; es: string };
 
 interface Artisan {
   name: string;
-  /** Exact product brand string (post BRAND_DISPLAY_MAP) used to filter the catalog. */
   productBrand: string;
-  location: Bilingual;
-  specialty: Bilingual;
+  craft: Bilingual;
   image: string;
   alt: Bilingual;
-  story: Bilingual;
 }
 
 const artisans: Artisan[] = [
   {
-    name: "Mistoa Studio",
-    productBrand: "Mistoa Studio",
-    location: { en: "Guanajuato", es: "Guanajuato" },
-    specialty: {
-      en: "Ceramic basins in 10 colorways",
-      es: "Lavabos de cerámica en 10 colores",
+    name: "Mistoa",
+    productBrand: "Mistoa",
+    craft: {
+      en: "Ceramic and concrete basins",
+      es: "Lavabos de cerámica y concreto",
     },
     image: "/Assets/Mistoa Studio.webp",
     alt: {
-      en: "Mistoa Studio ceramic basin handcrafted in Guanajuato, Mexico",
-      es: "Lavabo de cerámica Mistoa Studio hecho a mano en Guanajuato, México",
-    },
-    story: {
-      en: "Each Mistoa basin is hand-shaped on the wheel, dipped in small-batch glazes inspired by the Mexican landscape — from Arcilla clay to Azul Profundo.",
-      es: "Cada lavabo Mistoa se moldea a mano en el torno y se baña en esmaltes de pequeño lote inspirados en el paisaje mexicano — de la Arcilla al Azul Profundo.",
+      en: "Mistoa ceramic basin",
+      es: "Lavabo de cerámica Mistoa",
     },
   },
   {
-    name: "Santa Clara del Cobre",
-    productBrand: "Santa Clara del Cobre",
-    location: { en: "Michoacán", es: "Michoacán" },
-    specialty: {
-      en: "Hand-hammered copper vessels",
-      es: "Lavabos de cobre martillado a mano",
+    name: "Castro",
+    productBrand: "Castro",
+    craft: {
+      en: "Copper and brass",
+      es: "Cobre y latón",
     },
     image: "/Assets/Santa Clara del Cobre.webp",
     alt: {
-      en: "Hand-hammered copper basin by artisans of Santa Clara del Cobre, Michoacán",
-      es: "Lavabo de cobre martillado a mano por artesanos de Santa Clara del Cobre, Michoacán",
-    },
-    story: {
-      en: "The coppersmiths of Santa Clara del Cobre have forged copper since pre-Hispanic times. Each Counter Cultures basin carries the marks of its maker — Michelle, Eloy, Cindi, Flor de Plata.",
-      es: "Los maestros del cobre de Santa Clara forjan cobre desde tiempos prehispánicos. Cada lavabo Counter Cultures lleva las marcas de quien lo hizo — Michelle, Eloy, Cindi, Flor de Plata.",
+      en: "Castro copper basin",
+      es: "Lavabo de cobre Castro",
     },
   },
   {
-    name: "Stone Artisans",
-    productBrand: "Stone Artisans",
-    location: { en: "Querétaro", es: "Querétaro" },
-    specialty: {
-      en: "Riolita stone & travertine sinks",
-      es: "Lavabos de piedra riolita y travertino",
+    name: "Familia Meza",
+    productBrand: "Familia Meza",
+    craft: {
+      en: "Stone",
+      es: "Piedra",
     },
     image: "/Assets/Stone Artisans.webp",
     alt: {
-      en: "Hand-carved riolita stone sink by artisans in Querétaro, Mexico",
-      es: "Lavabo de piedra riolita tallado a mano por artesanos en Querétaro, México",
-    },
-    story: {
-      en: "Quarried from the volcanic highlands, each stone sink is carved by hand and polished to reveal the natural grain — no two pieces are alike.",
-      es: "Extraída de las tierras altas volcánicas, cada pieza de piedra se talla a mano y se pule para revelar la veta natural — no hay dos iguales.",
+      en: "Familia Meza stone basin",
+      es: "Lavabo de piedra Familia Meza",
     },
   },
   {
-    name: "Santiago — Bronze Hardware",
-    productBrand: "Santiago — Bronze Hardware",
-    location: { en: "Mexico", es: "México" },
-    specialty: {
-      en: "Hand-cast bronze pulls & hardware",
-      es: "Jaladeras y herrajes de bronce a mano",
+    name: "Manriquez",
+    productBrand: "Manriquez",
+    craft: {
+      en: "Cast bronze pulls and accessories",
+      es: "Jaladeras y accesorios de bronce fundido",
     },
     image: "/products/odoo/2045767.jpg",
     alt: {
-      en: "Hand-cast bronze cabinet pull with branch texture — Counter Cultures Santiago line",
-      es: "Jaladera de bronce con textura de rama — línea Santiago de Counter Cultures",
-    },
-    story: {
-      en: "Solid bronze pulls, levers, and hardware cast and finished by hand — from branch-textured jaladeras to half-moon pulls. No two castings are quite alike.",
-      es: "Jaladeras, tiradores y herrajes de bronce macizo, fundidos y terminados a mano — de jaladeras con textura de rama a tiradores de media luna. No hay dos piezas idénticas.",
+      en: "Manriquez cast bronze pull",
+      es: "Jaladera de bronce fundido Manriquez",
     },
   },
 ];
@@ -506,24 +483,17 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-brand-charcoal/70 via-brand-charcoal/20 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-6">
-                      <span className="inline-block bg-brand-copper text-white px-3 py-1 text-[10px] font-body font-semibold tracking-[0.15em] uppercase mb-3">
-                        {artisan.location[localeKey]}
-                      </span>
                       <h3 className="font-display text-2xl font-light text-white tracking-wide">
                         {artisan.name}
                       </h3>
                       <p className="mt-1 font-body text-xs text-white/70 tracking-wide">
-                        {artisan.specialty[localeKey]}
+                        {artisan.craft[localeKey]}
                       </p>
                     </div>
                   </div>
 
                   <div className="p-6 lg:p-8">
-                    <div className="w-8 h-0.5 bg-brand-copper mb-4" />
-                    <p className="font-body text-sm text-dash-text-secondary leading-relaxed">
-                      {artisan.story[localeKey]}
-                    </p>
-                    <span className="inline-flex items-center gap-2 mt-4 font-body font-medium text-xs text-dash-text-secondary/60 group-hover:text-brand-terracotta transition-colors duration-300 tracking-wide uppercase">
+                    <span className="inline-flex items-center gap-2 font-body font-medium text-xs text-dash-text-secondary/60 group-hover:text-brand-terracotta transition-colors duration-300 tracking-wide uppercase">
                       {isEs ? "Ver colección" : "View collection"}
                       <svg
                         width="14"
