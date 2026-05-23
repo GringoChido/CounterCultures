@@ -26,7 +26,7 @@
 - Working tree: clean
 - Stack: Next.js 16 App Router + Tailwind v4 (`@theme inline` in `app/globals.css`) + Framer Motion + Zustand + Lucide
 - Dev server: `npm run dev` from repo root, port 3000 (or auto-port)
-- Login: `joshua@untold.works` / `GringoChido1!`
+- Login: `admin@countercultures.com.mx` / `GringoChido1!`
 
 ---
 

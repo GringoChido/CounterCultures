@@ -334,7 +334,6 @@ Covered by `docs/fixes/p2-doc-consolidation.md`.
 
 ### 5C. Files to RETIRE
 
-- `docs/fixes/p1-resend-untold-works-domain.md` — marked DEPRECATED 2026-05-12. Delete.
 - `docs/superpowers/specs/*.md` (15 April-2026 design docs) — work shipped, specs are historical only. Move to `docs/archive/superpowers/`.
 
 ### 5D. PLAN.md, SESSIONS.md, COUNTER-CULTURES-ROADMAP.md
@@ -794,10 +793,7 @@ git rm "Counter-Cultures-Full-Plan copy.docx"
 git rm "Counter-Cultures-Proposal copy.docx"
 # verify CC-Image-Library 2/ first
 
-# 5. Retire deprecated fix file
-git rm docs/fixes/p1-resend-untold-works-domain.md
-
-# 6. Add banner to PLAN.md / SESSIONS.md / COUNTER-CULTURES-ROADMAP.md
+# 5. Add banner to PLAN.md / SESSIONS.md / COUNTER-CULTURES-ROADMAP.md
 # (manual edit — see §5D)
 
 git commit -m "docs(plan): consolidate to MASTER-PLAN.md, archive superseded prompts and specs"

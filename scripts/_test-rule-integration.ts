@@ -68,7 +68,7 @@ const main = async () => {
     "deal_field_update",
     dealId,
     { date_at_border: "2026-04-18" },
-    "test@untold.works"
+    "test@countercultures.com.mx"
   );
   assert(result1.type === "moved", `result.type === "moved" (got ${result1.type})`);
   if (result1.type === "moved") {

@@ -101,14 +101,14 @@ Columns (in order):
 #    the SMTP recipient gets rewritten to admin@countercultures.com.mx automatically.
 #    The Customers sheet row records the originally-submitted email.
 curl -X POST "$BASE_URL/api/auth/customer/signin/email" \
-  -d "email=test+$(date +%s)@untold.works"
+  -d "email=test+$(date +%s)@countercultures.com.mx"
 
 # 2. Inspect Customers tab — new row should appear with the originally-submitted email
 # 3. Open admin@countercultures.com.mx inbox (Joshua's Workspace alias), click magic link, complete sign-in
 # 4. Curl the cart endpoint
 curl "$BASE_URL/api/customer/cart" -H "Cookie: <customer-session-cookie>"
 ```
-Expected: 200, JSON `{ items: [], updated_at: "<ISO>" }`. New Customers row visible in sheet under the originally-submitted email (test+...@untold.works), not admin@. Magic-link email arrived at admin@.
+Expected: 200, JSON `{ items: [], updated_at: "<ISO>" }`. New Customers row visible in sheet under the originally-submitted email (test+...@countercultures.com.mx), not admin@. Magic-link email arrived at admin@.
 
 ## Dependencies
 **Requires:** P1.1 (Resend) — magic links must send.

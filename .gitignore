@@ -57,6 +57,7 @@ PROMPT-*.md
 CC-*.md
 *-PROMPT.md
 /Untold_Works_*.pdf
+/Untold-Works-*.pdf
 *.bak
 
 # Raw image sources awaiting migration to public/images/ — kept local only

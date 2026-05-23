@@ -18,7 +18,7 @@ const main = async () => {
   console.log(`→ appendDealEvent (deal_id=${testDealId})`);
   const event = await appendDealEvent({
     deal_id: testDealId,
-    actor: "test@untold.works",
+    actor: "test@countercultures.com.mx",
     event_type: "stage_change",
     from_stage: "deposit-pending",
     to_stage: "deposit-received",
@@ -32,7 +32,7 @@ const main = async () => {
   if (event.payload_json !== '{"payment_id":"pi_test_123","amount_mxn":25000}') {
     throw new Error(`payload_json serialization wrong: ${event.payload_json}`);
   }
-  if (event.actor !== "test@untold.works") {
+  if (event.actor !== "test@countercultures.com.mx") {
     throw new Error(`actor mismatch: ${event.actor}`);
   }
   console.log(`  wrote event ${event.event_id}`);

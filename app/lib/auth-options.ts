@@ -53,7 +53,7 @@ export const authOptions: AuthOptions = {
       const inDomain = email.endsWith(`@${ALLOWED_DOMAIN}`);
       if (!inDomain && !allowlist.includes(email)) {
         console.warn(`[auth] signIn rejected: domain "${domain}" not allowed for ${email}`);
-        return false;
+        return "/dashboard/login?error=DomainMismatch";
       }
 
       const user = await findUserByEmail(email);

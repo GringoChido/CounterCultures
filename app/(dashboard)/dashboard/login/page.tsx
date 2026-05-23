@@ -6,7 +6,9 @@ import { useSearchParams } from "next/navigation";
 
 const ERROR_MESSAGES: Record<string, string> = {
   AccessDenied:
-    "Your @countercultures.com.mx account isn't in the Users sheet, or it's been deactivated. Ask an admin to add or re-activate your row.",
+    "That account isn't in the Users sheet, or it's been deactivated. Ask an admin to add or re-activate your row.",
+  DomainMismatch:
+    "That isn't a Counter Cultures account. Please sign in with your @countercultures.com.mx account.",
   OAuthSignin: "Couldn't start the Google sign-in flow. Try again.",
   OAuthCallback: "Google sign-in failed. Try again.",
   OAuthAccountNotLinked: "This email is already linked to a different account.",
@@ -52,7 +54,7 @@ const LoginInner = () => {
               <p className="text-sm text-dash-danger">
                 {errorMessage}
               </p>
-              {errorCode === "AccessDenied" && (
+              {(errorCode === "AccessDenied" || errorCode === "DomainMismatch") && (
                 <button
                   type="button"
                   onClick={() => signIn("google", { callbackUrl: "/dashboard/overview" })}
@@ -97,17 +99,6 @@ const LoginInner = () => {
           </p>
         </div>
 
-        <p className="text-center text-xs text-white/30 mt-8">
-          Built by{" "}
-          <a
-            href="https://untold.works"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-white/50 transition-colors"
-          >
-            Untold.works
-          </a>
-        </p>
       </div>
     </div>
   );

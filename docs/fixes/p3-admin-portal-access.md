@@ -5,7 +5,7 @@
 
 ## Why this matters
 
-Joshua signs into the Counter Portal as `admin@countercultures.com.mx` (his Workspace alias). After the P0 bootstrap fix removed the permissive fallback, sign-in requires a row in the Users sheet. The original P0 seed list (`docs/fixes/p0-portal-users-bootstrap.md`) listed `joshua@untold.works` but not `admin@`. The seed script (`scripts/seed-users.ts`) was later updated to include it, but the silent rejection made diagnosing the gap harder than it needed to be.
+Joshua signs into the Counter Portal as `admin@countercultures.com.mx` (his Workspace alias). After the P0 bootstrap fix removed the permissive fallback, sign-in requires a row in the Users sheet. The original P0 seed list (`docs/fixes/p0-portal-users-bootstrap.md`) listed `admin@countercultures.com.mx` but not `admin@`. The seed script (`scripts/seed-users.ts`) was later updated to include it, but the silent rejection made diagnosing the gap harder than it needed to be.
 
 ## Root cause
 

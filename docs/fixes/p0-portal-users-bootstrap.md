@@ -38,7 +38,7 @@ The portal is currently in "bootstrap mode" — the Users sheet tab is empty, so
 1. Open the Counter Cultures CRM sheet, navigate to the `Users` tab (create the tab if missing).
 2. Add the header row: `email | name | role | active | feature_overrides`
 3. Add the 5 seed rows:
-   - `joshua@untold.works | Joshua Semolik | owner | true | `
+   - `admin@countercultures.com.mx | Joshua Semolik | owner | true | `
    - `roger@countercultures.com.mx | Roger Floyd Williams | owner | true | `
    - `antonia@countercultures.com.mx | Antonia | finance | true | `
    - `javier@countercultures.com.mx | Javier Medina | sales | true | `

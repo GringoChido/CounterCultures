@@ -25,7 +25,7 @@
 - Sheet-backed everywhere; no sample data; sheet schema changes require Joshua's approval BEFORE writing
 - Brand palette is **defined** in `globals.css` and **underused**: charcoal #1A1A1A, terracotta #C4725A, copper #B87333, sage #7A8B6F, stone #A89F91, linen #F5F0EB (page bg), sand #D4C5A9
 - Fonts: `Cormorant Garamond` display, `DM Sans` body, `JetBrains Mono` mono — already wired
-- Dev server pattern: `npm run dev`, port 3000 (or auto-port). Login with `joshua@untold.works` / `GringoChido1!`
+- Dev server pattern: `npm run dev`, port 3000 (or auto-port). Login with `admin@countercultures.com.mx` / `GringoChido1!`
 - TDD style for this repo: round-trip scripts at `scripts/_test-*.ts` run via `tsx`; browser preview via Claude Preview MCP for UI verification
 - Workflow: invoke `superpowers` skill at start. Phase 1 design is below — proceed to Phase 2 (TDD task plan with smaller granular steps) and Phase 3 (inline execution) after Joshua approves the proposal in §6 of this doc
 
@@ -544,7 +544,7 @@ Then invoke the `superpowers` skill. The design (Phase 1) is already written in 
 
 Repo: `/Users/joshuasemolik/Desktop/_PROJECTS/counter-cultures` (branch `main`, currently 8 commits ahead of origin/main from Webchat v2 — do NOT push those either; they're mine to push when ready).
 
-Dev login: `joshua@untold.works` / `GringoChido1!`. Preview server should already be running; if not, `npm run dev` from the repo root.
+Dev login: `admin@countercultures.com.mx` / `GringoChido1!`. Preview server should already be running; if not, `npm run dev` from the repo root.
 
 When you're done, you'll have:
 - A new design system (`bg-dash-*` tokens that actually exist)

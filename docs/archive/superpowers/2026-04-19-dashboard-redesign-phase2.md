@@ -52,7 +52,7 @@ bf89a5a  feat(design): sidebar v2 — light surface + 6 groups + missing modules
 - Sheet-backed everywhere; no sample data; sheet schema changes require Joshua's approval BEFORE writing
 - TDD style: round-trip scripts at `scripts/_test-*.ts` for backend; Claude Preview MCP for UI
 - Workflow: invoke `superpowers` skill at start
-- Dev login: `joshua@untold.works` / `GringoChido1!`
+- Dev login: `admin@countercultures.com.mx` / `GringoChido1!`
 - Push only when Joshua explicitly says
 
 ---
@@ -320,7 +320,7 @@ REPO + ENV:
 - Stack: Next.js 16 App Router + Tailwind v4 + Framer Motion +
   Zustand + Lucide
 - TypeScript strict, no `any`, no comments explaining obvious code
-- Dev login: joshua@untold.works / GringoChido1!
+- Dev login: admin@countercultures.com.mx / GringoChido1!
 - Preview server: should already be running. If not: `npm run dev`
   from repo root
 - Sheet rule: schema changes need explicit approval BEFORE writing
