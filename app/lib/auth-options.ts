@@ -56,6 +56,12 @@ export const authOptions: AuthOptions = {
         return false;
       }
 
+      // Break-glass accounts sign in WITHOUT any Users-sheet read, so a slow,
+      // hanging, or failing Sheets call can never block or time out their login.
+      if (email in BREAK_GLASS) {
+        return true;
+      }
+
       let user: Awaited<ReturnType<typeof findUserByEmail>> | null = null;
       try {
         user = await findUserByEmail(email);
@@ -79,18 +85,24 @@ export const authOptions: AuthOptions = {
       // propagate without requiring the affected user to log out and back in
       // (next request after their JWT refreshes will have the new values).
       if (email && (!token.role || trigger === "update" || trigger === "signIn")) {
-        let u: Awaited<ReturnType<typeof findUserByEmail>> | null = null;
-        try {
-          u = await findUserByEmail(email);
-        } catch (err) {
-          console.error(`[auth] jwt: Users-sheet read failed for ${email}`, err);
+        if (email in BREAK_GLASS) {
+          // Break-glass: assign role directly, never read the Users sheet.
+          token.role = BREAK_GLASS[email];
+          token.featureOverrides = "";
+        } else {
+          let u: Awaited<ReturnType<typeof findUserByEmail>> | null = null;
+          try {
+            u = await findUserByEmail(email);
+          } catch (err) {
+            console.error(`[auth] jwt: Users-sheet read failed for ${email}`, err);
+          }
+          if (!u) {
+            console.warn(`[auth] No Users-sheet row for ${email}; defaulting to sales role`);
+          }
+          token.role = (u?.role ?? "sales") as UserRole;
+          token.name = u?.name ?? token.name;
+          token.featureOverrides = u?.featureOverrides ?? "";
         }
-        if (!u && !(email in BREAK_GLASS)) {
-          console.warn(`[auth] No Users-sheet row for ${email}; defaulting to sales role`);
-        }
-        token.role = (u?.role ?? BREAK_GLASS[email] ?? "sales") as UserRole;
-        token.name = u?.name ?? token.name;
-        token.featureOverrides = u?.featureOverrides ?? "";
       }
       if (email) token.email = email;
       return token;
