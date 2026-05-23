@@ -33,9 +33,61 @@ export const customerAuthOptions: AuthOptions = {
   adapter: customerAdapter,
   session: { strategy: "jwt", maxAge: 60 * 60 * 24 * 30 }, // 30 days
   secret: process.env.NEXTAUTH_CUSTOMER_SECRET,
+  // The customer NextAuth instance shares the domain with the STAFF instance
+  // (app/lib/auth-options.ts at /api/auth). If both use NextAuth's default
+  // cookie names, they clobber each other's CSRF/state/PKCE cookies in the
+  // browser, which surfaces as "State cookie was missing" OAUTH_CALLBACK_ERROR
+  // on sign-in. Namespace EVERY customer cookie so the two instances never
+  // collide.
   cookies: {
     sessionToken: {
       name: "__Secure-cc-customer-session",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: true,
+      },
+    },
+    callbackUrl: {
+      name: "__Secure-cc-customer.callback-url",
+      options: {
+        sameSite: "lax",
+        path: "/",
+        secure: true,
+      },
+    },
+    csrfToken: {
+      name: "__Host-cc-customer.csrf-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: true,
+      },
+    },
+    pkceCodeVerifier: {
+      name: "__Secure-cc-customer.pkce.code_verifier",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: true,
+        maxAge: 900,
+      },
+    },
+    state: {
+      name: "__Secure-cc-customer.state",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: true,
+        maxAge: 900,
+      },
+    },
+    nonce: {
+      name: "__Secure-cc-customer.nonce",
       options: {
         httpOnly: true,
         sameSite: "lax",

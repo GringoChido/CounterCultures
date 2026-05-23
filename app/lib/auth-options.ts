@@ -1,8 +1,10 @@
 /**
- * NextAuth v4 configuration. Google SSO, JWT session, restricted to
- * @countercultures.com.mx. Role is read from the `Users` Sheet tab at
- * sign-in and embedded in the JWT. If a user has no row in `Users` (or
- * `active=false`), sign-in is rejected with `AccessDenied`.
+ * NextAuth v4 configuration. Google SSO, JWT session, HARD-LOCKED to
+ * @countercultures.com.mx. ANY @countercultures.com.mx account may sign in —
+ * a `Users` Sheet row is NOT required (role defaults to "sales" when there is
+ * no row). The only ways to be denied are: not being on the domain, or having
+ * an explicit `active=false` row (an admin revoke). There is no email
+ * allowlist, so no non-Counter-Cultures address can ever get in.
  */
 
 import type { AuthOptions } from "next-auth";
@@ -18,12 +20,6 @@ const BREAK_GLASS: Record<string, UserRole> = {
   "roger@countercultures.com.mx": "owner",
   "control@countercultures.com.mx": "finance",
 };
-
-const parseAllowlist = (): string[] =>
-  (process.env.PORTAL_EMAIL_ALLOWLIST ?? "")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
 
 export const authOptions: AuthOptions = {
   session: { strategy: "jwt", maxAge: 60 * 60 * 24 * 7 }, // 7 days
@@ -48,10 +44,13 @@ export const authOptions: AuthOptions = {
         console.warn("[auth] signIn rejected: no email on profile");
         return false;
       }
-      const allowlist = parseAllowlist();
-      const domain = email.split("@")[1];
+
+      // HARD DOMAIN LOCK. Only @countercultures.com.mx accounts may ever sign
+      // in. There is no allowlist and no other-domain path, so untold.works and
+      // every non-Counter-Cultures address stays permanently locked out.
       const inDomain = email.endsWith(`@${ALLOWED_DOMAIN}`);
-      if (!inDomain && !allowlist.includes(email)) {
+      if (!inDomain) {
+        const domain = email.split("@")[1];
         console.warn(`[auth] signIn rejected: domain "${domain}" not allowed for ${email}`);
         return false;
       }
@@ -62,19 +61,23 @@ export const authOptions: AuthOptions = {
         return true;
       }
 
+      // ANY @countercultures.com.mx account is allowed in. A Users-sheet row is
+      // NOT required — domain membership alone is enough (role defaults to
+      // "sales" in the jwt callback below). The only way to block a domain
+      // account is an explicit active=false row, which is how an admin revokes
+      // someone. A Sheets read failure must NEVER lock a valid domain user out.
       let user: Awaited<ReturnType<typeof findUserByEmail>> | null = null;
       try {
         user = await findUserByEmail(email);
       } catch (err) {
-        console.error(`[auth] signIn: Users-sheet read failed for ${email}`, err);
-        return email in BREAK_GLASS;
+        console.error(
+          `[auth] signIn: Users-sheet read failed for ${email}; allowing domain account through`,
+          err
+        );
+        return true;
       }
-      if (!user || !user.active) {
-        if (email in BREAK_GLASS) {
-          console.warn(`[auth] break-glass bypass: ${email} allowed in despite ${!user ? "missing sheet row" : "active=false"}`);
-          return true;
-        }
-        console.warn(`[auth] signIn rejected: ${!user ? "no Users-sheet row" : "active=false"} for ${email}`);
+      if (user && !user.active) {
+        console.warn(`[auth] signIn rejected: active=false for ${email}`);
         return false;
       }
       return true;
