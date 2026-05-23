@@ -23,6 +23,7 @@ import type { Product, ProductFilter } from "./types";
 import { SAMPLE_PRODUCTS, PRODUCT_CATEGORIES, SUBCATEGORY_CATALOG_QUERY } from "./constants";
 import type { CategoryKey } from "./constants";
 import { toSlug } from "./slug";
+import { ARTISAN_BRANDS } from "./products-mapping";
 
 // ── Config ────────────────────────────────────────────────────────────
 
@@ -132,7 +133,7 @@ const rowToProduct = (row: string[], index: number): Product => {
     currency: (row[9] as "MXN" | "USD") || "MXN",
     finishes: row[10] ? row[10].split(",").map((f) => f.trim()) : [],
     images: row[11] ? row[11].split(",").map((u) => u.trim()) : [],
-    artisanal: row[12] === "true",
+    artisanal: ARTISAN_BRANDS.has(row[2] || ""),
     description: row[13] || "",
     descriptionEn: row[14] || row[13] || "",
     availability: (row[15] as Product["availability"]) || "in-stock",

@@ -6,6 +6,7 @@ import { Plus, Check } from "lucide-react";
 import { pdpHref } from "@/app/lib/pdp-href";
 import { SafeProductImage } from "@/app/components/safe-product-image";
 import { useProjectStore } from "@/app/lib/stores/project-store";
+import { ARTISAN_BRANDS } from "@/app/lib/products-mapping";
 
 interface ProductCardProps {
   id: string;
@@ -20,7 +21,6 @@ interface ProductCardProps {
   category: string;
   subcategory: string;
   slug: string;
-  artisanal?: boolean;
 }
 
 const formatPrice = (price: number) =>
@@ -39,7 +39,6 @@ const ProductCard = ({
   category,
   subcategory,
   slug,
-  artisanal,
 }: ProductCardProps) => {
   const pathname = usePathname();
   const locale = pathname.startsWith("/es") ? "es" : "en";
@@ -83,9 +82,9 @@ const ProductCard = ({
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             imageClassName="transition-transform duration-500 ease-in-out group-hover:scale-105"
           />
-          {artisanal && (
+          {ARTISAN_BRANDS.has(brand) && (
             <span className="absolute top-3 left-3 z-20 font-body font-semibold text-[10px] tracking-[0.15em] uppercase bg-brand-copper text-white px-2.5 py-1">
-              Artisanal
+              {locale === "es" ? "Artesanal" : "Artisanal"}
             </span>
           )}
 

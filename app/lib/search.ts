@@ -11,6 +11,7 @@
 
 import { articles } from "./articles";
 import { cachedFetch, scoreTokens } from "./search-utils";
+import { ARTISAN_BRANDS } from "./products-mapping";
 
 export type SearchResultType =
   | "lead"
@@ -263,7 +264,7 @@ const fullProductToData = (p: FullProductRow): SearchProductData => ({
   slug: `p-${p.id}`,
   description: "",
   descriptionEn: "",
-  artisanal: false,
+  artisanal: ARTISAN_BRANDS.has(p.brand),
   id: p.id,
   featured: false,
 });
