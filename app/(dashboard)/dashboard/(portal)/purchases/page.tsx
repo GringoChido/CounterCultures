@@ -66,6 +66,15 @@ const stateVariant = (s: string): BadgeVariant => {
   return "info";
 };
 
+const poStateLabel = (s: string) => {
+  if (s === "draft") return "RFQ";
+  if (s === "sent") return "Sent";
+  if (s === "purchase") return "Confirmed";
+  if (s === "done") return "Done";
+  if (s === "cancel") return "Cancelled";
+  return s;
+};
+
 const invoiceStatusVariant = (s: string): BadgeVariant => {
   if (s === "invoiced") return "success";
   if (s === "to invoice") return "warning";
@@ -119,7 +128,7 @@ const columns = [
       const r = info.row.original;
       return (
         <div className="flex items-center gap-1.5">
-          <StatusBadge label={info.getValue()} variant={stateVariant(info.getValue())} />
+          <StatusBadge label={poStateLabel(info.getValue())} variant={stateVariant(info.getValue())} />
           {r.isOverdue && (
             <span
               title={`Open ${r.daysOpen} days`}
@@ -177,7 +186,7 @@ const PipelineHero = ({
       total: openTotal,
       icon: Clock,
       iconClass: "text-brand-copper",
-      description: `${pipeline.draft.count + pipeline.sent.count} drafts + ${pipeline.purchase.count} confirmed`,
+      description: `${pipeline.draft.count + pipeline.sent.count} RFQs + ${pipeline.purchase.count} confirmed`,
       onClick: () => onBucketClick({}),
     },
     {
@@ -348,7 +357,7 @@ const PurchasesPage = () => {
           className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
         >
           <option value="all">All statuses</option>
-          <option value="draft">Draft</option>
+          <option value="draft">RFQ</option>
           <option value="sent">Sent to vendor</option>
           <option value="purchase">Confirmed</option>
           <option value="done">Done</option>

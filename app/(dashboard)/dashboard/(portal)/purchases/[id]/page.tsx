@@ -140,7 +140,7 @@ const paymentStateVariant = (ps: string): BadgeVariant => {
 };
 
 const stateLabel = (s: string) => {
-  if (s === "draft") return "Draft";
+  if (s === "draft") return "RFQ";
   if (s === "sent") return "Sent to vendor";
   if (s === "purchase") return "Confirmed";
   if (s === "done") return "Done";
