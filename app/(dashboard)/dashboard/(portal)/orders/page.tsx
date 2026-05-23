@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
+import { CompanyBadge } from "@/app/(dashboard)/components/company-badge";
 import { formatDate } from "@/app/lib/format-date";
 
 import { useCurrentUser } from "@/app/lib/use-current-user";
@@ -46,6 +47,7 @@ interface OrderRow {
   isStale: boolean;
   isPaid: boolean;
   isDelivered: boolean;
+  company: string;
 }
 
 interface Pipeline {
@@ -99,6 +101,10 @@ const columns = [
         </Link>
       );
     },
+  }),
+  columnHelper.accessor("company", {
+    header: "Entity",
+    cell: (info) => <CompanyBadge company={info.getValue()} size="xs" />,
   }),
   columnHelper.accessor("partnerName", {
     header: "Customer",
