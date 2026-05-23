@@ -7,7 +7,7 @@
 
 Staging features that need email — magic-link customer accounts, trade approval flows, stale-quote follow-ups, inventory alerts — need a working Resend client. **But staging email MUST NOT use `countercultures.com.mx`** as the sender domain. That's the live production domain, served by Squarespace, and verifying Resend on it requires DNS changes at the production registrar. Production domain work is Phase 2 (see `COUNTER-CULTURES-ROADMAP.md`).
 
-For Phase 1 (staging) we use **Resend's sandbox sending mode**: Resend allows sending FROM `onboarding@resend.dev` (their pre-verified test domain) TO any email address you've authorized as a Test Recipient in the Resend dashboard. No DNS verification on `countercultures.com.mx` is needed. Customer-account flows can be tested end-to-end with you (`joshua@untold.works`) and Roger as authorized recipients.
+For Phase 1 (staging) we use **Resend's sandbox sending mode**: Resend allows sending FROM `onboarding@resend.dev` (their pre-verified test domain) TO any email address you've authorized as a Test Recipient in the Resend dashboard. No DNS verification on `countercultures.com.mx` is needed. Customer-account flows can be tested end-to-end with you (`admin@countercultures.com.mx`) and Roger as authorized recipients.
 
 When Phase 2 production cutover happens, the sender domain switches to a verified `countercultures.com.mx` address after proper DNS migration. That's a separate fix file, not this one.
 
@@ -46,7 +46,7 @@ When Phase 2 production cutover happens, the sender domain switches to a verifie
 
 ## The fix (step by step)
 
-1. **Authorize test recipients in Resend.** Resend Dashboard → Audience (or wherever "Test Recipients" / verified addresses are managed) → add `joshua@untold.works` and Roger's inbox. Sandbox mode rejects sends to unauthorized addresses.
+1. **Authorize test recipients in Resend.** Resend Dashboard → Audience (or wherever "Test Recipients" / verified addresses are managed) → add `admin@countercultures.com.mx` and Roger's inbox. Sandbox mode rejects sends to unauthorized addresses.
 2. **Confirm API key exists.** Resend → API Keys. If missing, create one named "Counter Cultures Prod (staging-sandbox)" with Full Access. Copy the value (paste to Joshua so it can be set in Netlify via MCP — already done in previous session).
 3. **Update Netlify env to sandbox sender** (via Netlify MCP, no UI clicks):
    - `RESEND_FROM_TRANSACTIONAL = onboarding@resend.dev`
@@ -57,9 +57,9 @@ When Phase 2 production cutover happens, the sender domain switches to a verifie
    curl -X POST "https://countercultures.netlify.app/api/_debug/email-test" \
      -H "Content-Type: application/json" \
      -H "x-cron-probe-key: <CRON_PROBE_KEY>" \
-     -d '{"to":"joshua@untold.works"}'
+     -d '{"to":"admin@countercultures.com.mx"}'
    ```
-6. **Confirm** an email arrives in `joshua@untold.works` inbox within ~60 sec. From address should be `onboarding@resend.dev`.
+6. **Confirm** an email arrives in `admin@countercultures.com.mx` inbox within ~60 sec. From address should be `onboarding@resend.dev`.
 7. **Update dependent fix files** (P1.2, P1.6) — add a "Phase 1 uses sandbox sender; production sender swap is Phase 2" callout so future sessions don't drift back into production DNS territory.
 8. **Delete the debug route** at `app/api/_debug/email-test/route.ts` (and the `_debug` folder) once verified.
 9. **Delete the dormant Cloudflare zone** for `countercultures.com.mx` (artifact of the earlier misframed attempt).
@@ -83,10 +83,10 @@ When Phase 2 production cutover happens, the sender domain switches to a verifie
 curl -X POST "https://countercultures.netlify.app/api/_debug/email-test" \
   -H "Content-Type: application/json" \
   -H "x-cron-probe-key: $CRON_PROBE_KEY" \
-  -d '{"to":"joshua@untold.works"}'
+  -d '{"to":"admin@countercultures.com.mx"}'
 
 # Expected response:
-# {"ok":true,"id":"<resend-message-id>","from":"onboarding@resend.dev","to":"joshua@untold.works",...}
+# {"ok":true,"id":"<resend-message-id>","from":"onboarding@resend.dev","to":"admin@countercultures.com.mx",...}
 
 # 2. Confirm zero production DNS change
 dig +short countercultures.com.mx

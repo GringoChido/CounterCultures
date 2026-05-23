@@ -265,7 +265,7 @@ async function main() {
   const testDealId = `__TEST_DEAL_${Date.now()}`;
   const event = await appendDealEvent({
     deal_id: testDealId,
-    actor: "test@untold.works",
+    actor: "test@countercultures.com.mx",
     event_type: "stage_change",
     from_stage: "deposit-pending",
     to_stage: "deposit-received",
@@ -649,7 +649,7 @@ feat(pipeline): Stripe webhook drives stage advance
 Write `scripts/_test-session-email.ts`:
 1. POST to `/api/login` with real email + password
 2. Extract session cookie
-3. Call `getCurrentUserEmail({ headers: { cookie } })` → expect `joshua@untold.works`
+3. Call `getCurrentUserEmail({ headers: { cookie } })` → expect `admin@countercultures.com.mx`
 4. Verify old session (without `:email` segment) returns `PORTAL_EMAIL` env var fallback
 
 Run → expect `email` missing from payload.

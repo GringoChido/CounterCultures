@@ -154,7 +154,7 @@ Every channel gets its own `alert_fired` event. Failures do not propagate to the
 // app/lib/alert-rate-limiter.ts
 
 export interface RateLimitBucket {
-  recipientKey: string;        // "customer:joshua@untold.works" or "roger@..." or "finance@..."
+  recipientKey: string;        // "customer:admin@countercultures.com.mx" or "roger@..." or "finance@..."
   templateId: string;
   windowStart: number;         // epoch ms
   count: number;
@@ -492,7 +492,7 @@ Target: ~10 commits. Conventional prefixes: `feat:` / `chore:` / `test:` / `docs
 | Risk | Mitigation |
 |---|---|
 | Meta template approval slow / rejected | `WHATSAPP_ENABLED` flag stays false; email channel carries the full customer comms load. Flag flips on approval with zero code change. |
-| Resend rate limit hit during simulation | W8 test uses `@untold.works` test addresses; production volume is small. |
+| Resend rate limit hit during simulation | W8 test uses `@countercultures.com.mx` test addresses; production volume is small. |
 | Quiet-hours queueing + nightly-sweep gap | If Netlify cron skips a day, queued alerts stack. Sweep's 8am run processes all `deliver_after ≤ now` regardless — self-heals. |
 | Duplicate customer emails from retry loop | Dispatcher checks for existing `alert_fired` with same `{rule_id, dealId, channel, recipient}` in the last 6h before re-sending. Idempotent retry. |
 | SlideOut no banner slot | §9.2 adds the banner as a fixed div above the tab switcher (simple layout addition). |
