@@ -18,6 +18,7 @@ import {
   appendRow,
   updateRow,
   findRowIndex,
+  type SheetTab,
 } from "./dashboard-sheets";
 
 export type UserRole = "owner" | "finance" | "sales";
@@ -50,6 +51,31 @@ const COLUMNS: (keyof UserRow)[] = [
 const CACHE_TTL = 60 * 1000; // 1 minute — user/role changes propagate fast
 let cache: { at: number; users: PortalUser[] } | null = null;
 
+/** Retry a Sheets read with brief backoff to survive cold-start / transient 429s.
+ *  If every attempt fails the error propagates — callers see a thrown error,
+ *  NOT a silently-empty result that looks like "user not found." */
+const retryRead = async <T extends Record<string, string>>(
+  tab: SheetTab,
+  attempts = 3,
+): Promise<T[]> => {
+  let lastErr: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await readSheet<T>(tab);
+    } catch (err) {
+      lastErr = err;
+      console.warn(
+        `[users-sheet] readSheet attempt ${i + 1}/${attempts} failed:`,
+        err instanceof Error ? err.message : err,
+      );
+      if (i < attempts - 1) {
+        await new Promise((r) => setTimeout(r, 500 * (i + 1)));
+      }
+    }
+  }
+  throw lastErr;
+};
+
 const isRole = (s: string): s is UserRole =>
   s === "owner" || s === "finance" || s === "sales";
 
@@ -77,16 +103,10 @@ const toRow = (u: PortalUser): UserRow => ({
 export const getAllUsers = async (): Promise<PortalUser[]> => {
   const now = Date.now();
   if (cache && now - cache.at < CACHE_TTL) return cache.users;
-  let rows: UserRow[] = [];
-  try {
-    rows = await readSheet<UserRow>("Users");
-  } catch (err) {
-    // The `Users` tab may not exist yet on first deploy. Treat as empty so
-    // bootstrap sign-in can succeed; the auth callback will allow domain +
-    // allowlist users through until the tab is created and populated.
-    console.warn("[users-sheet] readSheet failed; treating Users tab as empty:", err instanceof Error ? err.message : err);
-    rows = [];
-  }
+  // retryRead retries up to 3× with backoff. If all attempts fail the error
+  // propagates — the signIn callback sees a server error, NOT an empty user
+  // list that would masquerade as "no such user" and reject a legitimate login.
+  const rows = await retryRead<UserRow>("Users");
   const users = rows
     .map(toUser)
     .filter((u): u is PortalUser => u !== null);
