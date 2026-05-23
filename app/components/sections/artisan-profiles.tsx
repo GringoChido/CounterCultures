@@ -7,46 +7,41 @@ type Locale = "en" | "es";
 interface ArtisanProfile {
   name: string;
   craft: { en: string; es: string };
-  description: { en: string; es: string };
   image: string;
 }
 
 const artisans: ArtisanProfile[] = [
   {
-    name: "Don Miguel Hernández",
+    name: "Mistoa",
     craft: {
-      en: "Copper Basin Artisan · Santa Clara del Cobre",
-      es: "Artesano de Lavabos de Cobre · Santa Clara del Cobre",
-    },
-    description: {
-      en: "Third-generation coppersmith. Each of Don Miguel's basins is hand-hammered from a single sheet of copper — no seams, no molds, no shortcuts.",
-      es: "Maestro del cobre, tercera generación. Cada lavabo de Don Miguel se martilla a mano desde una sola lámina de cobre — sin uniones, sin moldes, sin atajos.",
-    },
-    image: "/Assets/Santa Clara del Cobre.webp",
-  },
-  {
-    name: "Maestra Elena Ruiz",
-    craft: {
-      en: "Ceramic Artist · Dolores Hidalgo",
-      es: "Artista de Cerámica · Dolores Hidalgo",
-    },
-    description: {
-      en: "Elena's hand-painted ceramic sinks draw from centuries of Talavera tradition, reinterpreted with contemporary forms and a restrained palette.",
-      es: "Los lavabos de cerámica pintados a mano de Elena se inspiran en siglos de tradición talavera, reinterpretados con formas contemporáneas y una paleta sobria.",
+      en: "Ceramic and concrete basins",
+      es: "Lavabos de cerámica y concreto",
     },
     image: "/Assets/Mistoa Studio.webp",
   },
   {
-    name: "Taller Piedra Viva",
+    name: "Castro",
     craft: {
-      en: "Stone Carvers · Querétaro",
-      es: "Talladores de Piedra · Querétaro",
+      en: "Copper and brass",
+      es: "Cobre y latón",
     },
-    description: {
-      en: "A collective of stone carvers working in cantera rosa and volcanic basalt. Their vessel sinks and countertops bring the raw beauty of Mexican geology indoors.",
-      es: "Un colectivo de talladores que trabajan en cantera rosa y basalto volcánico. Sus lavabos y cubiertas traen la belleza cruda de la geología mexicana al interior.",
+    image: "/Assets/Santa Clara del Cobre.webp",
+  },
+  {
+    name: "Familia Meza",
+    craft: {
+      en: "Stone",
+      es: "Piedra",
     },
     image: "/Assets/Stone Artisans.webp",
+  },
+  {
+    name: "Manriquez",
+    craft: {
+      en: "Cast bronze pulls and accessories",
+      es: "Jaladeras y accesorios de bronce fundido",
+    },
+    image: "/products/odoo/2045767.jpg",
   },
 ];
 
@@ -77,7 +72,7 @@ export const ArtisanProfiles = ({ locale }: { locale: Locale }) => (
         </p>
       </AnimatedSection>
 
-      <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
         {artisans.map((artisan) => (
           <AnimatedSection key={artisan.name}>
             <div className="group">
@@ -96,9 +91,6 @@ export const ArtisanProfiles = ({ locale }: { locale: Locale }) => (
               </h3>
               <p className="mt-1 font-body font-semibold text-xs tracking-wider text-brand-terracotta uppercase">
                 {artisan.craft[locale]}
-              </p>
-              <p className="mt-3 font-body text-sm text-dash-text-secondary leading-relaxed">
-                {artisan.description[locale]}
               </p>
             </div>
           </AnimatedSection>
