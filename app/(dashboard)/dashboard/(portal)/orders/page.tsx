@@ -27,6 +27,7 @@ import {
 
 type OrderStateFilter = "all" | "quote" | "draft" | "sent" | "sale" | "done" | "cancel";
 type InvoiceStatusFilter = "all" | "no" | "to invoice" | "invoiced" | "upselling";
+type CompanyFilter = "all" | "cc" | "llc";
 type SortBy = "date_desc" | "date_asc" | "total_desc" | "days_open_desc" | "partner";
 
 interface OrderRow {
@@ -277,6 +278,7 @@ const OrdersPage = () => {
   const [query, setQuery] = useState("");
   const [state, setState] = useState<OrderStateFilter>("all");
   const [invoiceStatus, setInvoiceStatus] = useState<InvoiceStatusFilter>("all");
+  const [companyFilter, setCompanyFilter] = useState<CompanyFilter>("all");
   const [sortBy, setSortBy] = useState<SortBy>("date_desc");
   const [rows, setRows] = useState<OrderRow[]>([]);
   const [total, setTotal] = useState(0);
@@ -341,28 +343,30 @@ const OrdersPage = () => {
     const out: string[] = [];
     if (state !== "all") out.push(state);
     if (invoiceStatus !== "all") out.push(`invoice:${invoiceStatus}`);
+    if (companyFilter !== "all") out.push(companyFilter === "cc" ? "CC" : "R&F");
     if (repMode === "mine" && currentUser?.name) out.push(`mine (${currentUser.name})`);
     return out;
-  }, [state, invoiceStatus, repMode, currentUser?.name]);
+  }, [state, invoiceStatus, companyFilter, repMode, currentUser?.name]);
 
-  // Apply Mine filter client-side. matchesUser handles the canonical email
-  // and accent-normalized name match (consistent with leads + pipeline).
-  // Word-overlap fallback stays in for orders specifically because the
-  // salesperson string comes from Odoo and can drift from the portal user's
-  // display name (e.g. "Roger F Williams" vs "Roger Williams").
   const visibleRows = useMemo(() => {
-    if (repMode !== "mine" || !currentUser) return rows;
-    const meName = (currentUser.name ?? "").toLowerCase();
-    const meParts = meName.split(/\s+/).filter(Boolean);
-    return rows.filter((r) => {
-      const sp = r.salesperson ?? "";
-      if (matchesUser(sp, currentUser)) return true;
-      if (!meName) return false;
-      const spLower = sp.toLowerCase();
-      if (!spLower) return false;
-      return meParts.length > 0 && meParts.every((part) => spLower.includes(part));
-    });
-  }, [rows, repMode, currentUser]);
+    let filtered = rows;
+    if (companyFilter !== "all") {
+      filtered = filtered.filter((r) => r.company === companyFilter);
+    }
+    if (repMode === "mine" && currentUser) {
+      const meName = (currentUser.name ?? "").toLowerCase();
+      const meParts = meName.split(/\s+/).filter(Boolean);
+      filtered = filtered.filter((r) => {
+        const sp = r.salesperson ?? "";
+        if (matchesUser(sp, currentUser)) return true;
+        if (!meName) return false;
+        const spLower = sp.toLowerCase();
+        if (!spLower) return false;
+        return meParts.length > 0 && meParts.every((part) => spLower.includes(part));
+      });
+    }
+    return filtered;
+  }, [rows, companyFilter, repMode, currentUser]);
 
   return (
     <div className="p-6 max-w-[1500px] mx-auto">
@@ -426,6 +430,15 @@ const OrdersPage = () => {
           <option value="to invoice">To invoice</option>
           <option value="invoiced">Fully invoiced</option>
           <option value="upselling">Upselling</option>
+        </select>
+        <select
+          value={companyFilter}
+          onChange={(e) => setCompanyFilter(e.target.value as CompanyFilter)}
+          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
+        >
+          <option value="all">All entities</option>
+          <option value="cc">CC</option>
+          <option value="llc">R&F</option>
         </select>
         <MineAllToggle
           user={currentUser}

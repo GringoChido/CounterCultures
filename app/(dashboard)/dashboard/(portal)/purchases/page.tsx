@@ -21,6 +21,7 @@ import { formatDate } from "@/app/lib/format-date";
 
 type POStateFilter = "all" | "draft" | "sent" | "purchase" | "done" | "cancel";
 type POInvoiceFilter = "all" | "no" | "to invoice" | "invoiced";
+type CompanyFilter = "all" | "cc" | "llc";
 type SortBy = "date_desc" | "date_asc" | "total_desc" | "days_open_desc" | "vendor";
 
 interface PORow {
@@ -245,6 +246,7 @@ const PurchasesPage = () => {
   const [state, setState] = useState<POStateFilter>("all");
   const [invoiceStatus, setInvoiceStatus] = useState<POInvoiceFilter>("all");
   const [stuckOnly, setStuckOnly] = useState(false);
+  const [companyFilter, setCompanyFilter] = useState<CompanyFilter>("all");
   const [sortBy, setSortBy] = useState<SortBy>("date_desc");
   const [rows, setRows] = useState<PORow[]>([]);
   const [total, setTotal] = useState(0);
@@ -295,13 +297,19 @@ const PurchasesPage = () => {
     setStuckOnly(!!f.stuckOnly);
   };
 
+  const visibleRows = useMemo(() => {
+    if (companyFilter === "all") return rows;
+    return rows.filter((r) => r.company === companyFilter);
+  }, [rows, companyFilter]);
+
   const activeFilters = useMemo(() => {
     const out: string[] = [];
     if (state !== "all") out.push(state);
     if (invoiceStatus !== "all") out.push(`invoice:${invoiceStatus}`);
+    if (companyFilter !== "all") out.push(companyFilter === "cc" ? "CC" : "R&F");
     if (stuckOnly) out.push("stuck only");
     return out;
-  }, [state, invoiceStatus, stuckOnly]);
+  }, [state, invoiceStatus, companyFilter, stuckOnly]);
 
   return (
     <div className="p-6 max-w-[1500px] mx-auto">
@@ -356,6 +364,15 @@ const PurchasesPage = () => {
           <option value="to invoice">To bill</option>
           <option value="invoiced">Billed</option>
         </select>
+        <select
+          value={companyFilter}
+          onChange={(e) => setCompanyFilter(e.target.value as CompanyFilter)}
+          className="px-3 py-2 border border-dash-border bg-dash-surface text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-dash-accent rounded"
+        >
+          <option value="all">All entities</option>
+          <option value="cc">CC</option>
+          <option value="llc">R&F</option>
+        </select>
         <label className="inline-flex items-center gap-2 text-xs text-dash-text-secondary px-3 py-2 border border-dash-border bg-dash-surface rounded cursor-pointer">
           <input
             type="checkbox"
@@ -379,14 +396,14 @@ const PurchasesPage = () => {
       </div>
 
       <div className="mb-2 text-xs text-dash-text-secondary">
-        {total.toLocaleString()} PO{total === 1 ? "" : "s"}
+        {visibleRows.length.toLocaleString()} of {total.toLocaleString()} PO{total === 1 ? "" : "s"}
         {activeFilters.length > 0 && <> · filtered: {activeFilters.join(", ")}</>}
       </div>
 
       <div className="bg-dash-surface border border-dash-border rounded">
         <DataTable
           columns={columns}
-          data={rows}
+          data={visibleRows}
           onRowClick={(row) => router.push(`/dashboard/purchases/${row.id}`)}
         />
       </div>
