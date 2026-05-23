@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Search, Menu, LogOut, ShieldCheck, Wallet, Briefcase } from "lucide-react";
+import Link from "next/link";
+import { Search, Menu, LogOut, ShieldCheck, Wallet, Briefcase, Plus, FileText, UserPlus, Megaphone } from "lucide-react";
 import { NotificationBell } from "./notification-bell";
 import { useCurrentUser } from "@/app/lib/use-current-user";
+import { hasFeature } from "@/app/lib/features";
 import { signOutAndCleanup } from "@/app/lib/sign-out";
 import type { UserRole } from "@/app/lib/users-sheet";
 
@@ -29,6 +31,75 @@ const ROLE_ICON: Record<UserRole, typeof ShieldCheck> = {
   owner: ShieldCheck,
   finance: Wallet,
   sales: Briefcase,
+};
+
+const GlobalNewMenu = ({ user }: { user: ReturnType<typeof useCurrentUser>["user"] }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  if (!user) return null;
+
+  const canQuote = hasFeature({ role: user.role, featureOverrides: user.featureOverrides }, "create_quote");
+  if (!canQuote) return null;
+
+  const items: { href: string; label: string; icon: typeof FileText }[] = [
+    { href: "/dashboard/orders/new", label: "New Quote", icon: FileText },
+    { href: "/dashboard/orders/new?newCustomer=true", label: "New Customer", icon: UserPlus },
+    { href: "/dashboard/leads?action=new", label: "New Lead", icon: Megaphone },
+  ];
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-9 h-9 flex items-center justify-center rounded-md bg-brand-copper text-white hover:bg-brand-copper/90 transition-colors cursor-pointer"
+        aria-label="Create new"
+        aria-haspopup="menu"
+        aria-expanded={open}
+      >
+        <Plus className="w-5 h-5" />
+      </button>
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 top-full mt-2 w-48 bg-dash-surface border border-dash-border rounded-xl shadow-2xl overflow-hidden z-50"
+        >
+          {items.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                role="menuitem"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 px-4 py-2.5 text-sm text-dash-text hover:bg-dash-bg transition-colors"
+              >
+                <Icon className="w-4 h-4 text-dash-text-secondary" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 };
 
 const DashboardHeader = ({ onMenuClick, onSearchClick }: DashboardHeaderProps) => {
@@ -95,6 +166,8 @@ const DashboardHeader = ({ onMenuClick, onSearchClick }: DashboardHeaderProps) =
         >
           <Search className="w-5 h-5 text-dash-text-secondary" />
         </button>
+
+        <GlobalNewMenu user={user} />
 
         <NotificationBell />
 

@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   Clock,
   AlertTriangle,
+  Plus,
 } from "lucide-react";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
@@ -18,6 +19,7 @@ import { CompanyBadge } from "@/app/(dashboard)/components/company-badge";
 import { formatDate } from "@/app/lib/format-date";
 
 import { useCurrentUser } from "@/app/lib/use-current-user";
+import { hasFeature } from "@/app/lib/features";
 import {
   MineAllToggle,
   matchesUser,
@@ -376,7 +378,19 @@ const OrdersPage = () => {
             <ShoppingCart className="w-6 h-6 text-dash-accent" />
             <h1 className="font-display text-2xl">Orders & Quotes</h1>
           </div>
-
+          {currentUser &&
+            hasFeature(
+              { role: currentUser.role, featureOverrides: currentUser.featureOverrides },
+              "create_quote"
+            ) && (
+              <Link
+                href="/dashboard/orders/new"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-brand-copper text-white text-sm font-medium rounded-lg hover:bg-brand-copper/90 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                New Quote
+              </Link>
+            )}
         </div>
         <p className="text-sm text-dash-text-secondary">
           Full sales pipeline — quotes, confirmed orders, and fulfillment status from the live Odoo snapshot.

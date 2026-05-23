@@ -17,6 +17,7 @@ import {
   AlertCircle,
   ExternalLink,
   MessageCircle,
+  Plus,
 } from "lucide-react";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { MessagesPanel } from "@/app/(dashboard)/components/messages-panel";
@@ -24,6 +25,8 @@ import { CreditPanel } from "@/app/(dashboard)/components/partner/credit-panel";
 import { PartnerHierarchy } from "@/app/(dashboard)/components/partner/partner-hierarchy";
 import { AgingBuckets } from "@/app/(dashboard)/components/partner/aging-buckets";
 import { formatDate } from "@/app/lib/format-date";
+import { useCurrentUser } from "@/app/lib/use-current-user";
+import { hasFeature } from "@/app/lib/features";
 
 interface OdooPartner {
   id: string;
@@ -215,8 +218,13 @@ const CustomerDetailPage = ({
     );
   }
 
+  const { user: currentUser } = useCurrentUser();
   const { partner, metrics, invoices, payments, orders, openAR, parent, children, aging } = profile;
   const isCompany = partner.is_company === "True" || partner.is_company === "true";
+  const canCreateQuote = currentUser && hasFeature(
+    { role: currentUser.role, featureOverrides: currentUser.featureOverrides },
+    "create_quote"
+  );
 
   const quotes = orders.filter((o) => o.state === "draft" || o.state === "sent");
   const confirmedOrders = orders.filter((o) => o.state === "sale" || o.state === "done");
@@ -251,7 +259,18 @@ const CustomerDetailPage = ({
           )}
         </div>
         <div className="flex-1">
-          <h1 className="font-display text-2xl text-dash-text">{partner.name}</h1>
+          <div className="flex items-center justify-between gap-3">
+            <h1 className="font-display text-2xl text-dash-text">{partner.name}</h1>
+            {canCreateQuote && (
+              <Link
+                href={`/dashboard/orders/new?partnerId=${partner.id}&partnerName=${encodeURIComponent(partner.name)}`}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-copper text-white text-xs font-medium rounded-lg hover:bg-brand-copper/90 transition-colors shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                New quote
+              </Link>
+            )}
+          </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-dash-text-secondary">
             {partner.email && (
               <span className="inline-flex items-center gap-1">
