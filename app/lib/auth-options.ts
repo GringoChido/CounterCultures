@@ -53,10 +53,16 @@ export const authOptions: AuthOptions = {
       const inDomain = email.endsWith(`@${ALLOWED_DOMAIN}`);
       if (!inDomain && !allowlist.includes(email)) {
         console.warn(`[auth] signIn rejected: domain "${domain}" not allowed for ${email}`);
-        return "/dashboard/login?error=DomainMismatch";
+        return false;
       }
 
-      const user = await findUserByEmail(email);
+      let user: Awaited<ReturnType<typeof findUserByEmail>> | null = null;
+      try {
+        user = await findUserByEmail(email);
+      } catch (err) {
+        console.error(`[auth] signIn: Users-sheet read failed for ${email}`, err);
+        return email in BREAK_GLASS;
+      }
       if (!user || !user.active) {
         if (email in BREAK_GLASS) {
           console.warn(`[auth] break-glass bypass: ${email} allowed in despite ${!user ? "missing sheet row" : "active=false"}`);
@@ -73,7 +79,12 @@ export const authOptions: AuthOptions = {
       // propagate without requiring the affected user to log out and back in
       // (next request after their JWT refreshes will have the new values).
       if (email && (!token.role || trigger === "update" || trigger === "signIn")) {
-        const u = await findUserByEmail(email);
+        let u: Awaited<ReturnType<typeof findUserByEmail>> | null = null;
+        try {
+          u = await findUserByEmail(email);
+        } catch (err) {
+          console.error(`[auth] jwt: Users-sheet read failed for ${email}`, err);
+        }
         if (!u && !(email in BREAK_GLASS)) {
           console.warn(`[auth] No Users-sheet row for ${email}; defaulting to sales role`);
         }
