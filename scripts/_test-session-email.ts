@@ -48,7 +48,7 @@ const main = async () => {
   const { getCurrentUserEmailFromRequest } = await import("../app/lib/auth");
 
   // -------- V2 token: payload carries email --------
-  const email = "joshua@untold.works";
+  const email = "admin@countercultures.com.mx";
   const b64 = Buffer.from(email, "utf8").toString("base64url");
   const v2payload = `authenticated:${Date.now()}:${b64}`;
   const v2token = `${v2payload}.${sign(v2payload)}`;

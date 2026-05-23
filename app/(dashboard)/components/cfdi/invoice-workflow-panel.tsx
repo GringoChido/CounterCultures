@@ -777,9 +777,7 @@ const PrefacturaThreadView = ({
 // domain match is the pragmatic proxy.
 const isLikelySelf = (email: string): boolean => {
   const e = email.toLowerCase();
-  return (
-    e.endsWith("@countercultures.com.mx") || e.endsWith("@untold.works")
-  );
+  return e.endsWith("@countercultures.com.mx");
 };
 
 // Heuristic for the "Looks approved — log it" suggestion. Conservative —

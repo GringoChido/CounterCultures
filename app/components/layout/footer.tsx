@@ -212,20 +212,6 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Built by Untold.works */}
-        <div className="mt-4 text-center">
-          <p className="font-body text-[11px] text-dash-text-secondary/50">
-            {t("builtBy")}{" "}
-            <a
-              href="https://untold.works"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-dash-text-secondary transition-colors duration-300"
-            >
-              Untold.works
-            </a>
-          </p>
-        </div>
       </div>
     </footer>
   );

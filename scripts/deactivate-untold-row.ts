@@ -1,6 +1,6 @@
 /**
- * One-shot: soft-delete the joshua@untold.works row in the Users tab by
- * flipping active=false. Follows the convention in app/lib/users-sheet.ts
+ * One-shot: soft-delete a user row in the Users tab by flipping
+ * active=false. Follows the convention in app/lib/users-sheet.ts
  * (deactivateUser): row is never removed — preserves audit trail.
  *
  * Run with: npx tsx scripts/deactivate-untold-row.ts
@@ -13,7 +13,7 @@ import { resolve } from "path";
 config({ path: resolve(__dirname, "../.env.local") });
 
 const TAB = "Users";
-const TARGET_EMAIL = "joshua@untold.works";
+const TARGET_EMAIL = "REPLACE_ME@countercultures.com.mx";
 
 const requireEnv = (key: string): string => {
   const v = process.env[key];

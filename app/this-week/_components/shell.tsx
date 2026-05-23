@@ -122,7 +122,7 @@ export const WeeklyShell = ({ entry, prev, next, children }: Props) => {
           </div>
 
           <div className="font-body text-[12px] text-[color:var(--color-dash-text-muted)] md:text-right">
-            Powered by Untold.works
+            &copy; {new Date().getFullYear()} Counter Cultures
           </div>
         </div>
       </footer>

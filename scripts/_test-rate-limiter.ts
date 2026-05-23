@@ -21,9 +21,9 @@ const main = async () => {
   console.log("\n→ WhatsApp cap: 1/hour/recipient/template");
   {
     __resetBucketsForTests();
-    const r1 = checkRateLimit("customer:joshua@untold.works", "C-03-deposit-received", "whatsapp");
+    const r1 = checkRateLimit("customer:test@countercultures.com.mx", "C-03-deposit-received", "whatsapp");
     assert(r1.allowed === true, `1st — allowed`);
-    const r2 = checkRateLimit("customer:joshua@untold.works", "C-03-deposit-received", "whatsapp");
+    const r2 = checkRateLimit("customer:test@countercultures.com.mx", "C-03-deposit-received", "whatsapp");
     assert(r2.allowed === false, `2nd within hour — blocked`);
     if (!r2.allowed) {
       assert(r2.retryAfterSec > 0 && r2.retryAfterSec <= 3600, `retryAfterSec in (0, 3600] — got ${r2.retryAfterSec}`);

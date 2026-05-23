@@ -37,7 +37,7 @@ export const mkContext = (
   event: {
     trigger,
     payload,
-    actor: "test@untold.works",
+    actor: "test@countercultures.com.mx",
   },
   payments: overrides.payments ?? [],
   purchaseOrders: overrides.purchaseOrders ?? [],
