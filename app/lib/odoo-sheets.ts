@@ -37,6 +37,14 @@ export const detectCompany = (invoice: OdooInvoice): EntityCompany => {
 export const detectCompanyFromCurrency = (currency: string): EntityCompany =>
   (currency ?? "").toUpperCase() === "USD" ? "llc" : "cc";
 
+export const detectCompanyFromCompanyId = (companyId: string): EntityCompany | null => {
+  const lower = (companyId ?? "").toLowerCase().trim();
+  if (!lower) return null;
+  if (lower.includes("r&f") || lower.includes("r & f") || lower.includes("llc")) return "llc";
+  if (lower.includes("counter culture")) return "cc";
+  return null;
+};
+
 // ── Raw row types (as they come out of the sheet) ────────────────
 
 export interface OdooPartner {
@@ -165,6 +173,7 @@ export interface OdooSaleOrder {
   pricelist_id: string;
   payment_term_id: string;
   currency_id: string;
+  company_id: string;
   amount_untaxed: string;
   amount_tax: string;
   amount_total: string;
@@ -184,6 +193,7 @@ export interface OdooPurchaseOrder {
   date_order: string;
   amount_total: string;
   currency_id: string;
+  company_id: string;
   invoice_status: string;
   /**
    * Source document — typically the sale.order name (e.g. "S00078") that
@@ -1126,7 +1136,7 @@ const toPORow = (p: OdooPurchaseOrder, now: Date = today()): POListRow => {
     invoiceStatus: p.invoice_status || "",
     daysOpen: days,
     isOverdue: isOpen && days > 60, // open >60d is "stuck"
-    company: detectCompanyFromCurrency(p.currency_id),
+    company: detectCompanyFromCompanyId(p.company_id) ?? detectCompanyFromCurrency(p.currency_id),
   };
 };
 
@@ -1651,7 +1661,7 @@ const toOrderListRow = (
     isPaid: paidIndex.get(o.id) ?? false,
     isDelivered: deliveredIndex.get(o.id) ?? false,
     origin: "",
-    company: detectCompanyFromCurrency(o.currency_id),
+    company: detectCompanyFromCompanyId(o.company_id) ?? detectCompanyFromCurrency(o.currency_id),
   };
 };
 
