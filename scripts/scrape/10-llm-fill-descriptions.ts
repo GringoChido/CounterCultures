@@ -26,6 +26,17 @@ import { REPO_ROOT, STAGING, readJson, writeJson, exists, pool } from "./_lib";
 
 config({ path: path.join(REPO_ROOT, ".env.local"), override: false });
 
+const BRAND_ALIAS: Record<string, string> = {
+  "Counter / Santiago": "Manriquez",
+  "Counter / Gaby- Cobre": "Castro",
+  "Counter/Meza": "Familia Meza",
+  "gaby": "Castro",
+  "Mistoa": "Mistoa",
+};
+
+const resolveMakerName = (rawBrand: string): string =>
+  BRAND_ALIAS[rawBrand] ?? rawBrand;
+
 const MODEL_MAP: Record<string, string> = {
   haiku: "claude-haiku-4-5-20251001",
   sonnet: "claude-sonnet-4-6",
@@ -79,7 +90,14 @@ Voice rules:
 - Reference materials and mechanisms by name when known (cerámica, magnedock, vías de agua, válvula termostática, latón macizo).
 - Use the brand's own collection name verbatim (LITZE, Edalyn, Cimarron, etc.).
 - Mexican Spanish conventions: use "Tarja" for kitchen sink, "Lavabo" for bathroom sink, "Grifo/Mezcladora" for faucet, "Bañera/Tina" for tub, "Chapas" for door locks, "Jaladeras" for pulls.
-- Length: 60-90 words per description. Feature bullets: 4-6 each, 6-10 words each.
+- Length: EXACTLY 60-90 words per description. This is a hard requirement. Count carefully.
+- Feature bullets: 4-6 each, 6-10 words each.
+
+Hard rules — violations are rejected:
+- NEVER invent a product or model name. The words "Counter", "Santiago", and "Gaby" must NEVER appear anywhere in the output.
+- Describe the product itself: type + material + finish + mechanism + dimensions when known.
+- The maker line may be credited naturally using the provided maker name (e.g. Mistoa, Familia Meza, Castro, Manriquez) but do NOT invent a person, biography, or brand philosophy.
+- Do NOT state a specific town or geographic origin unless it is explicitly provided in the input.
 
 Output STRICT JSON, no other text:
 {
@@ -89,9 +107,9 @@ Output STRICT JSON, no other text:
   "featuresEn": ["string", ...]
 }`;
 
-const buildPrompt = (r: CsvRow, brandTagline?: string, brandDescriptionEs?: string): string => {
+const buildPrompt = (r: CsvRow, makerName: string, brandTagline?: string, brandDescriptionEs?: string): string => {
   const cleaned = r.description.replace(/https?:\/\/\S+/g, "").trim().slice(0, 400);
-  return `Brand: ${r.brand}${brandTagline ? `\nBrand tagline (es): ${brandTagline}` : ""}${brandDescriptionEs ? `\nBrand voice (es): ${brandDescriptionEs}` : ""}
+  return `Maker line: ${makerName}${brandTagline ? `\nBrand tagline (es): ${brandTagline}` : ""}${brandDescriptionEs ? `\nBrand voice (es): ${brandDescriptionEs}` : ""}
 
 Product
   Odoo name (en): ${r.name}
@@ -115,8 +133,8 @@ interface Generated {
   generatedAt: string;
 }
 
-const callLLM = async (client: Anthropic, model: string, r: CsvRow, brandTag?: string, brandDescEs?: string): Promise<Generated | null> => {
-  const userPrompt = buildPrompt(r, brandTag, brandDescEs);
+const callLLM = async (client: Anthropic, model: string, r: CsvRow, makerName: string, brandTag?: string, brandDescEs?: string): Promise<Generated | null> => {
+  const userPrompt = buildPrompt(r, makerName, brandTag, brandDescEs);
   const res = await client.messages.create({
     model, max_tokens: 700,
     system: SYSTEM_PROMPT,
@@ -201,10 +219,11 @@ const run = async () => {
   const slugFromBrand = (b: string): string => b.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
   await pool(subset, concurrency, async (r) => {
+    const makerName = resolveMakerName(r.brand);
     const brandSlug = slugFromBrand(r.brand);
     const g = brandGlossary[brandSlug];
     try {
-      const gen = await callLLM(client, model, r, g?.taglineEs, g?.descriptionEs);
+      const gen = await callLLM(client, model, r, makerName, g?.taglineEs, g?.descriptionEs);
       if (!gen) { fail++; return; }
 
       if (staged) {
@@ -240,8 +259,9 @@ const run = async () => {
         console.log(`[10]   …${ok}/${subset.length} (failed=${fail})`);
         await writeJson(outPath, target);
       }
-    } catch (e) {
+    } catch (e: any) {
       fail++;
+      console.error(`[10] FAIL ${r.sku}: ${e?.message?.slice(0, 120) ?? e}`);
     }
   });
 
