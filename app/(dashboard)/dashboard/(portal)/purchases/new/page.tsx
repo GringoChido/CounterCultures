@@ -1,15 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import {
-  ArrowLeft,
-  Trash2,
-  Search,
-  Loader2,
-  UserPlus,
-  Check,
-} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Trash2, Search, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { CustomerCombobox } from "@/app/(dashboard)/components/customer-combobox";
 import { CompanyBadge } from "@/app/(dashboard)/components/company-badge";
@@ -17,16 +10,13 @@ import { useCurrentUser } from "@/app/lib/use-current-user";
 import { hasFeature } from "@/app/lib/features";
 import { useDebouncedFetch } from "@/app/lib/use-debounced-fetch";
 
-const DEFAULT_TERMS = `All orders are subject to Counter Cultures' standard terms and conditions. Lead times vary by product; we will confirm delivery estimates after order review. Prices are valid for 30 days from quote date. IVA (16%) applies to shipments within Mexico. Shipping costs will be quoted separately.`;
-
-interface QuoteLine {
+interface POLine {
   key: string;
   productId: number;
   productName: string;
   sku: string;
   quantity: number;
   priceUnit: number;
-  discount: number;
 }
 
 interface ProductHit {
@@ -45,41 +35,22 @@ type EntityCompany = "cc" | "rf";
 const fmt = (n: number, cur = "MXN") =>
   `$${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${cur}`;
 
-const thirtyDaysOut = () => {
-  const d = new Date();
-  d.setDate(d.getDate() + 30);
-  return d.toISOString().slice(0, 10);
-};
-
-const NewQuotePage = () => {
+const NewPurchaseOrderPage = () => {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { user } = useCurrentUser();
 
-  const prefillPartnerId = searchParams.get("partnerId");
-  const prefillPartnerName = searchParams.get("partnerName");
-  const autoNewCustomer = searchParams.get("newCustomer") === "true";
-
-  // Customer
-  const [customerText, setCustomerText] = useState(prefillPartnerName ?? "");
-  const [selectedPartnerId, setSelectedPartnerId] = useState<number | null>(
-    prefillPartnerId ? Number(prefillPartnerId) : null
-  );
-  const [showNewCustomer, setShowNewCustomer] = useState(autoNewCustomer);
-  const [newName, setNewName] = useState("");
-  const [newEmail, setNewEmail] = useState("");
-  const [newPhone, setNewPhone] = useState("");
-  const [newFirm, setNewFirm] = useState("");
-  const [creatingCustomer, setCreatingCustomer] = useState(false);
+  // Vendor
+  const [vendorText, setVendorText] = useState("");
+  const [selectedVendorId, setSelectedVendorId] = useState<number | null>(null);
 
   // Order fields
   const [entity, setEntity] = useState<EntityCompany>("cc");
   const [currency, setCurrency] = useState<"MXN" | "USD">("MXN");
-  const [validityDate, setValidityDate] = useState(thirtyDaysOut());
-  const [note, setNote] = useState(DEFAULT_TERMS);
+  const [datePlanned, setDatePlanned] = useState("");
+  const [notes, setNotes] = useState("");
 
   // Lines
-  const [lines, setLines] = useState<QuoteLine[]>([]);
+  const [lines, setLines] = useState<POLine[]>([]);
 
   // Product search
   const [productQuery, setProductQuery] = useState("");
@@ -87,7 +58,7 @@ const NewQuotePage = () => {
 
   const productSearchUrl =
     productQuery.trim().length >= 2
-      ? `/api/dashboard/products/search?q=${encodeURIComponent(productQuery.trim())}&limit=10&sale=true`
+      ? `/api/dashboard/products/search?q=${encodeURIComponent(productQuery.trim())}&limit=10`
       : null;
   const { data: productData, loading: productLoading } = useDebouncedFetch<{
     items: ProductHit[];
@@ -99,9 +70,8 @@ const NewQuotePage = () => {
   const [error, setError] = useState<string | null>(null);
 
   const canCreate =
-    user && hasFeature({ role: user.role, featureOverrides: user.featureOverrides }, "create_quote");
+    user && hasFeature({ role: user.role, featureOverrides: user.featureOverrides }, "create_po");
 
-  // Sync entity ↔ currency
   useEffect(() => {
     setCurrency(entity === "rf" ? "USD" : "MXN");
   }, [entity]);
@@ -124,8 +94,7 @@ const NewQuotePage = () => {
             productName: hit.name,
             sku: hit.sku,
             quantity: 1,
-            priceUnit: hit.listPrice,
-            discount: 0,
+            priceUnit: 0,
           },
         ]);
       }
@@ -139,53 +108,19 @@ const NewQuotePage = () => {
     setLines((prev) => prev.filter((l) => l.key !== key));
   };
 
-  const updateLine = (key: string, field: keyof QuoteLine, value: number) => {
+  const updateLine = (key: string, field: keyof POLine, value: number) => {
     setLines((prev) =>
       prev.map((l) => (l.key === key ? { ...l, [field]: value } : l))
     );
   };
 
-  const lineSubtotal = (l: QuoteLine) => {
-    const discounted = l.priceUnit * (1 - l.discount / 100);
-    return discounted * l.quantity;
-  };
+  const lineSubtotal = (l: POLine) => l.priceUnit * l.quantity;
 
   const grandTotal = lines.reduce((sum, l) => sum + lineSubtotal(l), 0);
 
-  const handleCreateCustomer = async () => {
-    if (!newName.trim()) return;
-    setCreatingCustomer(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/dashboard/customers/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: newName.trim(),
-          email: newEmail.trim() || undefined,
-          phone: newPhone.trim() || undefined,
-          company: newFirm.trim() || undefined,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Failed to create customer");
-      setSelectedPartnerId(data.partnerId);
-      setCustomerText(data.partnerName);
-      setShowNewCustomer(false);
-      setNewName("");
-      setNewEmail("");
-      setNewPhone("");
-      setNewFirm("");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create customer");
-    } finally {
-      setCreatingCustomer(false);
-    }
-  };
-
   const handleSubmit = async () => {
-    if (!selectedPartnerId) {
-      setError("Select or create a customer first.");
+    if (!selectedVendorId) {
+      setError("Select a vendor first.");
       return;
     }
     if (lines.length === 0) {
@@ -195,27 +130,26 @@ const NewQuotePage = () => {
     setSubmitting(true);
     setError(null);
     try {
-      const res = await fetch("/api/dashboard/orders/create", {
+      const res = await fetch("/api/dashboard/purchase-orders/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          partnerId: selectedPartnerId,
+          partnerId: selectedVendorId,
           lines: lines.map((l) => ({
             productId: l.productId,
             quantity: l.quantity,
-            priceUnit: l.priceUnit,
-            discount: l.discount > 0 ? l.discount : undefined,
+            priceUnit: l.priceUnit > 0 ? l.priceUnit : undefined,
           })),
-          validity_date: validityDate || undefined,
           companyId: entity === "rf" ? 2 : 1,
-          note,
+          datePlanned: datePlanned || undefined,
+          notes: notes || undefined,
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Failed to create quote");
-      router.push(`/dashboard/orders/${data.orderId}`);
+      if (!res.ok) throw new Error(data.error ?? "Failed to create purchase order");
+      router.push(`/dashboard/purchases/${data.orderId}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create quote");
+      setError(err instanceof Error ? err.message : "Failed to create purchase order");
     } finally {
       setSubmitting(false);
     }
@@ -225,7 +159,7 @@ const NewQuotePage = () => {
     return (
       <div className="p-6 max-w-3xl mx-auto">
         <p className="text-sm text-dash-text-secondary">
-          You don't have permission to create quotes.
+          You don&apos;t have permission to create purchase orders.
         </p>
       </div>
     );
@@ -234,18 +168,17 @@ const NewQuotePage = () => {
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <Link
-        href="/dashboard/orders"
+        href="/dashboard/purchases"
         className="inline-flex items-center gap-2 text-sm text-dash-text-secondary hover:text-dash-accent mb-4"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back to Orders & Quotes
+        Back to Purchase Orders
       </Link>
 
       <header className="mb-6">
-        <h1 className="font-display text-2xl text-dash-text">New Quote</h1>
+        <h1 className="font-display text-2xl text-dash-text">New Purchase Order</h1>
         <p className="text-sm text-dash-text-secondary mt-1">
-          Creates a draft sale order in Odoo. Send it from the order detail page
-          after review.
+          Creates a draft PO in Odoo. Confirm and send to vendor from the PO detail page.
         </p>
       </header>
 
@@ -256,89 +189,25 @@ const NewQuotePage = () => {
       )}
 
       <div className="space-y-6">
-        {/* ── Customer ── */}
+        {/* ── Vendor ── */}
         <section className="bg-dash-surface border border-dash-border rounded-lg p-5">
           <h2 className="text-xs uppercase tracking-wider text-dash-text-secondary font-medium mb-3">
-            Customer
+            Vendor
           </h2>
-          {!showNewCustomer ? (
-            <div className="space-y-3">
-              <CustomerCombobox
-                value={customerText}
-                onChange={(val, matched) => {
-                  setCustomerText(val);
-                  setSelectedPartnerId(matched ? Number(matched.id) : null);
-                }}
-                placeholder="Search existing customers…"
-                partnerType="customer"
-                autoFocus
-              />
-              {selectedPartnerId && (
-                <p className="text-xs text-brand-sage flex items-center gap-1">
-                  <Check className="w-3 h-3" /> Odoo partner #{selectedPartnerId}
-                </p>
-              )}
-              <button
-                type="button"
-                onClick={() => setShowNewCustomer(true)}
-                className="inline-flex items-center gap-1.5 text-xs text-dash-accent hover:underline cursor-pointer"
-              >
-                <UserPlus className="w-3.5 h-3.5" />
-                Add new customer
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <input
-                  type="text"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  placeholder="Name *"
-                  className="px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper"
-                  autoFocus
-                />
-                <input
-                  type="email"
-                  value={newEmail}
-                  onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder="Email"
-                  className="px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper"
-                />
-                <input
-                  type="tel"
-                  value={newPhone}
-                  onChange={(e) => setNewPhone(e.target.value)}
-                  placeholder="Phone"
-                  className="px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper"
-                />
-                <input
-                  type="text"
-                  value={newFirm}
-                  onChange={(e) => setNewFirm(e.target.value)}
-                  placeholder="Company / firm (optional)"
-                  className="px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper"
-                />
-              </div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={handleCreateCustomer}
-                  disabled={!newName.trim() || creatingCustomer}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-brand-copper text-white text-sm rounded-lg hover:bg-brand-copper/90 disabled:opacity-50 cursor-pointer"
-                >
-                  {creatingCustomer && <Loader2 className="w-4 h-4 animate-spin" />}
-                  Create customer
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowNewCustomer(false)}
-                  className="px-4 py-2 text-sm text-dash-text-secondary hover:text-dash-text cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
+          <CustomerCombobox
+            value={vendorText}
+            onChange={(val, matched) => {
+              setVendorText(val);
+              setSelectedVendorId(matched ? Number(matched.id) : null);
+            }}
+            placeholder="Search existing vendors…"
+            partnerType="vendor"
+            autoFocus
+          />
+          {selectedVendorId && (
+            <p className="text-xs text-brand-sage flex items-center gap-1 mt-2">
+              Odoo vendor #{selectedVendorId}
+            </p>
           )}
         </section>
 
@@ -380,11 +249,11 @@ const NewQuotePage = () => {
               </select>
             </div>
             <div className="flex items-center gap-2 text-sm">
-              <span className="text-dash-text-secondary">Valid until:</span>
+              <span className="text-dash-text-secondary">Planned date:</span>
               <input
                 type="date"
-                value={validityDate}
-                onChange={(e) => setValidityDate(e.target.value)}
+                value={datePlanned}
+                onChange={(e) => setDatePlanned(e.target.value)}
                 className="px-3 py-1.5 border border-dash-border bg-dash-bg rounded text-sm text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper"
               />
             </div>
@@ -397,7 +266,6 @@ const NewQuotePage = () => {
             Line Items
           </h2>
 
-          {/* Product search */}
           <div className="relative mb-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dash-text-secondary" />
             <input
@@ -453,14 +321,13 @@ const NewQuotePage = () => {
                   </div>
                 ) : (
                   <div className="px-3 py-3 text-xs text-dash-text-secondary text-center">
-                    No products found for "{productQuery}"
+                    No products found for &ldquo;{productQuery}&rdquo;
                   </div>
                 )}
               </div>
             )}
           </div>
 
-          {/* Lines table */}
           {lines.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -468,8 +335,7 @@ const NewQuotePage = () => {
                   <tr>
                     <th className="text-left p-2">Product</th>
                     <th className="text-left p-2 w-20">Qty</th>
-                    <th className="text-right p-2 w-28">Unit price</th>
-                    <th className="text-right p-2 w-20">Disc %</th>
+                    <th className="text-right p-2 w-28">Unit cost</th>
                     <th className="text-right p-2 w-32">Subtotal</th>
                     <th className="p-2 w-10" />
                   </tr>
@@ -501,24 +367,12 @@ const NewQuotePage = () => {
                           onChange={(e) =>
                             updateLine(l.key, "priceUnit", Math.max(0, Number(e.target.value)))
                           }
-                          className="w-24 px-2 py-1 text-sm bg-dash-bg border border-dash-border rounded text-right text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper"
-                        />
-                      </td>
-                      <td className="p-2 text-right">
-                        <input
-                          type="number"
-                          min={0}
-                          max={100}
-                          step={1}
-                          value={l.discount}
-                          onChange={(e) =>
-                            updateLine(l.key, "discount", Math.min(100, Math.max(0, Number(e.target.value))))
-                          }
-                          className="w-16 px-2 py-1 text-sm bg-dash-bg border border-dash-border rounded text-right text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper"
+                          placeholder="Vendor cost"
+                          className="w-24 px-2 py-1 text-sm bg-dash-bg border border-dash-border rounded text-right text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper placeholder:text-dash-text-secondary/40"
                         />
                       </td>
                       <td className="p-2 text-right font-medium text-dash-text">
-                        {fmt(lineSubtotal(l), currency)}
+                        {l.priceUnit > 0 ? fmt(lineSubtotal(l), currency) : "—"}
                       </td>
                       <td className="p-2">
                         <button
@@ -533,17 +387,19 @@ const NewQuotePage = () => {
                     </tr>
                   ))}
                 </tbody>
-                <tfoot>
-                  <tr className="border-t-2 border-dash-border">
-                    <td colSpan={4} className="p-2 text-right text-sm font-medium text-dash-text-secondary uppercase tracking-wider">
-                      Subtotal
-                    </td>
-                    <td className="p-2 text-right text-lg font-semibold text-dash-text">
-                      {fmt(grandTotal, currency)}
-                    </td>
-                    <td />
-                  </tr>
-                </tfoot>
+                {grandTotal > 0 && (
+                  <tfoot>
+                    <tr className="border-t-2 border-dash-border">
+                      <td colSpan={3} className="p-2 text-right text-sm font-medium text-dash-text-secondary uppercase tracking-wider">
+                        Total
+                      </td>
+                      <td className="p-2 text-right text-lg font-semibold text-dash-text">
+                        {fmt(grandTotal, currency)}
+                      </td>
+                      <td />
+                    </tr>
+                  </tfoot>
+                )}
               </table>
             </div>
           ) : (
@@ -553,24 +409,24 @@ const NewQuotePage = () => {
           )}
         </section>
 
-        {/* ── Terms / Notes ── */}
+        {/* ── Notes ── */}
         <section className="bg-dash-surface border border-dash-border rounded-lg p-5">
           <h2 className="text-xs uppercase tracking-wider text-dash-text-secondary font-medium mb-3">
-            Terms & Notes
+            Notes
           </h2>
           <textarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            rows={4}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={3}
             className="w-full px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper resize-y"
-            placeholder="Terms and conditions, notes for the customer…"
+            placeholder="Internal notes for this purchase order…"
           />
         </section>
 
         {/* ── Submit ── */}
         <div className="flex items-center justify-between pt-2 pb-8">
           <Link
-            href="/dashboard/orders"
+            href="/dashboard/purchases"
             className="text-sm text-dash-text-secondary hover:text-dash-text"
           >
             Cancel
@@ -578,11 +434,11 @@ const NewQuotePage = () => {
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={submitting || !selectedPartnerId || lines.length === 0}
+            disabled={submitting || !selectedVendorId || lines.length === 0}
             className="inline-flex items-center gap-2 px-6 py-2.5 bg-brand-copper text-white text-sm font-medium rounded-lg hover:bg-brand-copper/90 disabled:opacity-50 transition-colors cursor-pointer"
           >
             {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-            Create draft quote
+            Create draft PO
           </button>
         </div>
       </div>
@@ -590,4 +446,4 @@ const NewQuotePage = () => {
   );
 };
 
-export default NewQuotePage;
+export default NewPurchaseOrderPage;

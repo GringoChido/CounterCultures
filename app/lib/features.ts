@@ -48,6 +48,7 @@ export const FEATURES = {
 
   // Write actions on Odoo (Cut #3)
   create_quote: "Create new quote on a customer",
+  create_po: "Create new purchase order on a vendor",
   send_quote: "Send a quote via email from your Gmail",
   create_invoice: "Confirm sale → generate invoice",
   cancel_order: "Cancel a sale order (mark dead)",
@@ -88,6 +89,7 @@ const FINANCE_FEATURES: Feature[] = [
   "edit_payment",
   "send_payment_link",
   "create_quote",
+  "create_po",
   "send_quote",
 ];
 
@@ -105,6 +107,7 @@ const SALES_FEATURES: Feature[] = [
   "view_brands",
   "view_products",
   "create_quote",
+  "create_po",
   "send_quote",
   "send_prefactura",
   "send_payment_link",

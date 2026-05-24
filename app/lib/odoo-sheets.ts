@@ -278,12 +278,13 @@ export const getOdooJournals = async (): Promise<OdooJournal[]> => {
  * mirror — callers should append the new row to the relevant tab too.
  */
 export const invalidateOdooCache = (
-  scope: "partners" | "invoices" | "payments" | "sales" | "journals" | "all" = "all"
+  scope: "partners" | "invoices" | "payments" | "sales" | "purchases" | "journals" | "all" = "all"
 ): void => {
   if (scope === "all" || scope === "partners") partnersCache.data = null;
   if (scope === "all" || scope === "invoices") invoicesCache.data = null;
   if (scope === "all" || scope === "payments") paymentsCache.data = null;
   if (scope === "all" || scope === "sales") salesCache.data = null;
+  if (scope === "all" || scope === "purchases") purchaseOrdersCache.data = null;
   if (scope === "all" || scope === "journals") journalsCache.data = null;
 };
 

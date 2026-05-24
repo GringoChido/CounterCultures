@@ -12,6 +12,7 @@ import {
   Clock,
   FileText,
   AlertTriangle,
+  Plus,
 } from "lucide-react";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
@@ -328,7 +329,13 @@ const PurchasesPage = () => {
             <Truck className="w-6 h-6 text-dash-accent" />
             <h1 className="font-display text-2xl">Purchase Orders</h1>
           </div>
-
+          <Link
+            href="/dashboard/purchases/new"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            New PO
+          </Link>
         </div>
         <p className="text-sm text-dash-text-secondary">
           Vendor POs — what's ordered, received, billed — from the live Odoo snapshot.

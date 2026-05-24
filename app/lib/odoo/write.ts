@@ -457,6 +457,57 @@ export const cancelOrder = async (
   return { orderId: updated.id, state: updated.state };
 };
 
+// ── Purchase Orders ──────────────────────────────────────────────
+
+export interface CreatePurchaseOrderInput {
+  partnerId: number;
+  lines: { productId: number; quantity: number; priceUnit?: number; name?: string }[];
+  companyId?: number;
+  currencyId?: number;
+  datePlanned?: string;
+  notes?: string;
+}
+
+export interface CreatePurchaseOrderResult {
+  orderId: number;
+  orderName: string;
+}
+
+export const createPurchaseOrder = async (
+  input: CreatePurchaseOrderInput
+): Promise<CreatePurchaseOrderResult> => {
+  requireOdooConfigured();
+  const uid = await getUid();
+
+  const orderLines = input.lines.map((l) => [
+    0,
+    0,
+    {
+      product_id: l.productId,
+      product_qty: l.quantity,
+      ...(l.priceUnit != null ? { price_unit: l.priceUnit } : {}),
+      ...(l.name ? { name: l.name } : {}),
+    },
+  ]);
+
+  const vals: Record<string, unknown> = {
+    partner_id: input.partnerId,
+    order_line: orderLines,
+  };
+  if (input.companyId) vals.company_id = input.companyId;
+  if (input.currencyId) vals.currency_id = input.currencyId;
+  if (input.datePlanned) vals.date_planned = input.datePlanned;
+  if (input.notes != null) vals.notes = input.notes;
+
+  const orderId = (await execute(uid, "purchase.order", "create", [vals])) as number;
+
+  const [record] = (await execute(uid, "purchase.order", "read", [[orderId]], {
+    fields: ["id", "name"],
+  })) as { id: number; name: string }[];
+
+  return { orderId: record.id, orderName: record.name };
+};
+
 // ── Vendor Bills ──────────────────────────────────────────────────
 
 export interface CreateBillFromPOResult {

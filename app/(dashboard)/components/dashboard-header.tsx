@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Search, Menu, LogOut, ShieldCheck, Wallet, Briefcase, Plus, FileText, UserPlus, Megaphone } from "lucide-react";
+import { Search, Menu, LogOut, ShieldCheck, Wallet, Briefcase, Plus, FileText, UserPlus, Megaphone, ShoppingCart } from "lucide-react";
 import { NotificationBell } from "./notification-bell";
 import { useCurrentUser } from "@/app/lib/use-current-user";
 import { hasFeature } from "@/app/lib/features";
@@ -62,6 +62,7 @@ const GlobalNewMenu = ({ user }: { user: ReturnType<typeof useCurrentUser>["user
     { href: "/dashboard/orders/new", label: "New Quote", icon: FileText },
     { href: "/dashboard/orders/new?newCustomer=true", label: "New Customer", icon: UserPlus },
     { href: "/dashboard/leads?action=new", label: "New Lead", icon: Megaphone },
+    { href: "/dashboard/purchases/new", label: "New PO", icon: ShoppingCart },
   ];
 
   return (
