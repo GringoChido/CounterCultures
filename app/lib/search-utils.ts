@@ -115,3 +115,83 @@ export const scoreNormalized = (
   }
   return total;
 };
+
+// ── Product-specific scorer with AND semantics + SKU-part awareness ───
+
+export interface ProductFields {
+  _sku: string;
+  _name: string;
+  _brand: string;
+  _skuParts: string[];
+  _cat: string;
+  _finishes: string;
+  _desc: string;
+}
+
+const FIELD_WEIGHTS = {
+  sku: 6,
+  skuParts: 5,
+  name: 4,
+  brand: 3,
+  cat: 2,
+  finishes: 2,
+  desc: 1,
+} as const;
+
+const scoreTokenAgainstField = (
+  token: string,
+  field: string,
+  weight: number
+): number => {
+  if (!field) return 0;
+  if (field === token) return 10 * weight;
+  if (field.startsWith(token)) return 5 * weight;
+  if (field.includes(token)) return 2 * weight;
+  return 0;
+};
+
+const scoreTokenAgainstSkuParts = (
+  token: string,
+  parts: string[],
+  weight: number
+): number => {
+  let best = 0;
+  for (const part of parts) {
+    if (part === token) return 10 * weight;
+    if (part.startsWith(token)) best = Math.max(best, 5 * weight);
+    else if (part.includes(token)) best = Math.max(best, 2 * weight);
+  }
+  return best;
+};
+
+/**
+ * Product-aware scorer. AND semantics: every query token must match at
+ * least one field, otherwise returns 0. Whole-query exact match on SKU
+ * or name short-circuits to a high score.
+ *
+ * Weight order: sku/skuParts > name > brand > category/finishes > description.
+ */
+export const scoreProduct = (query: string, p: ProductFields): number => {
+  if (!query) return 0;
+  const tokens = query.split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return 0;
+
+  // Whole-query exact match short-circuits
+  if (p._sku === query) return 200;
+  if (p._name === query) return 180;
+
+  let total = 0;
+  for (const token of tokens) {
+    let best = 0;
+    best = Math.max(best, scoreTokenAgainstField(token, p._sku, FIELD_WEIGHTS.sku));
+    best = Math.max(best, scoreTokenAgainstSkuParts(token, p._skuParts, FIELD_WEIGHTS.skuParts));
+    best = Math.max(best, scoreTokenAgainstField(token, p._name, FIELD_WEIGHTS.name));
+    best = Math.max(best, scoreTokenAgainstField(token, p._brand, FIELD_WEIGHTS.brand));
+    best = Math.max(best, scoreTokenAgainstField(token, p._cat, FIELD_WEIGHTS.cat));
+    best = Math.max(best, scoreTokenAgainstField(token, p._finishes, FIELD_WEIGHTS.finishes));
+    best = Math.max(best, scoreTokenAgainstField(token, p._desc, FIELD_WEIGHTS.desc));
+    if (best === 0) return 0; // AND: token matched nothing → exclude
+    total += best;
+  }
+  return total;
+};

@@ -16,7 +16,7 @@
 import { GoogleAuth } from "google-auth-library";
 import { sheets as sheetsApi } from "@googleapis/sheets";
 import { getGooglePrivateKey } from "./google-private-key";
-import { normalize, scoreNormalized } from "./search-utils";
+import { normalize, scoreProduct } from "./search-utils";
 import { toSlug } from "./slug";
 import {
   getOdooStockQuants,
@@ -307,18 +307,11 @@ const stripIndex = (p: IndexedProduct): ProductFull => ({
   shippingClass: p.shippingClass,
 });
 
-// Scored substring match. Higher score = better match.
-// 100: sku exact match
-//  80: sku starts with q
-//  60: name starts with q
-//  40: sku contains q
-//  30: name contains q
-//  20: brand contains q
-//   0: no match
+// Relevance via scoreProduct: AND semantics, SKU-part matching, richer fields.
+// Weight order: sku/skuParts(6/5) > name(4) > brand(3) > cat/finishes(2) > desc(1).
 const imageWeight = (p: IndexedProduct) => (p.imageSrc ? 1 : 0);
 
-const scoreRow = (p: IndexedProduct, q: string): number =>
-  scoreNormalized(q, [p._sku, p._name, p._brand], { weights: [4, 3, 1] });
+const scoreRow = (p: IndexedProduct, q: string): number => scoreProduct(q, p);
 
 export const searchProducts = async (
   opts: SearchOptions = {}

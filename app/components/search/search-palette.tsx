@@ -65,6 +65,8 @@ const COPY = {
 
 const MIN_QUERY = 2;
 
+// MiniSearch handles brands+articles (~163 docs); products use the server-side
+// scoreProduct token scorer (app/lib/products-full.ts). Intentional split.
 const buildMiniSearch = (
   docs: SearchDoc[],
   locale: "en" | "es"

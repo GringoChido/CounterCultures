@@ -49,6 +49,10 @@ export interface IndexedProduct extends ProductFull {
   _sku: string;
   _name: string;
   _brand: string;
+  _skuParts: string[];
+  _cat: string;
+  _finishes: string;
+  _desc: string;
 }
 
 export interface BrandCount {
@@ -236,14 +240,25 @@ export const buildCacheFromProducts = (
 
   for (const sp of snapProducts) {
     const stockQty = stockMap.get(sp.id) ?? 0;
+    const nSku = normalize(sp.sku);
+    const skuParts = nSku.split(/[-._/\s]+/).filter(Boolean);
+    const joinedSku = skuParts.join("");
+    const skuPartsSet = new Set([...skuParts, joinedSku, nSku]);
+
     const p: IndexedProduct = {
       ...sp,
       stockQty,
       inStock: stockQty > 0,
       tradePrice: undefined,
-      _sku: normalize(sp.sku),
+      _sku: nSku,
       _name: normalize(sp.name),
       _brand: normalize(sp.brand),
+      _skuParts: [...skuPartsSet],
+      _cat: normalize([sp.category].filter(Boolean).join(" ")),
+      _finishes: normalize((sp.variantLabels ?? []).join(" ")),
+      _desc: normalize(
+        ((sp.descriptionEs || "") + " " + (sp.descriptionEn || "")).slice(0, 600)
+      ),
     };
     products.push(p);
     if (sp.brand) brandAgg.set(sp.brand, (brandAgg.get(sp.brand) ?? 0) + 1);

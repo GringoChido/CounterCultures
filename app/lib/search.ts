@@ -1,16 +1,13 @@
 /**
- * Live cross-entity search. Powers the ⌘K command palette.
+ * Live cross-entity search. Powers the dashboard ⌘K command palette.
  *
- * Fetches from existing /api/dashboard/* endpoints in parallel,
- * normalizes to SearchResult[], scores by relevance (title > id > subtitle),
- * caches each entity-list response for 60s in-memory.
- *
- * Client-side: relies on same-origin cookies for auth. Use from a
- * "use client" component that mounts under /dashboard.
+ * Products use the server-side scoreProduct scorer (via /api/dashboard/products/search)
+ * and are re-scored here with scoreTokens for cross-type ranking against leads/deals/brands.
+ * The storefront palette uses MiniSearch for brands+articles — intentional split.
  */
 
 import { articles } from "./articles";
-import { cachedFetch, scoreTokens } from "./search-utils";
+import { cachedFetch, scoreTokens, normalize } from "./search-utils";
 import { ARTISAN_BRANDS } from "./products-mapping";
 
 export type SearchResultType =
@@ -272,19 +269,21 @@ const fullProductToData = (p: FullProductRow): SearchProductData => ({
 const searchProducts = async (q: string): Promise<SearchResult[]> => {
   const url = `/api/dashboard/products/search?q=${encodeURIComponent(q)}&limit=8`;
   const data = await cachedFetch<FullProductSearchResponse>(url);
-  return (data.items ?? []).map<SearchResult>((p, idx) => {
+  const nq = normalize(q);
+  return (data.items ?? []).map<SearchResult>((p) => {
     const productData = fullProductToData(p);
     const priceStr = p.listPrice > 0
       ? `$${p.listPrice.toLocaleString()} ${p.currency || "MXN"}`
       : "";
-    const positionScore = Math.max(10, 50 - idx * 4);
+    // Real relevance score on the same scale as other entities (scoreTokens)
+    const s = scoreTokens(nq, [p.sku, p.name, p.brand], { weights: [5, 4, 2] });
     return {
       id: `product-${p.id}`,
       type: "product",
       title: p.name || p.sku,
       subtitle: [p.brand, p.category, priceStr].filter(Boolean).join(" · "),
       href: `/dashboard/products?selected=${encodeURIComponent(p.id)}`,
-      score: positionScore,
+      score: s,
       productData,
     };
   });
