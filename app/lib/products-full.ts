@@ -788,6 +788,11 @@ export const getRelatedProducts = async (
 
 export const getProductSlug = (p: ProductFull): string => toSlug(p.name, p.sku);
 
+export const getAllProductsFull = async (): Promise<ProductFull[]> => {
+  const c = await getCache();
+  return c.products.map(stripIndex);
+};
+
 // ── Build-time pre-rendering candidates ───────────────────────────────
 
 export interface PdpSlugParams {

@@ -1,5 +1,5 @@
 /**
- * Stage 5 — LLM-generate bilingual descriptions for parents without one.
+ * Step 10 — LLM-generate bilingual descriptions for parents without one.
  *
  * For every PARENT product (from product-families.json — singletons too) that
  * lacks a descriptionEs OR descriptionEn after the legacy scrape, ask Claude
@@ -7,22 +7,16 @@
  * and a precise 60-90 word English technical description, plus 4-6 feature
  * bullets in each language.
  *
- * Inputs the LLM sees:
- *   - brand name + brand voice glossary (scripts/.gitignored/spanish-drafts.json)
- *   - Odoo English name + description fragment
- *   - SKU and category
- *
- * Output flag: every generated entry is tagged `descriptionSource: "ai"` so
- * the new site can show a subtle "Auto-translated" tag and so future passes
- * can prioritize human/photographer review on these specific SKUs.
- *
- * Cost: ~$0.003 per call × ~3,500 parents = ~$11.
- * Wall: ~30 min at concurrency 8.
+ * IMPORTANT: by default, drafts are written to staging/ai-descriptions-draft.json
+ * (--stage mode, default ON). The live product-content.json is NEVER touched by
+ * this script. Use scripts/scrape/14-merge-copy-review.ts to promote reviewed
+ * copy into the live sidecar after human approval via the review xlsx.
  *
  * Usage:
- *   npx tsx scripts/scrape/10-llm-fill-descriptions.ts            # full run
- *   npx tsx scripts/scrape/10-llm-fill-descriptions.ts --limit 25  # smoke
- *   npx tsx scripts/scrape/10-llm-fill-descriptions.ts --brand Emtek
+ *   npx tsx scripts/scrape/10-llm-fill-descriptions.ts                    # staged (default)
+ *   npx tsx scripts/scrape/10-llm-fill-descriptions.ts --limit 25         # smoke
+ *   npx tsx scripts/scrape/10-llm-fill-descriptions.ts --brand Emtek      # single brand
+ *   npx tsx scripts/scrape/10-llm-fill-descriptions.ts --no-stage         # DANGEROUS: write to live sidecar (legacy mode)
  */
 import * as path from "node:path";
 import { promises as fs } from "node:fs";
@@ -30,7 +24,7 @@ import { config } from "dotenv";
 import Anthropic from "@anthropic-ai/sdk";
 import { REPO_ROOT, STAGING, readJson, writeJson, exists, pool } from "./_lib";
 
-config({ path: path.join(REPO_ROOT, ".env.local") });
+config({ path: path.join(REPO_ROOT, ".env.local"), override: false });
 
 const MODEL_MAP: Record<string, string> = {
   haiku: "claude-haiku-4-5-20251001",
@@ -158,6 +152,7 @@ const run = async () => {
   const concurrency = Number(arg("concurrency", "6"));
   const limit = Number(arg("limit", "0") || 0);
   const brandFilter = arg("brand", "");
+  const staged = !process.argv.includes("--no-stage");
 
   // Load brand glossary (taglines + voice) for in-context priming
   const brandGlossaryPath = path.join(REPO_ROOT, "scripts", ".gitignored", "spanish-drafts.json");
@@ -177,24 +172,31 @@ const run = async () => {
   const productContent: Record<string, any> = (await exists(path.join(REPO_ROOT, "app", "lib", "product-content.json")))
     ? await readJson(path.join(REPO_ROOT, "app", "lib", "product-content.json")) : {};
 
+  // In staged mode, load existing staging drafts to resume interrupted runs.
+  const stagingPath = path.join(STAGING, "ai-descriptions-draft.json");
+  const stagingDrafts: Record<string, any> = staged && (await exists(stagingPath))
+    ? await readJson(stagingPath) : {};
+
   const todo = csv.filter((r) => {
-    if (childIds.has(r.odoo_id)) return false; // children inherit from parent
+    if (childIds.has(r.odoo_id)) return false;
     if (brandFilter && r.brand !== brandFilter) return false;
+    // Skip if already staged in this run
+    if (staged && stagingDrafts[r.odoo_id]) return false;
     const existing = productContent[r.odoo_id];
-    // Generate when missing ES (the gating requirement). If existing legacy
-    // scrape gave us ES, skip — never overwrite human-curated content.
     if (existing?.descriptionEs && existing.descriptionEs.length > 50) return false;
-    // Skip "Shipping & Handling" and pure finish/color rows
     if (!r.sku || r.sku.length < 3) return false;
     if (!r.name || r.name.length < 5) return false;
     return true;
   });
 
   const subset = limit > 0 ? todo.slice(0, limit) : todo;
+  const modeLabel = staged ? "STAGED → staging/ai-descriptions-draft.json" : "LIVE → app/lib/product-content.json";
   console.log(`[10] Generating descriptions for ${subset.length} parents (model=${model}, concurrency=${concurrency})`);
+  console.log(`[10]   mode: ${modeLabel}`);
   if (brandFilter) console.log(`[10]   filter: brand="${brandFilter}"`);
 
-  const outPath = path.join(REPO_ROOT, "app", "lib", "product-content.json");
+  const outPath = staged ? stagingPath : path.join(REPO_ROOT, "app", "lib", "product-content.json");
+  const target = staged ? stagingDrafts : productContent;
   let ok = 0, fail = 0;
   const slugFromBrand = (b: string): string => b.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
@@ -204,33 +206,51 @@ const run = async () => {
     try {
       const gen = await callLLM(client, model, r, g?.taglineEs, g?.descriptionEs);
       if (!gen) { fail++; return; }
-      // Merge into product-content.json — read/modify/write to survive crashes.
-      const existing = productContent[r.odoo_id] ?? {
-        legacySlug: "", legacyUrl: "", title: "", features: [], gallery: [],
-        variants: [], breadcrumb: [], updatedAt: new Date().toISOString(), matchConfidence: 0,
-      };
-      existing.descriptionEs = gen.descriptionEs;
-      existing.descriptionEn = gen.descriptionEn;
-      existing.featuresEs = gen.featuresEs;
-      existing.featuresEn = gen.featuresEn;
-      existing.descriptionSource = "ai";
-      existing.modelUsed = gen.modelUsed;
-      existing.updatedAt = new Date().toISOString();
-      productContent[r.odoo_id] = existing;
+
+      if (staged) {
+        target[r.odoo_id] = {
+          odoo_id: gen.odoo_id,
+          sku: gen.sku,
+          brand: gen.brand,
+          descriptionEs: gen.descriptionEs,
+          descriptionEn: gen.descriptionEn,
+          featuresEs: gen.featuresEs,
+          featuresEn: gen.featuresEn,
+          descriptionSource: "ai",
+          modelUsed: gen.modelUsed,
+          generatedAt: gen.generatedAt,
+        };
+      } else {
+        const existing = target[r.odoo_id] ?? {
+          legacySlug: "", legacyUrl: "", title: "", features: [], gallery: [],
+          variants: [], breadcrumb: [], updatedAt: new Date().toISOString(), matchConfidence: 0,
+        };
+        existing.descriptionEs = gen.descriptionEs;
+        existing.descriptionEn = gen.descriptionEn;
+        existing.featuresEs = gen.featuresEs;
+        existing.featuresEn = gen.featuresEn;
+        existing.descriptionSource = "ai";
+        existing.modelUsed = gen.modelUsed;
+        existing.updatedAt = new Date().toISOString();
+        target[r.odoo_id] = existing;
+      }
+
       ok++;
       if (ok % 10 === 0) {
         console.log(`[10]   …${ok}/${subset.length} (failed=${fail})`);
-        // Checkpoint
-        await writeJson(outPath, productContent);
+        await writeJson(outPath, target);
       }
     } catch (e) {
       fail++;
     }
   });
 
-  await writeJson(outPath, productContent);
+  await writeJson(outPath, target);
   console.log(`[10] ✓ generated=${ok} failed=${fail} (total=${subset.length})`);
   console.log(`[10]   → ${outPath}`);
+  if (staged) {
+    console.log(`[10]   Next: run 13-emit-copy-review-xlsx.ts to create the review spreadsheet`);
+  }
 };
 
 run().catch((e) => { console.error(e); process.exit(1); });
