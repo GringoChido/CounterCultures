@@ -141,7 +141,7 @@ export const Week18 = () => {
             </p>
             <p className="mt-3">
               Items here move through the week and either ship or graduate to
-              <em> Working toward</em> if they're multi-week.
+              <em> Working toward</em> if they&apos;re multi-week.
             </p>
           </>
         }
@@ -201,7 +201,7 @@ export const Week18 = () => {
         heading="Working toward."
         lead={
           <p>
-            Multi-week initiatives that don't fit a single-week box. Items
+            Multi-week initiatives that don&apos;t fit a single-week box. Items
             appear here when they kick off and drop off when they ship.
           </p>
         }

@@ -261,7 +261,7 @@ const SummaryHero = ({ summary }: { summary: ARSummary }) => (
           <div className="flex items-center gap-1.5 mb-1">
             <span className="w-2 h-2 rounded-full bg-company-llc" />
             <span className="text-[10px] uppercase tracking-wider font-semibold text-company-llc-text">
-              LLC USA
+              R&F USA
             </span>
           </div>
           <div className="text-sm font-medium text-dash-text">
@@ -517,7 +517,7 @@ const NewRequestForm = ({
               }`}
             >
               <span className="w-2 h-2 rounded-full bg-company-llc" />
-              LLC USA
+              R&F USA
             </button>
           </div>
         </div>
@@ -1323,7 +1323,7 @@ const AccountsReceivablePage = () => {
     const out: string[] = [];
     if (stateFilter !== "all") out.push(stateLabel(stateFilter));
     if (companyFilter !== "all")
-      out.push(companyFilter === "cc" ? "CC" : "LLC");
+      out.push(companyFilter === "cc" ? "CC" : "R&F");
     if (depositFilter === "deposits_only") out.push("deposits");
     return out;
   }, [stateFilter, companyFilter, depositFilter]);
@@ -1655,7 +1655,7 @@ const AccountsReceivablePage = () => {
                 }`}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-company-llc" />
-                LLC
+                R&F
               </button>
             </div>
             <select

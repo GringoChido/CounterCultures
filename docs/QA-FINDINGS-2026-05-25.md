@@ -1,0 +1,134 @@
+# QA Findings - 2026-05-25
+
+Hardening pass over Counter Cultures storefront + Counter Portal.
+
+## Automated Checks Summary
+
+| Check | Result |
+|-------|--------|
+| `vitest run` | 8 suites, 74 tests, ALL PASS |
+| `tsc --noEmit` | 1 error (pre-existing, untracked `product-detail.tsx`) |
+| `eslint app/` | 295 errors, 114 warnings (mostly `no-explicit-any` in data-layer, `no-html-link-for-pages` in inbox page) |
+| `check-internal-links.mjs` | 1410 URLs crawled, 0 broken (32 timeouts on long-slug PDPs — rate-limit, not real 404s) |
+| `assert-pdp-renders-description.ts` | PASS (0 sampled locally — no Sheets env vars) |
+| `12-final-audit.ts` | Runs clean. 4027 products need real photography, 25% have Spanish descriptions, 23% have English descriptions |
+| `npm run build` | PASS (with untracked product-detail.tsx moved aside) |
+
+---
+
+## Fixed in This Pass (committed)
+
+1. **"LLC" -> "R&F" in AR page** (4 occurrences in `accounts-receivable/page.tsx`) — user-facing labels now say "R&F USA" / "R&F" to match the rest of the app
+2. **"LLC USA" -> "R&F USA" in P&L report page** (1 occurrence in `reports/pnl/page.tsx`)
+3. **Removed stale `PORTAL_EMAIL_ALLOWLIST`** from `.env.example` — the env var is no longer read by any source code
+4. **Escaped unescaped apostrophes** in `this-week/_entries/2026-w18.tsx` (2 occurrences, ESLint `react/no-unescaped-entities`)
+
+---
+
+## Logged Findings
+
+### P0 — Blocks Users / Security
+
+_None found._ The send-quote route lacks in-route auth but IS protected by Edge middleware (`/api/dashboard` prefix). Downgraded to P1.
+
+### P1 — Fix Soon
+
+| # | Title | Location | Suggested Fix |
+|---|-------|----------|---------------|
+| 1 | **Leads API has no server-side Zod validation** | `app/api/dashboard/leads/route.ts` | Add a Zod schema mirroring the client `LeadForm` validation (name required, email required, phone conditional on source) |
+| 2 | **Leads API has no Activity_Log entry** | `app/api/dashboard/leads/route.ts` | Add `appendRow("Activity_Log", ...)` after successful write (violates Finance Rule 33) |
+| 3 | **Leads API has no feature gating** | `app/api/dashboard/leads/route.ts` | Add `requireFeature("manage_leads")` or similar; currently any authenticated staff can CRUD leads |
+| 4 | **send-quote route has no feature gating** | `app/api/dashboard/deals/[id]/send-quote/route.ts` | Add `requireFeature("send_quote")` |
+| 5 | **send-quote route has no Activity_Log** | `app/api/dashboard/deals/[id]/send-quote/route.ts` | Log send action with recipient, deal ID, actor |
+| 6 | **send-quote bypasses communication matrix** | `app/api/dashboard/deals/[id]/send-quote/route.ts` | Should route through `dispatchAlertsForTransition` or at minimum log to `Conversation_Log` (CART-RULES rule 23-24) |
+| 7 | **No currency_id explicitly sent in createQuote** | `app/lib/odoo/write.ts:244`, `orders/new/page.tsx` | Add `currency_id` to `CreateQuoteInput` and pass from UI (CC=MXN id, R&F=USD id) so it doesn't rely on Odoo pricelist defaults |
+| 8 | **No currency_id sent from PO UI form** | `purchases/new/page.tsx` | The Zod schema accepts `currencyId` but the form never sends it; same implicit-default risk as quotes |
+| 9 | **create-bill uses semantically wrong feature key** | `app/api/dashboard/purchases/[id]/create-bill/route.ts` | Uses `register_payment` instead of a dedicated `create_bill` key — works by accident since both are finance-only |
+| 10 | **Untracked product-detail.tsx breaks build** | `app/[locale]/shop/[category]/p/[slug]/product-detail.tsx` | Either commit it (with `artisanal` prop added to `ProductCardProps`) or delete the file from the working directory |
+| 11 | **Inbox page uses `<a>` instead of `<Link>`** | `app/(dashboard)/dashboard/(portal)/inbox/page.tsx:36,106` | Convert to `next/link` — causes full page reloads inside the SPA shell |
+| 12 | **confirmAndInvoiceOrder uses private Odoo method** | `app/lib/odoo/write.ts` (`_create_invoices`) | Works in practice but fragile across Odoo upgrades; consider the `sale.advance.payment.inv` wizard path |
+
+### P2 — Nice-to-Have
+
+| # | Title | Location | Suggested Fix |
+|---|-------|----------|---------------|
+| 13 | **"llc" internal key rename to "rf"** | 10+ files | Logged per AGENTS.md — do NOT rename in this pass. The internal key is `"llc"` but user-facing text correctly shows "R&F" after this fix |
+| 14 | **No duplicate-customer prevention server-side** | `app/api/dashboard/customers/create/route.ts` | Consider `search_read` on name+email before create |
+| 15 | **No salesperson selector on new quote form** | `orders/new/page.tsx` | All quotes attribute to the API user (Roger). Add a dropdown if Javier/Ian create quotes |
+| 16 | **validity_date not format-validated** | `app/api/dashboard/orders/create/route.ts` | Add `.regex(/^\d{4}-\d{2}-\d{2}$/)` to the Zod schema |
+| 17 | **No mirror sync for new POs** | `app/lib/odoo/write.ts:createPurchaseOrder` | Unlike `createQuote` (which calls `syncSaleOrderInMirror`), POs have no equivalent sync call |
+| 18 | **date_planned on PO header may not work in Odoo 16** | `app/lib/odoo/write.ts` | In Odoo 16, `date_planned` moved to order lines. Verify Roger's Odoo version |
+| 19 | **Orphaned API routes** | See list below | Remove dead routes that have no UI consumers |
+| 20 | **Dead stores / unused modules** | See list below | `project-list-store.ts`, `cart-sync.ts`, `sample-customs-data.ts` (700 lines) |
+| 21 | **FX rate encoded in ref string for payments** | `app/lib/odoo/write.ts:registerPayment` | Works but bypasses Odoo's native multi-currency reconciliation |
+| 22 | **No idempotency guard on quote/PO creation** | `orders/new/page.tsx`, `purchases/new/page.tsx` | Button disables on click but a fast double-click could slip through before React re-renders |
+| 23 | **Unused `formatDateRange` import** | `app/this-week/_components/shell.tsx:6` | Dead import |
+| 24 | **Unused `parents` var in final-audit script** | `scripts/scrape/12-final-audit.ts:112` | Assigned but never read |
+
+---
+
+## Orphaned API Routes (no UI consumers)
+
+| Route | Notes |
+|-------|-------|
+| `app/api/chat/route.ts` | 97 lines, Anthropic SDK chatbot. Dashboard uses `/api/dashboard-chat` instead |
+| `app/api/quote-request/route.ts` | Old single-product quote form. Superseded by cart/checkout flow |
+| `app/api/stripe/revenue/route.ts` | No consumers anywhere |
+| `app/api/odoo/inventory/route.ts` | Explicitly marked DEPRECATED in header |
+| `app/api/checkout/submit/route.ts` | The stepper calls `/api/checkout/buy` not `/submit` |
+
+## Dead Modules (entire files with zero importers)
+
+| File | Lines |
+|------|-------|
+| `app/lib/stores/project-list-store.ts` | 66 |
+| `app/lib/stores/cart-sync.ts` | 56 |
+| `app/lib/sample-customs-data.ts` | ~700 |
+
+---
+
+## Human Smoke Test Checklist
+
+These require a logged-in session at `countercultures.netlify.app/dashboard`:
+
+### Leads
+- [ ] Click "Leads" in sidebar, click "+ New Lead"
+- [ ] Fill required fields (Name, Email), select Source = "Website"
+- [ ] Submit and confirm the lead appears in the list immediately
+- [ ] Open it and confirm all fields persisted
+
+### Purchase Orders
+- [ ] Click "Purchases" > "+ New PO"
+- [ ] Select entity "R&F" — confirm currency shows USD
+- [ ] Search for a product by partial SKU (e.g. "8413") and confirm results appear
+- [ ] Add a line, select a known vendor, submit
+- [ ] Confirm PO appears in portal Purchases list with correct vendor and R&F badge
+- [ ] In Odoo, confirm the PO was created with company_id=2 and currency=USD
+
+### Quotes / Sale Orders
+- [ ] Click "Orders" > "+ New Quote"
+- [ ] Select entity "CC" — confirm currency shows MXN
+- [ ] Search product by brand name in Spanish (e.g. "grifo") — confirm results
+- [ ] Add a line, select or create a customer, submit
+- [ ] Confirm the quote appears with CC badge in the orders list
+- [ ] Click into the quote detail and confirm the amounts match
+
+### Product Pages
+- [ ] Open `/en/shop/bathroom` — pick a Manriquez product — confirm a real description renders (not placeholder)
+- [ ] Open `/en/shop/kitchen` — pick a Castro product — confirm a real description renders
+- [ ] Confirm the "R&F" badge shows on a quote or PO created under the R&F entity
+
+### Search
+- [ ] In the quote builder product search, type "CF-8413" — confirm the product appears
+- [ ] Type just "8413" — confirm it still matches
+- [ ] Type "grifo" — confirm kitchen faucet products appear
+- [ ] In the storefront search (cmd+K or search icon), type a brand name and confirm results
+
+### AR Page (post-fix verification)
+- [ ] Navigate to Accounts Receivable
+- [ ] Confirm the company filter buttons say "CC" and "R&F USA" (not "LLC")
+- [ ] Filter by R&F and confirm the active chip says "R&F"
+
+### P&L Report (post-fix verification)
+- [ ] Navigate to Reports > P&L
+- [ ] Confirm the company tab says "R&F USA" (not "LLC USA")
