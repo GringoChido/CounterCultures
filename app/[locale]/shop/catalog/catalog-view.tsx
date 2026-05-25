@@ -50,6 +50,9 @@ interface CatalogViewProps {
   totalProducts: number;
   brandImageMap?: Record<string, string>;
   initialResult?: SearchResponse | null;
+  initialSort?: SortKey;
+  initialBrand?: string;
+  initialQuery?: string;
 }
 
 type Category = "all" | "bathroom" | "kitchen" | "hardware";
@@ -169,7 +172,7 @@ const VALID_SORTS: SortKey[] = [
   "price_desc",
 ];
 
-const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, initialResult }: CatalogViewProps) => {
+const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, initialResult, initialSort, initialBrand, initialQuery }: CatalogViewProps) => {
   const t = T[locale];
   const router = useRouter();
   const pathname = usePathname();
@@ -183,9 +186,8 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
   );
   const [sortKey, setSortKey] = useState<SortKey>(() => {
     const raw = searchParams.get("sort");
-    return raw && VALID_SORTS.includes(raw as SortKey)
-      ? (raw as SortKey)
-      : "most_specified";
+    if (raw && VALID_SORTS.includes(raw as SortKey)) return raw as SortKey;
+    return initialSort ?? "most_specified";
   });
   const [viewMode, setViewMode] = useState<ViewMode>(
     (searchParams.get("view") as ViewMode) || "grid"
@@ -202,6 +204,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [visualSearchOpen, setVisualSearchOpen] = useState(false);
   const reqIdRef = useRef(0);
+  const ssrConsumedRef = useRef(false);
 
   const openProduct = useCallback(
     (p: ProductFull) => router.push(pdpHref(locale, p)),
@@ -227,10 +230,18 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
     setOffset(0);
   }, [query, brand, category, sortKey, inStockOnly]);
 
-  // Fetch — always loads, even with no filters (defaults to most-specified
-  // products so the page never renders as a confusing empty state).
   const [fetchError, setFetchError] = useState<string | null>(null);
   useEffect(() => {
+    if (!ssrConsumedRef.current && initialResult) {
+      ssrConsumedRef.current = true;
+      const ssrMatch =
+        (brand || "") === (initialBrand || "") &&
+        (query.trim().length >= MIN_QUERY ? query.trim() : "") === (initialQuery || "") &&
+        category === "all" &&
+        offset === 0 &&
+        !inStockOnly;
+      if (ssrMatch) return;
+    }
     const id = setTimeout(() => {
       const myReq = ++reqIdRef.current;
       startTransition(async () => {
@@ -810,10 +821,8 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
                   </div>
                 </div>
               </div>
-            ) : !result && !isPending ? (
-              <div className="py-24 text-center">
-                <Loader2 className="w-6 h-6 text-brand-stone/60 mx-auto animate-spin" />
-              </div>
+            ) : !needsAccess ? (
+              <ProductGridSkeleton />
             ) : null}
 
             {/* Pagination */}
@@ -896,6 +905,27 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
     </section>
   );
 };
+
+const ProductGridSkeleton = () => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    {Array.from({ length: 12 }).map((_, i) => (
+      <div key={i} className="bg-dash-surface border border-brand-stone/15 flex flex-col animate-pulse">
+        <div className="aspect-[4/3] bg-brand-stone/10" />
+        <div className="p-4 flex flex-col flex-1">
+          <div className="flex items-start justify-between gap-2 mb-1">
+            <div className="h-2.5 w-16 bg-brand-stone/15 rounded" />
+            <div className="h-2.5 w-12 bg-brand-stone/10 rounded" />
+          </div>
+          <div className="h-4 w-3/4 bg-brand-stone/15 rounded mt-2" />
+          <div className="h-3 w-1/2 bg-brand-stone/10 rounded mt-2" />
+          <div className="mt-3 pt-3 border-t border-brand-stone/10">
+            <div className="h-3 w-20 bg-brand-stone/15 rounded" />
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
 // ───────────────────────────────────────────────────────────────────────
 // Product card (editorial style, matches /shop aesthetic)

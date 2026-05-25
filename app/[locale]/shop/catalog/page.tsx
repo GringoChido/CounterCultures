@@ -111,44 +111,47 @@ const CatalogPage = async ({ params, searchParams }: CatalogPageProps) => {
   const urlBrand = typeof sp.brand === "string" ? sp.brand : undefined;
   const urlQuery = typeof sp.q === "string" ? sp.q : undefined;
   const isEs = locale === "es";
-  const statsPromise = Promise.race([
-    getCatalogStats().catch(() => STATS_FALLBACK),
-    new Promise<typeof STATS_FALLBACK>((resolve) =>
-      setTimeout(() => resolve(STATS_FALLBACK), 1000)
-    ),
-  ]);
-  const [brandCounts, stats] = await Promise.all([
-    raceWithFallback(getCatalogBrands(), 2000, []),
-    statsPromise,
-  ]);
 
-  const saleableBrandCount = brandCounts.length || STATS_FALLBACK.brandCount;
+  const isFiltered = !!(urlBrand || urlQuery);
+  const ssrSort = isFiltered
+    ? (urlQuery ? "relevance" : "alpha")
+    : "most_specified";
 
-  const brandImageMap = buildBrandImageMap(brandCounts.map((b) => b.brand));
-
+  let brandCounts: Awaited<ReturnType<typeof getCatalogBrands>> = [];
+  let stats = STATS_FALLBACK;
   let initialResult: SearchResult | null = null;
-  {
-    try {
-      const [specScores, showroomIds] = await Promise.all([
-        Promise.race([
-          getMostSpecifiedScores(),
-          new Promise<null>((r) => setTimeout(() => r(null), 2000)),
-        ]).catch(() => null),
-        Promise.race([
-          getInShowroomIds(),
-          new Promise<null>((r) => setTimeout(() => r(null), 2000)),
-        ]).catch(() => null),
+
+  try {
+    if (isFiltered) {
+      // Instant shell: skip searchProducts so the page renders immediately.
+      // CatalogView fetches products client-side with a skeleton placeholder.
+      const [bc, st] = await Promise.all([
+        raceWithFallback(getCatalogBrands(), 2000, []),
+        raceWithFallback(getCatalogStats(), 1000, STATS_FALLBACK),
       ]);
+      brandCounts = bc;
+      stats = st;
+    } else {
+      // Default landing: all four fetches in parallel
+      const [bc, st, specScores, showroomIds] = await Promise.all([
+        raceWithFallback(getCatalogBrands(), 2000, []),
+        raceWithFallback(getCatalogStats(), 1000, STATS_FALLBACK),
+        raceWithFallback(getMostSpecifiedScores(), 2000, null),
+        raceWithFallback(getInShowroomIds(), 2000, null),
+      ]);
+      brandCounts = bc;
+      stats = st;
       initialResult = await searchProducts({
-        q: urlQuery,
-        brand: urlBrand,
         sort: "most_specified",
         limit: 60,
         specScores: specScores && specScores.size > 0 ? specScores : undefined,
         inShowroomIds: showroomIds && showroomIds.size > 0 ? showroomIds : undefined,
       });
-    } catch { /* client-side fetch handles it */ }
-  }
+    }
+  } catch { /* client-side fetch handles it */ }
+
+  const saleableBrandCount = brandCounts.length || STATS_FALLBACK.brandCount;
+  const brandImageMap = buildBrandImageMap(brandCounts.map((b) => b.brand));
 
   return (
     <>
@@ -211,6 +214,9 @@ const CatalogPage = async ({ params, searchParams }: CatalogPageProps) => {
           totalProducts={stats.total}
           brandImageMap={brandImageMap}
           initialResult={initialResult}
+          initialSort={ssrSort}
+          initialBrand={urlBrand}
+          initialQuery={urlQuery}
         />
       </main>
       <ArtisanProfiles locale={locale as "en" | "es"} />

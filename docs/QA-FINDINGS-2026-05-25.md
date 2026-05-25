@@ -151,3 +151,50 @@ These require a logged-in session at `countercultures.netlify.app/dashboard`:
 - **Root cause:** `MODELS` map in `sync.ts` only had invoice/payment/saleOrder. `ALL_MODELS` in cron route only listed those three. The `Odoo_Purchase_Orders` sheet was frozen at its initial load.
 - **Fix:** Added `PURCHASE_ORDER_FIELDS` (11 fields + `write_date`), `purchaseOrder` entry in `MODELS`, `syncPurchaseOrdersIncremental` export, `"purchase_orders"` in cron `ALL_MODELS`.
 - **Remaining:** After deploy, the PO sync needs to run several times to backfill from ~1292 to ~1346 (250 per run). Monitor cron logs. Sale-order lag (~25) should self-heal on next hourly run.
+
+### Fix 4: Catalog slow for brand/search views (severity: P1, UX)
+
+**Diagnosis** (cold start, dev server, `?brand=Castro`):
+
+| SSR Step | Cold (ms) | Warm (ms) |
+|---|---|---|
+| getCatalogBrands + getCatalogStats | 2,005 | 16 |
+| getMostSpecifiedScores + getInShowroomIds | 1,496 | 0 |
+| searchProducts (snapshot hydration) | 5,628 | 0 |
+| **Total SSR** | **9,130** | **17** |
+
+Cold TTFB: 4.2s. Three sequential stages stacked latencies; signals fetched even when irrelevant; client re-fetched on mount.
+
+**Fix** (3 files: `page.tsx`, `catalog-view.tsx`, `api/products/search/route.ts`):
+1. **Fast path**: when `urlBrand` or `urlQuery` set, skip signal fetches, use alpha/relevance sort.
+2. **Parallelize**: default landing runs brands+stats+signals in single `Promise.all`.
+3. **Skip mount fetch**: SSR result reused when it matches initial URL params (one-shot ref guard).
+4. **API fast path**: `/api/products/search` also skips signals when brand/q is set.
+
+**Cold-start improvement**:
+
+| Scenario | Before | After | Savings |
+|---|---|---|---|
+| Brand/search (cold) | ~9.1s | ~5.6s | -3.5s (38%) |
+| Default landing (cold) | ~9.1s | ~7.6s | -1.5s |
+| Any view (warm) | ~17ms | ~17ms | Same |
+
+Remaining cold cost (5.6s) is snapshot hydration from Sheets, handled by the keepalive cron. Cannot be removed here.
+
+**Phase 2 — Instant shell + skeleton** (2 files: `page.tsx`, `catalog-view.tsx`):
+
+The 5.6s cold cost from `searchProducts` made filtered views feel broken even though the page would eventually render. Fix: stop awaiting `searchProducts` on the server for filtered views. The page shell (hero, sidebar, toolbar, skeleton grid) renders immediately from `brandCounts`/`stats` (which are time-boxed with fast fallbacks). Products load client-side with a shimmer skeleton placeholder.
+
+5. **No SSR search for filtered views**: `page.tsx` filtered branch only fetches brands+stats; passes `null` initialResult to CatalogView.
+6. **Product grid skeleton**: 12 placeholder cards matching the real grid layout (`grid-cols-1 sm:2 lg:3 xl:4`, aspect-4/3 image area, brand/name/price placeholders) with `animate-pulse`.
+7. **Default landing unchanged**: still does full SSR with signals + searchProducts (cacheable, warm path).
+
+**Cold-start improvement (updated)**:
+
+| Scenario | Before (phase 1) | After (phase 2) | Perceived |
+|---|---|---|---|
+| Brand/search (cold) | ~5.6s TTFB | ~92ms TTFB + ~5.6s products | Instant shell |
+| Default landing (cold) | ~7.6s | ~7.6s | Same (SSR) |
+| Any view (warm) | ~17ms | ~17ms | Same |
+
+**Verified**: default landing (SSR, no skeleton flash), Castro brand filter (skeleton → products), search `q=grifo` (skeleton → products), sort/pagination/category/inStock toggles, no console errors, no wrong-content flash.

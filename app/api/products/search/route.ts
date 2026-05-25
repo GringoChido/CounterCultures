@@ -41,11 +41,19 @@ export const GET = async (req: NextRequest) => {
     : "relevance";
 
   try {
-    const emptyScores = new Map<string, { weightedScore: number; projectCount: number }>();
-    const [specScores, inShowroomIds] = await Promise.all([
-      raceTimeout(getMostSpecifiedScores(), 2000, emptyScores),
-      raceTimeout(getInShowroomIds(), 2000, new Set<string>()),
-    ]);
+    const needSignals = !brand && !q && sort === "most_specified";
+    let specScores: Map<string, { weightedScore: number; projectCount: number }> | undefined;
+    let inShowroomIds: Set<string> | undefined;
+
+    if (needSignals) {
+      const emptyScores = new Map<string, { weightedScore: number; projectCount: number }>();
+      const [ss, si] = await Promise.all([
+        raceTimeout(getMostSpecifiedScores(), 2000, emptyScores),
+        raceTimeout(getInShowroomIds(), 2000, new Set<string>()),
+      ]);
+      specScores = ss.size > 0 ? ss : undefined;
+      inShowroomIds = si.size > 0 ? si : undefined;
+    }
 
     const result = await searchProducts({
       q,
@@ -55,8 +63,8 @@ export const GET = async (req: NextRequest) => {
       limit,
       offset,
       sort,
-      specScores: specScores.size > 0 ? specScores : undefined,
-      inShowroomIds: inShowroomIds.size > 0 ? inShowroomIds : undefined,
+      specScores,
+      inShowroomIds,
     });
 
     const res = NextResponse.json(result);
