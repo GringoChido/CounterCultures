@@ -61,8 +61,8 @@ const parseModels = (raw: string | null): ModelKey[] => {
 };
 
 const clampLimit = (raw: string | null): number => {
-  const n = raw ? Number(raw) : 250;
-  if (!Number.isFinite(n) || n <= 0) return 250;
+  const n = raw ? Number(raw) : 500;
+  if (!Number.isFinite(n) || n <= 0) return 500;
   return Math.min(1000, Math.floor(n));
 };
 

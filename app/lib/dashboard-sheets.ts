@@ -330,6 +330,82 @@ const upsertRowByField = async (
   return { action: "updated", rowIndex: idx };
 };
 
+const batchUpsertRowsByField = async (
+  tab: SheetTab,
+  keyField: string,
+  records: Record<string, unknown>[]
+): Promise<{ inserted: number; updated: number }> => {
+  if (records.length === 0) return { inserted: 0, updated: 0 };
+
+  const headers = await getSheetHeaders(tab);
+  if (headers.length === 0) {
+    throw new Error(`Tab "${tab}" has no header row — cannot batch upsert`);
+  }
+
+  const existingRows = await readSheet<Record<string, string>>(tab);
+
+  const keyIndex = new Map<string, number>();
+  for (let i = 0; i < existingRows.length; i++) {
+    const kv = existingRows[i][keyField] ?? "";
+    if (kv) keyIndex.set(kv, i);
+  }
+
+  const inserts: string[][] = [];
+  const updates: { sheetRow: number; values: string[] }[] = [];
+
+  for (const rec of records) {
+    const fields: Record<string, string> = {};
+    for (const [k, v] of Object.entries(rec)) {
+      if (v === undefined || v === null) fields[k] = "";
+      else if (Array.isArray(v)) fields[k] = v.join("|");
+      else fields[k] = String(v);
+    }
+
+    const kv = fields[keyField] ?? "";
+    const existingIdx = kv ? keyIndex.get(kv) : undefined;
+
+    if (existingIdx !== undefined) {
+      const merged = { ...existingRows[existingIdx], ...fields };
+      const values = headers.map((h) => merged[h] ?? "");
+      updates.push({ sheetRow: existingIdx + 2, values });
+    } else {
+      const values = headers.map((h) => fields[h] ?? "");
+      inserts.push(values);
+    }
+  }
+
+  const sheets = getSheets();
+
+  if (inserts.length > 0) {
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${tab}!A:A`,
+      valueInputOption: "USER_ENTERED",
+      requestBody: { values: inserts },
+    });
+  }
+
+  if (updates.length > 0) {
+    const CHUNK_SIZE = 200;
+    for (let i = 0; i < updates.length; i += CHUNK_SIZE) {
+      const chunk = updates.slice(i, i + CHUNK_SIZE);
+      await sheets.spreadsheets.values.batchUpdate({
+        spreadsheetId: SPREADSHEET_ID,
+        requestBody: {
+          valueInputOption: "USER_ENTERED",
+          data: chunk.map((u) => ({
+            range: `${tab}!A${u.sheetRow}`,
+            values: [u.values],
+          })),
+        },
+      });
+    }
+  }
+
+  invalidateSheet(tab);
+  return { inserted: inserts.length, updated: updates.length };
+};
+
 /**
  * Append a row by header name. Reads the live header, places each field's
  * value in the right column, fills unknown columns with "". Use this
@@ -380,6 +456,7 @@ export {
   findRowIndex,
   getSheetHeaders,
   upsertRowByField,
+  batchUpsertRowsByField,
   invalidateSheet,
 };
 export type { SheetTab };

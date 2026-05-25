@@ -17,7 +17,7 @@
  */
 
 import { execute, authenticate, isConfigured } from "./client";
-import { upsertRowByField, type SheetTab } from "../dashboard-sheets";
+import { upsertRowByField, batchUpsertRowsByField, readSheet, type SheetTab } from "../dashboard-sheets";
 
 let cachedUid: number | null = null;
 const getUid = async (): Promise<number> => {
@@ -243,8 +243,6 @@ export const syncPurchaseOrderInMirror = (
 
 // ── Bulk incremental (cron) ────────────────────────────────────────
 
-import { readSheet } from "../dashboard-sheets";
-
 /**
  * Returns the most recent `write_date` already present in the mirror, or
  * null if the tab is empty. Used as the cursor for incremental syncs.
@@ -272,6 +270,8 @@ export interface SyncSummary {
   durationMs: number;
 }
 
+const SOFT_BUDGET_MS = 18_000;
+
 const syncBulkIncremental = async (
   cfg: ModelConfig,
   limit: number
@@ -279,46 +279,67 @@ const syncBulkIncremental = async (
   const t0 = Date.now();
   requireConfigured();
   const uid = await getUid();
-  const cursor = await getMirrorCursor(cfg);
+  const startCursor = await getMirrorCursor(cfg);
+  let cursor = startCursor;
+  let totalFetched = 0;
+  let totalInserted = 0;
+  let totalUpdated = 0;
+  let totalSkipped = 0;
 
-  const records = (await execute(
-    uid,
-    cfg.model,
-    "search_read",
-    [[["write_date", ">", cursor]]],
-    {
-      fields: odooFieldNames(cfg),
-      limit,
-      order: "write_date asc",
-    }
-  )) as Record<string, unknown>[];
+  while (true) {
+    if (Date.now() - t0 > SOFT_BUDGET_MS) break;
 
-  let inserted = 0;
-  let updated = 0;
-  let skipped = 0;
-  for (const rec of records) {
-    const id = rec.id;
-    if (typeof id !== "number" || id <= 0) {
-      skipped += 1;
-      continue;
+    const records = (await execute(
+      uid,
+      cfg.model,
+      "search_read",
+      [[["write_date", ">", cursor]]],
+      {
+        fields: odooFieldNames(cfg),
+        limit,
+        order: "write_date asc",
+      }
+    )) as Record<string, unknown>[];
+
+    if (records.length === 0) break;
+
+    const valid: Record<string, string>[] = [];
+    let skipped = 0;
+    for (const rec of records) {
+      const id = rec.id;
+      if (typeof id !== "number" || id <= 0) {
+        skipped += 1;
+        continue;
+      }
+      valid.push(flattenRow(rec, cfg.fields));
     }
-    const flat = flattenRow(rec, cfg.fields);
-    const result = await upsertRowByField(
-      cfg.tab,
-      { field: "id", value: String(id) },
-      flat
-    );
-    if (result.action === "inserted") inserted += 1;
-    else updated += 1;
+
+    if (valid.length > 0) {
+      const result = await batchUpsertRowsByField(cfg.tab, "id", valid);
+      totalInserted += result.inserted;
+      totalUpdated += result.updated;
+    }
+
+    totalFetched += records.length;
+    totalSkipped += skipped;
+
+    let maxWd = cursor;
+    for (const rec of records) {
+      const wd = rec.write_date;
+      if (typeof wd === "string" && wd > maxWd) maxWd = wd;
+    }
+    cursor = maxWd;
+
+    if (records.length < limit) break;
   }
 
   return {
     model: cfg.model,
-    cursor,
-    fetched: records.length,
-    inserted,
-    updated,
-    skipped,
+    cursor: startCursor,
+    fetched: totalFetched,
+    inserted: totalInserted,
+    updated: totalUpdated,
+    skipped: totalSkipped,
     durationMs: Date.now() - t0,
   };
 };
