@@ -29,7 +29,17 @@ This plan is the living source of truth. It was compiled in early May and is par
 - Portal: #16 / #6 (full New Quote builder with inline New Customer, both writing back to Odoo, plus New Quote entry points across the dashboard), #5 / #17 (Leads and Quotes surfaced in the main nav), #14 / #15 (stat cards reworked to Quotes / Sales / Invoices, made clickable filters), #26 (States → Status), #25 (Paid and Delivered statuses added), #23 (Notes → Terms and Conditions with a client preview), #24 (quote send auto-attaches the PDF), #22 (PO detail cleanup), #18 (Contacts / Customers / Vendors split into separate lists), #19–#21 (CC and R&F company tags, company filter, Draft → RFQ relabel, corrected company attribution), cross-cutting DD/MM/YYYY date format.
 - Infrastructure (not in the original plan): the Odoo → portal sync was restored after it had dropped to zero; a production sign-in outage was fixed. Sign-in is hard-locked to `@countercultures.com.mx` (any account on that domain gets in, no Users-sheet row required). The old `PORTAL_EMAIL_ALLOWLIST` and any `untold.works` access are deliberately gone — leave these auth guardrails in place.
 
-**Still open / in progress:** the two big rocks — **product descriptions (#4)** and **search (new Workstream F)** — plus the remaining portal create flows (New Lead, New PO under #16/#19), continued Contacts/Vendors/Customers tightening (#18), and any leftover Workstream D / cross-cutting polish. Only the **two entities are CC and R&F** (not "LLC" — see #19–#21 and Q7).
+**Shipped 2026-05-24 (this session), live and verified on Netlify:**
+- **Search (Workstream F)** — unified product relevance on one tuned, AND-semantics core with SKU-part tokenization, richer index fields (category/finishes/description), and a pinned relevance test suite. Commit `c41410a`.
+- **New Lead + New PO create flows (#16, #19)** — New Lead is a UI form over the existing sheet-backed `/api/dashboard/leads` (leads live in the Google "Leads" sheet, NOT Odoo); New PO writes a real Odoo `purchase.order` via a new `createPurchaseOrder` helper in `write.ts`, gated by a new `create_po` feature. Both have list-page and global "+ New" entry points. Commit `bbfaae5`.
+- **Company selectors relabeled CC / R&F** in the quote and PO builders (the `CompanyBadge` already renders "R&F"). Commit `bbfaae5`.
+- **Product descriptions (#4) — infrastructure + review gate.** Step 10 now stages drafts instead of writing live; new copy-review scripts (`13-emit-copy-review-xlsx` / `14-merge-copy-review`) make human approval the only publish path; the build-time blank-description guard is wired into `build`. Commits `70483d0` / `6c7a5c1`. Brand-alias + placeholder-name fix for artisan drafting: commit `b0cfe0f`.
+
+**Still open:**
+- **Product descriptions — the copy itself (the only remaining big-rock work).** Artisan lines are being regenerated with corrected prompting (placeholder-name fix shipped; length handled via Sonnet for statement pieces, concise Haiku for small hardware). Regeneration is gated on Anthropic API credits. After regen: a placeholder/length scan, then human review of `CC-Copy-Review.xlsx`, then step 14 publishes. The ~570 already-live AI entries (Emtek/Delta/Brizo) still need a retroactive review pass.
+- **#8 cross-cutting polish** — the internal `"llc"` → `"rf"` key rename in `odoo-sheets.ts` and its ~10 consumers (deferred on purpose: the user-facing label already reads R&F, so this is invisible cleanup, low value), plus any leftover Workstream D detail items.
+
+The two entities are **CC and R&F** (not "LLC").
 
 ---
 
@@ -53,16 +63,14 @@ The portal is where quotes, orders, POs, customers, and leads can be created and
 
 ## Remaining work (what is still open)
 
-Most of the original quick wins and portal items have shipped (see the reconciliation status block above). What is left:
+Almost the entire 26-item plan plus both big rocks have shipped (see the reconciliation status block above). What is genuinely left:
 
-- **#4 Product descriptions** — coverage/quality, not blank pages. See the audit numbers under Workstream A #4 and the prioritization there. This is big rock #1.
-- **Workstream F: Search** — investigation and rebuild across every touch point. This is big rock #2.
-- **Portal create flows still to build:** New Lead and New PO (#16, #19), using the same `app/lib/odoo/write.ts` helpers as New Quote / New Customer.
-- **Contacts / Vendors / Customers (#18):** keep tightening the three-list split.
-- **Multi-company (#19–#21):** the two entities are **CC and R&F**. Tags, company filter, Draft → RFQ relabel, and corrected attribution have shipped; keep validating columns and attribution against known orders.
-- **Leftover Workstream D / cross-cutting polish** not yet done.
+- **#4 Product descriptions — the copy itself.** Big rock #1's infrastructure and review gate shipped; what remains is regenerating the artisan copy (gated on Anthropic credits), human-reviewing `CC-Copy-Review.xlsx`, running step 14 to publish, and a retroactive review of the ~570 already-live AI entries. This is the highest-value remaining work.
+- **#8 cross-cutting polish.** The internal `"llc"` → `"rf"` key rename in `odoo-sheets.ts` and ~10 consumers (deferred — invisible to users, low value), plus any leftover Workstream D detail items found in a sweep. Lowest priority.
 
-Nothing here is blocked on Roger anymore. The only thing still worth a non-blocking confirmation from him is whether the homepage artisan-origin details are accurate (copper from Santa Clara del Cobre, stone from Querétaro, Mistoa ceramics from Guanajuato, designed by Roger Williams).
+Shipped this session and no longer open: Search (Workstream F, `c41410a`), New Lead + New PO create flows (#16/#19, `bbfaae5`), CC/R&F selector relabel (`bbfaae5`), descriptions infrastructure + review gate (`70483d0`/`6c7a5c1`/`b0cfe0f`).
+
+Nothing here is blocked on Roger. The only thing still worth a non-blocking confirmation from him is whether the homepage artisan-origin details are accurate (copper from Santa Clara del Cobre, stone from Querétaro, Mistoa ceramics from Guanajuato, designed by Roger Williams).
 
 ---
 
@@ -293,7 +301,7 @@ So ~83% of the real catalog has no curated Spanish copy and falls back to CRM fi
 ### Mandate / solution direction
 
 Unify on **one well-tuned relevance core** used by every touch point (website + dashboard + quote builder): extend the product matcher to index a richer field set (sku + SKU-parts, name, brand, category, finishes, and a description/feature token field), apply AND-biased multi-word matching with exact-match boost and consistent field weighting, and replace the ⌘K position-only product score with the real relevance score on one shared scale. Keep it efficient (snapshot built once and reused, debounced inputs, fast lookups). Then **prove it**: expand `app/lib/search-utils.test.ts` into a real relevance suite that pins the exact expected top results for representative queries (exact SKU, partial SKU with hyphens, brand prefix, accented Spanish, multi-word AND, finish/feature term) so "spot on" is verifiable and cannot regress. Validate the quote-builder product search specifically, since slow or wrong results there cost sales.
-**Effort:** L (investigation done; rebuild + test suite remains).
+**Status:** ✅ Shipped and live (commit `c41410a`, 2026-05-24). Product relevance is unified on one tuned core (`scoreProduct` in `search-utils.ts`, used by `searchProducts` and both API routes), with `_skuParts`/`_cat`/`_finishes`/`_desc` index fields, AND-semantics multi-word, SKU-part tokenization, and whole-query exact-match boost. The dashboard ⌘K now scores products by real relevance on the same scale as other entities (no more position-only). Behavior is pinned by a relevance suite in `search-utils.test.ts`. Verified independently against the live `scoreProduct` (exact/partial/joined SKU, brand precision, AND exclusion, diacritics, finish/category fields). Remaining: a live quote-builder spot-check (needs dashboard login).
 
 ---
 
@@ -315,13 +323,10 @@ Unify on **one well-tuned relevance core** used by every touch point (website + 
 
 ## Suggested sequencing (current)
 
-Phases 0–1 (sync fix, quick wins) and most of phases 2–4 have shipped. What remains, in order:
+Phases 0–4 have shipped, including both big rocks' builds. ✅ Done: sync fix, quick wins, the New Quote/Customer/Lead/PO create flows, search rebuild (Workstream F), the descriptions infrastructure + blank-description build guard, and the CC/R&F relabel. What remains, in order:
 
-1. **Big rock #1 — Product descriptions (#4):** run the fresh audit, then fill in reviewable batches (artisan lines + sellers first), human-review each batch, merge, re-audit, and wire the build-time blank-description check.
-2. **Big rock #2 — Search (Workstream F):** map every touch point, find the real causes, unify on one well-tuned core used everywhere, then pin behavior with a relevance test suite.
-3. **Remaining portal create flows:** New Lead and New PO (#16, #19) via `app/lib/odoo/write.ts`.
-4. **Contacts / Vendors / Customers and multi-company polish (#18–#21):** keep tightening the three lists and CC / R&F columns and attribution.
-5. **Leftover Workstream D / cross-cutting polish.**
+1. **Product descriptions — copy (#4):** regenerate the artisan lines (gated on Anthropic credits), scan, human-review `CC-Copy-Review.xlsx`, run step 14 to publish; then the retroactive review of the ~570 already-live AI entries. Highest-value remaining work.
+2. **#8 cross-cutting polish:** the internal `"llc"`→`"rf"` rename (low value, deferred) and any leftover Workstream D detail items.
 
 There is no accounting/fiscal migration phase — Odoo stays as the system of record (Correction A).
 

@@ -90,7 +90,7 @@ Voice rules:
 - Reference materials and mechanisms by name when known (cerámica, magnedock, vías de agua, válvula termostática, latón macizo).
 - Use the brand's own collection name verbatim (LITZE, Edalyn, Cimarron, etc.).
 - Mexican Spanish conventions: use "Tarja" for kitchen sink, "Lavabo" for bathroom sink, "Grifo/Mezcladora" for faucet, "Bañera/Tina" for tub, "Chapas" for door locks, "Jaladeras" for pulls.
-- Length: EXACTLY 60-90 words per description. This is a hard requirement. Count carefully.
+- Length is product-type-aware, NOT a fixed number. Small hardware (hooks, pulls/jaladeras, knobs, escutcheons, towel bars, toilet paper holders): 35-50 words — tight and specific, do NOT pad. Fixtures and statement pieces (faucets/mezcladoras, tubs/tinas, sinks/lavabos/tarjas, basins): 60-90 words. Let the product type and available detail guide length; padding small items with filler fights the brand voice.
 - Feature bullets: 4-6 each, 6-10 words each.
 
 Hard rules — violations are rejected:
