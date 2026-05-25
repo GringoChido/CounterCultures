@@ -140,6 +140,42 @@ export const catalogToProduct = (p: ProductFull): Product => ({
 let cache: Cache | null = null;
 let loading: Promise<Cache> | null = null;
 let warnedNoSheetId = false;
+let stockLoadPending = false;
+
+/**
+ * Patch stock quantities into an already-built cache without rebuilding it.
+ * Synchronous loop → atomic under Node's single-threaded model (no torn reads).
+ * Guarded: only one background stock fetch runs at a time.
+ */
+const loadStockInBackground = (targetCache: Cache): void => {
+  if (stockLoadPending) return;
+  stockLoadPending = true;
+  const t0 = Date.now();
+  buildStockMap()
+    .then((stockMap) => {
+      if (cache !== targetCache) return;
+      if (stockMap.size === 0) return;
+      let patched = 0;
+      for (const p of targetCache.products) {
+        const qty = stockMap.get(p.id) ?? 0;
+        p.stockQty = qty;
+        p.inStock = qty > 0;
+        if (qty > 0) patched++;
+      }
+      console.warn(
+        `[products-full] Background stock patched (${patched} SKUs in-stock) in ${Date.now() - t0}ms`,
+      );
+    })
+    .catch((err) => {
+      console.warn(
+        "[products-full] Background stock load failed:",
+        err instanceof Error ? err.message : err,
+      );
+    })
+    .finally(() => {
+      stockLoadPending = false;
+    });
+};
 
 const EMPTY_CACHE: Cache = {
   products: [],
@@ -149,7 +185,7 @@ const EMPTY_CACHE: Cache = {
   ts: 0,
 };
 
-const loadFromSheets = async (): Promise<Cache> => {
+const loadFromSheets = async (skipStock = false): Promise<Cache> => {
   if (!SHEET_ID) return EMPTY_CACHE;
 
   const auth = new GoogleAuth({
@@ -172,7 +208,7 @@ const loadFromSheets = async (): Promise<Cache> => {
   }
 
   const snapProducts = mapRowsToProducts(rows as string[][]);
-  const stockMap = await buildStockMap();
+  const stockMap = skipStock ? new Map<string, number>() : await buildStockMap();
   return buildCacheFromProducts(snapProducts, stockMap);
 };
 
@@ -182,7 +218,7 @@ const SNAPSHOT_CANDIDATES = [
   resolve(__dirname, "generated/products-snapshot.json.gz"),
 ];
 
-const loadFromSnapshot = async (): Promise<Cache | null> => {
+const loadFromSnapshot = async (skipStock = false): Promise<Cache | null> => {
   try {
     const snapshotPath = SNAPSHOT_CANDIDATES.find((p) => existsSync(p));
     if (!snapshotPath) {
@@ -199,10 +235,10 @@ const loadFromSnapshot = async (): Promise<Cache | null> => {
       console.warn("[products-full] Snapshot parsed but empty — falling back to Sheets");
       return null;
     }
-    const stockMap = await buildStockMap();
+    const stockMap = skipStock ? new Map<string, number>() : await buildStockMap();
     const c = buildCacheFromProducts(snapProducts, stockMap);
     console.warn(
-      `[products-full] Hydrated ${c.products.length} products from snapshot (${snapshotPath}) in ${Date.now() - t0}ms`,
+      `[products-full] Hydrated ${c.products.length} products from snapshot in ${Date.now() - t0}ms${skipStock ? " (stock deferred to background)" : ""}`,
     );
     return c;
   } catch (err) {
@@ -214,21 +250,27 @@ const loadFromSnapshot = async (): Promise<Cache | null> => {
   }
 };
 
-const load = async (): Promise<Cache> => {
-  const fromSnapshot = await loadFromSnapshot();
+const load = async (skipStock = false): Promise<Cache> => {
+  const fromSnapshot = await loadFromSnapshot(skipStock);
   if (fromSnapshot) return fromSnapshot;
-  return loadFromSheets();
+  return loadFromSheets(skipStock);
 };
 
 // Kicks off a refresh if one isn't already in flight. The returned promise
 // is the same one stored in `loading`, so concurrent callers coalesce on a
 // single Sheet fetch instead of stampeding.
+//
+// Cold start (cache===null): skip the ~6s buildStockMap on the critical path
+// so the catalog is serveable in ~2.5s. Stock patches in-place in background.
+// TTL refresh (cache!==null): block on stock — users see the stale cache anyway.
 const beginLoad = (): Promise<Cache> => {
   if (loading) return loading;
-  loading = load()
+  const cold = cache === null;
+  loading = load(cold)
     .then((c) => {
       cache = c;
       loading = null;
+      if (cold) void loadStockInBackground(c);
       return c;
     })
     .catch((err) => {

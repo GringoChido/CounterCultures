@@ -229,4 +229,4 @@ The makers weren't in the brand registry (Brand Kit Sheet or fallbacks), so `/br
 
 **Verified**: All 4 maker pages render with correct product counts, no 404, no empty grids, no console errors. Type-check passes clean.
 
-**Note — broader catalog cold-start**: The dynamic `/shop/catalog` page still has ~5.6s cold TTFB from snapshot hydration. This is a separate architecture item (keepalive cron mitigates it). This fix only reroutes the maker cards away from that bottleneck.
+**Note — broader catalog cold-start**: ~~The dynamic `/shop/catalog` page still has ~5.6s cold TTFB from snapshot hydration. This is a separate architecture item (keepalive cron mitigates it). This fix only reroutes the maker cards away from that bottleneck.~~ **RESOLVED 2026-05-25:** `buildStockMap` is now non-blocking on cold hydrate (cold-start ~8.8s → ~2.5s). Stock badges self-heal within seconds after the background fetch completes.
