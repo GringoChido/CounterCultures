@@ -68,10 +68,7 @@ export const GET = async (req: NextRequest) => {
     });
 
     const res = NextResponse.json(result);
-    res.headers.set(
-      "Cache-Control",
-      "public, s-maxage=60, stale-while-revalidate=300"
-    );
+    res.headers.set("Cache-Control", "private, no-store");
     return res;
   } catch (err) {
     console.error("[products/search] error:", err);
