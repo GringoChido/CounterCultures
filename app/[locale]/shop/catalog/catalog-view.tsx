@@ -18,7 +18,7 @@ import { pdpHref } from "@/app/lib/pdp-href";
 import { ProductVisual } from "@/app/components/product-visual";
 import { VisualSearchModal } from "@/app/components/visual-search-modal";
 import { brandTheme } from "@/app/lib/product-visuals";
-import { cachedFetch } from "@/app/lib/search-utils";
+
 
 // Color-coded finish swatches — architects scan finish codes (MB/PC/BG/etc.)
 // at a glance on SKU sheets. This turns code-scanning into color-scanning
@@ -205,14 +205,35 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
   const [visualSearchOpen, setVisualSearchOpen] = useState(false);
   const reqIdRef = useRef(0);
   const ssrConsumedRef = useRef(false);
+  const [urlReady, setUrlReady] = useState(false);
 
   const openProduct = useCallback(
     (p: ProductFull) => router.push(pdpHref(locale, p)),
     [router, locale],
   );
 
+  // Sync state from the real URL on mount. useSearchParams() can return
+  // empty values on the first client render in App Router, so the useState
+  // initializers may miss ?q= / ?brand=. Reading window.location.search is
+  // always correct and prevents the fetch effect from firing unfiltered.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setQuery(params.get("q") ?? "");
+    setBrand(params.get("brand") ?? "");
+    setCategory((params.get("category") as Category) || "all");
+    const urlSort = params.get("sort");
+    if (urlSort && VALID_SORTS.includes(urlSort as SortKey)) {
+      setSortKey(urlSort as SortKey);
+    }
+    setOffset(Number(params.get("offset") ?? 0));
+    setInStockOnly(params.get("inStock") === "true");
+    setUrlReady(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Sync filters → URL (shallow)
   useEffect(() => {
+    if (!urlReady) return;
     const params = new URLSearchParams();
     if (query.trim().length >= MIN_QUERY) params.set("q", query.trim());
     if (brand) params.set("brand", brand);
@@ -232,6 +253,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
 
   const [fetchError, setFetchError] = useState<string | null>(null);
   useEffect(() => {
+    if (!urlReady) return;
     if (!ssrConsumedRef.current && initialResult) {
       ssrConsumedRef.current = true;
       const ssrMatch =
@@ -242,6 +264,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
         !inStockOnly;
       if (ssrMatch) return;
     }
+    const controller = new AbortController();
     const id = setTimeout(() => {
       const myReq = ++reqIdRef.current;
       startTransition(async () => {
@@ -254,12 +277,18 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
         p.set("limit", String(PAGE_SIZE));
         p.set("offset", String(offset));
         try {
-          const data = await cachedFetch<SearchResponse>(`/api/products/search?${p}`);
+          const res = await fetch(`/api/products/search?${p}`, {
+            credentials: "same-origin",
+            signal: controller.signal,
+          });
+          if (!res.ok) throw new Error(`→ ${res.status}`);
+          const data: SearchResponse = await res.json();
           if (myReq !== reqIdRef.current) return;
           setNeedsAccess(false);
           setFetchError(null);
           setResult(data);
         } catch (e) {
+          if (controller.signal.aborted) return;
           if (myReq !== reqIdRef.current) return;
           const msg = e instanceof Error ? e.message : "";
           if (msg.includes("→ 401")) {
@@ -272,8 +301,11 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
         }
       });
     }, 180);
-    return () => clearTimeout(id);
-  }, [query, brand, category, sortKey, offset, inStockOnly]);
+    return () => {
+      clearTimeout(id);
+      controller.abort();
+    };
+  }, [urlReady, query, brand, category, sortKey, offset, inStockOnly]);
 
   const filteredBrands = useMemo(() => {
     if (!brandFilter) return brandCounts;
