@@ -8,8 +8,8 @@ import { CategoryHero } from "@/app/components/sections/category-hero";
 import { ShopCatalog } from "@/app/[locale]/shop/shop-catalog";
 import { getProductsByBrand } from "@/app/lib/sheets";
 import { getBrandBySlug, getBrands } from "@/app/lib/brand-kit-sheets";
-import { getFallbackBrand } from "@/app/lib/brand-fallbacks";
-import { getBrandSummary } from "@/app/lib/products-full";
+import { getFallbackBrand, FALLBACK_BRAND_META } from "@/app/lib/brand-fallbacks";
+import { getBrandSummary, searchProducts, catalogToProduct } from "@/app/lib/products-full";
 import { pdpUrl } from "@/app/lib/pdp-href";
 import { articles, pillarColors, pillarLabels } from "@/app/lib/articles";
 import { Shield, Wrench, HeadphonesIcon, ArrowUpRight, Package } from "lucide-react";
@@ -33,7 +33,10 @@ export const dynamicParams = true;
 
 export const generateStaticParams = async () => {
   const brands = await getBrands();
-  return brands.map((b) => ({ slug: b.slug }));
+  const sheetSlugs = new Set(brands.map((b) => b.slug));
+  const fallbackSlugs = Object.keys(FALLBACK_BRAND_META)
+    .filter((s) => !sheetSlugs.has(s));
+  return [...brands.map((b) => ({ slug: b.slug })), ...fallbackSlugs.map((s) => ({ slug: s }))];
 };
 
 export const generateMetadata = async ({
@@ -95,7 +98,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
 
   // External-state brands should have redirected at the card click, but if
   // someone lands here directly, still render — helps SEO for the brand name.
-  const products = await getProductsByBrand(brand.name);
+  let products = await getProductsByBrand(brand.name);
   const heroImage = BRAND_HERO_IMAGES[slug];
 
   // Full-catalog summary — connects the editorial brand page to the 354k Vault.
@@ -103,6 +106,19 @@ const BrandPage = async ({ params }: BrandPageProps) => {
     featuredIds: brand.featuredProductIds ?? [],
     limit: 8,
   });
+
+  // Artisan/fallback brands may have zero products in the curated CRM sheet
+  // but hundreds in the full Odoo catalog. Pull from the catalog instead —
+  // safe because this page is ISR-cached (revalidate=300), so the heavy
+  // snapshot load happens at build/revalidation, not per user request.
+  if (products.length === 0 && catalogSummary.count > 0) {
+    const catalogResult = await searchProducts({
+      brand: brand.name,
+      saleOnly: true,
+      limit: 500,
+    });
+    products = catalogResult.items.map(catalogToProduct);
+  }
 
   const description =
     (isEs ? brand.descriptionEs : brand.descriptionEn) ||

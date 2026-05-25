@@ -198,3 +198,35 @@ The 5.6s cold cost from `searchProducts` made filtered views feel broken even th
 | Any view (warm) | ~17ms | ~17ms | Same |
 
 **Verified**: default landing (SSR, no skeleton flash), Castro brand filter (skeleton → products), search `q=grifo` (skeleton → products), sort/pagination/category/inStock toggles, no console errors, no wrong-content flash.
+
+### Fix 5: Maker cards route to cached brand pages (severity: P1, UX)
+
+**Root cause:** The 4 artisan maker cards (Mistoa, Castro, Familia Meza, Manriquez) on `/brands` linked to `/shop/catalog?brand=<name>`. The catalog page is dynamic and loads the 354K-product snapshot (~5s cold start) on every visit. Meanwhile, `/brands/[slug]` pages are ISR-cached (`revalidate=300`) with `generateStaticParams` — pre-built at deploy, served instantly from CDN.
+
+The makers weren't in the brand registry (Brand Kit Sheet or fallbacks), so `/brands/mistoa` would 404.
+
+**Fix** (4 files):
+1. **`app/lib/brand-fallbacks.ts`**: Added 4 artisan makers (mistoa, castro, familia-meza, manriquez) with `isArtisan: true`, origin Mexico. Added `isArtisan` to the fallback type and `getFallbackBrand()` passthrough.
+2. **`app/lib/products-full.ts`**: Added `catalogToProduct()` — maps `ProductFull` (354K catalog) to `Product` (CRM-style) so the `ShopCatalog` grid can render catalog-sourced products.
+3. **`app/[locale]/brands/[slug]/page.tsx`**: Extended `generateStaticParams` to include all fallback brand slugs (not just Brand Kit Sheet brands), so artisan pages are pre-built at deploy. Added catalog fallback: when `getProductsByBrand` (legacy CRM sheet) returns 0 products but `getBrandSummary` shows the catalog has them, fetches via `searchProducts` and maps to `Product[]`. Safe because the page is ISR-cached (`revalidate=300`) — the heavy snapshot load runs at build/revalidation, not per user request.
+4. **`app/[locale]/brands/page.tsx`**: Added `slug` field to each artisan entry. Changed maker card href from `/${locale}/shop/catalog?brand=${encodeURIComponent(artisan.productBrand)}` to `/${locale}/brands/${artisan.slug}`. Fixed `buildFallbackBrands` to pass through `isArtisan` from meta.
+
+**Product counts verified (dev server with full catalog env):**
+
+| Maker | Legacy CRM sheet | Catalog fallback | Final on page |
+|---|---|---|---|
+| Mistoa | 14 | n/a (legacy sufficient) | **14** |
+| Castro | 0 | 175 from snapshot | **175** |
+| Familia Meza | 0 | 28 from snapshot | **28** |
+| Manriquez | 0 | 245 from snapshot | **245** |
+
+**Result:**
+- Maker cards now link to ISR-cached brand pages (instant from CDN, no 354K snapshot load per request)
+- Each maker page renders with its full product grid (not empty), correct brand name, origin Mexico, value props
+- `getBrandSummary(brand.name)` on the brand page still connects to the full catalog (runs at ISR revalidation, not per-request)
+- Existing brand pages unaffected (Kohler verified with product grid intact)
+- Both EN and ES locales verified
+
+**Verified**: All 4 maker pages render with correct product counts, no 404, no empty grids, no console errors. Type-check passes clean.
+
+**Note — broader catalog cold-start**: The dynamic `/shop/catalog` page still has ~5.6s cold TTFB from snapshot hydration. This is a separate architecture item (keepalive cron mitigates it). This fix only reroutes the maker cards away from that bottleneck.

@@ -37,7 +37,7 @@ const buildFallbackBrands = (): import("@/app/lib/brand-kit-types").Brand[] =>
     featuredProductIds: [],
     featuredProjectSlugs: [],
     nomStatusSummary: "unknown",
-    isArtisan: false,
+    isArtisan: meta.isArtisan ?? false,
     isFeatured: meta.isFeatured ?? false,
     displayOrder: idx + 1,
     createdAt: "",
@@ -69,6 +69,7 @@ type Bilingual = { en: string; es: string };
 interface Artisan {
   name: string;
   productBrand: string;
+  slug: string;
   craft: Bilingual;
   image: string;
   alt: Bilingual;
@@ -78,6 +79,7 @@ const artisans: Artisan[] = [
   {
     name: "Mistoa",
     productBrand: "Mistoa",
+    slug: "mistoa",
     craft: {
       en: "Ceramic and concrete basins",
       es: "Lavabos de cerámica y concreto",
@@ -91,6 +93,7 @@ const artisans: Artisan[] = [
   {
     name: "Castro",
     productBrand: "Castro",
+    slug: "castro",
     craft: {
       en: "Copper and brass",
       es: "Cobre y latón",
@@ -104,6 +107,7 @@ const artisans: Artisan[] = [
   {
     name: "Familia Meza",
     productBrand: "Familia Meza",
+    slug: "familia-meza",
     craft: {
       en: "Stone",
       es: "Piedra",
@@ -117,6 +121,7 @@ const artisans: Artisan[] = [
   {
     name: "Manriquez",
     productBrand: "Manriquez",
+    slug: "manriquez",
     craft: {
       en: "Cast bronze pulls and accessories",
       es: "Jaladeras y accesorios de bronce fundido",
@@ -470,7 +475,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
               {artisans.map((artisan) => (
                 <Link
                   key={artisan.name}
-                  href={`/${locale}/shop/catalog?brand=${encodeURIComponent(artisan.productBrand)}`}
+                  href={`/${locale}/brands/${artisan.slug}`}
                   className="group relative bg-dash-surface overflow-hidden block transition-shadow duration-300 hover:shadow-lg"
                 >
                   <div className="relative aspect-[3/4] overflow-hidden">

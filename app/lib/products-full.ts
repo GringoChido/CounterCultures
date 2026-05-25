@@ -112,6 +112,30 @@ const crmToProductFull = (p: Product): ProductFull => ({
   slug: p.slug,
 });
 
+export const catalogToProduct = (p: ProductFull): Product => ({
+  id: p.id,
+  sku: p.sku,
+  brand: p.brand,
+  name: p.name,
+  nameEn: p.name,
+  category: p.category,
+  subcategory: "",
+  price: p.listPrice,
+  tradePrice: p.tradePrice,
+  currency: (p.currency === "USD" ? "USD" : "MXN") as "MXN" | "USD",
+  finishes: p.variantLabels ?? [],
+  images: p.imageSrc ? [p.imageSrc] : [],
+  artisanal: false,
+  description: p.descriptionEs ?? "",
+  descriptionEn: p.descriptionEn ?? "",
+  features: p.features,
+  availability: p.inStock ? "in-stock" : "special-order",
+  slug: p.slug,
+  satCode: p.satCode,
+  inStock: p.inStock,
+  stockQty: p.stockQty,
+});
+
 
 let cache: Cache | null = null;
 let loading: Promise<Cache> | null = null;

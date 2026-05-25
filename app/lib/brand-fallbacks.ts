@@ -8,6 +8,7 @@ const FALLBACK_BRAND_META: Record<
     originCountryName?: string;
     primaryCategorySlug?: string;
     isFeatured?: boolean;
+    isArtisan?: boolean;
   }
 > = {
   kohler: { name: "Kohler", originCountry: "US", originCountryName: "United States", primaryCategorySlug: "faucetry-showers", isFeatured: true },
@@ -29,6 +30,11 @@ const FALLBACK_BRAND_META: Record<
   baldwin: { name: "Baldwin", originCountry: "US", originCountryName: "United States", primaryCategorySlug: "door-cabinet-hardware" },
   "chicago-faucets": { name: "Chicago Faucets", originCountry: "US", originCountryName: "United States", primaryCategorySlug: "faucetry-showers" },
   dxv: { name: "DXV", originCountry: "US", originCountryName: "United States", primaryCategorySlug: "faucetry-showers" },
+  // Artisan makers — ISR-cached brand pages instead of dynamic catalog
+  mistoa: { name: "Mistoa", originCountry: "MX", originCountryName: "Mexico", primaryCategorySlug: "bathroom-sinks", isArtisan: true },
+  castro: { name: "Castro", originCountry: "MX", originCountryName: "Mexico", primaryCategorySlug: "bathroom-sinks", isArtisan: true },
+  "familia-meza": { name: "Familia Meza", originCountry: "MX", originCountryName: "Mexico", primaryCategorySlug: "bathroom-sinks", isArtisan: true },
+  manriquez: { name: "Manriquez", originCountry: "MX", originCountryName: "Mexico", primaryCategorySlug: "door-cabinet-hardware", isArtisan: true },
 };
 
 export { FALLBACK_BRAND_META };
@@ -56,7 +62,7 @@ export const getFallbackBrand = (slug: string): Brand | null => {
     featuredProductIds: [],
     featuredProjectSlugs: [],
     nomStatusSummary: "unknown",
-    isArtisan: false,
+    isArtisan: meta.isArtisan ?? false,
     isFeatured: meta.isFeatured ?? false,
     displayOrder: 999,
     createdAt: "",
