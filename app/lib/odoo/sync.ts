@@ -147,6 +147,20 @@ const SALE_ORDER_FIELDS: FieldDef[] = [
   { odoo: "note", sheet: "note", type: "scalar" },
 ];
 
+const PURCHASE_ORDER_FIELDS: FieldDef[] = [
+  { odoo: "id", sheet: "id", type: "scalar" },
+  { odoo: "name", sheet: "name", type: "scalar" },
+  { odoo: "state", sheet: "state", type: "scalar" },
+  { odoo: "partner_id", sheet: "partner_id", type: "many2one", sheetId: "partner_id_id" },
+  { odoo: "date_order", sheet: "date_order", type: "scalar" },
+  { odoo: "amount_total", sheet: "amount_total", type: "scalar" },
+  { odoo: "currency_id", sheet: "currency_id", type: "many2one" },
+  { odoo: "company_id", sheet: "company_id", type: "many2one" },
+  { odoo: "invoice_status", sheet: "invoice_status", type: "scalar" },
+  { odoo: "origin", sheet: "origin", type: "scalar" },
+  { odoo: "write_date", sheet: "write_date", type: "scalar" },
+];
+
 interface ModelConfig {
   model: string;
   tab: SheetTab;
@@ -155,7 +169,7 @@ interface ModelConfig {
   bulkOrder: string;
 }
 
-const MODELS: Record<"invoice" | "payment" | "saleOrder", ModelConfig> = {
+const MODELS: Record<"invoice" | "payment" | "saleOrder" | "purchaseOrder", ModelConfig> = {
   invoice: {
     model: "account.move",
     tab: "Odoo_Invoices",
@@ -172,6 +186,12 @@ const MODELS: Record<"invoice" | "payment" | "saleOrder", ModelConfig> = {
     model: "sale.order",
     tab: "Odoo_Sale_Orders",
     fields: SALE_ORDER_FIELDS,
+    bulkOrder: "write_date desc",
+  },
+  purchaseOrder: {
+    model: "purchase.order",
+    tab: "Odoo_Purchase_Orders",
+    fields: PURCHASE_ORDER_FIELDS,
     bulkOrder: "write_date desc",
   },
 };
@@ -215,6 +235,11 @@ export const syncSaleOrderInMirror = (
   orderId: number
 ): Promise<{ action: "updated" | "inserted" | "skipped" }> =>
   syncOneByOdooId(MODELS.saleOrder, orderId);
+
+export const syncPurchaseOrderInMirror = (
+  poId: number
+): Promise<{ action: "updated" | "inserted" | "skipped" }> =>
+  syncOneByOdooId(MODELS.purchaseOrder, poId);
 
 // ── Bulk incremental (cron) ────────────────────────────────────────
 
@@ -306,3 +331,6 @@ export const syncPaymentsIncremental = (limit = 250): Promise<SyncSummary> =>
 
 export const syncSaleOrdersIncremental = (limit = 250): Promise<SyncSummary> =>
   syncBulkIncremental(MODELS.saleOrder, limit);
+
+export const syncPurchaseOrdersIncremental = (limit = 250): Promise<SyncSummary> =>
+  syncBulkIncremental(MODELS.purchaseOrder, limit);

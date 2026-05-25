@@ -30,12 +30,13 @@ import {
   syncInvoicesIncremental,
   syncPaymentsIncremental,
   syncSaleOrdersIncremental,
+  syncPurchaseOrdersIncremental,
   type SyncSummary,
 } from "@/app/lib/odoo/sync";
 
-type ModelKey = "invoices" | "payments" | "sale_orders";
+type ModelKey = "invoices" | "payments" | "sale_orders" | "purchase_orders";
 
-const ALL_MODELS: ModelKey[] = ["invoices", "payments", "sale_orders"];
+const ALL_MODELS: ModelKey[] = ["invoices", "payments", "sale_orders", "purchase_orders"];
 
 const isAuthorized = (req: NextRequest): boolean => {
   // P0 security: require the probe key. The old sentinel-or-probe pattern
@@ -72,7 +73,8 @@ const runForModel = async (
   try {
     if (model === "invoices") return await syncInvoicesIncremental(limit);
     if (model === "payments") return await syncPaymentsIncremental(limit);
-    return await syncSaleOrdersIncremental(limit);
+    if (model === "sale_orders") return await syncSaleOrdersIncremental(limit);
+    return await syncPurchaseOrdersIncremental(limit);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "unknown_error";
     console.error(`[cron/odoo-sync] ${model} failed:`, msg);

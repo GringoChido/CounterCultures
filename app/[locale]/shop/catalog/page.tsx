@@ -24,6 +24,7 @@ const BASE_URL = "https://countercultures.mx";
 
 interface CatalogPageProps {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export const generateMetadata = async ({
@@ -104,8 +105,11 @@ const buildBrandImageMap = (brandNames: string[]): Record<string, string> => {
   return result;
 };
 
-const CatalogPage = async ({ params }: CatalogPageProps) => {
+const CatalogPage = async ({ params, searchParams }: CatalogPageProps) => {
   const { locale } = await params;
+  const sp = await searchParams;
+  const urlBrand = typeof sp.brand === "string" ? sp.brand : undefined;
+  const urlQuery = typeof sp.q === "string" ? sp.q : undefined;
   const isEs = locale === "es";
   const statsPromise = Promise.race([
     getCatalogStats().catch(() => STATS_FALLBACK),
@@ -136,6 +140,8 @@ const CatalogPage = async ({ params }: CatalogPageProps) => {
         ]).catch(() => null),
       ]);
       initialResult = await searchProducts({
+        q: urlQuery,
+        brand: urlBrand,
         sort: "most_specified",
         limit: 60,
         specScores: specScores && specScores.size > 0 ? specScores : undefined,

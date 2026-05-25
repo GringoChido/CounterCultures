@@ -132,3 +132,22 @@ These require a logged-in session at `countercultures.netlify.app/dashboard`:
 ### P&L Report (post-fix verification)
 - [ ] Navigate to Reports > P&L
 - [ ] Confirm the company tab says "R&F USA" (not "LLC USA")
+
+---
+
+## Roger Monday Fixes — 2026-05-25 (second pass)
+
+### Fix 1: Maker cards on /brands → catalog (severity: P1, UX-breaking)
+- **Root cause:** `catalog/page.tsx` SSR called `searchProducts()` without `brand`/`q` URL params. Initial render showed unfiltered "most specified" products; client-side corrected after 180ms debounce, but the flash made it appear broken.
+- **Fix:** Page now reads `searchParams`, passes `brand` + `q` to the server-side `searchProducts()` call.
+- **Status:** Fixed, needs deploy verification.
+
+### Fix 2: Bilingual quotes — EN/ES per customer (severity: feature request)
+- **Root cause:** `createCustomer` never sent `lang` to Odoo's `res.partner`.
+- **Fix:** `lang` field added to `CreateCustomerInput`, API Zod schema, and the inline New Customer form (Espanol/English toggle, default `es_MX`).
+- **Status:** Fixed, needs Odoo verification (create customer with each lang, confirm quote PDF renders in the correct language).
+
+### Fix 3: Purchase orders never synced (severity: P1, data trust)
+- **Root cause:** `MODELS` map in `sync.ts` only had invoice/payment/saleOrder. `ALL_MODELS` in cron route only listed those three. The `Odoo_Purchase_Orders` sheet was frozen at its initial load.
+- **Fix:** Added `PURCHASE_ORDER_FIELDS` (11 fields + `write_date`), `purchaseOrder` entry in `MODELS`, `syncPurchaseOrdersIncremental` export, `"purchase_orders"` in cron `ALL_MODELS`.
+- **Remaining:** After deploy, the PO sync needs to run several times to backfill from ~1292 to ~1346 (250 per run). Monitor cron logs. Sale-order lag (~25) should self-heal on next hourly run.

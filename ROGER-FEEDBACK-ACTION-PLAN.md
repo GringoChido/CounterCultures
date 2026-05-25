@@ -41,6 +41,15 @@ This plan is the living source of truth. It was compiled in early May and is par
 
 The two entities are **CC and R&F** (not "LLC").
 
+### Roger feedback — 2026-05-25 (Monday)
+
+From Roger's Monday review of the shipped work.
+
+- ✅ **California Faucets search confirmed working** — "all of it appears, including parts and finishes." Validates Workstream F.
+- ✅ **Maker cards on /brands don't reach products — FIXED.** Root cause: the catalog server component called `searchProducts()` without passing `brand`/`q` URL params, so the initial SSR render showed unfiltered products. The client-side fetch corrected after 180ms, but the flash of wrong content made it feel broken. Fix: `catalog/page.tsx` now reads `searchParams` and passes `brand` + `q` to the server-side `searchProducts()` call.
+- ✅ **Bilingual quotes (EN/ES per client) — SHIPPED.** Added `lang` field (`"en_US" | "es_MX"`) to `CreateCustomerInput` → `createCustomer()` → Odoo `res.partner.lang`. API route `/api/dashboard/customers/create` accepts `lang` in the Zod schema. The New Customer inline form on the New Quote page has an explicit Espanol/English toggle (defaults to `es_MX`). Odoo renders the quote PDF in the customer's language.
+- ✅ **PO list stale vs Odoo — FIXED.** Root cause confirmed: `MODELS` map had no `purchaseOrder` entry; `ALL_MODELS` in the cron route only listed invoices/payments/sale_orders. Fix: defined `PURCHASE_ORDER_FIELDS` (11 fields matching the `OdooPurchaseOrder` sheet columns + `write_date`), added `purchaseOrder` to `MODELS`, exported `syncPurchaseOrdersIncremental`, and added `"purchase_orders"` to the cron route. POs now sync incrementally on the hourly cron alongside the other models. Sale-order lag (~25) is just the cursor catching up and will self-heal on next cron run.
+
 ---
 
 ## Direction (current): the portal is a daily workspace alongside Odoo

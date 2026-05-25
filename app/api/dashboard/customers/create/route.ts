@@ -9,6 +9,7 @@ const Body = z.object({
   email: z.string().email().optional().or(z.literal("")),
   phone: z.string().max(50).optional().or(z.literal("")),
   company: z.string().max(200).optional().or(z.literal("")),
+  lang: z.enum(["en_US", "es_MX"]).optional(),
 });
 
 export const POST = async (req: NextRequest): Promise<Response> => {
@@ -21,6 +22,7 @@ export const POST = async (req: NextRequest): Promise<Response> => {
       email: body.email || undefined,
       phone: body.phone || undefined,
       company: body.company || undefined,
+      lang: body.lang,
     });
 
     appendRow("Activity_Log", [

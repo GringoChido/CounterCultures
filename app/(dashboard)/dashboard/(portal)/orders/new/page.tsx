@@ -70,6 +70,7 @@ const NewQuotePage = () => {
   const [newEmail, setNewEmail] = useState("");
   const [newPhone, setNewPhone] = useState("");
   const [newFirm, setNewFirm] = useState("");
+  const [newLang, setNewLang] = useState<"en_US" | "es_MX">("es_MX");
   const [creatingCustomer, setCreatingCustomer] = useState(false);
 
   // Order fields
@@ -165,6 +166,7 @@ const NewQuotePage = () => {
           email: newEmail.trim() || undefined,
           phone: newPhone.trim() || undefined,
           company: newFirm.trim() || undefined,
+          lang: newLang,
         }),
       });
       const data = await res.json();
@@ -319,6 +321,25 @@ const NewQuotePage = () => {
                   placeholder="Company / firm (optional)"
                   className="px-3 py-2 text-sm bg-dash-bg border border-dash-border rounded-lg text-dash-text focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper"
                 />
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-dash-text-secondary">Quote language:</span>
+                <div className="flex gap-2">
+                  {([["es_MX", "Español"], ["en_US", "English"]] as const).map(([val, label]) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setNewLang(val)}
+                      className={`px-3 py-1.5 text-xs rounded-lg border transition-colors cursor-pointer ${
+                        newLang === val
+                          ? "border-dash-accent bg-dash-accent/10 text-dash-accent"
+                          : "border-dash-border text-dash-text-secondary hover:border-dash-accent"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
               </div>
               <div className="flex gap-2">
                 <button

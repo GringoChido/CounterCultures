@@ -191,6 +191,7 @@ export interface CreateCustomerInput {
   email?: string;
   phone?: string;
   company?: string;
+  lang?: "en_US" | "es_MX";
 }
 
 export interface CreateCustomerResult {
@@ -213,6 +214,7 @@ export const createCustomer = async (
   if (input.company) {
     vals.company_name = input.company;
   }
+  if (input.lang) vals.lang = input.lang;
 
   const partnerId = (await execute(uid, "res.partner", "create", [vals])) as number;
 
