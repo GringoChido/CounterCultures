@@ -18,6 +18,7 @@
 
 import { execute, authenticate, isConfigured } from "./client";
 import { upsertRowByField, batchUpsertRowsByField, readSheet, type SheetTab } from "../dashboard-sheets";
+import { ensureColumns } from "../sheet-migrations";
 
 let cachedUid: number | null = null;
 const getUid = async (): Promise<number> => {
@@ -124,6 +125,7 @@ const PAYMENT_FIELDS: FieldDef[] = [
   { odoo: "reconciled_bill_ids", sheet: "reconciled_bill_ids", type: "x2many" },
   { odoo: "memo", sheet: "memo", type: "scalar" },
   { odoo: "l10n_mx_edi_cfdi_uuid", sheet: "l10n_mx_edi_cfdi_uuid", type: "scalar" },
+  { odoo: "write_date", sheet: "write_date", type: "scalar" },
 ];
 
 const SALE_ORDER_FIELDS: FieldDef[] = [
@@ -145,6 +147,7 @@ const SALE_ORDER_FIELDS: FieldDef[] = [
   { odoo: "invoice_ids", sheet: "invoice_ids", type: "x2many" },
   { odoo: "order_line", sheet: "order_line", type: "x2many" },
   { odoo: "note", sheet: "note", type: "scalar" },
+  { odoo: "write_date", sheet: "write_date", type: "scalar" },
 ];
 
 const PURCHASE_ORDER_FIELDS: FieldDef[] = [
@@ -198,6 +201,15 @@ const MODELS: Record<"invoice" | "payment" | "saleOrder" | "purchaseOrder", Mode
 
 const odooFieldNames = (cfg: ModelConfig): string[] =>
   Array.from(new Set(cfg.fields.map((f) => f.odoo)));
+
+const mappedSheetColumns = (cfg: ModelConfig): string[] => {
+  const cols = new Set<string>();
+  for (const def of cfg.fields) {
+    cols.add(def.sheet);
+    if (def.sheetId) cols.add(def.sheetId);
+  }
+  return Array.from(cols);
+};
 
 // ── Spot refresh (per-row, post-write) ─────────────────────────────
 
@@ -280,6 +292,13 @@ const syncBulkIncremental = async (
   requireConfigured();
   const uid = await getUid();
   const startCursor = await getMirrorCursor(cfg);
+
+  try {
+    await ensureColumns(cfg.tab, mappedSheetColumns(cfg));
+  } catch (err) {
+    console.warn(`[sync] ensureColumns(${cfg.tab}) failed, continuing:`, err instanceof Error ? err.message : err);
+  }
+
   let cursor = startCursor;
   let totalFetched = 0;
   let totalInserted = 0;
