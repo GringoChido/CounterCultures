@@ -1,7 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { z } from "zod";
+import { getCurrentUser, requireFeature, FeatureDeniedError } from "@/app/lib/auth";
 import {
   readSheet,
   appendRowByHeader,
+  appendRow,
   updateRowByHeader,
   findRowIndex,
 } from "@/app/lib/dashboard-sheets";
@@ -20,25 +23,16 @@ type LeadRecord = {
   created_at: string;
   next_followup: string;
   last_contact_date: string;
-  brand_slugs: string; // pipe-separated ("kohler|dornbracht")
-  /**
-   * R2-2: which rep owns this lead. Compared against currentUser.name in
-   * the Mine/All filter. Empty for unassigned leads.
-   */
+  brand_slugs: string;
   assigned_rep: string;
-  /**
-   * R4 Note 8: explicit marketing-bucket override. Empty → derive from
-   * contact_type via app/lib/customer-segments.ts.
-   * Values: "builder" | "designer" | "end-user" | "" (unset).
-   */
   marketing_segment: string;
   notes: string;
   source_message_id: string;
-  classifier_brands: string; // pipe-separated, populated by /leads/classify
-  classifier_skus: string; // pipe-separated
-  classifier_profession: string; // Architect | Designer | Builder | Hospitality | Homeowner | Unknown
-  classifier_confidence: string; // string-encoded float 0-1
-  classifier_run_at: string; // ISO timestamp of last classifier run
+  classifier_brands: string;
+  classifier_skus: string;
+  classifier_profession: string;
+  classifier_confidence: string;
+  classifier_run_at: string;
 };
 
 const LEAD_COLUMNS: (keyof LeadRecord)[] = [
@@ -68,9 +62,6 @@ const LEAD_COLUMNS: (keyof LeadRecord)[] = [
 
 const R4_NOTE_8_COLUMNS = ["marketing_segment"];
 
-// Sheets with valueInputOption=USER_ENTERED evaluates any cell starting
-// with + = - @ as a formula, so phones like "+52 415 …" become #ERROR!.
-// Leading apostrophe is the canonical escape — Sheets strips it on read.
 const escapeFormula = (v: string): string =>
   typeof v === "string" && /^[+=\-@]/.test(v) ? `'${v}` : v;
 
@@ -84,8 +75,63 @@ const recordToFields = (
   return out;
 };
 
+const PostBody = z.object({
+  name: z.string().min(1),
+  email: z.string().email().or(z.literal("")).optional().default(""),
+  phone: z.string().optional().default(""),
+  source: z.string().optional().default(""),
+  status: z.string().optional().default(""),
+  contact_type: z.string().optional().default(""),
+  interest: z.string().optional().default(""),
+  value: z.string().optional().default(""),
+  next_followup: z.string().optional().default(""),
+  last_contact_date: z.string().optional().default(""),
+  brand_slugs: z.string().optional().default(""),
+  assigned_rep: z.string().optional().default(""),
+  marketing_segment: z.string().optional().default(""),
+  notes: z.string().optional().default(""),
+  source_message_id: z.string().optional().default(""),
+  id: z.string().optional(),
+  created_at: z.string().optional(),
+  classifier_brands: z.string().optional().default(""),
+  classifier_skus: z.string().optional().default(""),
+  classifier_profession: z.string().optional().default(""),
+  classifier_confidence: z.string().optional().default(""),
+  classifier_run_at: z.string().optional().default(""),
+});
+
+const PatchBody = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).optional(),
+  email: z.string().email().or(z.literal("")).optional(),
+  phone: z.string().optional(),
+  source: z.string().optional(),
+  status: z.string().optional(),
+  contact_type: z.string().optional(),
+  interest: z.string().optional(),
+  value: z.string().optional(),
+  next_followup: z.string().optional(),
+  last_contact_date: z.string().optional(),
+  brand_slugs: z.string().optional(),
+  assigned_rep: z.string().optional(),
+  marketing_segment: z.string().optional(),
+  notes: z.string().optional(),
+  source_message_id: z.string().optional(),
+  created_at: z.string().optional(),
+  classifier_brands: z.string().optional(),
+  classifier_skus: z.string().optional(),
+  classifier_profession: z.string().optional(),
+  classifier_confidence: z.string().optional(),
+  classifier_run_at: z.string().optional(),
+});
+
 // GET — list all leads, optionally filter by status
 export const GET = async (request: NextRequest) => {
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const status = request.nextUrl.searchParams.get("status");
 
   try {
@@ -108,20 +154,45 @@ export const GET = async (request: NextRequest) => {
 // POST — create a new lead
 export const POST = async (request: NextRequest) => {
   try {
-    const body: LeadRecord = await request.json();
+    const user = await requireFeature("manage_leads");
+    const body = PostBody.parse(await request.json());
 
-    if (!body.id) {
-      body.id = `LEAD-${Date.now()}`;
-    }
-    if (!body.created_at) {
-      body.created_at = new Date().toISOString();
-    }
+    const leadId = body.id || `LEAD-${Date.now()}`;
+    const record: LeadRecord = {
+      ...body,
+      id: leadId,
+      created_at: body.created_at || new Date().toISOString(),
+    };
 
     await ensureColumns("Leads", R4_NOTE_8_COLUMNS);
-    await appendRowByHeader("Leads", recordToFields(body));
+    await appendRowByHeader("Leads", recordToFields(record));
 
-    return NextResponse.json({ success: true, id: body.id });
+    appendRow("Activity_Log", [
+      `EA-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      new Date().toISOString(),
+      user.email,
+      "create_lead",
+      "lead",
+      leadId,
+      JSON.stringify({ name: body.name, source: body.source }),
+    ]).catch((err) =>
+      console.error("[Leads API] Activity_Log append failed:", err)
+    );
+
+    return NextResponse.json({ success: true, id: leadId });
   } catch (err) {
+    if (err instanceof FeatureDeniedError) {
+      return NextResponse.json(
+        { error: "Forbidden", feature: err.feature },
+        { status: 403 }
+      );
+    }
+    if (err instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Invalid body", issues: err.issues },
+        { status: 400 }
+      );
+    }
     console.error("[Leads API] POST error:", err);
     return NextResponse.json(
       { error: "Failed to create lead" },
@@ -133,14 +204,8 @@ export const POST = async (request: NextRequest) => {
 // PATCH — update an existing lead by id
 export const PATCH = async (request: NextRequest) => {
   try {
-    const body: Partial<LeadRecord> & { id: string } = await request.json();
-
-    if (!body.id) {
-      return NextResponse.json(
-        { error: "id is required" },
-        { status: 400 }
-      );
-    }
+    const user = await requireFeature("manage_leads");
+    const body = PatchBody.parse(await request.json());
 
     const rowIdx = await findRowIndex("Leads", "id", body.id);
     if (rowIdx === null) {
@@ -150,14 +215,35 @@ export const PATCH = async (request: NextRequest) => {
       );
     }
 
-    // updateRowByHeader merges with existing row internally, so we don't
-    // need to readSheet+merge here — we only pass the fields we want to
-    // change. Unknown fields are preserved.
     await ensureColumns("Leads", R4_NOTE_8_COLUMNS);
     await updateRowByHeader("Leads", rowIdx, recordToFields(body));
 
+    appendRow("Activity_Log", [
+      `EA-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      new Date().toISOString(),
+      user.email,
+      "update_lead",
+      "lead",
+      body.id,
+      JSON.stringify({ fields: Object.keys(body).filter((k) => k !== "id") }),
+    ]).catch((err) =>
+      console.error("[Leads API] Activity_Log append failed:", err)
+    );
+
     return NextResponse.json({ success: true });
   } catch (err) {
+    if (err instanceof FeatureDeniedError) {
+      return NextResponse.json(
+        { error: "Forbidden", feature: err.feature },
+        { status: 403 }
+      );
+    }
+    if (err instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Invalid body", issues: err.issues },
+        { status: 400 }
+      );
+    }
     console.error("[Leads API] PATCH error:", err);
     return NextResponse.json(
       { error: "Failed to update lead" },

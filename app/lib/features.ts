@@ -45,6 +45,7 @@ export const FEATURES = {
   view_contacts: "CRM contacts with classifications",
   view_leads: "Leads list",
   view_pipeline: "Sales pipeline (kanban)",
+  manage_leads: "Create and edit leads",
 
   // Write actions on Odoo (Cut #3)
   create_quote: "Create new quote on a customer",
@@ -91,6 +92,7 @@ const FINANCE_FEATURES: Feature[] = [
   "create_quote",
   "create_po",
   "send_quote",
+  "manage_leads",
 ];
 
 const SALES_FEATURES: Feature[] = [
@@ -112,6 +114,7 @@ const SALES_FEATURES: Feature[] = [
   "send_prefactura",
   "send_payment_link",
   "cancel_order",
+  "manage_leads",
 ];
 
 export const ROLE_DEFAULTS: Record<UserRole, Feature[]> = {
