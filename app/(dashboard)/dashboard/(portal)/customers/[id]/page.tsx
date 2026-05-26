@@ -181,6 +181,7 @@ const CustomerDetailPage = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("overview");
+  const { user: currentUser } = useCurrentUser();
 
   useEffect(() => {
     fetch(`/api/dashboard/customers/${id}`)
@@ -220,7 +221,6 @@ const CustomerDetailPage = ({
     );
   }
 
-  const { user: currentUser } = useCurrentUser();
   const { partner, metrics, invoices, payments, orders, openAR, parent, children, aging } = profile;
   const isCompany = partner.is_company === "True" || partner.is_company === "true";
   const canCreateQuote = currentUser && hasFeature(
