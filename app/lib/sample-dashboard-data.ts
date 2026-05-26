@@ -147,18 +147,8 @@ export const SALES_PHASES: SalesPhase[] = [
   },
 ];
 
-// ---------------------------------------------------------------------------
-// Shared Chart Data
-// ---------------------------------------------------------------------------
-
-export const SAMPLE_REVENUE_TREND = [
-  { month: "Oct", revenue: 280000 },
-  { month: "Nov", revenue: 420000 },
-  { month: "Dec", revenue: 350000 },
-  { month: "Jan", revenue: 480000 },
-  { month: "Feb", revenue: 520000 },
-  { month: "Mar", revenue: 320000 },
-];
+// TODO(week5-marketing): wire real revenue data from sales-analytics API
+// SAMPLE_REVENUE_TREND removed — was fabricated data rendered as if real.
 
 export type PaymentStructure = "full-upfront" | "fifty-fifty" | "net-30" | "custom";
 

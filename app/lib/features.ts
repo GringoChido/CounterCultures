@@ -83,6 +83,8 @@ const FINANCE_FEATURES: Feature[] = [
   "view_stripe",
   "view_ar",
   "view_ap",
+  "view_leads",
+  "view_pipeline",
   "send_prefactura",
   "approve_prefactura",
   "attach_cfdi",

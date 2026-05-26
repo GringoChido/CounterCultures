@@ -39,7 +39,7 @@ import {
 } from "recharts";
 import { KPICard } from "@/app/(dashboard)/components/kpi-card";
 import { ChartCard } from "@/app/(dashboard)/components/chart-card";
-import { SAMPLE_REVENUE_TREND } from "@/app/lib/sample-dashboard-data";
+import { DataPendingPlaceholder } from "@/app/(dashboard)/components/data-pending-placeholder";
 import { downloadCsv } from "@/app/lib/csv-export";
 
 // ── Types ──────────────────────────────────────────────────────────────
@@ -95,7 +95,7 @@ const parseVal = (v: string | undefined): number => {
   return Number.isFinite(n) ? n : 0;
 };
 
-const fallbackMonthlyRevenue = SAMPLE_REVENUE_TREND;
+const fallbackMonthlyRevenue: MonthlyPoint[] = [];
 
 // ── Page ───────────────────────────────────────────────────────────────
 
@@ -108,10 +108,10 @@ const SalesAnalyticsPage = () => {
     fallbackMonthlyRevenue
   );
   const [kpis, setKpis] = useState<Kpis>({
-    totalRevenue: "$2.42M",
-    dealsClosed: "38",
-    avgDealSize: "$63.7K",
-    winRate: "72%",
+    totalRevenue: "—",
+    dealsClosed: "—",
+    avgDealSize: "—",
+    winRate: "—",
   });
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -419,43 +419,49 @@ const OverviewTab = ({
       />
     </div>
 
-    <ChartCard title="Monthly Revenue" subtitle="Last 6 months (MXN)">
-      <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={monthlyRevenue}>
-            <XAxis
-              dataKey="month"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 11, fill: "#6B7280" }}
-            />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 11, fill: "#6B7280" }}
-              tickFormatter={(v) => formatCurrency(v)}
-            />
-            <Tooltip
-              formatter={(value) => [
-                `$${Number(value).toLocaleString()} MXN`,
-                "Revenue",
-              ]}
-              contentStyle={{
-                borderRadius: "8px",
-                border: "1px solid #E5E7EB",
-                fontSize: "12px",
-              }}
-            />
-            <Bar
-              dataKey="revenue"
-              fill="#B87333"
-              radius={[4, 4, 0, 0]}
-              barSize={40}
-            />
-          </BarChart>
-        </ResponsiveContainer>
+    {monthlyRevenue.length > 0 ? (
+      <ChartCard title="Monthly Revenue" subtitle="Last 6 months (MXN)">
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={monthlyRevenue}>
+              <XAxis
+                dataKey="month"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 11, fill: "#6B7280" }}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 11, fill: "#6B7280" }}
+                tickFormatter={(v) => formatCurrency(v)}
+              />
+              <Tooltip
+                formatter={(value) => [
+                  `$${Number(value).toLocaleString()} MXN`,
+                  "Revenue",
+                ]}
+                contentStyle={{
+                  borderRadius: "8px",
+                  border: "1px solid #E5E7EB",
+                  fontSize: "12px",
+                }}
+              />
+              <Bar
+                dataKey="revenue"
+                fill="#B87333"
+                radius={[4, 4, 0, 0]}
+                barSize={40}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </ChartCard>
+    ) : (
+      <div className="bg-dash-surface rounded-xl border border-dash-border p-5">
+        <DataPendingPlaceholder title="Monthly Revenue" source="Sales Analytics API" />
       </div>
-    </ChartCard>
+    )}
   </>
 );
 
@@ -586,43 +592,49 @@ const RevenueTab = ({
   onBrandClick: (slug: string) => void;
 }) => (
   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-    <ChartCard title="Monthly Revenue" subtitle="Last 6 months (MXN)">
-      <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={monthlyRevenue}>
-            <XAxis
-              dataKey="month"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 11, fill: "#6B7280" }}
-            />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 11, fill: "#6B7280" }}
-              tickFormatter={(v) => formatCurrency(v)}
-            />
-            <Tooltip
-              formatter={(value) => [
-                `$${Number(value).toLocaleString()} MXN`,
-                "Revenue",
-              ]}
-              contentStyle={{
-                borderRadius: "8px",
-                border: "1px solid #E5E7EB",
-                fontSize: "12px",
-              }}
-            />
-            <Bar
-              dataKey="revenue"
-              fill="#B87333"
-              radius={[4, 4, 0, 0]}
-              barSize={28}
-            />
-          </BarChart>
-        </ResponsiveContainer>
+    {monthlyRevenue.length > 0 ? (
+      <ChartCard title="Monthly Revenue" subtitle="Last 6 months (MXN)">
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={monthlyRevenue}>
+              <XAxis
+                dataKey="month"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 11, fill: "#6B7280" }}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 11, fill: "#6B7280" }}
+                tickFormatter={(v) => formatCurrency(v)}
+              />
+              <Tooltip
+                formatter={(value) => [
+                  `$${Number(value).toLocaleString()} MXN`,
+                  "Revenue",
+                ]}
+                contentStyle={{
+                  borderRadius: "8px",
+                  border: "1px solid #E5E7EB",
+                  fontSize: "12px",
+                }}
+              />
+              <Bar
+                dataKey="revenue"
+                fill="#B87333"
+                radius={[4, 4, 0, 0]}
+                barSize={28}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </ChartCard>
+    ) : (
+      <div className="bg-dash-surface rounded-xl border border-dash-border p-5">
+        <DataPendingPlaceholder title="Monthly Revenue" source="Sales Analytics API" />
       </div>
-    </ChartCard>
+    )}
 
     <div className="bg-dash-surface border border-dash-border rounded-xl p-5">
       <h3 className="text-sm font-semibold text-dash-text mb-4">
