@@ -684,7 +684,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
             )}
             {/* Grid or table */}
             {result && sortedItems.length > 0 && viewMode === "grid" ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
                 {sortedItems.map((p, i) => (
                   <ProductCard
                     key={p.id}
@@ -939,11 +939,11 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
 };
 
 const ProductGridSkeleton = () => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
     {Array.from({ length: 12 }).map((_, i) => (
       <div key={i} className="bg-dash-surface border border-brand-stone/15 flex flex-col animate-pulse">
         <div className="aspect-[4/3] bg-brand-stone/10" />
-        <div className="p-4 flex flex-col flex-1">
+        <div className="p-2.5 sm:p-4 flex flex-col flex-1">
           <div className="flex items-start justify-between gap-2 mb-1">
             <div className="h-2.5 w-16 bg-brand-stone/15 rounded" />
             <div className="h-2.5 w-12 bg-brand-stone/10 rounded" />
@@ -993,29 +993,29 @@ const ProductCard = ({ product, locale, onOpen, t, eager }: ProductCardProps) =>
           className="group-hover:[&>img]:scale-[1.02] [&>img]:transition-transform [&>img]:duration-500"
         />
       </button>
-      <div className="p-4 flex flex-col flex-1">
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <span className="font-body text-[10px] tracking-[0.15em] text-brand-copper uppercase">
+      <div className="p-2.5 sm:p-4 flex flex-col flex-1">
+        <div className="flex items-start justify-between gap-1 sm:gap-2 mb-0.5 sm:mb-1">
+          <span className="font-body text-[9px] sm:text-[10px] tracking-[0.15em] text-brand-copper uppercase truncate">
             {product.brand || "—"}
           </span>
-          <span className="font-body text-[10px] text-dash-text-secondary uppercase tracking-wider">
+          <span className="font-body text-[9px] sm:text-[10px] text-dash-text-secondary uppercase tracking-wider hidden sm:inline">
             {product.category}
           </span>
         </div>
         <button
           type="button"
           onClick={onOpen}
-          className="text-left cursor-pointer"
+          className="text-left cursor-pointer min-h-[40px]"
         >
-          <h3 className="font-body font-medium text-sm text-brand-charcoal line-clamp-2 leading-snug hover:text-brand-copper transition-colors">
+          <h3 className="font-body font-medium text-xs sm:text-sm text-brand-charcoal line-clamp-2 leading-snug hover:text-brand-copper transition-colors">
             {product.name || product.sku}
           </h3>
-          <p className="mt-1 font-mono text-[10px] text-dash-text-secondary truncate">
+          <p className="mt-0.5 sm:mt-1 font-mono text-[9px] sm:text-[10px] text-dash-text-secondary truncate">
             {product.sku || "—"}
           </p>
         </button>
-        <div className="mt-3 pt-3 border-t border-brand-stone/10">
-          <span className="font-body text-xs text-brand-charcoal">
+        <div className="mt-2 pt-2 sm:mt-3 sm:pt-3 border-t border-brand-stone/10">
+          <span className="font-body text-[11px] sm:text-xs text-brand-charcoal">
             {product.listPrice > 10 ? (
               <>
                 <span className="text-dash-text-secondary">{locale === "es" ? "desde" : "from"}</span>{" "}
