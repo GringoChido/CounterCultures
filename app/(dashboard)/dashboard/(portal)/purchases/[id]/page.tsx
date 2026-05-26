@@ -24,6 +24,7 @@ import { MessagesPanel } from "@/app/(dashboard)/components/messages-panel";
 
 import { DownloadReportButton } from "@/app/(dashboard)/components/download-report-button";
 import { CompanyBadge, EntityTintedCard } from "@/app/(dashboard)/components/company-badge";
+import { OdooEditLink } from "@/app/(dashboard)/components/odoo-link";
 import { stripHtml } from "@/app/lib/strip-html";
 import { formatDate } from "@/app/lib/format-date";
 
@@ -352,6 +353,7 @@ const PurchaseDetailPage = ({ params }: { params: Promise<{ id: string }> }) => 
           </div>
         </div>
         <div className="shrink-0 flex items-center gap-2">
+          <OdooEditLink model="purchase.order" id={order.id} />
           {features.ready && features.has("register_payment") &&
             order.rawState !== "draft" && order.rawState !== "cancel" &&
             order.invoiceStatus !== "invoiced" && (

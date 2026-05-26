@@ -23,6 +23,7 @@ import { StaleQuoteActions } from "@/app/(dashboard)/components/orders/stale-quo
 import { SendQuoteButton } from "@/app/(dashboard)/components/orders/send-quote-button";
 import { DownloadReportButton } from "@/app/(dashboard)/components/download-report-button";
 import { CompanyBadge, EntityTintedCard } from "@/app/(dashboard)/components/company-badge";
+import { OdooEditLink } from "@/app/(dashboard)/components/odoo-link";
 import { stripHtml } from "@/app/lib/strip-html";
 import { formatDate } from "@/app/lib/format-date";
 
@@ -228,6 +229,7 @@ const OrderDetailPage = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
         </div>
         <div className="shrink-0 flex flex-wrap items-center gap-2">
+          <OdooEditLink model="sale.order" id={order.id} />
           <Link
             href={`/dashboard/orders/${order.id}/preview`}
             target="_blank"

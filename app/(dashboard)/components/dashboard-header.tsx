@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Search, Menu, LogOut, ShieldCheck, Wallet, Briefcase, Plus, FileText, UserPlus, Megaphone, ShoppingCart } from "lucide-react";
+import { Search, Menu, LogOut, ShieldCheck, Wallet, Briefcase, Plus, FileText, UserPlus, Megaphone, ShoppingCart, ExternalLink } from "lucide-react";
+import { odooCreateUrl } from "@/app/lib/odoo-links";
 import { NotificationBell } from "./notification-bell";
 import { useCurrentUser } from "@/app/lib/use-current-user";
 import { hasFeature } from "@/app/lib/features";
@@ -58,11 +59,14 @@ const GlobalNewMenu = ({ user }: { user: ReturnType<typeof useCurrentUser>["user
   const canQuote = hasFeature({ role: user.role, featureOverrides: user.featureOverrides }, "create_quote");
   if (!canQuote) return null;
 
-  const items: { href: string; label: string; icon: typeof FileText }[] = [
-    { href: "/dashboard/orders/new", label: "New Quote", icon: FileText },
-    { href: "/dashboard/orders/new?newCustomer=true", label: "New Customer", icon: UserPlus },
+  const odooItems: { href: string; label: string; icon: typeof FileText }[] = [
+    { href: odooCreateUrl("sale.order"), label: "New Quote", icon: FileText },
+    { href: odooCreateUrl("res.partner"), label: "New Customer", icon: UserPlus },
+    { href: odooCreateUrl("purchase.order"), label: "New PO", icon: ShoppingCart },
+  ];
+
+  const portalItems: { href: string; label: string; icon: typeof FileText }[] = [
     { href: "/dashboard/leads?action=new", label: "New Lead", icon: Megaphone },
-    { href: "/dashboard/purchases/new", label: "New PO", icon: ShoppingCart },
   ];
 
   return (
@@ -82,7 +86,25 @@ const GlobalNewMenu = ({ user }: { user: ReturnType<typeof useCurrentUser>["user
           role="menu"
           className="absolute right-0 top-full mt-2 w-48 bg-dash-surface border border-dash-border rounded-xl shadow-2xl overflow-hidden z-50"
         >
-          {items.map((item) => {
+          {odooItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <a
+                key={item.href}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                role="menuitem"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 px-4 py-2.5 text-sm text-dash-text hover:bg-dash-bg transition-colors"
+              >
+                <Icon className="w-4 h-4 text-dash-text-secondary" />
+                {item.label}
+                <ExternalLink className="w-3 h-3 text-dash-text-secondary ml-auto" />
+              </a>
+            );
+          })}
+          {portalItems.map((item) => {
             const Icon = item.icon;
             return (
               <Link

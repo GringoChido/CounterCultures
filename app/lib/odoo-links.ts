@@ -1,5 +1,5 @@
 const ODOO_BASE =
-  process.env.NEXT_PUBLIC_ODOO_URL ?? "https://countercultures.odoo.com";
+  process.env.NEXT_PUBLIC_ODOO_URL ?? "https://counter-cultures.odoo.com";
 
 type OdooModel =
   | "purchase.order"
@@ -9,27 +9,28 @@ type OdooModel =
   | "product.product"
   | "res.partner";
 
-const MODEL_ACTION: Record<OdooModel, string> = {
-  "purchase.order": "purchase.purchase_form_action",
-  "sale.order": "sale.action_quotations_with_onboarding",
-  "account.move": "account.action_move_out_invoice_type",
-  "product.template": "product.product_template_action_all",
-  "product.product": "product.product_normal_action_sell",
-  "res.partner": "contacts.action_contacts",
+// Odoo 17 web-client deep links use the app "path" slug:
+//   record → /odoo/<slug>/<id>   ·   new → /odoo/<slug>/new   ·   list → /odoo/<slug>
+// (Matches the existing /odoo/settings/users link in the dashboard. Slugs for
+// sales / purchase / contacts are the Odoo defaults; confirm against the live
+// instance once logged in — a wrong slug is a one-word fix here.)
+const MODEL_SLUG: Record<OdooModel, string> = {
+  "sale.order": "sales",
+  "purchase.order": "purchase",
+  "account.move": "accounting",
+  "res.partner": "contacts",
+  "product.template": "inventory",
+  "product.product": "inventory",
 };
 
 export const odooFormUrl = (model: OdooModel, id: number | string): string =>
-  `${ODOO_BASE}/odoo/${encodeURIComponent(model)}/${id}`;
+  `${ODOO_BASE}/odoo/${MODEL_SLUG[model]}/${id}`;
 
-export const odooCreateUrl = (model: OdooModel): string => {
-  const action = MODEL_ACTION[model];
-  return `${ODOO_BASE}/odoo/action-${action}?view_type=form`;
-};
+export const odooCreateUrl = (model: OdooModel): string =>
+  `${ODOO_BASE}/odoo/${MODEL_SLUG[model]}/new`;
 
-export const odooListUrl = (model: OdooModel): string => {
-  const action = MODEL_ACTION[model];
-  return `${ODOO_BASE}/odoo/action-${action}`;
-};
+export const odooListUrl = (model: OdooModel): string =>
+  `${ODOO_BASE}/odoo/${MODEL_SLUG[model]}`;
 
 export const odooReportUrl = (
   reportName: string,

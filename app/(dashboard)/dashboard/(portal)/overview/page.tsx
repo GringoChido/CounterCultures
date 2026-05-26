@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
-import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, ExternalLink } from "lucide-react";
+import { odooCreateUrl } from "@/app/lib/odoo-links";
 import { NeedsYou } from "@/app/(dashboard)/components/needs-you";
 import { NewSinceLastCheck } from "@/app/(dashboard)/components/new-since-last-check";
 import { TodayActiveDeals } from "@/app/(dashboard)/components/today-active-deals";
@@ -57,13 +57,16 @@ const OverviewPage = () => {
           <p className="text-sm text-dash-text-secondary">{greetingLine}</p>
         </div>
         {canCreateQuote && (
-          <Link
-            href="/dashboard/orders/new"
+          <a
+            href={odooCreateUrl("sale.order")}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-4 py-2 bg-brand-copper text-white text-sm font-medium rounded-lg hover:bg-brand-copper/90 transition-colors shrink-0"
           >
             <Plus className="w-4 h-4" />
             New Quote
-          </Link>
+            <ExternalLink className="w-3.5 h-3.5 opacity-70" />
+          </a>
         )}
       </div>
 

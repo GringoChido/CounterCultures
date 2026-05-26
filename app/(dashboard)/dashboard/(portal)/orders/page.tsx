@@ -12,7 +12,9 @@ import {
   Clock,
   AlertTriangle,
   Plus,
+  ExternalLink,
 } from "lucide-react";
+import { odooCreateUrl } from "@/app/lib/odoo-links";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { CompanyBadge } from "@/app/(dashboard)/components/company-badge";
@@ -383,13 +385,16 @@ const OrdersPage = () => {
               { role: currentUser.role, featureOverrides: currentUser.featureOverrides },
               "create_quote"
             ) && (
-              <Link
-                href="/dashboard/orders/new"
+              <a
+                href={odooCreateUrl("sale.order")}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 bg-brand-copper text-white text-sm font-medium rounded-lg hover:bg-brand-copper/90 transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 New Quote
-              </Link>
+                <ExternalLink className="w-3.5 h-3.5 opacity-70" />
+              </a>
             )}
         </div>
         <p className="text-sm text-dash-text-secondary">

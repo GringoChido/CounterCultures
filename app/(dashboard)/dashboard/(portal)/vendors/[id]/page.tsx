@@ -12,6 +12,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
+import { OdooEditLink } from "@/app/(dashboard)/components/odoo-link";
 import { CreditPanel } from "@/app/(dashboard)/components/partner/credit-panel";
 import { formatDate } from "@/app/lib/format-date";
 import { PartnerHierarchy } from "@/app/(dashboard)/components/partner/partner-hierarchy";
@@ -219,9 +220,12 @@ const VendorDetailPage = ({
         <div className="p-3 bg-dash-surface border border-dash-border rounded">
           <Building2 className="w-6 h-6 text-dash-accent" />
         </div>
-        <div>
-          <h1 className="font-display text-2xl text-dash-text">{partner.name}</h1>
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-dash-text-secondary mt-1">
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-1">
+            <h1 className="font-display text-2xl text-dash-text">{partner.name}</h1>
+            <OdooEditLink model="res.partner" id={partner.id} />
+          </div>
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-dash-text-secondary">
             {partner.email && (
               <span className="inline-flex items-center gap-1">
                 <Mail className="w-3 h-3" />

@@ -13,7 +13,9 @@ import {
   FileText,
   AlertTriangle,
   Plus,
+  ExternalLink,
 } from "lucide-react";
+import { odooCreateUrl } from "@/app/lib/odoo-links";
 import { DataTable } from "@/app/(dashboard)/components/data-table";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { CompanyBadge } from "@/app/(dashboard)/components/company-badge";
@@ -329,13 +331,16 @@ const PurchasesPage = () => {
             <Truck className="w-6 h-6 text-dash-accent" />
             <h1 className="font-display text-2xl">Purchase Orders</h1>
           </div>
-          <Link
-            href="/dashboard/purchases/new"
+          <a
+            href={odooCreateUrl("purchase.order")}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-4 py-2 text-sm bg-brand-copper text-white rounded-lg hover:bg-brand-copper/90 transition-colors"
           >
             <Plus className="w-4 h-4" />
             New PO
-          </Link>
+            <ExternalLink className="w-3.5 h-3.5 opacity-70" />
+          </a>
         </div>
         <p className="text-sm text-dash-text-secondary">
           Vendor POs — what's ordered, received, billed — from the live Odoo snapshot.

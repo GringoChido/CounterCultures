@@ -19,6 +19,8 @@ import {
   MessageCircle,
   Plus,
 } from "lucide-react";
+import { OdooEditLink } from "@/app/(dashboard)/components/odoo-link";
+import { odooCreateUrl } from "@/app/lib/odoo-links";
 import { StatusBadge, type BadgeVariant } from "@/app/(dashboard)/components/status-badge";
 import { MessagesPanel } from "@/app/(dashboard)/components/messages-panel";
 import { CreditPanel } from "@/app/(dashboard)/components/partner/credit-panel";
@@ -261,15 +263,21 @@ const CustomerDetailPage = ({
         <div className="flex-1">
           <div className="flex items-center justify-between gap-3">
             <h1 className="font-display text-2xl text-dash-text">{partner.name}</h1>
-            {canCreateQuote && (
-              <Link
-                href={`/dashboard/orders/new?partnerId=${partner.id}&partnerName=${encodeURIComponent(partner.name)}`}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-copper text-white text-xs font-medium rounded-lg hover:bg-brand-copper/90 transition-colors shrink-0"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                New quote
-              </Link>
-            )}
+            <div className="flex items-center gap-2 shrink-0">
+              <OdooEditLink model="res.partner" id={partner.id} />
+              {canCreateQuote && (
+                <a
+                  href={odooCreateUrl("sale.order")}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand-copper text-white text-xs font-medium rounded-lg hover:bg-brand-copper/90 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  New quote
+                  <ExternalLink className="w-3 h-3 opacity-70" />
+                </a>
+              )}
+            </div>
           </div>
           <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-dash-text-secondary">
             {partner.email && (
