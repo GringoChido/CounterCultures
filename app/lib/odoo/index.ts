@@ -6,7 +6,10 @@ export {
   read,
   testConnection,
   isConfigured,
+  fetchSaleOrderLines,
 } from "./client";
+
+export type { OdooSaleOrderLineLive } from "./client";
 
 export type {
   OdooContact,

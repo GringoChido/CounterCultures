@@ -169,6 +169,77 @@ const testConnection = async (): Promise<{
 const isConfigured = (): boolean =>
   Boolean(ODOO_URL && ODOO_DB && ODOO_USERNAME && ODOO_API_KEY);
 
+export interface OdooSaleOrderLineLive {
+  id: number;
+  product_id: string;
+  product_id_id: string;
+  name: string;
+  product_uom_qty: string;
+  qty_delivered: string;
+  qty_invoiced: string;
+  price_unit: string;
+  discount: string;
+  price_subtotal: string;
+  price_tax: string;
+  price_total: string;
+  currency_id: string;
+  sequence: string;
+}
+
+const SALE_LINE_FIELDS = [
+  "id",
+  "product_id",
+  "name",
+  "product_uom_qty",
+  "qty_delivered",
+  "qty_invoiced",
+  "price_unit",
+  "discount",
+  "price_subtotal",
+  "price_tax",
+  "price_total",
+  "currency_id",
+  "sequence",
+];
+
+const fetchSaleOrderLines = async (
+  odooOrderId: number
+): Promise<OdooSaleOrderLineLive[]> => {
+  const rows = await searchRead(
+    "sale.order.line",
+    [["order_id", "=", odooOrderId]],
+    SALE_LINE_FIELDS,
+    200,
+    0,
+    "sequence asc, id asc"
+  );
+
+  return rows.map((r) => {
+    const m2o = (v: unknown): [string, string] => {
+      if (Array.isArray(v) && v.length === 2) return [String(v[0]), String(v[1])];
+      return ["", ""];
+    };
+    const [productIdId, productIdName] = m2o(r.product_id);
+    const [, currencyName] = m2o(r.currency_id);
+    return {
+      id: r.id as number,
+      product_id: productIdName,
+      product_id_id: productIdId,
+      name: String(r.name ?? ""),
+      product_uom_qty: String(r.product_uom_qty ?? "0"),
+      qty_delivered: String(r.qty_delivered ?? "0"),
+      qty_invoiced: String(r.qty_invoiced ?? "0"),
+      price_unit: String(r.price_unit ?? "0"),
+      discount: String(r.discount ?? "0"),
+      price_subtotal: String(r.price_subtotal ?? "0"),
+      price_tax: String(r.price_tax ?? "0"),
+      price_total: String(r.price_total ?? "0"),
+      currency_id: currencyName,
+      sequence: String(r.sequence ?? "0"),
+    };
+  });
+};
+
 export {
   authenticate,
   execute,
@@ -177,4 +248,5 @@ export {
   read,
   testConnection,
   isConfigured,
+  fetchSaleOrderLines,
 };

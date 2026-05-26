@@ -3,8 +3,13 @@
  * print page (/dashboard/quotes/[id]/print) and the public share page
  * (/quote/[id]?t=…). Reads Pipeline + Deal_Line_Items from the CRM sheet
  * and shapes into a stable QuoteData type.
+ *
+ * Falls back to Odoo live-read when the id matches an Odoo sale order
+ * (numeric id) but has no CRM Pipeline row.
  */
 import { readSheet } from "./dashboard-sheets";
+import { getOrderDetail } from "./odoo-sheets";
+import { fetchSaleOrderLines, isConfigured } from "./odoo";
 
 interface PipelineRow {
   [key: string]: string;
@@ -99,7 +104,12 @@ export const loadQuoteData = async (
     readSheet<LineItemRow>("Deal_Line_Items"),
   ]);
   const deal = deals.find((d) => d.id === dealId);
-  if (!deal) return null;
+
+  // Odoo fallback: if no CRM Pipeline row exists and the id looks numeric
+  // (Odoo sale order id), load lines from Odoo live.
+  if (!deal) {
+    return loadQuoteDataFromOdoo(dealId);
+  }
 
   const items: QuoteLineItem[] = lineItems
     .filter((l) => l.deal_id === dealId)
@@ -120,6 +130,13 @@ export const loadQuoteData = async (
       };
     });
 
+  // CRM deal exists but has no line items — try Odoo if the deal has an
+  // Odoo-style numeric id (shouldn't happen in practice, but defensive).
+  if (items.length === 0) {
+    const odooFallback = await loadQuoteDataFromOdoo(dealId);
+    if (odooFallback && odooFallback.items.length > 0) return odooFallback;
+  }
+
   const subtotal = items.reduce((s, i) => s + i.lineTotal, 0);
   const shipping = items.reduce((s, i) => s + i.shipping, 0);
   const grandTotal = subtotal + shipping;
@@ -133,8 +150,6 @@ export const loadQuoteData = async (
   let depositPct = 0.7; // CC's standard 70% minimum
   if (Number.isFinite(parsedPct) && parsedPct > 0) {
     depositPct = parsedPct > 1 ? parsedPct / 100 : parsedPct;
-    // Floor at 70% — Roger's stated minimum. Per-deal override can only
-    // go ABOVE the floor, never below.
     if (depositPct < 0.7) depositPct = 0.7;
     if (depositPct > 1) depositPct = 1;
   }
@@ -151,6 +166,98 @@ export const loadQuoteData = async (
     validUntil: addDays(15),
     currency: "MXN",
   };
+};
+
+const loadQuoteDataFromOdoo = async (
+  orderId: string
+): Promise<QuoteData | null> => {
+  if (!isConfigured()) return null;
+  const odooId = Number(orderId);
+  if (!Number.isFinite(odooId) || odooId <= 0) return null;
+
+  try {
+    const detail = await getOrderDetail(orderId);
+    if (!detail) return null;
+
+    let lines = detail.lines;
+    if (lines.length === 0) {
+      const liveLines = await fetchSaleOrderLines(odooId);
+      lines = liveLines.map((l) => ({
+        id: String(l.id),
+        order_id: detail.order.name,
+        order_id_id: orderId,
+        order_partner_id: detail.order.partnerName,
+        product_id: l.product_id,
+        product_id_id: l.product_id_id,
+        product_uom_qty: l.product_uom_qty,
+        qty_delivered: l.qty_delivered,
+        qty_invoiced: l.qty_invoiced,
+        price_unit: l.price_unit,
+        discount: l.discount,
+        price_subtotal: l.price_subtotal,
+        price_tax: l.price_tax,
+        price_total: l.price_total,
+        currency_id: l.currency_id,
+        name: l.name,
+        sequence: l.sequence,
+      }));
+    }
+
+    const productLines = lines.filter((l) => num(l.product_uom_qty) > 0);
+    const items: QuoteLineItem[] = productLines.map((l) => {
+      const qty = num(l.product_uom_qty) || 1;
+      const price = num(l.price_unit);
+      const disc = num(l.discount);
+      const effectivePrice = disc > 0 ? price * (1 - disc / 100) : price;
+      return {
+        id: l.id,
+        sku: "",
+        name: l.product_id || l.name,
+        brand: "",
+        finish: "",
+        quantity: qty,
+        quotedPrice: effectivePrice,
+        shipping: 0,
+        leadTime: "",
+        lineTotal: num(l.price_subtotal),
+      };
+    });
+
+    const subtotal = items.reduce((s, i) => s + i.lineTotal, 0);
+    const grandTotal = num(String(detail.order.amountTotal));
+    const depositPct = 0.7;
+
+    const syntheticDeal: PipelineRow = {
+      id: orderId,
+      name: detail.order.partnerName,
+      company: detail.order.partnerName,
+      stage: detail.order.state === "draft" || detail.order.state === "sent" ? "quote_sent" : "order_confirmed",
+      value: String(detail.order.amountTotal),
+      expected_close: "",
+      owner: detail.order.salesperson || "",
+      source: "odoo",
+      notes: "",
+      created_at: detail.order.dateOrder || "",
+    };
+
+    return {
+      deal: syntheticDeal,
+      items,
+      subtotal,
+      shipping: 0,
+      grandTotal: grandTotal || subtotal,
+      depositAmount: Math.round((grandTotal || subtotal) * depositPct * 100) / 100,
+      docNumber: detail.order.name,
+      issueDate: detail.order.dateOrder
+        ? new Date(detail.order.dateOrder).toISOString().slice(0, 10)
+        : new Date().toISOString().slice(0, 10),
+      validUntil: detail.order.validityDate || addDays(15),
+      currency: "MXN",
+    };
+  } catch (err) {
+    console.warn("[loadQuoteData] Odoo fallback failed:", err);
+    return null;
+  }
 };
 
 export const fmtMxn = (n: number): string =>
