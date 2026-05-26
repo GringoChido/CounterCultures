@@ -8,6 +8,7 @@ import type Stripe from "stripe";
 import { appendRow } from "@/app/lib/dashboard-sheets";
 import { upsertPreferences } from "@/app/lib/customer-preferences";
 import { getStripe } from "@/app/lib/stripe";
+import { SITE_URL } from "@/app/lib/seo";
 
 export async function POST(req: NextRequest) {
   try {
@@ -171,8 +172,8 @@ export async function POST(req: NextRequest) {
             : "Counter Cultures — Authorized dealer in San Miguel de Allende. Thank you for your purchase. You'll receive confirmation by email.",
         },
       },
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.countercultures.com.mx"}/${locale}/payment-success?session_id={CHECKOUT_SESSION_ID}&deal_id=${dealId}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.countercultures.com.mx"}/${locale}/cart`,
+      success_url: `${SITE_URL}/${locale}/payment-success?session_id={CHECKOUT_SESSION_ID}&deal_id=${dealId}`,
+      cancel_url: `${SITE_URL}/${locale}/cart`,
     });
 
     // ── Sheet writes + side-effects — fire in parallel, never block response ──

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe, isConfigured } from "@/app/lib/stripe";
+import { SITE_URL } from "@/app/lib/seo";
 
 export const POST = async (req: NextRequest) => {
   if (!isConfigured()) {
@@ -33,7 +34,7 @@ export const POST = async (req: NextRequest) => {
     if (customerEmail) {
       params.after_completion = {
         type: "redirect",
-        redirect: { url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.countercultures.com.mx"}/en/shop?payment=success` },
+        redirect: { url: `${SITE_URL}/en/shop?payment=success` },
       };
     }
 

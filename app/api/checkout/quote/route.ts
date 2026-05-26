@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { appendRow } from "@/app/lib/dashboard-sheets";
 import { upsertPreferences } from "@/app/lib/customer-preferences";
 import { signQuoteToken } from "@/app/lib/quote-token";
+import { SITE_URL } from "@/app/lib/seo";
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,10 +17,10 @@ export async function POST(req: NextRequest) {
     const now = new Date().toISOString();
 
     // ── Generate response data FIRST — customer gets the URL immediately ──
-    let trackerUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.countercultures.com.mx"}/${locale}/quote/${dealId}`;
+    let trackerUrl = `${SITE_URL}/${locale}/quote/${dealId}`;
     try {
       const trackerToken = signQuoteToken(dealId);
-      trackerUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.countercultures.com.mx"}/${locale}/quote/${dealId}?t=${encodeURIComponent(trackerToken)}`;
+      trackerUrl = `${SITE_URL}/${locale}/quote/${dealId}?t=${encodeURIComponent(trackerToken)}`;
     } catch (tokenErr) {
       console.error("[checkout/quote] signQuoteToken failed (non-blocking):", tokenErr);
     }

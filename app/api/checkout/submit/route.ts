@@ -3,6 +3,7 @@ import { appendRow } from "@/app/lib/dashboard-sheets";
 import { upsertPreferences } from "@/app/lib/customer-preferences";
 import { signQuoteToken } from "@/app/lib/quote-token";
 import { isConfigured as isStripeConfigured } from "@/app/lib/stripe";
+import { SITE_URL } from "@/app/lib/seo";
 
 export async function POST(req: NextRequest) {
   try {
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
     const commLocale = contact.commLocale ?? locale;
 
     // ── Build response data FIRST — customer never waits for sheet writes ──
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.countercultures.com.mx";
+    const baseUrl = SITE_URL;
     let trackerUrl = `${baseUrl}/${locale}/quote/${dealId}`;
     try {
       const trackerToken = signQuoteToken(dealId);

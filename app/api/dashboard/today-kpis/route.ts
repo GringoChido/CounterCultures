@@ -68,7 +68,7 @@ export const GET = async () => {
   let revenueLast24h = "—";
   let revenueDelta: number | undefined;
   try {
-    const r = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL ?? ""}/api/stripe/summary`, { cache: "no-store" });
+    const r = await fetch(`${process.env.URL ?? ""}/api/stripe/summary`, { cache: "no-store" });
     if (r.ok) {
       const data = await r.json();
       const v24 = data?.last24Hours?.volume;

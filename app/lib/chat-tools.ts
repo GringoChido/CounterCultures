@@ -13,6 +13,7 @@
  */
 
 import Anthropic from "@anthropic-ai/sdk";
+import { SITE_URL } from "./seo";
 import {
   readSheet,
   appendRow,
@@ -962,7 +963,7 @@ export async function executeTool(
         if (!rep) {
           return `No Rep matched "${recipientName}". Available: ${reps.map((r) => r.name).join(", ") || "(none)"}`;
         }
-        const deepLink = `https://countercultures.netlify.app/dashboard/${entityType === "deal" ? "pipeline" : "leads"}#${entityId}`;
+        const deepLink = `${process.env.URL ?? SITE_URL}/dashboard/${entityType === "deal" ? "pipeline" : "leads"}#${entityId}`;
         // POST to the share route — its full preview/send/log path
         // (including Resend wiring) lives there. Internal fetch goes
         // through the running Next server.

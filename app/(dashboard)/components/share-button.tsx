@@ -13,7 +13,7 @@
  *     entityType="lead"
  *     entityId={lead.id}
  *     summary="Lead: Gabor Goded — Residencial San Antonio"
- *     deepLink={`https://countercultures.netlify.app/dashboard/leads#${lead.id}`}
+ *     deepLink={`https://www.countercultures.com.mx/dashboard/leads#${lead.id}`}
  *   />
  */
 

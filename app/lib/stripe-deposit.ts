@@ -9,6 +9,7 @@
  * re-creates the link — that's fine because Stripe payment links are free and
  * Roger's customer sees the latest URL.
  */
+import { SITE_URL } from "./seo";
 import { getStripe, isConfigured } from "./stripe";
 
 interface DepositLinkRequest {
@@ -29,8 +30,7 @@ interface CacheEntry {
 const TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const cache = new Map<string, CacheEntry>();
 
-const siteUrl = () =>
-  (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.countercultures.com.mx").replace(/\/+$/, "");
+const siteUrl = () => SITE_URL;
 
 /**
  * Returns the Stripe payment link URL for this deal's 50% deposit.

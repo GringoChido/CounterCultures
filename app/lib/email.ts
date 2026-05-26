@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { SITE_URL } from "./seo";
 
 const escapeHtml = (str: string): string =>
   str
@@ -207,7 +208,7 @@ export const sendTradeWelcomeEmail = async (
   company: string,
   welcomeCode: string
 ): Promise<void> => {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://countercultures.netlify.app";
+  const baseUrl = SITE_URL;
   await getResend()?.emails.send({
     from: FROM,
     to: redirectRecipient(to),

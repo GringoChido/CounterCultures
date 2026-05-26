@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe, isConfigured } from "@/app/lib/stripe";
 import { getProducts } from "@/app/lib/sheets";
+import { SITE_URL } from "@/app/lib/seo";
 
 const VALID_CURRENCIES = new Set(["mxn", "usd"]);
 const VALID_DEPOSIT_PERCENTS = new Set([30, 50, 100]);
@@ -64,8 +65,8 @@ export const POST = async (req: NextRequest) => {
       },
       quantity: 1,
     }],
-    success_url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.countercultures.com.mx"}/${locale}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.countercultures.com.mx"}/${locale}/shop?payment=cancelled`,
+    success_url: `${SITE_URL}/${locale}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${SITE_URL}/${locale}/shop?payment=cancelled`,
     metadata: { sku: productSku, source: "website", depositPercent: depositPercent?.toString() ?? "" },
   });
 
