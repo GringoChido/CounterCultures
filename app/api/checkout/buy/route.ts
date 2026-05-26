@@ -171,8 +171,8 @@ export async function POST(req: NextRequest) {
             : "Counter Cultures — Authorized dealer in San Miguel de Allende. Thank you for your purchase. You'll receive confirmation by email.",
         },
       },
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://countercultures.mx"}/${locale}/payment-success?session_id={CHECKOUT_SESSION_ID}&deal_id=${dealId}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://countercultures.mx"}/${locale}/cart`,
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.countercultures.com.mx"}/${locale}/payment-success?session_id={CHECKOUT_SESSION_ID}&deal_id=${dealId}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.countercultures.com.mx"}/${locale}/cart`,
     });
 
     // ── Sheet writes + side-effects — fire in parallel, never block response ──

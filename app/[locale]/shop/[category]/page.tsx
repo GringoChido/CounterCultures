@@ -85,7 +85,9 @@ const categoryMeta: Record<string, {
   },
 };
 
-const BASE_URL = "https://countercultures.mx";
+import { SITE_URL } from "@/app/lib/seo";
+
+const BASE_URL = SITE_URL;
 
 export const generateMetadata = async ({ params }: CategoryPageProps): Promise<Metadata> => {
   const { category, locale } = await params;

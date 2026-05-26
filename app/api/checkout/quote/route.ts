@@ -16,10 +16,10 @@ export async function POST(req: NextRequest) {
     const now = new Date().toISOString();
 
     // ── Generate response data FIRST — customer gets the URL immediately ──
-    let trackerUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://countercultures.mx"}/${locale}/quote/${dealId}`;
+    let trackerUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.countercultures.com.mx"}/${locale}/quote/${dealId}`;
     try {
       const trackerToken = signQuoteToken(dealId);
-      trackerUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://countercultures.mx"}/${locale}/quote/${dealId}?t=${encodeURIComponent(trackerToken)}`;
+      trackerUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.countercultures.com.mx"}/${locale}/quote/${dealId}?t=${encodeURIComponent(trackerToken)}`;
     } catch (tokenErr) {
       console.error("[checkout/quote] signQuoteToken failed (non-blocking):", tokenErr);
     }

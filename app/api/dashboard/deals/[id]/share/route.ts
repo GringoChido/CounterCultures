@@ -7,7 +7,7 @@ const siteUrl = () => {
   // Prefer the explicit public URL; fall back to the request origin during dev.
   return (
     process.env.NEXT_PUBLIC_SITE_URL ??
-    "https://countercultures.mx"
+    "https://www.countercultures.com.mx"
   );
 };
 

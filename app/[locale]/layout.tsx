@@ -7,8 +7,9 @@ import { WhatsAppFloat } from "@/app/components/ui/whatsapp-float";
 import { SkipToMain } from "@/app/components/ui/skip-to-main";
 import { ProjectListGlobal } from "@/app/components/project-list-global";
 import "../globals.css";
+import { SITE_URL } from "@/app/lib/seo";
 
-const BASE_URL = "https://countercultures.mx";
+const BASE_URL = SITE_URL;
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
@@ -170,7 +171,7 @@ const organizationJsonLd = {
     "https://www.instagram.com/counter_cultures/",
     "https://www.facebook.com/counterculturesmx/",
     "https://mx.pinterest.com/pin/358106607856301782/",
-    "https://countercultures.mx",
+    BASE_URL,
   ],
   hasOfferCatalog: {
     "@type": "OfferCatalog",

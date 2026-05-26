@@ -7,7 +7,9 @@ interface PageProps {
   params: Promise<{ locale: string }>;
 }
 
-const BASE_URL = "https://countercultures.mx";
+import { SITE_URL } from "@/app/lib/seo";
+
+const BASE_URL = SITE_URL;
 
 export const generateMetadata = async ({ params }: PageProps): Promise<Metadata> => {
   const { locale } = await params;

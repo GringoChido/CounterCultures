@@ -16,7 +16,9 @@ import { ContactCTA } from "@/app/components/sections/contact-cta";
 import { NewsletterStrip } from "@/app/components/sections/newsletter-strip";
 import { getFeaturedBrands } from "@/app/lib/featured-brands";
 
-const BASE_URL = "https://countercultures.mx";
+import { SITE_URL } from "@/app/lib/seo";
+
+const BASE_URL = SITE_URL;
 
 // ISR — homepage content (brands, copy, sections) doesn't change per-request.
 // 5-min revalidate lets Netlify's CDN serve cached HTML to ~all visitors and

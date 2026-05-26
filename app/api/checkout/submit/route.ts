@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     const commLocale = contact.commLocale ?? locale;
 
     // ── Build response data FIRST — customer never waits for sheet writes ──
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://countercultures.mx";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://www.countercultures.com.mx";
     let trackerUrl = `${baseUrl}/${locale}/quote/${dealId}`;
     try {
       const trackerToken = signQuoteToken(dealId);

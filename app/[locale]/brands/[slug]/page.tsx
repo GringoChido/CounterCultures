@@ -20,7 +20,9 @@ interface BrandPageProps {
   params: Promise<{ slug: string; locale: string }>;
 }
 
-const BASE_URL = "https://countercultures.mx";
+import { SITE_URL } from "@/app/lib/seo";
+
+const BASE_URL = SITE_URL;
 
 /**
  * Revalidate every 5 minutes so Brand Kit Sheet edits from Roger surface

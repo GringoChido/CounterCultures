@@ -17,7 +17,9 @@ interface SubcategoryPageProps {
   params: Promise<{ category: string; subcategory: string; locale: string }>;
 }
 
-const BASE_URL = "https://countercultures.mx";
+import { SITE_URL } from "@/app/lib/seo";
+
+const BASE_URL = SITE_URL;
 
 export const generateMetadata = async ({
   params,

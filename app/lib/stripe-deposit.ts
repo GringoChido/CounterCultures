@@ -30,7 +30,7 @@ const TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const cache = new Map<string, CacheEntry>();
 
 const siteUrl = () =>
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://countercultures.mx";
+  (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.countercultures.com.mx").replace(/\/+$/, "");
 
 /**
  * Returns the Stripe payment link URL for this deal's 50% deposit.

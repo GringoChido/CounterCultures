@@ -33,7 +33,7 @@ export const POST = async (req: NextRequest) => {
     if (customerEmail) {
       params.after_completion = {
         type: "redirect",
-        redirect: { url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://countercultures.mx"}/en/shop?payment=success` },
+        redirect: { url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.countercultures.com.mx"}/en/shop?payment=success` },
       };
     }
 

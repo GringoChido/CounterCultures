@@ -17,7 +17,9 @@ import {
 } from "@/app/lib/catalog-signals";
 import { MapPin, TrendingUp, ArrowUpRight } from "lucide-react";
 
-const BASE_URL = "https://countercultures.mx";
+import { SITE_URL } from "@/app/lib/seo";
+
+const BASE_URL = SITE_URL;
 
 const VALID_CATEGORIES = ["bathroom", "kitchen", "hardware"] as const;
 type CategoryParam = (typeof VALID_CATEGORIES)[number];

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
-export const SITE_URL = "https://countercultures.mx";
+export const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.countercultures.com.mx"
+).replace(/\/+$/, "");
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.jpg`;
 
 export type Locale = "en" | "es";

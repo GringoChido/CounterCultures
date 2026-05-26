@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { SITE_URL } from "@/app/lib/seo";
 
 import type { WeekEntry } from "../_entries";
 
@@ -30,7 +31,7 @@ type Props = {
 const WAITING_FOR_AT = "+524151534327"; // CC showroom WA — placeholder, ok to swap
 
 const buildShareUrl = (entry: WeekEntry) => {
-  const url = `https://countercultures.mx/this-week/${entry.slug}`;
+  const url = `${SITE_URL}/this-week/${entry.slug}`;
   const message = `${entry.title}\n${entry.subtitle}\n\n${url}`;
   return `https://wa.me/${WAITING_FOR_AT.replace(/\D/g, "")}?text=${encodeURIComponent(message)}`;
 };

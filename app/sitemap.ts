@@ -13,7 +13,9 @@ import { getStagedIds } from "@/app/lib/product-content";
 // at runtime, not at build), which silently dropped the new SEO routes.
 export const revalidate = 3600;
 
-const BASE_URL = "https://countercultures.mx";
+import { SITE_URL } from "@/app/lib/seo";
+
+const BASE_URL = SITE_URL;
 const LAST_MODIFIED = new Date("2026-03-30");
 
 type Locale = "en" | "es";

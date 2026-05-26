@@ -9,7 +9,9 @@ import { getAllArticles, getArticleBySlug } from "@/app/lib/posts-sheet";
 
 export const revalidate = 300;
 
-const BASE_URL = "https://countercultures.mx";
+import { SITE_URL } from "@/app/lib/seo";
+
+const BASE_URL = SITE_URL;
 
 interface ArticlePageProps {
   params: Promise<{ slug: string; locale: string }>;

@@ -1,3 +1,4 @@
+import { SITE_URL } from "./seo";
 import { toSlug } from "./slug";
 
 export interface SlugSource {
@@ -33,5 +34,5 @@ export const pdpHref = (locale: string, product: SlugSource): string =>
 export const pdpUrl = (
   locale: string,
   product: SlugSource,
-  baseUrl = "https://countercultures.mx"
+  baseUrl = SITE_URL
 ): string => `${baseUrl}${pdpHref(locale, product)}`;

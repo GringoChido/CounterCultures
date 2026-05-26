@@ -20,7 +20,9 @@ import { CatalogView } from "./catalog-view";
 
 export const revalidate = 1800;
 
-const BASE_URL = "https://countercultures.mx";
+import { SITE_URL } from "@/app/lib/seo";
+
+const BASE_URL = SITE_URL;
 
 interface CatalogPageProps {
   params: Promise<{ locale: string }>;

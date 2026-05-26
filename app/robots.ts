@@ -1,45 +1,38 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/app/lib/seo";
+
+// Index ONLY when explicitly allowed (prod). Staging stays noindex even when
+// SITE_URL is the production domain.
+const isProduction = process.env.NEXT_PUBLIC_ALLOW_INDEXING === "true";
+
+const DISALLOW = ["/api/", "/dashboard/", "/dashboard"];
 
 export default function robots(): MetadataRoute.Robots {
+  if (!isProduction) {
+    return {
+      rules: [{ userAgent: "*", disallow: ["/"] }],
+      sitemap: `${SITE_URL}/sitemap.xml`,
+      host: SITE_URL,
+    };
+  }
+
+  const crawlerRules: MetadataRoute.Robots["rules"] = [
+    "*",
+    "GPTBot",
+    "ChatGPT-User",
+    "PerplexityBot",
+    "ClaudeBot",
+    "Anthropic-AI",
+    "cohere-ai",
+  ].map((ua) => ({
+    userAgent: ua,
+    allow: "/",
+    disallow: DISALLOW,
+  }));
+
   return {
-    rules: [
-      {
-        userAgent: "*",
-        allow: "/",
-        disallow: ["/api/", "/dashboard/", "/dashboard"],
-      },
-      {
-        userAgent: "GPTBot",
-        allow: "/",
-        disallow: ["/api/", "/dashboard/", "/dashboard"],
-      },
-      {
-        userAgent: "ChatGPT-User",
-        allow: "/",
-        disallow: ["/api/", "/dashboard/", "/dashboard"],
-      },
-      {
-        userAgent: "PerplexityBot",
-        allow: "/",
-        disallow: ["/api/", "/dashboard/", "/dashboard"],
-      },
-      {
-        userAgent: "ClaudeBot",
-        allow: "/",
-        disallow: ["/api/", "/dashboard/", "/dashboard"],
-      },
-      {
-        userAgent: "Anthropic-AI",
-        allow: "/",
-        disallow: ["/api/", "/dashboard/", "/dashboard"],
-      },
-      {
-        userAgent: "cohere-ai",
-        allow: "/",
-        disallow: ["/api/", "/dashboard/", "/dashboard"],
-      },
-    ],
-    sitemap: "https://countercultures.mx/sitemap.xml",
-    host: "https://countercultures.mx",
+    rules: crawlerRules,
+    sitemap: `${SITE_URL}/sitemap.xml`,
+    host: SITE_URL,
   };
 }

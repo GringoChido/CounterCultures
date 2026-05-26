@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { HospitalityContent } from "./hospitality-content";
 import { HOTEL_CLIENTS } from "@/app/lib/hotel-clients";
 
-const BASE_URL = "https://countercultures.mx";
+import { SITE_URL } from "@/app/lib/seo";
+
+const BASE_URL = SITE_URL;
 
 interface HospitalityPageProps {
   params: Promise<{ locale: string }>;

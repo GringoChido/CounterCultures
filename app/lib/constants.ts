@@ -3,7 +3,7 @@ export const SITE_CONFIG = {
   tagline: "Premium Kitchen, Bath & Hardware",
   description:
     "San Miguel de Allende's destination for premium kitchen, bath, and architectural hardware. Authorized dealer for Kohler, TOTO, Brizo, BLANCO, and 15 more brands — plus Mexican artisan pieces. Search 354,000+ authorized SKUs or browse our curated selection. Factory-direct pricing, 24-hour quotes, delivered nationwide.",
-  url: "https://countercultures.mx",
+  url: "https://www.countercultures.com.mx",
   showroom: {
     address: "Calle San Juan #11-A, Col. Providencia, 37737 San Miguel de Allende, Gto.",
     phone: "415.154.8375",

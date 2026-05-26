@@ -4,7 +4,9 @@ import { BRANDS, SAMPLE_PRODUCTS } from "@/app/lib/constants";
 import { getBrands } from "@/app/lib/brand-kit-sheets";
 import { BRAND_HERO_IMAGES } from "@/app/lib/brand-heroes";
 
-const BASE_URL = "https://countercultures.mx";
+import { SITE_URL } from "@/app/lib/seo";
+
+const BASE_URL = SITE_URL;
 
 const buildBrandCards = async (locale: string): Promise<BrandCard[]> => {
   const kitBrands = await getBrands();

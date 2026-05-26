@@ -49,7 +49,7 @@ describe("pdpHref / pdpPath / pdpUrl", () => {
 
   it("pdpUrl builds a full absolute URL", () => {
     const p = makeProduct({ name: "Test Faucet", sku: "TF-100", category: "hardware" });
-    expect(pdpUrl("en", p)).toBe("https://countercultures.mx/en/shop/hardware/p/test-faucet-tf-100");
+    expect(pdpUrl("en", p)).toBe("https://www.countercultures.com.mx/en/shop/hardware/p/test-faucet-tf-100");
   });
 
   it("throws when slug resolves to empty string", () => {

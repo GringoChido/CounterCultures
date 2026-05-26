@@ -32,7 +32,9 @@ const TRADE_PRICE_DISPLAY = process.env.NEXT_PUBLIC_TRADE_PRICE_DISPLAY === "on"
 
 export const revalidate = 1800;
 
-const BASE_URL = "https://countercultures.mx";
+import { SITE_URL } from "@/app/lib/seo";
+
+const BASE_URL = SITE_URL;
 
 const BRAND_SLUG_MAP = new Map<string, string>(BRANDS.map((b) => [b.name, b.slug]));
 

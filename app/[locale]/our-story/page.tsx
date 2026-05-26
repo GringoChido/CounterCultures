@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { OurStoryContent } from "./our-story-content";
 
-const BASE_URL = "https://countercultures.mx";
+import { SITE_URL } from "@/app/lib/seo";
+
+const BASE_URL = SITE_URL;
 
 interface OurStoryPageProps {
   params: Promise<{ locale: string }>;

@@ -64,8 +64,8 @@ export const POST = async (req: NextRequest) => {
       },
       quantity: 1,
     }],
-    success_url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://countercultures.mx"}/${locale}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://countercultures.mx"}/${locale}/shop?payment=cancelled`,
+    success_url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.countercultures.com.mx"}/${locale}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://www.countercultures.com.mx"}/${locale}/shop?payment=cancelled`,
     metadata: { sku: productSku, source: "website", depositPercent: depositPercent?.toString() ?? "" },
   });
 

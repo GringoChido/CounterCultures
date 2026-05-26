@@ -11,7 +11,9 @@ import { FALLBACK_BRAND_META } from "@/app/lib/brand-fallbacks";
 import { BrandsGrid } from "./brands-grid";
 import { BRAND_HERO_IMAGES } from "@/app/lib/brand-heroes";
 
-const BASE_URL = "https://countercultures.mx";
+import { SITE_URL } from "@/app/lib/seo";
+
+const BASE_URL = SITE_URL;
 
 // Brand hero images — single source of truth at app/lib/brand-heroes.ts
 const PRE_STAGED_HEROES = BRAND_HERO_IMAGES;
