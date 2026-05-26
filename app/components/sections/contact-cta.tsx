@@ -87,7 +87,7 @@ const ContactCTA = ({ locale = "en" }: { locale?: string }) => {
   };
 
   return (
-    <section className="py-14 md:py-32 bg-brand-linen">
+    <section className="py-14 md:py-24 bg-brand-linen">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
           <AnimatedSection>
@@ -144,6 +144,7 @@ const ContactCTA = ({ locale = "en" }: { locale?: string }) => {
           </AnimatedSection>
 
           <AnimatedSection delay={0.2}>
+            <div className="bg-dash-surface rounded-lg cc-lift-subtle border border-dash-border p-6 md:p-8">
             <h3 className="font-display text-3xl font-normal tracking-wide text-brand-charcoal mb-6">
               {t.formTitle}
             </h3>
@@ -207,6 +208,7 @@ const ContactCTA = ({ locale = "en" }: { locale?: string }) => {
                 <p className="font-body text-sm text-dash-text-secondary text-center">{t.responseTime}</p>
               )}
             </form>
+            </div>
           </AnimatedSection>
         </div>
       </div>

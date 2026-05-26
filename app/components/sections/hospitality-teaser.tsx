@@ -22,7 +22,7 @@ const HospitalityTeaser = ({ locale = "en" }: { locale?: string }) => {
   const remaining = HOTEL_CLIENTS.length - featured.length;
 
   return (
-    <section className="py-16 md:py-28 bg-brand-linen">
+    <section className="py-14 md:py-24 bg-brand-linen">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header — editorial split */}
         <AnimatedSection>
@@ -65,7 +65,7 @@ const HospitalityTeaser = ({ locale = "en" }: { locale?: string }) => {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`${hotel.name}, ${hotel.location[lang]} (opens in new tab)`}
-                className="group relative block aspect-[4/5] rounded-lg overflow-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-copper"
+                className="group relative block aspect-[4/5] rounded-lg overflow-hidden cc-image-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-copper"
               >
                 <Image
                   src={hotel.heroImage}

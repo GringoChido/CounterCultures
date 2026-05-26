@@ -71,7 +71,7 @@ const FeaturedBrandsBand = ({ locale, brands }: FeaturedBrandsBandProps) => {
             <Link
               key={b.slug}
               href={`/brands/${b.slug}`}
-              className="group relative aspect-[4/3] bg-brand-charcoal border border-white/10 hover:border-brand-copper/70 transition-all overflow-hidden"
+              className="group relative aspect-[4/3] bg-brand-charcoal rounded-sm border border-white/10 hover:border-brand-copper/70 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.3)] hover:shadow-[0_4px_16px_-4px_rgba(184,115,51,0.25)] transition-all duration-200 overflow-hidden"
             >
               <FeaturedBrandCard
                 name={b.name}

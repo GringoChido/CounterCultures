@@ -18,7 +18,7 @@ const content = {
 const Testimonial = ({ locale = "en" }: { locale?: string }) => {
   const t = content[locale as "en" | "es"];
   return (
-    <section className="bg-brand-charcoal py-14 md:py-28">
+    <section className="bg-brand-charcoal py-14 md:py-24">
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center">
         <AnimatedSection>
           <span className="inline-block font-display text-7xl md:text-8xl text-brand-copper leading-none select-none">

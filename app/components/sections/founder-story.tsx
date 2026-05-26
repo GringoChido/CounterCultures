@@ -26,11 +26,11 @@ const content = {
 const FounderStory = ({ locale = "en" }: { locale?: string }) => {
   const t = content[locale as "en" | "es"];
   return (
-    <section className="py-14 md:py-32 bg-brand-sand/40">
+    <section className="py-14 md:py-24 bg-brand-sand/40">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <AnimatedSection>
-            <div className="relative aspect-[3/4] overflow-hidden rounded-lg">
+            <div className="relative aspect-[3/4] overflow-hidden rounded-lg cc-lift-card">
               <Image
                 src="/images/home/twenty-years.webp"
                 alt="Counter Cultures showroom — premium kitchen and bath fixtures curated in San Miguel de Allende"

@@ -161,7 +161,7 @@ const BuyerHub = ({ locale }: BuyerHubProps) => {
             );
 
             const cellClass =
-              "group bg-white rounded-lg border border-brand-stone/20 p-6 md:p-7 hover:border-brand-copper/40 hover:shadow-sm transition-all cursor-pointer";
+              "group bg-dash-surface rounded-lg cc-card p-6 md:p-7 cursor-pointer";
 
             if (effectiveKind === "pdf") {
               return (

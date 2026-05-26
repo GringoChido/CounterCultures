@@ -29,7 +29,7 @@ const CatalogDepthBand = ({ locale, totalCatalog, children }: CatalogDepthBandPr
     <section className="relative bg-brand-linen overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 md:py-24">
         <div className="grid lg:grid-cols-[1.1fr_1fr] gap-10 lg:gap-16 items-center">
-          <div className="relative aspect-[4/3] lg:aspect-[5/4] rounded-lg overflow-hidden">
+          <div className="relative aspect-[4/3] lg:aspect-[5/4] rounded-lg overflow-hidden cc-lift-card">
             <Image
               src="/images/kitchen/faucets.webp"
               alt={

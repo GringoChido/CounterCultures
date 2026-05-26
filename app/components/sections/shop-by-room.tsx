@@ -40,7 +40,7 @@ const categories = [
 const ShopByRoom = ({ locale: localeProp = "en" }: { locale?: string }) => {
   const locale = localeProp as "en" | "es";
   return (
-  <section id="browse" className="py-14 md:py-32 bg-brand-linen scroll-mt-20">
+  <section id="browse" className="py-14 md:py-24 bg-brand-linen scroll-mt-20">
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <AnimatedSection>
         <h2 className="text-center font-display text-3xl md:text-5xl font-normal tracking-wide text-brand-charcoal mb-4">
@@ -56,7 +56,7 @@ const ShopByRoom = ({ locale: localeProp = "en" }: { locale?: string }) => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {categories.map((cat, i) => (
           <AnimatedSection key={cat.href} delay={i * 0.12}>
-            <Link href={cat.href} className="group block relative overflow-hidden rounded-lg">
+            <Link href={cat.href} className="group block relative overflow-hidden rounded-lg cc-image-card">
               <div className="relative aspect-[4/5]">
                 <Image
                   src={cat.image}

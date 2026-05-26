@@ -83,14 +83,16 @@ const HowItWorksBand = ({
           </h2>
         </div>
 
-        <div className="grid sm:grid-cols-3 gap-px bg-brand-stone/15 overflow-hidden">
+        <div className="grid sm:grid-cols-3 gap-4 md:gap-5">
           {t.items.map((item, i) => {
             const Icon = ICONS[i];
             return (
               <div
                 key={item.title}
-                className={`p-6 md:p-8 ${
-                  isDark ? "bg-brand-charcoal" : "bg-dash-surface"
+                className={`p-6 md:p-8 rounded-lg ${
+                  isDark
+                    ? "bg-white/[0.04] border border-white/10"
+                    : "bg-dash-surface cc-card"
                 }`}
               >
                 <Icon
