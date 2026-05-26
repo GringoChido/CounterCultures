@@ -182,20 +182,16 @@ export const GET = (request: NextRequest): Response => {
 
 /**
  * Meta signs webhook payloads with HMAC-SHA256 keyed by the App Secret
- * and ships the digest in `X-Hub-Signature-256: sha256=<hex>`. Verifying
- * this is the only thing standing between the Leads sheet and any
- * unauthenticated POST that knows the webhook URL.
- *
- * If WHATSAPP_APP_SECRET is unset (dev / local), validation is bypassed
- * and a warning is logged once per process — production must set it.
+ * and ships the digest in `X-Hub-Signature-256: sha256=<hex>`. Fail-closed:
+ * if WHATSAPP_APP_SECRET is unset, all POSTs are rejected (401).
  */
 const verifySignature = (rawBody: string, signatureHeader: string | null): boolean => {
   const secret = process.env.WHATSAPP_APP_SECRET;
   if (!secret) {
-    console.warn(
-      "[whatsapp-webhook] WHATSAPP_APP_SECRET not set — accepting unsigned payloads (dev only)"
+    console.error(
+      "[whatsapp-webhook] WHATSAPP_APP_SECRET not set — rejecting request (fail-closed)"
     );
-    return true;
+    return false;
   }
   if (!signatureHeader || !signatureHeader.startsWith("sha256=")) return false;
   const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
@@ -216,7 +212,7 @@ export const POST = async (request: NextRequest): Promise<Response> => {
   // Read raw body once — needed for HMAC verification AND parsing.
   const raw = await request.text();
   if (!verifySignature(raw, request.headers.get("x-hub-signature-256"))) {
-    return NextResponse.json({ ok: false, error: "invalid signature" }, { status: 403 });
+    return NextResponse.json({ ok: false, error: "invalid signature" }, { status: 401 });
   }
 
   let payload: MetaWebhookPayload;

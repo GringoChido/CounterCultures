@@ -53,15 +53,16 @@ const DRIP_STAGES: Record<string, DripConfig> = {
   },
 };
 
-const CRON_SECRET = process.env.CRON_SECRET ?? "";
+const isAuthorized = (req: NextRequest): boolean => {
+  const expected = process.env.CRON_PROBE_KEY;
+  if (!expected) return false;
+  const probeKey = req.headers.get("x-cron-probe-key");
+  return !!probeKey && probeKey === expected;
+};
 
 export async function GET(req: NextRequest): Promise<Response> {
-  const isNetlify = req.headers.get("x-netlify-scheduled") === "true";
-  const authHeader = req.headers.get("authorization");
-  const hasSecret = CRON_SECRET && authHeader === `Bearer ${CRON_SECRET}`;
-
-  if (!isNetlify && !hasSecret) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
   const rows = await readSheet<PipelineRow>("Pipeline");
