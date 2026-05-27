@@ -170,9 +170,67 @@ interface ModelConfig {
   fields: FieldDef[];
   /** Default order for bulk syncs. */
   bulkOrder: string;
+  /** Extra domain conditions prepended to write_date cursor in bulk syncs. */
+  baseDomain?: unknown[];
 }
 
-const MODELS: Record<"invoice" | "payment" | "saleOrder" | "purchaseOrder", ModelConfig> = {
+const PARTNER_FIELDS: FieldDef[] = [
+  { odoo: "id", sheet: "id", type: "scalar" },
+  { odoo: "name", sheet: "name", type: "scalar" },
+  { odoo: "display_name", sheet: "display_name", type: "scalar" },
+  { odoo: "is_company", sheet: "is_company", type: "scalar" },
+  { odoo: "parent_id", sheet: "parent_id", type: "many2one", sheetId: "parent_id_id" },
+  { odoo: "commercial_partner_id", sheet: "commercial_partner_id", type: "many2one", sheetId: "commercial_partner_id_id" },
+  { odoo: "email", sheet: "email", type: "scalar" },
+  { odoo: "phone", sheet: "phone", type: "scalar" },
+  { odoo: "mobile", sheet: "mobile", type: "scalar" },
+  { odoo: "website", sheet: "website", type: "scalar" },
+  { odoo: "lang", sheet: "lang", type: "scalar" },
+  { odoo: "street", sheet: "street", type: "scalar" },
+  { odoo: "street2", sheet: "street2", type: "scalar" },
+  { odoo: "city", sheet: "city", type: "scalar" },
+  { odoo: "state_id", sheet: "state_id", type: "many2one", sheetId: "state_id_id" },
+  { odoo: "zip", sheet: "zip", type: "scalar" },
+  { odoo: "country_id", sheet: "country_id", type: "many2one", sheetId: "country_id_id" },
+  { odoo: "vat", sheet: "vat", type: "scalar" },
+  { odoo: "l10n_mx_edi_fiscal_regime", sheet: "l10n_mx_edi_fiscal_regime", type: "scalar" },
+  { odoo: "l10n_mx_edi_usage", sheet: "l10n_mx_edi_usage", type: "scalar" },
+  { odoo: "customer_rank", sheet: "customer_rank", type: "scalar" },
+  { odoo: "supplier_rank", sheet: "supplier_rank", type: "scalar" },
+  { odoo: "category_id", sheet: "category_id", type: "x2many" },
+  { odoo: "user_id", sheet: "user_id", type: "many2one", sheetId: "user_id_id" },
+  { odoo: "property_payment_term_id", sheet: "property_payment_term_id", type: "many2one", sheetId: "property_payment_term_id_id" },
+  { odoo: "property_supplier_payment_term_id", sheet: "property_supplier_payment_term_id", type: "scalar" },
+  { odoo: "property_product_pricelist", sheet: "property_product_pricelist", type: "many2one", sheetId: "property_product_pricelist_id" },
+  { odoo: "property_account_receivable_id", sheet: "property_account_receivable_id", type: "many2one" },
+  { odoo: "property_account_payable_id", sheet: "property_account_payable_id", type: "many2one" },
+  { odoo: "property_account_position_id", sheet: "property_account_position_id", type: "many2one" },
+  { odoo: "credit", sheet: "credit", type: "scalar" },
+  { odoo: "debit", sheet: "debit", type: "scalar" },
+  { odoo: "credit_limit", sheet: "credit_limit", type: "scalar" },
+  { odoo: "bank_ids", sheet: "bank_ids", type: "x2many" },
+  { odoo: "total_invoiced", sheet: "total_invoiced", type: "scalar" },
+  { odoo: "active", sheet: "active", type: "scalar" },
+  { odoo: "comment", sheet: "comment", type: "scalar" },
+  { odoo: "company_type", sheet: "company_type", type: "scalar" },
+  { odoo: "create_date", sheet: "create_date", type: "scalar" },
+  { odoo: "write_date", sheet: "write_date", type: "scalar" },
+  { odoo: "child_ids", sheet: "child_ids", type: "x2many" },
+];
+
+const MODELS: Record<"invoice" | "payment" | "saleOrder" | "purchaseOrder" | "partner", ModelConfig> = {
+  partner: {
+    model: "res.partner",
+    tab: "Odoo_Partners",
+    fields: PARTNER_FIELDS,
+    bulkOrder: "write_date desc",
+    baseDomain: [
+      "|", "|",
+      ["customer_rank", ">", 0],
+      ["supplier_rank", ">", 0],
+      ["is_company", "=", true],
+    ],
+  },
   invoice: {
     model: "account.move",
     tab: "Odoo_Invoices",
@@ -308,11 +366,15 @@ const syncBulkIncremental = async (
   while (true) {
     if (Date.now() - t0 > SOFT_BUDGET_MS) break;
 
+    const domain: unknown[] = [
+      ...(cfg.baseDomain ?? []),
+      ["write_date", ">", cursor],
+    ];
     const records = (await execute(
       uid,
       cfg.model,
       "search_read",
-      [[["write_date", ">", cursor]]],
+      [domain],
       {
         fields: odooFieldNames(cfg),
         limit,
@@ -374,3 +436,11 @@ export const syncSaleOrdersIncremental = (limit = 250): Promise<SyncSummary> =>
 
 export const syncPurchaseOrdersIncremental = (limit = 250): Promise<SyncSummary> =>
   syncBulkIncremental(MODELS.purchaseOrder, limit);
+
+export const syncPartnersIncremental = (limit = 250): Promise<SyncSummary> =>
+  syncBulkIncremental(MODELS.partner, limit);
+
+export const syncPartnerInMirror = (
+  partnerId: number
+): Promise<{ action: "updated" | "inserted" | "skipped" }> =>
+  syncOneByOdooId(MODELS.partner, partnerId);

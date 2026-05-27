@@ -6,6 +6,7 @@
  * for joins. Join key between tabs = `_id` suffix.
  */
 import { readSheet } from "./dashboard-sheets";
+import { isConfigured, fetchPartners } from "./odoo/client";
 
 // ── Company detection (CC Mexico vs LLC USA) ─────────────────────
 
@@ -237,7 +238,23 @@ const dedup = <T extends { id: string }>(rows: T[]): T[] => {
 
 export const getOdooPartners = async (): Promise<OdooPartner[]> => {
   if (fresh(partnersCache)) return partnersCache.data!;
-  partnersCache.data = dedup(await readSheet<OdooPartner>("Odoo_Partners"));
+  const sheet = dedup(await readSheet<OdooPartner>("Odoo_Partners"));
+  if (sheet.length > 0) {
+    partnersCache.data = sheet;
+    partnersCache.ts = Date.now();
+    return partnersCache.data;
+  }
+  if (isConfigured()) {
+    try {
+      const live = await fetchPartners();
+      partnersCache.data = live as unknown as OdooPartner[];
+      partnersCache.ts = Date.now();
+      return partnersCache.data;
+    } catch (err) {
+      console.error("[getOdooPartners] live fallback failed:", err instanceof Error ? err.message : err);
+    }
+  }
+  partnersCache.data = sheet;
   partnersCache.ts = Date.now();
   return partnersCache.data;
 };
