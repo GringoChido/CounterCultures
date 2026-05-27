@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isConfigured, searchRead } from "@/app/lib/odoo/client";
-
-const ODOO_URL = process.env.ODOO_URL ?? "";
-const ODOO_DB = process.env.ODOO_DB ?? "";
-const ODOO_USERNAME = process.env.ODOO_USERNAME ?? "";
-const ODOO_API_KEY = process.env.ODOO_API_KEY ?? "";
+import { isConfigured, authenticate, execute } from "@/app/lib/odoo/client";
 
 const ALLOWED_REPORTS = new Set([
   "sale.report_saleorder",
@@ -39,127 +34,49 @@ export const GET = async (req: NextRequest) => {
     );
   }
 
-  try {
-    // Authenticate via web login to get a session cookie for the report URL
-    const loginRes = await fetch(`${ODOO_URL}/web/session/authenticate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: 1,
-        params: {
-          db: ODOO_DB,
-          login: ODOO_USERNAME,
-          password: ODOO_API_KEY,
-        },
-      }),
-    });
-
-    const nativeCookies = loginRes.headers.getSetCookie?.() ?? [];
-    const fallbackCookie = loginRes.headers.get("set-cookie");
-    const cookies = nativeCookies.length > 0
-      ? nativeCookies
-      : fallbackCookie
-        ? fallbackCookie.split(/,(?=\s*\w+=)/)
-        : [];
-    const sessionCookie = cookies
-      .map((c) => c.split(";")[0].trim())
-      .find((c) => c.startsWith("session_id="));
-
-    if (!sessionCookie) {
-      // Fallback: try RPC-based report rendering
-      return await renderViaRpc(report, id);
-    }
-
-    // Fetch the PDF report using the session cookie
-    const pdfRes = await fetch(
-      `${ODOO_URL}/report/pdf/${report}/${id}`,
-      {
-        headers: { Cookie: sessionCookie },
-        redirect: "follow",
-      }
-    );
-
-    const ct = pdfRes.headers.get("content-type") ?? "";
-    if (!pdfRes.ok || !ct.toLowerCase().startsWith("application/pdf")) {
-      return await renderViaRpc(report, id);
-    }
-
-    const pdfBuffer = await pdfRes.arrayBuffer();
-    return new Response(pdfBuffer, {
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `inline; filename="${report}-${id}.pdf"`,
-        "Cache-Control": "no-store",
-      },
-    });
-  } catch (err) {
-    console.error("[odoo-report] Error:", err);
+  const recordId = Number(id);
+  if (!Number.isFinite(recordId) || recordId <= 0) {
     return NextResponse.json(
-      { error: "Failed to generate report" },
-      { status: 500 }
+      { error: "Invalid record id" },
+      { status: 400 }
     );
   }
-};
 
-const renderViaRpc = async (
-  report: string,
-  id: string
-): Promise<Response> => {
   try {
-    // Look up the report action by name
-    const reports = (await searchRead(
+    const uid = await authenticate();
+
+    // Odoo SaaS: API keys work for JSON-RPC but NOT for web session auth.
+    // Render the PDF via the ir.actions.report model's RPC method instead
+    // of the /report/pdf/ web controller.
+    const result = await execute(
+      uid,
       "ir.actions.report",
-      [["report_name", "=", report]],
-      ["id"]
-    )) as { id: number }[];
-
-    if (!reports.length) {
-      return NextResponse.json(
-        { error: `Report '${report}' not found in Odoo` },
-        { status: 404 }
-      );
-    }
-
-    // Use the report controller endpoint with basic auth
-    const credentials = Buffer.from(
-      `${ODOO_USERNAME}:${ODOO_API_KEY}`
-    ).toString("base64");
-    const pdfRes = await fetch(
-      `${ODOO_URL}/report/pdf/${report}/${id}`,
-      {
-        headers: { Authorization: `Basic ${credentials}` },
-        redirect: "follow",
-      }
+      "_render_qweb_pdf",
+      [report, [recordId]]
     );
 
-    const rpcCt = pdfRes.headers.get("content-type") ?? "";
-    if (!pdfRes.ok || !rpcCt.toLowerCase().startsWith("application/pdf")) {
-      const preview = await pdfRes.text().catch(() => "");
-      return NextResponse.json(
-        {
-          error: "odoo_pdf_unavailable",
-          status: pdfRes.status,
-          contentType: rpcCt,
-          preview: preview.slice(0, 400),
+    // Odoo returns [base64_pdf_bytes, content_type_string]
+    if (Array.isArray(result) && typeof result[0] === "string" && result[0].length > 0) {
+      const pdfBuffer = Buffer.from(result[0], "base64");
+      return new Response(pdfBuffer, {
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `inline; filename="${report}-${id}.pdf"`,
+          "Cache-Control": "no-store",
         },
-        { status: 502 }
-      );
+      });
     }
 
-    const pdfBuffer = await pdfRes.arrayBuffer();
-    return new Response(pdfBuffer, {
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `inline; filename="${report}-${id}.pdf"`,
-        "Cache-Control": "no-store",
-      },
-    });
-  } catch (err) {
-    console.error("[odoo-report] RPC fallback error:", err);
+    console.warn("[odoo-report] Unexpected RPC result shape:", typeof result, Array.isArray(result) ? result.length : "n/a");
     return NextResponse.json(
-      { error: "Report generation failed" },
-      { status: 500 }
+      { error: "odoo_pdf_unavailable", detail: "Unexpected response from Odoo report engine" },
+      { status: 502 }
+    );
+  } catch (err) {
+    console.error("[odoo-report] Error:", err instanceof Error ? err.message : err);
+    return NextResponse.json(
+      { error: "odoo_pdf_unavailable", detail: err instanceof Error ? err.message : "Unknown error" },
+      { status: 502 }
     );
   }
 };

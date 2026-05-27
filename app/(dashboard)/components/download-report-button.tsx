@@ -41,9 +41,12 @@ const DownloadReportButton = ({
       a.remove();
       URL.revokeObjectURL(url);
     } catch (err) {
-      toast.error(
-        `Download failed: ${err instanceof Error ? err.message : "unknown error"}`
-      );
+      const msg = err instanceof Error ? err.message : "unknown error";
+      if (msg.includes("odoo_pdf_unavailable")) {
+        toast.error("Odoo PDF not available — use Print Preview (Cmd+P) instead");
+      } else {
+        toast.error(`Download failed: ${msg}`);
+      }
     } finally {
       setLoading(false);
     }
