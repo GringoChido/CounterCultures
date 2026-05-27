@@ -1,24 +1,24 @@
 import type { QuoteData } from "@/app/lib/quote-data";
 import { fmtMxn, fmtDate } from "@/app/lib/quote-data";
+import { QuoteTermsBlock } from "@/app/components/quote-terms-block";
 
 interface QuoteDocumentProps {
   data: QuoteData;
-  /** Optional Stripe payment-link URL to show a "Pay deposit" button. */
   depositPayUrl?: string | null;
-  /** When true, adds a "Powered by" and hides internal-only chrome. */
   customerFacing?: boolean;
 }
 
-/**
- * Renders the branded quote. Used by both the authenticated print page and
- * the public share page. Print CSS is handled by the parent route.
- */
 const QuoteDocument = ({
   data,
   depositPayUrl,
   customerFacing,
 }: QuoteDocumentProps) => {
   const { deal, items, subtotal, shipping, grandTotal, depositAmount, docNumber, issueDate, validUntil } = data;
+
+  const hasTaxBreakdown = (data.amountTax ?? 0) > 0;
+  const displayUntaxed = data.amountUntaxed ?? subtotal + shipping;
+  const displayTax = data.amountTax ?? 0;
+  const displayTotal = hasTaxBreakdown ? (data.amountTotal ?? grandTotal) : grandTotal;
 
   return (
     <div className="quote-doc max-w-[800px] mx-auto bg-dash-surface p-10 print:p-0 shadow-sm text-brand-charcoal font-['DM_Sans',sans-serif] text-sm leading-relaxed">
@@ -29,12 +29,16 @@ const QuoteDocument = ({
             Counter Cultures
           </h1>
           <p className="text-[10px] font-['JetBrains_Mono',monospace] tracking-[0.2em] text-brand-copper uppercase mt-1">
-            Premium Kitchen, Bath &amp; Architectural Hardware
+            Premium Kitchen, Bath &amp; Hardware
           </p>
-          <p className="text-[11px] text-dash-text-secondary mt-3">
-            Providencia, San Miguel de Allende, Guanajuato, MX
+          <p className="text-[11px] text-dash-text-secondary mt-3 leading-relaxed">
+            Calle San Juan #11-A, Col. Providencia 37737
             <br />
-            equipo@countercultures.com.mx &middot; +52-415-154-8375
+            San Miguel de Allende, Guanajuato, México
+            <br />
+            Tel. 415.154.8375 · equipo@countercultures.com.mx
+            <br />
+            countercultures.com.mx
           </p>
         </div>
         <div className="text-right">
@@ -131,25 +135,33 @@ const QuoteDocument = ({
           <div className="w-72">
             <div className="flex justify-between py-1.5 text-xs">
               <span className="text-dash-text-secondary">Subtotal</span>
-              <span>{fmtMxn(subtotal)}</span>
+              <span>{fmtMxn(hasTaxBreakdown ? displayUntaxed : subtotal)}</span>
             </div>
-            {shipping > 0 && (
+            {shipping > 0 && !hasTaxBreakdown && (
               <div className="flex justify-between py-1.5 text-xs">
                 <span className="text-dash-text-secondary">Shipping &amp; handling</span>
                 <span>{fmtMxn(shipping)}</span>
               </div>
             )}
+            {hasTaxBreakdown && (
+              <div className="flex justify-between py-1.5 text-xs">
+                <span className="text-dash-text-secondary">IVA 16%</span>
+                <span>{fmtMxn(displayTax)}</span>
+              </div>
+            )}
             <div className="flex justify-between py-2 border-t-2 border-brand-copper font-semibold text-lg mt-1">
               <span>Total MXN</span>
-              <span>{fmtMxn(grandTotal)}</span>
+              <span>{fmtMxn(displayTotal)}</span>
             </div>
             <div className="flex justify-between py-1.5 text-xs text-dash-text-secondary mt-1">
               <span>Deposit (70%)</span>
               <span>{fmtMxn(depositAmount)}</span>
             </div>
-            <p className="mt-1 text-[10px] text-dash-text-muted text-right">
-              Prices in Mexican Pesos. IVA included.
-            </p>
+            {!hasTaxBreakdown && (
+              <p className="mt-1 text-[10px] text-dash-text-muted text-right">
+                Prices in Mexican Pesos. IVA included.
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -179,42 +191,8 @@ const QuoteDocument = ({
         </div>
       )}
 
-      {/* Terms */}
-      <div className="grid grid-cols-2 gap-8 mb-6 text-xs">
-        <div>
-          <p className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-brand-copper mb-1">
-            Payment terms
-          </p>
-          <p className="text-dash-text-secondary">
-            Deposit of 70% (or more, depending on brand and order) on
-            confirmation. Balance requested when the order is ready to
-            ship; paid before delivery. Pesos via wire transfer, USD via
-            Stripe link.
-          </p>
-        </div>
-        <div>
-          <p className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-brand-copper mb-1">
-            Lead time
-          </p>
-          <p className="text-dash-text-secondary">
-            Typically 4–12 weeks from deposit for imported brands. Mexican
-            artisan items ship in 2–4 weeks. Specific lead times listed with
-            each item above where available.
-          </p>
-        </div>
-      </div>
-
-      <div className="mb-8 text-xs text-dash-text-secondary">
-        <p className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-brand-copper mb-1">
-          Validity
-        </p>
-        <p>
-          This quote is valid for 15 days from the date above. Prices are
-          subject to change with currency and supplier fluctuations after that
-          date. Delivery scheduled from our San Miguel de Allende warehouse
-          upon final payment.
-        </p>
-      </div>
+      {/* Canonical bilingual terms + bank deposit */}
+      <QuoteTermsBlock />
 
       {deal.notes && (
         <div className="mb-8 text-xs">
@@ -225,8 +203,7 @@ const QuoteDocument = ({
         </div>
       )}
 
-      {/* Signature (print only; hidden on customer-facing web view since
-          they approve via the Pay Deposit button) */}
+      {/* Signature (print only) */}
       {!customerFacing && (
         <div className="grid grid-cols-2 gap-10 mt-16 mb-10">
           <div>
@@ -245,8 +222,8 @@ const QuoteDocument = ({
       {/* Footer */}
       <div className="border-t border-dash-border pt-4 text-center text-[10px] text-dash-text-muted">
         <p>
-          Counter Cultures &middot; Providencia, San Miguel de Allende,
-          Guanajuato, MX &middot; equipo@countercultures.com.mx
+          Counter Cultures &middot; Calle San Juan #11-A, Col. Providencia 37737
+          &middot; San Miguel de Allende, Guanajuato, MX &middot; equipo@countercultures.com.mx
         </p>
         <p className="mt-1">
           Authorized dealer for Kohler, TOTO, Brizo, BLANCO, California

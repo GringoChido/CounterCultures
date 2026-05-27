@@ -1,3 +1,5 @@
+import { QuoteTermsBlock } from "@/app/components/quote-terms-block";
+
 export interface LineItem {
   product: string;
   sku: string;
@@ -6,8 +8,7 @@ export interface LineItem {
   brand?: string;
   image?: string;
   slug?: string;
-  /** PR 7 — locale-keyed spec sheet PDFs surfaced under each line item.
-   *  When the matching locale is missing we fall back to the other one. */
+  description?: string;
   specSheetUrlEn?: string;
   specSheetUrlEs?: string;
 }
@@ -29,10 +30,11 @@ export interface QuoteData {
   deliveryEstimate: string;
   notes: string;
   locale: "en" | "es";
-  /** PR 7 — currency toggle on the quote builder. Defaults to MXN. */
   currency?: QuoteCurrency;
-  /** PR 7 — fulfillment branch chosen at the top of the quote builder. */
   fulfillment?: QuoteFulfillment;
+  amountUntaxed?: number;
+  amountTax?: number;
+  amountTotal?: number;
 }
 
 const t = {
@@ -47,6 +49,7 @@ const t = {
   unitPrice: { en: "Unit Price", es: "Precio Unit." },
   subtotalLabel: { en: "Subtotal", es: "Subtotal" },
   discountLabel: { en: "Discount", es: "Descuento" },
+  ivaLabel: { en: "IVA 16%", es: "IVA 16%" },
   total: { en: "Total", es: "Total" },
   paymentTerms: { en: "Payment Terms", es: "Términos de Pago" },
   delivery: { en: "Estimated Delivery", es: "Entrega Estimada" },
@@ -62,15 +65,6 @@ const t = {
     es: "Recoger · Bodega Counter Cultures",
   },
   specSheet: { en: "Spec sheet", es: "Hoja técnica" },
-  termsHeader: { en: "Terms & Conditions", es: "Términos y Condiciones" },
-  terms70: {
-    en: "70% deposit confirms the order. Balance of 30% is due on delivery. 100% upfront is also accepted.",
-    es: "Anticipo del 70% para confirmar el pedido. Saldo del 30% al momento de la entrega. También se acepta 100% por adelantado.",
-  },
-  termsRelease: {
-    en: "No merchandise is released without payment in full, except partial deliveries valued at or below the deposit amount.",
-    es: "No se libera mercancía sin pago completo, salvo entregas parciales por valor menor o igual al anticipo.",
-  },
   footer: {
     en: "Counter Cultures | Providencia, San Miguel de Allende, Guanajuato, Mexico | info@countercultures.com.mx",
     es: "Counter Cultures | Providencia, San Miguel de Allende, Guanajuato, México | info@countercultures.com.mx",
@@ -81,9 +75,6 @@ const t = {
   },
 };
 
-// Currency formatter — Mexican Spanish style for MXN ("$1,234.00 MXN"),
-// US English for USD. We pin the locale per currency rather than per
-// document locale so a Spanish quote in USD still reads naturally.
 const makeFmt = (currency: QuoteCurrency) => (n: number) =>
   n.toLocaleString(currency === "MXN" ? "es-MX" : "en-US", {
     style: "currency",
@@ -105,28 +96,45 @@ export const QuoteTemplate = ({ data }: { data: QuoteData }) => {
   const l = data.locale;
   const currency: QuoteCurrency = data.currency ?? "MXN";
   const fmt = makeFmt(currency);
-  const subtotal = data.items.reduce(
+
+  const hasOrderTotals =
+    data.amountUntaxed != null &&
+    data.amountTotal != null;
+
+  const computedSubtotal = data.items.reduce(
     (sum, i) => sum + i.quantity * i.unitPrice,
-    0
+    0,
   );
   const discountAmount =
     data.discountType === "percent"
-      ? subtotal * (data.discount / 100)
+      ? computedSubtotal * (data.discount / 100)
       : data.discount;
-  const total = subtotal - discountAmount;
-  const depositAmount = total * 0.7;
+
+  const displaySubtotal = hasOrderTotals ? data.amountUntaxed! : computedSubtotal - discountAmount;
+  const displayTax = hasOrderTotals ? (data.amountTax ?? 0) : 0;
+  const displayTotal = hasOrderTotals ? data.amountTotal! : computedSubtotal - discountAmount;
+
   const fulfillmentLabel = fulfillmentText(data.fulfillment, l);
 
   return (
     <div className="bg-dash-surface text-brand-charcoal p-8 max-w-[800px] mx-auto font-['DM_Sans',sans-serif] text-sm leading-relaxed">
-      {/* Header */}
+      {/* Header — wordmark + company address */}
       <div className="flex items-start justify-between mb-8 pb-6 border-b-2 border-brand-copper">
         <div>
           <h1 className="font-['Cormorant',serif] text-3xl font-light tracking-wide text-brand-charcoal">
             Counter Cultures
           </h1>
           <p className="text-[10px] font-['JetBrains_Mono',monospace] tracking-[0.2em] text-brand-copper uppercase mt-1">
-            Premium Kitchen, Bath & Hardware
+            Premium Kitchen, Bath &amp; Hardware
+          </p>
+          <p className="text-[11px] text-dash-text-secondary mt-3 leading-relaxed">
+            Calle San Juan #11-A, Col. Providencia 37737
+            <br />
+            San Miguel de Allende, Guanajuato, México
+            <br />
+            Tel. 415.154.8375 · equipo@countercultures.com.mx
+            <br />
+            countercultures.com.mx
           </p>
         </div>
         <div className="text-right">
@@ -166,7 +174,7 @@ export const QuoteTemplate = ({ data }: { data: QuoteData }) => {
         </div>
       </div>
 
-      {/* Fulfillment row — set on the deal at quote time */}
+      {/* Fulfillment row */}
       {fulfillmentLabel && (
         <div className="mb-6">
           <p className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-brand-copper mb-1">
@@ -199,7 +207,6 @@ export const QuoteTemplate = ({ data }: { data: QuoteData }) => {
         </thead>
         <tbody>
           {data.items.map((item, i) => {
-            // Locale-preferred spec sheet, fall back to the other if missing
             const specHref =
               (l === "es" ? item.specSheetUrlEs : item.specSheetUrlEn) ||
               item.specSheetUrlEn ||
@@ -218,6 +225,11 @@ export const QuoteTemplate = ({ data }: { data: QuoteData }) => {
                     )}
                     <div className="flex-1 min-w-0">
                       <div>{item.product}</div>
+                      {item.description && (
+                        <p className="text-[11px] text-dash-text-secondary mt-0.5 whitespace-pre-line">
+                          {item.description}
+                        </p>
+                      )}
                       {specHref && (
                         <a
                           href={specHref}
@@ -250,58 +262,58 @@ export const QuoteTemplate = ({ data }: { data: QuoteData }) => {
         <div className="w-64">
           <div className="flex justify-between py-1.5">
             <span className="text-dash-text-secondary">{t.subtotalLabel[l]}</span>
-            <span>{fmt(subtotal)}</span>
+            <span>{fmt(displaySubtotal)}</span>
           </div>
-          {discountAmount > 0 && (
+          {!hasOrderTotals && discountAmount > 0 && (
             <div className="flex justify-between py-1.5 text-brand-copper">
               <span>{t.discountLabel[l]}</span>
               <span>-{fmt(discountAmount)}</span>
             </div>
           )}
+          {displayTax > 0 && (
+            <div className="flex justify-between py-1.5">
+              <span className="text-dash-text-secondary">{t.ivaLabel[l]}</span>
+              <span>{fmt(displayTax)}</span>
+            </div>
+          )}
           <div className="flex justify-between py-2 border-t-2 border-brand-copper font-semibold text-lg mt-1">
             <span>{t.total[l]}</span>
-            <span>{fmt(total)}</span>
+            <span>{fmt(displayTotal)}</span>
           </div>
         </div>
       </div>
 
-      {/* Terms / Notes */}
-      <div className="grid grid-cols-2 gap-8 mb-8 text-xs">
-        <div>
-          <p className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-brand-copper mb-1">
-            {t.paymentTerms[l]}
-          </p>
-          <p className="text-dash-text-secondary">{data.paymentTerms}</p>
+      {/* Payment terms / delivery — only when the document-generator sets them */}
+      {(data.paymentTerms || data.deliveryEstimate) && (
+        <div className="grid grid-cols-2 gap-8 mb-8 text-xs">
+          {data.paymentTerms && (
+            <div>
+              <p className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-brand-copper mb-1">
+                {t.paymentTerms[l]}
+              </p>
+              <p className="text-dash-text-secondary">{data.paymentTerms}</p>
+            </div>
+          )}
+          {data.deliveryEstimate && (
+            <div>
+              <p className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-brand-copper mb-1">
+                {t.delivery[l]}
+              </p>
+              <p className="text-dash-text-secondary">{data.deliveryEstimate}</p>
+            </div>
+          )}
         </div>
-        <div>
-          <p className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-brand-copper mb-1">
-            {t.delivery[l]}
-          </p>
-          <p className="text-dash-text-secondary">{data.deliveryEstimate}</p>
-        </div>
-      </div>
+      )}
 
-      {/* Standard T&Cs — Roger's hard-coded fiscal+release rules */}
-      <div className="mb-8 text-xs border border-brand-linen bg-brand-linen/30 rounded p-4">
-        <p className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-brand-copper mb-2">
-          {t.termsHeader[l]}
-        </p>
-        <p className="mb-1.5">
-          <span className="font-semibold">{t.terms70[l]}</span>
-          <span className="text-dash-text-secondary">
-            {" "}
-            ({l === "es" ? "Anticipo" : "Deposit"} {fmt(depositAmount)})
-          </span>
-        </p>
-        <p className="text-dash-text-secondary">{t.termsRelease[l]}</p>
-      </div>
+      {/* Canonical bilingual terms + bank deposit */}
+      <QuoteTermsBlock />
 
       {data.notes && (
         <div className="mb-8 text-xs">
           <p className="text-[10px] font-['JetBrains_Mono',monospace] uppercase tracking-wider text-brand-copper mb-1">
             {t.notes[l]}
           </p>
-          <p className="text-dash-text-secondary">{data.notes}</p>
+          <p className="text-dash-text-secondary whitespace-pre-line">{data.notes}</p>
         </div>
       )}
 

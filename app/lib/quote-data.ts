@@ -61,17 +61,14 @@ export interface QuoteData {
   subtotal: number;
   shipping: number;
   grandTotal: number;
-  /**
-   * Default deposit on the quote. CC's standard policy is 70% of the
-   * grand total; some brands/orders require more (set per-deal in the
-   * Pipeline sheet via a `deposit_pct` column when present, otherwise
-   * falls back to the 70% default).
-   */
   depositAmount: number;
   docNumber: string;
-  issueDate: string; // ISO date (yyyy-mm-dd)
+  issueDate: string;
   validUntil: string;
   currency: "MXN";
+  amountUntaxed?: number;
+  amountTax?: number;
+  amountTotal?: number;
 }
 
 const num = (s: string): number => {
@@ -225,6 +222,8 @@ const loadQuoteDataFromOdoo = async (
 
     const subtotal = items.reduce((s, i) => s + i.lineTotal, 0);
     const grandTotal = num(String(detail.order.amountTotal));
+    const amountUntaxed = num(String(detail.order.amountUntaxed));
+    const amountTax = num(String(detail.order.amountTax));
     const depositPct = 0.7;
 
     const syntheticDeal: PipelineRow = {
@@ -253,6 +252,9 @@ const loadQuoteDataFromOdoo = async (
         : new Date().toISOString().slice(0, 10),
       validUntil: detail.order.validityDate || addDays(15),
       currency: "MXN",
+      amountUntaxed: amountUntaxed || undefined,
+      amountTax: amountTax || undefined,
+      amountTotal: grandTotal || undefined,
     };
   } catch (err) {
     console.warn("[loadQuoteData] Odoo fallback failed:", err);

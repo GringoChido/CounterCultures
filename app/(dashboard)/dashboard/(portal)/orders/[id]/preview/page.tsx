@@ -2,9 +2,8 @@
 
 import { useState, useEffect, use } from "react";
 import { Loader2 } from "lucide-react";
-import { QuoteTemplate, type QuoteData } from "@/app/(dashboard)/components/templates/quote-template";
-import { stripHtml } from "@/app/lib/strip-html";
-import { formatDate } from "@/app/lib/format-date";
+import { QuoteTemplate } from "@/app/(dashboard)/components/templates/quote-template";
+import { buildQuoteDataFromOrder } from "@/app/lib/quote-from-order";
 
 interface OrderRow {
   id: string;
@@ -70,30 +69,8 @@ const OrderPreviewPage = ({ params }: { params: Promise<{ id: string }> }) => {
     );
   }
 
-  const { order, rawOrder, lines, partnerEmail } = data;
-
-  const quoteData: QuoteData = {
-    docNumber: order.name,
-    date: formatDate(order.dateOrder),
-    validUntil: order.validityDate ? formatDate(order.validityDate) : "—",
-    customerName: order.partnerName,
-    customerCompany: "",
-    customerEmail: partnerEmail || "",
-    items: lines.map((l) => ({
-      product: l.product_id || l.name,
-      sku: "",
-      quantity: parseFloat(l.product_uom_qty) || 0,
-      unitPrice: parseFloat(l.price_unit) || 0,
-      image: l.product_id_id ? `/products/odoo/${l.product_id_id}.jpg` : undefined,
-    })),
-    discount: 0,
-    discountType: "percent",
-    paymentTerms: "70% deposit to confirm, 30% on delivery",
-    deliveryEstimate: "",
-    notes: rawOrder.note ? stripHtml(rawOrder.note) : "",
-    locale: "en",
-    currency: (order.currency === "MXN" || order.currency === "USD") ? order.currency : "USD",
-  };
+  const { order, rawOrder, lines } = data;
+  const quoteData = buildQuoteDataFromOrder(order, rawOrder, lines);
 
   return (
     <>
