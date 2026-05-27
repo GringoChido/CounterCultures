@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isConfigured, authenticate, execute } from "@/app/lib/odoo/client";
+import { isConfigured } from "@/app/lib/odoo/client";
 
 const ALLOWED_REPORTS = new Set([
   "sale.report_saleorder",
@@ -7,6 +7,12 @@ const ALLOWED_REPORTS = new Set([
   "account.report_invoice",
   "account.report_invoice_with_payments",
 ]);
+
+const ODOO_URL = process.env.ODOO_URL ?? "";
+const ODOO_DB = process.env.ODOO_DB ?? "";
+const ODOO_LOGIN = process.env.ODOO_USERNAME ?? "";
+const ODOO_API_KEY = process.env.ODOO_API_KEY ?? "";
+const ODOO_PASSWORD = process.env.ODOO_PASSWORD ?? "";
 
 export const GET = async (req: NextRequest) => {
   const { searchParams } = new URL(req.url);
@@ -42,41 +48,74 @@ export const GET = async (req: NextRequest) => {
     );
   }
 
+  const fail = (detail: string) =>
+    NextResponse.json({ error: "odoo_pdf_unavailable", detail }, { status: 502 });
+
   try {
-    const uid = await authenticate();
-
-    // Odoo SaaS: API keys work for JSON-RPC but NOT for web session auth.
-    // Render the PDF via the ir.actions.report model's RPC method instead
-    // of the /report/pdf/ web controller.
-    const result = await execute(
-      uid,
-      "ir.actions.report",
-      "_render_qweb_pdf",
-      [report, [recordId]]
-    );
-
-    // Odoo returns [base64_pdf_bytes, content_type_string]
-    if (Array.isArray(result) && typeof result[0] === "string" && result[0].length > 0) {
-      const pdfBuffer = Buffer.from(result[0], "base64");
-      return new Response(pdfBuffer, {
-        headers: {
-          "Content-Type": "application/pdf",
-          "Content-Disposition": `inline; filename="${report}-${id}.pdf"`,
-          "Cache-Control": "no-store",
-        },
+    const tryAuth = async (password: string) => {
+      const r = await fetch(`${ODOO_URL}/web/session/authenticate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          params: { db: ODOO_DB, login: ODOO_LOGIN, password },
+        }),
       });
+      const j = await r.json().catch(() => null);
+      return {
+        uid: j?.result?.uid,
+        setCookies: r.headers.getSetCookie?.() ?? [],
+      };
+    };
+
+    let { uid, setCookies } = await tryAuth(ODOO_API_KEY);
+    if (!uid && ODOO_PASSWORD) {
+      ({ uid, setCookies } = await tryAuth(ODOO_PASSWORD));
+    }
+    if (!uid) {
+      console.warn("[odoo-report] web-session auth returned no uid");
+      return fail("web session auth failed");
     }
 
-    console.warn("[odoo-report] Unexpected RPC result shape:", typeof result, Array.isArray(result) ? result.length : "n/a");
-    return NextResponse.json(
-      { error: "odoo_pdf_unavailable", detail: "Unexpected response from Odoo report engine" },
-      { status: 502 }
-    );
+    const sessionCookie = setCookies
+      .find((c) => c.startsWith("session_id="))
+      ?.split(";")[0];
+    if (!sessionCookie) return fail("no session_id cookie returned");
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 25_000);
+    let pdfRes: Response;
+    try {
+      pdfRes = await fetch(
+        `${ODOO_URL}/report/pdf/${report}/${recordId}`,
+        {
+          headers: { Cookie: sessionCookie },
+          signal: controller.signal,
+        }
+      );
+    } finally {
+      clearTimeout(timer);
+    }
+
+    const ct = pdfRes.headers.get("content-type") ?? "";
+    if (!pdfRes.ok || !ct.includes("application/pdf")) {
+      console.warn("[odoo-report] report fetch not a pdf:", pdfRes.status, ct);
+      return fail(`report fetch ${pdfRes.status} ${ct || "no content-type"}`);
+    }
+
+    const pdfBuffer = Buffer.from(await pdfRes.arrayBuffer());
+    return new Response(pdfBuffer, {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `inline; filename="${report}-${id}.pdf"`,
+        "Cache-Control": "no-store",
+      },
+    });
   } catch (err) {
-    console.error("[odoo-report] Error:", err instanceof Error ? err.message : err);
-    return NextResponse.json(
-      { error: "odoo_pdf_unavailable", detail: err instanceof Error ? err.message : "Unknown error" },
-      { status: 502 }
+    console.error(
+      "[odoo-report] Error:",
+      err instanceof Error ? err.message : err
     );
+    return fail(err instanceof Error ? err.message : "Unknown error");
   }
 };
