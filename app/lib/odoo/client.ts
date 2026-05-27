@@ -240,27 +240,20 @@ const fetchSaleOrderLines = async (
   });
 };
 
+// ── Partner field sets ────────────────────────────────────────────
+
+const PARTNER_FIELDS_CORE = [
+  "id", "name", "display_name", "email", "phone", "mobile", "vat",
+  "is_company", "parent_id", "child_ids", "customer_rank", "supplier_rank",
+  "country_id", "city", "street", "street2", "zip", "state_id",
+  "comment", "create_date", "write_date",
+];
+
 const PARTNER_FIELDS_SAFE = [
-  "id",
-  "name",
-  "display_name",
-  "is_company",
-  "parent_id",
+  ...PARTNER_FIELDS_CORE,
   "commercial_partner_id",
-  "email",
-  "phone",
-  "mobile",
   "website",
   "lang",
-  "street",
-  "street2",
-  "city",
-  "state_id",
-  "zip",
-  "country_id",
-  "vat",
-  "customer_rank",
-  "supplier_rank",
   "category_id",
   "user_id",
   "property_payment_term_id",
@@ -275,17 +268,37 @@ const PARTNER_FIELDS_SAFE = [
   "bank_ids",
   "total_invoiced",
   "active",
-  "comment",
   "company_type",
-  "create_date",
-  "write_date",
-  "child_ids",
 ];
 
 const PARTNER_FIELDS_MX = [
   "l10n_mx_edi_fiscal_regime",
   "l10n_mx_edi_usage",
 ];
+
+// ── Partner shaping helpers ──────────────────────────────────────
+
+const m2oStr = (v: unknown): string => {
+  if (Array.isArray(v) && v.length === 2) return String(v[1] ?? "");
+  return "";
+};
+const m2oId = (v: unknown): string => {
+  if (Array.isArray(v) && v.length === 2) return String(v[0] ?? "");
+  return "";
+};
+const x2manyStr = (v: unknown): string => {
+  if (Array.isArray(v)) return v.map(String).join("|");
+  return "";
+};
+const boolStr = (v: unknown): string => {
+  if (v === true) return "True";
+  if (v === false) return "False";
+  return String(v ?? "");
+};
+const scalarStr = (v: unknown): string => {
+  if (v === false || v === null || v === undefined) return "";
+  return String(v);
+};
 
 export interface OdooPartnerLive {
   [key: string]: string;
@@ -294,22 +307,74 @@ export interface OdooPartnerLive {
   display_name: string;
 }
 
-const fetchPartners = async (): Promise<OdooPartnerLive[]> => {
-  const allFields = [...PARTNER_FIELDS_SAFE];
+const shapePartnerRow = (r: Record<string, unknown>): OdooPartnerLive => ({
+  id: String(r.id ?? ""),
+  name: scalarStr(r.name),
+  display_name: scalarStr(r.display_name),
+  is_company: boolStr(r.is_company),
+  parent_id: m2oStr(r.parent_id),
+  parent_id_id: m2oId(r.parent_id),
+  commercial_partner_id: m2oStr(r.commercial_partner_id),
+  commercial_partner_id_id: m2oId(r.commercial_partner_id),
+  email: scalarStr(r.email),
+  phone: scalarStr(r.phone),
+  mobile: scalarStr(r.mobile),
+  website: scalarStr(r.website),
+  lang: scalarStr(r.lang),
+  street: scalarStr(r.street),
+  street2: scalarStr(r.street2),
+  city: scalarStr(r.city),
+  state_id: m2oStr(r.state_id),
+  state_id_id: m2oId(r.state_id),
+  zip: scalarStr(r.zip),
+  country_id: m2oStr(r.country_id),
+  country_id_id: m2oId(r.country_id),
+  vat: scalarStr(r.vat),
+  l10n_mx_edi_fiscal_regime: scalarStr(r.l10n_mx_edi_fiscal_regime),
+  l10n_mx_edi_usage: scalarStr(r.l10n_mx_edi_usage),
+  customer_rank: scalarStr(r.customer_rank),
+  supplier_rank: scalarStr(r.supplier_rank),
+  category_id: x2manyStr(r.category_id),
+  user_id: m2oStr(r.user_id),
+  user_id_id: m2oId(r.user_id),
+  property_payment_term_id: m2oStr(r.property_payment_term_id),
+  property_payment_term_id_id: m2oId(r.property_payment_term_id),
+  property_supplier_payment_term_id: m2oStr(r.property_supplier_payment_term_id),
+  property_product_pricelist: m2oStr(r.property_product_pricelist),
+  property_product_pricelist_id: m2oId(r.property_product_pricelist),
+  property_account_receivable_id: m2oStr(r.property_account_receivable_id),
+  property_account_payable_id: m2oStr(r.property_account_payable_id),
+  property_account_position_id: m2oStr(r.property_account_position_id),
+  credit: scalarStr(r.credit),
+  debit: scalarStr(r.debit),
+  credit_limit: scalarStr(r.credit_limit),
+  bank_ids: x2manyStr(r.bank_ids),
+  total_invoiced: scalarStr(r.total_invoiced),
+  active: boolStr(r.active),
+  comment: scalarStr(r.comment),
+  company_type: scalarStr(r.company_type),
+  create_date: scalarStr(r.create_date),
+  write_date: scalarStr(r.write_date),
+  child_ids: x2manyStr(r.child_ids),
+});
 
+// ── Partner fetch (bulk list) ────────────────────────────────────
+
+const probePartnerFields = async (): Promise<string[]> => {
+  const allFields = [...PARTNER_FIELDS_SAFE];
   for (const mxField of PARTNER_FIELDS_MX) {
     try {
-      const probe = await searchRead(
-        "res.partner",
-        [["id", "=", 1]],
-        [mxField],
-        1
-      );
-      if (probe) allFields.push(mxField);
+      await searchRead("res.partner", [["id", "=", 1]], [mxField], 1);
+      allFields.push(mxField);
     } catch {
-      // field doesn't exist on this instance — skip
+      // field doesn't exist — skip
     }
   }
+  return allFields;
+};
+
+const fetchPartners = async (): Promise<OdooPartnerLive[]> => {
+  const allFields = await probePartnerFields();
 
   const domain: unknown[] = [
     "|", "|",
@@ -327,78 +392,35 @@ const fetchPartners = async (): Promise<OdooPartnerLive[]> => {
     "write_date desc"
   );
 
-  const m2oStr = (v: unknown): string => {
-    if (Array.isArray(v) && v.length === 2) return String(v[1] ?? "");
-    return "";
-  };
-  const m2oId = (v: unknown): string => {
-    if (Array.isArray(v) && v.length === 2) return String(v[0] ?? "");
-    return "";
-  };
-  const x2manyStr = (v: unknown): string => {
-    if (Array.isArray(v)) return v.map(String).join("|");
-    return "";
-  };
-  const boolStr = (v: unknown): string => {
-    if (v === true) return "True";
-    if (v === false) return "False";
-    return String(v ?? "");
-  };
-  const scalar = (v: unknown): string => {
-    if (v === false || v === null || v === undefined) return "";
-    return String(v);
+  return rows.map(shapePartnerRow);
+};
+
+// ── Partner fetch (single by id) ─────────────────────────────────
+
+const fetchPartnerById = async (
+  id: number
+): Promise<OdooPartnerLive | null> => {
+  if (id <= 0) return null;
+
+  const tryRead = async (fields: string[]): Promise<OdooPartnerLive | null> => {
+    const recs = await read("res.partner", [id], fields);
+    if (!recs || recs.length === 0) return null;
+    return shapePartnerRow(recs[0]);
   };
 
-  return rows.map((r) => ({
-    id: String(r.id ?? ""),
-    name: scalar(r.name),
-    display_name: scalar(r.display_name),
-    is_company: boolStr(r.is_company),
-    parent_id: m2oStr(r.parent_id),
-    parent_id_id: m2oId(r.parent_id),
-    commercial_partner_id: m2oStr(r.commercial_partner_id),
-    commercial_partner_id_id: m2oId(r.commercial_partner_id),
-    email: scalar(r.email),
-    phone: scalar(r.phone),
-    mobile: scalar(r.mobile),
-    website: scalar(r.website),
-    lang: scalar(r.lang),
-    street: scalar(r.street),
-    street2: scalar(r.street2),
-    city: scalar(r.city),
-    state_id: m2oStr(r.state_id),
-    state_id_id: m2oId(r.state_id),
-    zip: scalar(r.zip),
-    country_id: m2oStr(r.country_id),
-    country_id_id: m2oId(r.country_id),
-    vat: scalar(r.vat),
-    l10n_mx_edi_fiscal_regime: scalar(r.l10n_mx_edi_fiscal_regime),
-    l10n_mx_edi_usage: scalar(r.l10n_mx_edi_usage),
-    customer_rank: scalar(r.customer_rank),
-    supplier_rank: scalar(r.supplier_rank),
-    category_id: x2manyStr(r.category_id),
-    user_id: m2oStr(r.user_id),
-    user_id_id: m2oId(r.user_id),
-    property_payment_term_id: m2oStr(r.property_payment_term_id),
-    property_payment_term_id_id: m2oId(r.property_payment_term_id),
-    property_supplier_payment_term_id: m2oStr(r.property_supplier_payment_term_id),
-    property_product_pricelist: m2oStr(r.property_product_pricelist),
-    property_product_pricelist_id: m2oId(r.property_product_pricelist),
-    property_account_receivable_id: m2oStr(r.property_account_receivable_id),
-    property_account_payable_id: m2oStr(r.property_account_payable_id),
-    property_account_position_id: m2oStr(r.property_account_position_id),
-    credit: scalar(r.credit),
-    debit: scalar(r.debit),
-    credit_limit: scalar(r.credit_limit),
-    bank_ids: x2manyStr(r.bank_ids),
-    total_invoiced: scalar(r.total_invoiced),
-    active: boolStr(r.active),
-    comment: scalar(r.comment),
-    company_type: scalar(r.company_type),
-    create_date: scalar(r.create_date),
-    write_date: scalar(r.write_date),
-    child_ids: x2manyStr(r.child_ids),
-  }));
+  try {
+    const allFields = await probePartnerFields();
+    return await tryRead(allFields);
+  } catch {
+    // full field set failed — retry with core fields only
+  }
+
+  try {
+    return await tryRead(PARTNER_FIELDS_CORE);
+  } catch (err) {
+    console.error("[fetchPartnerById] core-field read failed:", err instanceof Error ? err.message : err);
+    return null;
+  }
 };
 
 export {
@@ -411,4 +433,5 @@ export {
   isConfigured,
   fetchSaleOrderLines,
   fetchPartners,
+  fetchPartnerById,
 };

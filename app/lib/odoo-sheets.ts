@@ -6,7 +6,7 @@
  * for joins. Join key between tabs = `_id` suffix.
  */
 import { readSheet } from "./dashboard-sheets";
-import { isConfigured, fetchPartners } from "./odoo/client";
+import { isConfigured, fetchPartners, fetchPartnerById } from "./odoo/client";
 
 // ── Company detection (CC Mexico vs LLC USA) ─────────────────────
 
@@ -382,7 +382,14 @@ export const getVendorProfile = async (
   partnerIdInt: string
 ): Promise<VendorProfile | null> => {
   const partners = await getOdooPartners();
-  const partner = partners.find((p) => p.id === partnerIdInt);
+  let partner: OdooPartner | undefined | null = partners.find((p) => p.id === partnerIdInt);
+  if (!partner && isConfigured()) {
+    const live = await fetchPartnerById(Number(partnerIdInt));
+    if (live) {
+      partner = live as unknown as OdooPartner;
+      if (partnersCache.data) partnersCache.data.push(partner);
+    }
+  }
   if (!partner) return null;
 
   const [invoices, payments, purchaseOrders] = await Promise.all([
@@ -608,7 +615,14 @@ export const getCustomerProfile = async (
   partnerIdInt: string
 ): Promise<CustomerProfile | null> => {
   const partners = await getOdooPartners();
-  const partner = partners.find((p) => p.id === partnerIdInt);
+  let partner: OdooPartner | undefined | null = partners.find((p) => p.id === partnerIdInt);
+  if (!partner && isConfigured()) {
+    const live = await fetchPartnerById(Number(partnerIdInt));
+    if (live) {
+      partner = live as unknown as OdooPartner;
+      if (partnersCache.data) partnersCache.data.push(partner);
+    }
+  }
   if (!partner) return null;
 
   const [invoices, payments, orders] = await Promise.all([
