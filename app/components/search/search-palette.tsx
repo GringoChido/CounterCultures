@@ -51,6 +51,8 @@ const COPY = {
     loading: "Loading…",
     productSearchUnavailable: "Product search temporarily unavailable",
     productSearchRetry: "Retry",
+    searchTooBroad: "Your search is too broad. Try adding a brand or model number.",
+    clearSearch: "Clear search",
   },
   es: {
     placeholder: "Buscar productos, marcas o artículos…",
@@ -64,6 +66,8 @@ const COPY = {
     loading: "Cargando…",
     productSearchUnavailable: "Búsqueda de productos temporalmente no disponible",
     productSearchRetry: "Reintentar",
+    searchTooBroad: "Tu búsqueda es demasiado amplia. Prueba con una marca o número de modelo.",
+    clearSearch: "Limpiar búsqueda",
   },
 };
 
@@ -160,10 +164,13 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
     const timer = setTimeout(async () => {
       try {
         const p = new URLSearchParams({ q: trimmed, limit: "6" });
-        const data = await cachedFetch<{ items?: ProductHit[]; error?: string }>(`/api/products/search?${p}`);
+        const data = await cachedFetch<{ items?: ProductHit[]; error?: string; timedOut?: boolean }>(`/api/products/search?${p}`);
         if (myReq !== productReqRef.current) return;
         if (data.error) {
           setProductError(data.error);
+          setProductResults([]);
+        } else if (data.timedOut) {
+          setProductError("search_timeout");
           setProductResults([]);
         } else {
           setProductResults(
@@ -427,6 +434,7 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
 
                 // Product section: show error banner when API failed
                 if (type === "product" && rows.length === 0 && hasQuery && productError) {
+                  const isTimeout = productError === "search_timeout";
                   return (
                     <div key={type}>
                       <p className="px-5 pt-4 pb-2 font-body text-[10px] tracking-[0.2em] uppercase text-dash-text-secondary/60">
@@ -435,19 +443,32 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
                       <div className="mx-5 mb-3 px-3 py-2 text-[11px] rounded border border-amber-500/40 bg-amber-500/10 text-amber-800 flex items-center justify-between gap-3">
                         <span className="flex items-center gap-1.5">
                           <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                          {t.productSearchUnavailable}
+                          {isTimeout ? t.searchTooBroad : t.productSearchUnavailable}
                         </span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setProductError(null);
-                            setQuery((prev) => prev + " ");
-                            requestAnimationFrame(() => setQuery((prev) => prev.trimEnd()));
-                          }}
-                          className="px-2 py-0.5 text-[10px] font-medium border border-amber-500/40 rounded hover:bg-amber-500/10 cursor-pointer shrink-0"
-                        >
-                          {t.productSearchRetry}
-                        </button>
+                        {isTimeout ? (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setProductError(null);
+                              setQuery("");
+                            }}
+                            className="px-2 py-0.5 text-[10px] font-medium border border-amber-500/40 rounded hover:bg-amber-500/10 cursor-pointer shrink-0"
+                          >
+                            {t.clearSearch}
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setProductError(null);
+                              setQuery((prev) => prev + " ");
+                              requestAnimationFrame(() => setQuery((prev) => prev.trimEnd()));
+                            }}
+                            className="px-2 py-0.5 text-[10px] font-medium border border-amber-500/40 rounded hover:bg-amber-500/10 cursor-pointer shrink-0"
+                          >
+                            {t.productSearchRetry}
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
