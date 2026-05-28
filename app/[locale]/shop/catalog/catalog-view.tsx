@@ -93,6 +93,7 @@ const T = {
     clearSearch: "Clear search",
     browseFullCatalog: "Browse full catalog",
     searchUnavailable: "Search is temporarily unavailable",
+    searchTooBroad: "Your search is too broad. Try adding a brand or model number.",
     retry: "Retry",
     brandFilterChip: "Brand",
     categoryFilterChip: "Category",
@@ -144,6 +145,7 @@ const T = {
     clearSearch: "Limpiar búsqueda",
     browseFullCatalog: "Explorar catálogo completo",
     searchUnavailable: "La búsqueda no está disponible temporalmente",
+    searchTooBroad: "Tu búsqueda es demasiado amplia. Prueba con una marca o número de modelo.",
     retry: "Reintentar",
     brandFilterChip: "Marca",
     categoryFilterChip: "Categoría",
@@ -293,11 +295,16 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
             signal: controller.signal,
           });
           if (!res.ok) throw new Error(`→ ${res.status}`);
-          const data: SearchResponse = await res.json();
+          const data = await res.json();
           if (myReq !== reqIdRef.current) return;
+          if (data.timedOut || data.error === "search_timeout") {
+            setFetchError("search_timeout");
+            setResult(null);
+            return;
+          }
           setNeedsAccess(false);
           setFetchError(null);
-          setResult(data);
+          setResult(data as SearchResponse);
         } catch (e) {
           if (controller.signal.aborted) return;
           if (myReq !== reqIdRef.current) return;
@@ -682,18 +689,34 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
               >
                 <span className="flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 shrink-0" />
-                  {t.searchUnavailable}
+                  {fetchError === "search_timeout" ? t.searchTooBroad : t.searchUnavailable}
                 </span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOffset((o) => o);
-                    setFetchError(null);
-                  }}
-                  className="px-3 py-1 text-xs font-medium border border-amber-500/40 rounded hover:bg-amber-500/10 cursor-pointer shrink-0"
-                >
-                  {t.retry}
-                </button>
+                <div className="flex items-center gap-2 shrink-0">
+                  {fetchError === "search_timeout" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuery("");
+                        setFetchError(null);
+                      }}
+                      className="px-3 py-1 text-xs font-medium border border-amber-500/40 rounded hover:bg-amber-500/10 cursor-pointer"
+                    >
+                      {t.clearSearch}
+                    </button>
+                  )}
+                  {fetchError !== "search_timeout" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOffset((o) => o);
+                        setFetchError(null);
+                      }}
+                      className="px-3 py-1 text-xs font-medium border border-amber-500/40 rounded hover:bg-amber-500/10 cursor-pointer"
+                    >
+                      {t.retry}
+                    </button>
+                  )}
+                </div>
               </div>
             )}
             {/* Grid or table */}

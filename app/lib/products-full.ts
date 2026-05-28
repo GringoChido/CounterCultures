@@ -343,6 +343,7 @@ export interface SearchResult {
   limit: number;
   elapsedMs: number;
   cacheAgeMs: number;
+  partial?: boolean;
 }
 
 const stripIndex = (p: IndexedProduct): ProductFull => ({
@@ -379,6 +380,8 @@ const imageWeight = (p: IndexedProduct) => (p.imageSrc ? 1 : 0);
 
 const scoreRow = (p: IndexedProduct, q: string): number => scoreProduct(q, p);
 
+const DEFAULT_SCAN_BUDGET_MS = 4000;
+
 export const searchProducts = async (
   opts: SearchOptions = {}
 ): Promise<SearchResult> => {
@@ -405,11 +408,18 @@ export const searchProducts = async (
     brand && c.byBrand.has(brand) ? c.byBrand.get(brand)! : c.products;
 
   let matched: IndexedProduct[];
+  let partial = false;
   if (query) {
     // Score each candidate; keep only non-zero. For ranked search we need the
     // full list before slicing (scores vary).
     const scored: Array<{ p: IndexedProduct; s: number }> = [];
+    const scanStart = Date.now();
+    let iter = 0;
     for (const p of pool) {
+      if (++iter % 5000 === 0 && Date.now() - scanStart > DEFAULT_SCAN_BUDGET_MS) {
+        partial = true;
+        break;
+      }
       const s = scoreRow(p, query);
       if (s === 0) continue;
       if (category !== "all" && p.category !== category) continue;
@@ -473,7 +483,7 @@ export const searchProducts = async (
     if (spec && spec.projectCount > 0) base.projectCount = spec.projectCount;
     return base;
   });
-  return {
+  const result: SearchResult = {
     items,
     total: matched.length,
     offset,
@@ -481,6 +491,8 @@ export const searchProducts = async (
     elapsedMs: Date.now() - t0,
     cacheAgeMs: Date.now() - c.ts,
   };
+  if (partial) result.partial = true;
+  return result;
 };
 
 /**
