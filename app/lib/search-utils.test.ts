@@ -205,3 +205,91 @@ describe("scoreProduct — relevance suite", () => {
     }
   });
 });
+
+// ── P0 fix: hyphen tolerance, metachars, edge cases ──────────────────
+
+describe("scoreProduct — SKU hyphen tolerance", () => {
+  it("SKU without hyphens K13448CP matches K-13448-CP via joined skuPart", () => {
+    const results = rank("K13448CP");
+    expect(results[0]).toBe(PRODUCTS.kohlerFaucet);
+  });
+
+  it("SKU with spaces K 13448 CP matches K-13448-CP", () => {
+    const results = rank("K 13448 CP");
+    expect(results[0]).toBe(PRODUCTS.kohlerFaucet);
+  });
+
+  it("SKU prefix without hyphen bri63054 matches BRI-63054LF-GL", () => {
+    const results = rank("bri63054");
+    expect(results.length).toBeGreaterThan(0);
+    expect(results[0]).toBe(PRODUCTS.brizoLitze);
+  });
+});
+
+describe("scoreProduct — regex metachars do not crash", () => {
+  const dangerous = ["a*b", "[x]", "(foo)", "a+b", "a?b", "a{2}", "a|b", "\\d+", "^start$", ".*"];
+
+  for (const q of dangerous) {
+    it(`"${q}" does not throw`, () => {
+      expect(() => scoreProduct(normalize(q), PRODUCTS.kohlerFaucet)).not.toThrow();
+    });
+  }
+
+  it("regex metachars return 0 (no match), not garbage", () => {
+    for (const q of dangerous) {
+      const score = scoreProduct(normalize(q), PRODUCTS.kohlerFaucet);
+      expect(score).toBe(0);
+    }
+  });
+});
+
+describe("scoreProduct — edge input safety", () => {
+  it("whitespace-only query returns 0", () => {
+    expect(scoreProduct("   ", PRODUCTS.kohlerFaucet)).toBe(0);
+  });
+
+  it("very long query does not throw", () => {
+    const longQ = "a".repeat(500);
+    expect(() => scoreProduct(normalize(longQ), PRODUCTS.kohlerFaucet)).not.toThrow();
+  });
+
+  it("single character query returns 0 or a score (no crash)", () => {
+    expect(() => scoreProduct(normalize("k"), PRODUCTS.kohlerFaucet)).not.toThrow();
+  });
+
+  it("unicode/diacritic query tina cobre matches description containing those terms", () => {
+    const tinaCobre = mkProduct({
+      _sku: normalize("TC-001"),
+      _name: normalize("Tina de Cobre Martillado"),
+      _brand: normalize("Castro"),
+      _skuParts: ["tc", "001", "tc001", normalize("TC-001")],
+      _desc: normalize("Tina de cobre martillado a mano"),
+    });
+    const score = scoreProduct(normalize("tina cobre"), tinaCobre);
+    expect(score).toBeGreaterThan(0);
+  });
+});
+
+describe("scoreProduct — relevance ordering snapshot", () => {
+  it("stable top-5 ordering for 'brizo' across the fixture set", () => {
+    const results = rank("brizo");
+    const top5 = results.slice(0, 5);
+    expect(top5.length).toBeGreaterThanOrEqual(2);
+    expect(top5[0]._brand).toBe(normalize("Brizo"));
+    expect(top5[1]._brand).toBe(normalize("Brizo"));
+  });
+
+  it("stable ordering: exact SKU > partial SKU > brand-only", () => {
+    const exactScore = scoreProduct(normalize("K-13448-CP"), PRODUCTS.kohlerFaucet);
+    const partialScore = scoreProduct(normalize("13448"), PRODUCTS.kohlerFaucet);
+    const brandScore = scoreProduct(normalize("kohler"), PRODUCTS.kohlerFaucet);
+    expect(exactScore).toBeGreaterThan(partialScore);
+    expect(partialScore).toBeGreaterThan(brandScore);
+  });
+
+  it("brand+model is more specific than brand alone", () => {
+    const brandOnly = scoreProduct(normalize("brizo"), PRODUCTS.brizoLitze);
+    const brandModel = scoreProduct(normalize("brizo litze"), PRODUCTS.brizoLitze);
+    expect(brandModel).toBeGreaterThan(brandOnly);
+  });
+});

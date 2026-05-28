@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import MiniSearch from "minisearch";
 import NextLink from "next/link";
-import { Search, ArrowUpRight, FileText, Tag, Package, X, Loader2 } from "lucide-react";
+import { Search, ArrowUpRight, FileText, Tag, Package, X, Loader2, AlertTriangle } from "lucide-react";
 import type { SearchDoc, SearchIndexPayload } from "@/app/lib/search-index";
 import { toSlug } from "@/app/lib/slug";
 import { pdpPath } from "@/app/lib/pdp-href";
@@ -49,6 +49,8 @@ const COPY = {
     keyboardHint: "↑↓ to navigate · ↵ to open · Esc to close",
     catalogLink: "Browse full catalog",
     loading: "Loading…",
+    productSearchUnavailable: "Product search temporarily unavailable",
+    productSearchRetry: "Retry",
   },
   es: {
     placeholder: "Buscar productos, marcas o artículos…",
@@ -60,6 +62,8 @@ const COPY = {
     keyboardHint: "↑↓ navegar · ↵ abrir · Esc cerrar",
     catalogLink: "Explorar catálogo completo",
     loading: "Cargando…",
+    productSearchUnavailable: "Búsqueda de productos temporalmente no disponible",
+    productSearchRetry: "Reintentar",
   },
 };
 
@@ -114,6 +118,7 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
   const [hasFetched, setHasFetched] = useState(false);
   const [productResults, setProductResults] = useState<ProductHit[]>([]);
   const [productLoading, setProductLoading] = useState(false);
+  const [productError, setProductError] = useState<string | null>(null);
   const productReqRef = useRef(0);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const resultsRef = useRef<HTMLDivElement | null>(null);
@@ -145,31 +150,41 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
     const trimmed = query.trim();
     if (trimmed.length < MIN_QUERY) {
       setProductResults([]);
+      setProductError(null);
       return;
     }
     setProductResults([]);
     setProductLoading(true);
+    setProductError(null);
     const myReq = ++productReqRef.current;
     const timer = setTimeout(async () => {
       try {
         const p = new URLSearchParams({ q: trimmed, limit: "6" });
-        const data = await cachedFetch<{ items?: ProductHit[] }>(`/api/products/search?${p}`);
+        const data = await cachedFetch<{ items?: ProductHit[]; error?: string }>(`/api/products/search?${p}`);
         if (myReq !== productReqRef.current) return;
-        setProductResults(
-          (data.items ?? []).slice(0, 6).map((item) => ({
-            id: item.id,
-            name: item.name,
-            sku: item.sku,
-            brand: item.brand,
-            category: item.category,
-            listPrice: item.listPrice,
-            currency: item.currency,
-            imageSrc: item.imageSrc,
-            slug: item.slug,
-          }))
-        );
-      } catch {
-        if (myReq === productReqRef.current) setProductResults([]);
+        if (data.error) {
+          setProductError(data.error);
+          setProductResults([]);
+        } else {
+          setProductResults(
+            (data.items ?? []).slice(0, 6).map((item) => ({
+              id: item.id,
+              name: item.name,
+              sku: item.sku,
+              brand: item.brand,
+              category: item.category,
+              listPrice: item.listPrice,
+              currency: item.currency,
+              imageSrc: item.imageSrc,
+              slug: item.slug,
+            }))
+          );
+        }
+      } catch (err) {
+        if (myReq === productReqRef.current) {
+          setProductResults([]);
+          setProductError(err instanceof Error ? err.message : "Search failed");
+        }
       } finally {
         if (myReq === productReqRef.current) setProductLoading(false);
       }
@@ -181,6 +196,7 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
     if (open) {
       setQuery("");
       setProductResults([]);
+      setProductError(null);
       setActiveIndex(0);
       const id = window.setTimeout(() => inputRef.current?.focus(), 50);
       return () => window.clearTimeout(id);
@@ -211,6 +227,10 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
       });
   }, [index, query, isEs]);
 
+  // Merge results: products always come first (section-based ordering).
+  // Within each section, items are ordered by their own relevance.
+  // This prevents articles from outranking products when the user typed
+  // a product-oriented query like "tina cobre" or a SKU.
   const allResults = useMemo<DisplayResult[]>(() => {
     const productDisplayResults: DisplayResult[] = productResults.map((p, idx) => ({
       id: `product:${p.id}`,
@@ -218,13 +238,19 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
       slug: p.id,
       name: p.name || p.sku,
       subtitle: [p.brand, p.sku].filter(Boolean).join(" · "),
-
       hrefSuffix: pdpPath({ slug: p.slug, name: p.name, sku: p.sku, category: p.category }),
-      score: Math.max(0.5, 5 - idx * 0.6),
+      score: 100 + (6 - idx),
     }));
-    return [...productDisplayResults, ...brandArticleResults].sort(
-      (a, b) => b.score - a.score
-    );
+
+    const brands = brandArticleResults.filter((r) => r.type === "brand");
+    const articles = brandArticleResults.filter((r) => r.type === "article");
+
+    // Section order: products → brands → articles
+    // Scores within each section preserve relative ordering from their source.
+    const brandDisplay = brands.map((r, idx) => ({ ...r, score: 50 + (8 - idx) }));
+    const articleDisplay = articles.map((r, idx) => ({ ...r, score: 10 + (8 - idx) }));
+
+    return [...productDisplayResults, ...brandDisplay, ...articleDisplay];
   }, [productResults, brandArticleResults]);
 
   const totalCount = allResults.length;
@@ -244,6 +270,13 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
         e.preventDefault();
         setActiveIndex((i) => Math.max(0, i - 1));
       } else if (e.key === "Enter") {
+        // If products are still loading, go to catalog search page instead of
+        // falling through to an article result that happened to load faster.
+        if (productLoading && hasQuery) {
+          window.location.href = `/${locale}/shop/catalog?q=${encodeURIComponent(query.trim())}`;
+          onClose();
+          return;
+        }
         if (hasQuery && totalCount === 0) {
           window.location.href = `/${locale}/shop/catalog?q=${encodeURIComponent(query.trim())}`;
           onClose();
@@ -263,7 +296,7 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose, allResults, activeIndex, locale, totalCount, hasQuery, query]);
+  }, [open, onClose, allResults, activeIndex, locale, totalCount, hasQuery, query, productLoading]);
 
   useEffect(() => {
     setActiveIndex(0);
@@ -304,6 +337,8 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
     brand: Tag,
     article: FileText,
   };
+
+  const showResults = totalCount > 0 || (hasQuery && productError);
 
   return (
     <div
@@ -370,7 +405,7 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
                 {t.catalogLink} →
               </NextLink>
             </div>
-          ) : totalCount === 0 && !isSearching ? (
+          ) : !showResults && !isSearching ? (
             <div className="px-5 py-8 text-center">
               <p className="font-body text-sm text-dash-text-secondary/70">{t.noResults}</p>
               <NextLink
@@ -381,7 +416,7 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
                 {t.seeAll}
               </NextLink>
             </div>
-          ) : totalCount === 0 && isSearching ? (
+          ) : !showResults && isSearching ? (
             <div className="px-5 py-8 text-center">
               <Loader2 className="w-5 h-5 text-brand-stone/60 mx-auto animate-spin" />
             </div>
@@ -389,6 +424,35 @@ const SearchPalette = ({ locale, open, onClose }: SearchPaletteProps) => {
             <>
               {SECTION_ORDER.map((type) => {
                 const rows = grouped[type];
+
+                // Product section: show error banner when API failed
+                if (type === "product" && rows.length === 0 && hasQuery && productError) {
+                  return (
+                    <div key={type}>
+                      <p className="px-5 pt-4 pb-2 font-body text-[10px] tracking-[0.2em] uppercase text-dash-text-secondary/60">
+                        {SECTION_LABELS[type]}
+                      </p>
+                      <div className="mx-5 mb-3 px-3 py-2 text-[11px] rounded border border-amber-500/40 bg-amber-500/10 text-amber-800 flex items-center justify-between gap-3">
+                        <span className="flex items-center gap-1.5">
+                          <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                          {t.productSearchUnavailable}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setProductError(null);
+                            setQuery((prev) => prev + " ");
+                            requestAnimationFrame(() => setQuery((prev) => prev.trimEnd()));
+                          }}
+                          className="px-2 py-0.5 text-[10px] font-medium border border-amber-500/40 rounded hover:bg-amber-500/10 cursor-pointer shrink-0"
+                        >
+                          {t.productSearchRetry}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
                 if (rows.length === 0) return null;
                 const Icon = SECTION_ICONS[type];
                 return (
