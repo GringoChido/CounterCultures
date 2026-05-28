@@ -1,3 +1,5 @@
+export const runtime = "nodejs";
+
 import type { Metadata } from "next";
 import { readdirSync } from "node:fs";
 import path from "node:path";
