@@ -12,6 +12,7 @@ import {
   LayoutGrid,
   List,
   Camera,
+  AlertTriangle,
 } from "lucide-react";
 import type { ProductFull, ProductFullWithSignals, BrandCount } from "@/app/lib/products-full";
 import { pdpHref } from "@/app/lib/pdp-href";
@@ -88,6 +89,11 @@ const T = {
     resultsFound: (n: number) =>
       `${n.toLocaleString()} result${n === 1 ? "" : "s"}`,
     noResults: "No products match these filters.",
+    noResultsFor: (q: string) => `No results for "${q}"`,
+    clearSearch: "Clear search",
+    browseFullCatalog: "Browse full catalog",
+    searchUnavailable: "Search is temporarily unavailable",
+    retry: "Retry",
     brandFilterChip: "Brand",
     categoryFilterChip: "Category",
     page: (cur: number, tot: number) =>
@@ -134,6 +140,11 @@ const T = {
     resultsFound: (n: number) =>
       `${n.toLocaleString()} resultado${n === 1 ? "" : "s"}`,
     noResults: "Sin resultados. Prueba otros filtros.",
+    noResultsFor: (q: string) => `Sin resultados para "${q}"`,
+    clearSearch: "Limpiar búsqueda",
+    browseFullCatalog: "Explorar catálogo completo",
+    searchUnavailable: "La búsqueda no está disponible temporalmente",
+    retry: "Reintentar",
     brandFilterChip: "Marca",
     categoryFilterChip: "Categoría",
     page: (cur: number, tot: number) =>
@@ -667,18 +678,21 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
             {fetchError && (
               <div
                 role="alert"
-                className="px-4 py-3 rounded border border-red-500/40 bg-red-500/10 text-red-700 text-sm flex items-center justify-between gap-3"
+                className="px-4 py-3 rounded border border-amber-500/40 bg-amber-500/10 text-amber-800 text-sm flex items-center justify-between gap-3"
               >
-                <span>{fetchError}</span>
+                <span className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  {t.searchUnavailable}
+                </span>
                 <button
                   type="button"
                   onClick={() => {
                     setOffset((o) => o);
                     setFetchError(null);
                   }}
-                  className="px-3 py-1 text-xs font-medium border border-red-500/40 rounded hover:bg-red-500/10 cursor-pointer"
+                  className="px-3 py-1 text-xs font-medium border border-amber-500/40 rounded hover:bg-amber-500/10 cursor-pointer shrink-0"
                 >
-                  Retry
+                  {t.retry}
                 </button>
               </div>
             )}
@@ -711,8 +725,28 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
                     ? locale === "es"
                       ? "Cargando catálogo — los datos de producto están siendo configurados."
                       : "Catalog loading — product data is being configured."
-                    : t.noResults}
+                    : query.trim().length >= MIN_QUERY
+                      ? t.noResultsFor(query.trim())
+                      : t.noResults}
                 </p>
+                {hasFilters && (
+                  <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                    <button
+                      type="button"
+                      onClick={clearAll}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-body font-medium border border-brand-stone/20 bg-dash-surface text-brand-charcoal hover:bg-brand-linen transition-colors cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      {t.clearSearch}
+                    </button>
+                    <a
+                      href={`/${locale}/shop/catalog`}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-body font-medium text-brand-copper hover:text-brand-charcoal transition-colors"
+                    >
+                      {t.browseFullCatalog} →
+                    </a>
+                  </div>
+                )}
               </div>
             ) : needsAccess ? (
               <div className="space-y-6">
