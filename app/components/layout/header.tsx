@@ -216,9 +216,9 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
             })}
           </div>
 
-          {/* Right side — Search + WhatsApp + CTA + Mobile toggle */}
+          {/* Right side — CTA + Mobile toggle */}
           <div className="flex items-center gap-1 sm:gap-2">
-            {/* Search trigger — visible bar on desktop, icon on mobile */}
+            {/* Search trigger hidden — uncomment to restore public storefront search
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
@@ -237,6 +237,7 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
                 ⌘K
               </kbd>
             </button>
+            */}
 
             <NextLink
               href="/account/sign-in"
@@ -471,11 +472,13 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
 
     </header>
 
+      {/* SearchPalette hidden from public storefront — uncomment to restore
       <SearchPalette
         locale={lang}
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
       />
+      */}
 
       <CartDrawer locale={lang} />
     </>
