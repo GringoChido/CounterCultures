@@ -52,3 +52,21 @@
 # Pattern matches the other three scheduled functions.
 [functions."keepalive"]
   schedule = "*/3 * * * *"
+
+# Non-localed public paths redirect to the default locale (en).
+# Complements the middleware short-circuit so requests arriving without
+# a locale prefix still resolve to a valid route.
+[[redirects]]
+  from = "/shop/*"
+  to = "/en/shop/:splat"
+  status = 302
+
+[[redirects]]
+  from = "/brands/*"
+  to = "/en/brands/:splat"
+  status = 302
+
+[[redirects]]
+  from = "/insights/*"
+  to = "/en/insights/:splat"
+  status = 302
