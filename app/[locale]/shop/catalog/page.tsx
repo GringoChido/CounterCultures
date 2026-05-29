@@ -152,7 +152,19 @@ const CatalogPage = async ({ params, searchParams }: CatalogPageProps) => {
         inShowroomIds: showroomIds && showroomIds.size > 0 ? showroomIds : undefined,
       });
     }
-  } catch { /* client-side fetch handles it */ }
+  } catch (err) {
+    console.error(
+      JSON.stringify({
+        where: "shop/catalog/page",
+        urlQuery,
+        urlBrand,
+        isFiltered,
+        message: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
+      })
+    );
+    // Fall through — CatalogView handles client-side fetch as fallback
+  }
 
   const saleableBrandCount = brandCounts.length || STATS_FALLBACK.brandCount;
   const brandImageMap = buildBrandImageMap(brandCounts.map((b) => b.brand));
