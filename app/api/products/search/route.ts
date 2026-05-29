@@ -115,7 +115,17 @@ export const GET = async (req: NextRequest) => {
     res.headers.set("Cache-Control", "private, no-store");
     return res;
   } catch (err) {
-    console.error("[products/search] error:", err);
+    console.error(
+      JSON.stringify({
+        where: "api/products/search",
+        q,
+        brand,
+        category,
+        ua: req.headers.get("user-agent"),
+        message: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
+      })
+    );
     const message = err instanceof Error ? err.message : "Search failed";
     return NextResponse.json({ error: message }, { status: 500 });
   }
