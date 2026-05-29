@@ -35,60 +35,78 @@ const isProtectedAccountPath = (pathname: string) =>
 export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Dashboard routes bypass next-intl entirely (they live outside [locale])
-  if (isDashboardPath(pathname)) {
-    if (PUBLIC_DASHBOARD_PATHS.has(pathname)) {
-      return NextResponse.next();
-    }
-    if (!(await validateSessionEdge(req))) {
-      const loginUrl = new URL("/dashboard/login", req.url);
-      return NextResponse.redirect(loginUrl);
-    }
-    return NextResponse.next();
-  }
-
-  // Customer account pages bypass next-intl (separate from [locale])
-  if (isAccountPath(pathname)) {
-    if (PUBLIC_ACCOUNT_PATHS.has(pathname)) {
-      return NextResponse.next();
-    }
-    if (isProtectedAccountPath(pathname)) {
-      if (!(await validateSessionEdge(req))) {
-        const signInUrl = new URL("/account/sign-in", req.url);
-        signInUrl.searchParams.set("callbackUrl", pathname);
-        return NextResponse.redirect(signInUrl);
+  try {
+    // Dashboard routes bypass next-intl entirely (they live outside [locale])
+    if (isDashboardPath(pathname)) {
+      if (PUBLIC_DASHBOARD_PATHS.has(pathname)) {
+        return NextResponse.next();
       }
+      if (!(await validateSessionEdge(req))) {
+        const loginUrl = new URL("/dashboard/login", req.url);
+        return NextResponse.redirect(loginUrl);
+      }
+      return NextResponse.next();
     }
-    return NextResponse.next();
-  }
 
-  // NextAuth's own routes must always be reachable (staff + customer).
-  if (pathname.startsWith("/api/auth/")) {
-    return NextResponse.next();
-  }
-
-  // Auth check for protected API routes
-  if (isProtectedApi(pathname)) {
-    if (!(await validateSessionEdge(req))) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Customer account pages bypass next-intl (separate from [locale])
+    if (isAccountPath(pathname)) {
+      if (PUBLIC_ACCOUNT_PATHS.has(pathname)) {
+        return NextResponse.next();
+      }
+      if (isProtectedAccountPath(pathname)) {
+        if (!(await validateSessionEdge(req))) {
+          const signInUrl = new URL("/account/sign-in", req.url);
+          signInUrl.searchParams.set("callbackUrl", pathname);
+          return NextResponse.redirect(signInUrl);
+        }
+      }
+      return NextResponse.next();
     }
+
+    // NextAuth's own routes must always be reachable (staff + customer).
+    if (pathname.startsWith("/api/auth/")) {
+      return NextResponse.next();
+    }
+
+    // Auth check for protected API routes
+    if (isProtectedApi(pathname)) {
+      if (!(await validateSessionEdge(req))) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      return NextResponse.next();
+    }
+
+    // Skip middleware for other API routes, static files, etc.
+    if (
+      pathname.startsWith("/api") ||
+      pathname.startsWith("/_next") ||
+      pathname.startsWith("/_vercel") ||
+      pathname === "/how-it-works" ||
+      pathname.startsWith("/this-week") ||
+      pathname.includes(".")
+    ) {
+      return NextResponse.next();
+    }
+
+    // Already-localed public pages skip intlMiddleware entirely.
+    // intlMiddleware only redirects non-localed URLs to the default locale;
+    // if the URL already has /en/ or /es/, pass through immediately so the
+    // edge function does not block waiting for the slow upstream handler.
+    if (/^\/(en|es)(\/|$)/.test(pathname)) {
+      return NextResponse.next();
+    }
+
+    // i18n middleware for public pages (non-localed URLs only at this point)
+    return intlMiddleware(req);
+  } catch (err) {
+    console.error(JSON.stringify({
+      where: "middleware",
+      pathname: req.nextUrl.pathname,
+      message: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+    }));
     return NextResponse.next();
   }
-
-  // Skip middleware for other API routes, static files, etc.
-  if (
-    pathname.startsWith("/api") ||
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/_vercel") ||
-    pathname === "/how-it-works" ||
-    pathname.startsWith("/this-week") ||
-    pathname.includes(".")
-  ) {
-    return NextResponse.next();
-  }
-
-  // i18n middleware for public pages
-  return intlMiddleware(req);
 }
 
 export const config = {
