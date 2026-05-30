@@ -45,7 +45,7 @@ interface ProbeResult {
 
 const SEARCH_TARGET = "/api/products/search?q=a&limit=1";
 
-const TIMEOUT_MS = 5000;
+const TIMEOUT_MS = 25_000;
 
 const probe = async (baseUrl: string, path: string): Promise<ProbeResult> => {
   const t0 = Date.now();
