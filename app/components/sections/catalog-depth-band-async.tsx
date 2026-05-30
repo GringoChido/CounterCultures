@@ -1,15 +1,13 @@
 import { CatalogDepthBand } from "./catalog-depth-band";
 import { BuyerHub } from "./buyer-hub";
-import { getCatalogStats } from "@/app/lib/products-full";
 
 interface CatalogDepthBandAsyncProps {
   locale: "en" | "es";
 }
 
-const CatalogDepthBandAsync = async ({ locale }: CatalogDepthBandAsyncProps) => {
-  const stats = await getCatalogStats().catch(() => ({ total: 0, brandCount: 0 }));
+const CatalogDepthBandAsync = ({ locale }: CatalogDepthBandAsyncProps) => {
   return (
-    <CatalogDepthBand locale={locale} totalCatalog={stats.total}>
+    <CatalogDepthBand locale={locale} totalCatalog={354_449}>
       <BuyerHub locale={locale} />
     </CatalogDepthBand>
   );

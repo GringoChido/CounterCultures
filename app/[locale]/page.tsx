@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import ReactDOM from "react-dom";
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
@@ -93,11 +92,6 @@ const HomePage = async ({ params }: HomePageProps) => {
     as: "image",
     fetchPriority: "high",
   });
-
-  // featuredBrands and the catalog-depth band both read from Sheets/cache that
-  // can cold-start at ~500-1500ms on a fresh Lambda. Both are streamed via
-  // <Suspense> below so the rest of the page renders without waiting — TTFB
-  // stays fast and these sections paint as their data arrives.
 
   // AEO: FAQ structured data — answers common questions AI assistants surface
   const faqJsonLd = {
@@ -221,13 +215,9 @@ const HomePage = async ({ params }: HomePageProps) => {
       <Header />
       <main id="main" tabIndex={-1}>
         <Hero locale={lang} />
-        <Suspense fallback={null}>
-          <CatalogDepthBandAsync locale={lang} />
-        </Suspense>
+        <CatalogDepthBandAsync locale={lang} />
         <ShopByRoom locale={lang} />
-        <Suspense fallback={null}>
-          <FeaturedBrandsBandAsync locale={lang} />
-        </Suspense>
+        <FeaturedBrandsBandAsync locale={lang} />
         <HospitalityTeaser locale={lang} />
         <HowItWorksBand
           locale={lang}
