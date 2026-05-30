@@ -10,7 +10,7 @@ import { ArtisanProfiles } from "@/app/components/sections/artisan-profiles";
 import {
   getCatalogBrands,
   getCatalogStats,
-  searchProducts,
+  searchProductsIndexed,
   type SearchResult,
 } from "@/app/lib/products-full";
 import { formatCatalogCount } from "@/app/lib/format-catalog-count";
@@ -145,7 +145,7 @@ const CatalogPage = async ({ params, searchParams }: CatalogPageProps) => {
       ]);
       brandCounts = bc;
       stats = st;
-      initialResult = await searchProducts({
+      initialResult = await searchProductsIndexed({
         sort: "most_specified",
         limit: 60,
         specScores: specScores && specScores.size > 0 ? specScores : undefined,

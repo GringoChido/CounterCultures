@@ -9,7 +9,7 @@ import { ShopCatalog } from "@/app/[locale]/shop/shop-catalog";
 import { getProductsByBrand } from "@/app/lib/sheets";
 import { getBrandBySlug, getBrands } from "@/app/lib/brand-kit-sheets";
 import { getFallbackBrand, FALLBACK_BRAND_META } from "@/app/lib/brand-fallbacks";
-import { getBrandSummary, searchProducts, catalogToProduct } from "@/app/lib/products-full";
+import { getBrandSummary, searchProductsIndexed, catalogToProduct } from "@/app/lib/products-full";
 import { pdpUrl } from "@/app/lib/pdp-href";
 import { articles, pillarColors, pillarLabels } from "@/app/lib/articles";
 import { Shield, Wrench, HeadphonesIcon, ArrowUpRight, Package } from "lucide-react";
@@ -114,7 +114,7 @@ const BrandPage = async ({ params }: BrandPageProps) => {
   // safe because this page is ISR-cached (revalidate=300), so the heavy
   // snapshot load happens at build/revalidation, not per user request.
   if (products.length === 0 && catalogSummary.count > 0) {
-    const catalogResult = await searchProducts({
+    const catalogResult = await searchProductsIndexed({
       brand: brand.name,
       saleOnly: true,
       limit: 500,
