@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import {
   searchProducts,
   searchProductsIndexed,
+  getCache,
   type ProductCategory,
   type SearchSort,
   type SearchResult,
@@ -82,9 +83,15 @@ export const GET = async (req: NextRequest) => {
     }
 
     const searchFn =
-      process.env.PRODUCT_SEARCH_BACKEND === "indexed"
-        ? searchProductsIndexed
-        : searchProducts;
+      process.env.PRODUCT_SEARCH_BACKEND === "legacy"
+        ? searchProducts
+        : searchProductsIndexed;
+
+    // Pre-hydrate cache so cold-start time doesn't eat the search timeout.
+    // getCache() is a no-op when warm (~0ms); on cold start it loads the
+    // 354K-product snapshot (~3-9s on Netlify). Without this, the 6s race
+    // timer includes hydration and search always times out on cold Lambdas.
+    await getCache();
 
     const t0 = Date.now();
     const resultOrTimeout = await raceTimeout<SearchResult | TimeoutSentinel>(

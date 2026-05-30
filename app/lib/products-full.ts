@@ -322,7 +322,7 @@ const beginLoad = (): Promise<Cache> => {
 //   - No cache + sheet configured → block on first load (cold-start cost
 //     paid once per Lambda).
 //   - No cache + no SHEET_ID (e.g. build) → return empty cache.
-const getCache = async (): Promise<Cache> => {
+export const getCache = async (): Promise<Cache> => {
   if (cache) {
     if (Date.now() - cache.ts >= TTL_MS && SHEET_ID) {
       // Fire-and-forget; result is captured into `cache` by beginLoad's then.

@@ -38,33 +38,31 @@ const HeroSearch = ({ locale, catalogSize }: HeroSearchProps) => {
     router.push(target);
   };
 
-  // Search form hidden from public storefront — uncomment to restore
-  // return (
-  //   <form onSubmit={submit} className="mt-8 max-w-2xl">
-  //     <div className="flex items-stretch border border-brand-stone/25 bg-dash-surface shadow-sm">
-  //       <div className="flex items-center pl-4 pr-1 text-dash-text-secondary">
-  //         <Search className="w-5 h-5" />
-  //       </div>
-  //       <input
-  //         type="text"
-  //         value={q}
-  //         onChange={(e) => setQ(e.target.value)}
-  //         placeholder={t.placeholder}
-  //         className="flex-1 min-w-0 py-4 px-3 text-base font-body text-brand-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 placeholder:text-dash-text-secondary/60"
-  //       />
-  //       <button
-  //         type="submit"
-  //         className="px-5 sm:px-7 bg-brand-copper text-white font-body font-semibold text-sm tracking-wide hover:bg-brand-copper/90 transition-colors whitespace-nowrap"
-  //       >
-  //         {t.cta} →
-  //       </button>
-  //     </div>
-  //     <p className="mt-2 text-[11px] font-body text-dash-text-secondary">
-  //       {t.hint(formatCatalogCount(catalogSize, locale))}
-  //     </p>
-  //   </form>
-  // );
-  return null;
+  return (
+    <form onSubmit={submit} className="mt-8 max-w-2xl">
+      <div className="flex items-stretch border border-brand-stone/25 bg-dash-surface shadow-sm">
+        <div className="flex items-center pl-4 pr-1 text-dash-text-secondary">
+          <Search className="w-5 h-5" />
+        </div>
+        <input
+          type="text"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder={t.placeholder}
+          className="flex-1 min-w-0 py-4 px-3 text-base font-body text-brand-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 placeholder:text-dash-text-secondary/60"
+        />
+        <button
+          type="submit"
+          className="px-5 sm:px-7 bg-brand-copper text-white font-body font-semibold text-sm tracking-wide hover:bg-brand-copper/90 transition-colors whitespace-nowrap"
+        >
+          {t.cta} →
+        </button>
+      </div>
+      <p className="mt-2 text-[11px] font-body text-dash-text-secondary">
+        {t.hint(formatCatalogCount(catalogSize, locale))}
+      </p>
+    </form>
+  );
 };
 
 export { HeroSearch };
