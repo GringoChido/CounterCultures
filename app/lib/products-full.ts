@@ -13,6 +13,7 @@
  * substring scoring (sku-prefix > sku-contains > name-prefix > name-contains
  * > brand-contains) is both faster and more correct.
  */
+import { cache } from "react";
 import { GoogleAuth } from "google-auth-library";
 import { sheets as sheetsApi } from "@googleapis/sheets";
 import { getGooglePrivateKey } from "./google-private-key";
@@ -517,13 +518,17 @@ export const getCategoryCounts = async (): Promise<
   return (await getCache()).categoryCounts;
 };
 
-export const getProductById = async (
-  id: string
-): Promise<ProductFull | null> => {
-  const c = await getCache();
-  const p = c.products.find((x) => x.id === id);
-  return p ? stripIndex(p) : null;
-};
+// Wrapped in React.cache() for per-request dedup. The PDP's generateMetadata
+// and the page render both look up the same product by id/slug — without
+// this, the cache lookup runs twice per render. Cache is request-scoped:
+// fresh between requests, deduped within.
+export const getProductById = cache(
+  async (id: string): Promise<ProductFull | null> => {
+    const c = await getCache();
+    const p = c.products.find((x) => x.id === id);
+    return p ? stripIndex(p) : null;
+  },
+);
 
 /** Bulk SKU lookup — returns a Map<UPPER_SKU, ProductFull> for the SKUs
  *  that exist in the catalog. Used by the PO generator's stock check so
@@ -803,59 +808,65 @@ const ensureSlugIndex = async (): Promise<Map<string, string>> => {
   return idx;
 };
 
-export const getProductBySlug = async (
-  slug: string
-): Promise<ProductFull | null> => {
-  const idx = await ensureSlugIndex();
-  const id = idx.get(slug);
-  if (id) return getProductById(id);
+// Wrapped in React.cache() — see comment on getProductById. The PDP page
+// calls this in generateMetadata AND in the page body for the same slug.
+export const getProductBySlug = cache(
+  async (slug: string): Promise<ProductFull | null> => {
+    const idx = await ensureSlugIndex();
+    const id = idx.get(slug);
+    if (id) return getProductById(id);
 
-  const c = await getCache();
-  const norm = slug.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    const c = await getCache();
+    const norm = slug.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
-  // Fallback 1: match by SKU
-  for (const p of c.products) {
-    if (p._sku === norm || p.sku.toLowerCase() === slug.toLowerCase()) {
-      return stripIndex(p);
-    }
-  }
-
-  // Fallback 2: slug contains the SKU suffix — check if any product's
-  // toSlug output starts with the same prefix (handles minor slug drift)
-  for (const p of c.products) {
-    if (norm.endsWith(p._sku) && norm.length > p._sku.length) {
-      const computed = toSlug(p.name, p.sku);
-      if (computed === norm || norm.startsWith(computed.slice(0, 20))) {
+    // Fallback 1: match by SKU
+    for (const p of c.products) {
+      if (p._sku === norm || p.sku.toLowerCase() === slug.toLowerCase()) {
         return stripIndex(p);
       }
     }
-  }
 
-  // Fallback 3: CRM sheet products (artisanal / curated items not in Odoo)
-  const { getProductBySlug: getCrmProduct } = await import("./sheets");
-  const crm = await getCrmProduct(slug);
-  if (crm) return crmToProductFull(crm);
+    // Fallback 2: slug contains the SKU suffix — check if any product's
+    // toSlug output starts with the same prefix (handles minor slug drift)
+    for (const p of c.products) {
+      if (norm.endsWith(p._sku) && norm.length > p._sku.length) {
+        const computed = toSlug(p.name, p.sku);
+        if (computed === norm || norm.startsWith(computed.slice(0, 20))) {
+          return stripIndex(p);
+        }
+      }
+    }
 
-  return null;
-};
+    // Fallback 3: CRM sheet products (artisanal / curated items not in Odoo)
+    const { getProductBySlug: getCrmProduct } = await import("./sheets");
+    const crm = await getCrmProduct(slug);
+    if (crm) return crmToProductFull(crm);
 
-export const getRelatedProducts = async (
-  category: ProductCategory,
-  excludeId: string,
-  limit = 8
-): Promise<ProductFull[]> => {
-  const c = await getCache();
-  const out: ProductFull[] = [];
-  for (const p of c.products) {
-    if (p.id === excludeId) continue;
-    if (p.category !== category) continue;
-    if (!p.saleOk || !p.active) continue;
-    if (!p.imageSrc) continue;
-    out.push(stripIndex(p));
-    if (out.length >= limit) break;
-  }
-  return out;
-};
+    return null;
+  },
+);
+
+// Wrapped in React.cache() — same per-request dedup. Same (category,
+// excludeId, limit) tuple from the same PDP renders only once.
+export const getRelatedProducts = cache(
+  async (
+    category: ProductCategory,
+    excludeId: string,
+    limit = 8,
+  ): Promise<ProductFull[]> => {
+    const c = await getCache();
+    const out: ProductFull[] = [];
+    for (const p of c.products) {
+      if (p.id === excludeId) continue;
+      if (p.category !== category) continue;
+      if (!p.saleOk || !p.active) continue;
+      if (!p.imageSrc) continue;
+      out.push(stripIndex(p));
+      if (out.length >= limit) break;
+    }
+    return out;
+  },
+);
 
 export const getProductSlug = (p: ProductFull): string => toSlug(p.name, p.sku);
 
