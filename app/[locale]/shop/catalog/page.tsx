@@ -126,31 +126,16 @@ const CatalogPage = async ({ params, searchParams }: CatalogPageProps) => {
   let initialResult: SearchResult | null = null;
 
   try {
-    if (isFiltered) {
-      // Instant shell: skip searchProducts so the page renders immediately.
-      // CatalogView fetches products client-side with a skeleton placeholder.
+    // Always render the shell immediately — CatalogView fetches products
+    // client-side. Server-side search was crashing Netlify functions because
+    // hydrating 354K products exceeds the Lambda memory/time budget.
+    {
       const [bc, st] = await Promise.all([
         raceWithFallback(getCatalogBrands(), 2000, []),
         raceWithFallback(getCatalogStats(), 1000, STATS_FALLBACK),
       ]);
       brandCounts = bc;
       stats = st;
-    } else {
-      // Default landing: all four fetches in parallel
-      const [bc, st, specScores, showroomIds] = await Promise.all([
-        raceWithFallback(getCatalogBrands(), 2000, []),
-        raceWithFallback(getCatalogStats(), 1000, STATS_FALLBACK),
-        raceWithFallback(getMostSpecifiedScores(), 2000, null),
-        raceWithFallback(getInShowroomIds(), 2000, null),
-      ]);
-      brandCounts = bc;
-      stats = st;
-      initialResult = await searchProductsIndexed({
-        sort: "most_specified",
-        limit: 60,
-        specScores: specScores && specScores.size > 0 ? specScores : undefined,
-        inShowroomIds: showroomIds && showroomIds.size > 0 ? showroomIds : undefined,
-      });
     }
   } catch (err) {
     console.error(
