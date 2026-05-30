@@ -13,6 +13,23 @@ const nextConfig: NextConfig = {
         ? { exclude: ["error", "warn"] }
         : false,
   },
+  // Auto-tree-shake named imports from heavy packages. Without this, a single
+  // `import { Search } from "lucide-react"` pulls the full package as a side
+  // effect. With it, only the icons/utilities actually used ship to the client.
+  // Safe to add for any package that exports named symbols cleanly.
+  experimental: {
+    optimizePackageImports: [
+      "lucide-react",
+      "framer-motion",
+      "recharts",
+      "date-fns",
+      "@dnd-kit/core",
+      "@dnd-kit/sortable",
+      "@dnd-kit/utilities",
+      "@tanstack/react-table",
+      "sonner",
+    ],
+  },
   // Server-only deps that should NOT be inlined into the Lambda handler.
   // Netlify's @netlify/plugin-nextjs traces these from node_modules at
   // runtime instead. Without this, googleapis chain gets inlined and
