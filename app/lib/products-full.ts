@@ -39,6 +39,10 @@ import {
   type SnapshotProduct,
   type Cache,
 } from "./products-mapping";
+import {
+  buildInvertedIndex,
+  searchProductsIndexed as searchIndexedImpl,
+} from "./products-search-indexed";
 
 // Re-export types + constants so all existing consumers keep working.
 export { BRAND_DISPLAY_MAP };
@@ -178,9 +182,36 @@ const loadStockInBackground = (targetCache: Cache): void => {
     });
 };
 
+let indexBuildPending = false;
+
+const buildIndexInBackground = (targetCache: Cache): void => {
+  if (indexBuildPending) return;
+  indexBuildPending = true;
+  setTimeout(() => {
+    try {
+      if (cache !== targetCache) {
+        indexBuildPending = false;
+        return;
+      }
+      const { index } = buildInvertedIndex(targetCache.products);
+      if (cache === targetCache) {
+        targetCache.invertedIndex = index;
+      }
+    } catch (err) {
+      console.warn(
+        "[products-full] Index build failed:",
+        err instanceof Error ? err.message : err,
+      );
+    } finally {
+      indexBuildPending = false;
+    }
+  }, 0);
+};
+
 const EMPTY_CACHE: Cache = {
   products: [],
   byBrand: new Map(),
+  byBrandIndices: new Map(),
   brandCounts: [],
   categoryCounts: { bathroom: 0, kitchen: 0, hardware: 0 },
   ts: 0,
@@ -272,6 +303,7 @@ const beginLoad = (): Promise<Cache> => {
       cache = c;
       loading = null;
       if (cold) void loadStockInBackground(c);
+      buildIndexInBackground(c);
       return c;
     })
     .catch((err) => {
@@ -494,6 +526,14 @@ export const searchProducts = async (
   };
   if (partial) result.partial = true;
   return result;
+};
+
+export const searchProductsIndexed = async (
+  opts: SearchOptions = {},
+): Promise<SearchResult> => {
+  const result = await searchIndexedImpl(opts, getCache);
+  if (result !== null) return result;
+  return searchProducts(opts);
 };
 
 /**

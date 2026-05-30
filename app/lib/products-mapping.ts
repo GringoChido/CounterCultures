@@ -9,6 +9,7 @@
 import { normalize } from "./search-utils";
 import { toSlug } from "./slug";
 import { getProductContent } from "./product-content";
+import type { InvertedIndex } from "./products-search-indexed";
 import productImageManifest from "./product-image-manifest.json";
 
 const productImageIds: Set<string> = new Set(productImageManifest as string[]);
@@ -63,9 +64,11 @@ export interface BrandCount {
 export interface Cache {
   products: IndexedProduct[];
   byBrand: Map<string, IndexedProduct[]>;
+  byBrandIndices: Map<string, Uint32Array>;
   brandCounts: BrandCount[];
   categoryCounts: Record<ProductCategory, number>;
   ts: number;
+  invertedIndex?: InvertedIndex;
 }
 
 /**
@@ -270,15 +273,27 @@ export const buildCacheFromProducts = (
     .sort((a, b) => b.count - a.count);
 
   const byBrand = new Map<string, IndexedProduct[]>();
-  for (const p of products) {
+  const brandIdxTemp = new Map<string, number[]>();
+  for (let i = 0; i < products.length; i++) {
+    const p = products[i];
     const list = byBrand.get(p.brand);
     if (list) list.push(p);
     else byBrand.set(p.brand, [p]);
+
+    const idxList = brandIdxTemp.get(p._brand);
+    if (idxList) idxList.push(i);
+    else brandIdxTemp.set(p._brand, [i]);
+  }
+
+  const byBrandIndices = new Map<string, Uint32Array>();
+  for (const [normBrand, indices] of brandIdxTemp) {
+    byBrandIndices.set(normBrand, new Uint32Array(indices));
   }
 
   return {
     products,
     byBrand,
+    byBrandIndices,
     brandCounts,
     categoryCounts,
     ts: Date.now(),

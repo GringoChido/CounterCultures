@@ -3,6 +3,7 @@ export const runtime = "nodejs";
 import { NextResponse, type NextRequest } from "next/server";
 import {
   searchProducts,
+  searchProductsIndexed,
   type ProductCategory,
   type SearchSort,
   type SearchResult,
@@ -80,9 +81,14 @@ export const GET = async (req: NextRequest) => {
       inShowroomIds = si.size > 0 ? si : undefined;
     }
 
+    const searchFn =
+      process.env.PRODUCT_SEARCH_BACKEND === "indexed"
+        ? searchProductsIndexed
+        : searchProducts;
+
     const t0 = Date.now();
     const resultOrTimeout = await raceTimeout<SearchResult | TimeoutSentinel>(
-      searchProducts({
+      searchFn({
         q,
         brand,
         category,
