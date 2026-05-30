@@ -6,7 +6,7 @@ import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { Hero } from "@/app/components/sections/hero";
 import { ShopByRoom } from "@/app/components/sections/shop-by-room";
-import { FeaturedBrandsBand } from "@/app/components/sections/featured-brands-band";
+import { FeaturedBrandsBandAsync } from "@/app/components/sections/featured-brands-band-async";
 import { HowItWorksBand } from "@/app/components/sections/how-it-works-band";
 import { CatalogDepthBandAsync } from "@/app/components/sections/catalog-depth-band-async";
 import { FounderStory } from "@/app/components/sections/founder-story";
@@ -14,7 +14,6 @@ import { HospitalityTeaser } from "@/app/components/sections/hospitality-teaser"
 import { Testimonial } from "@/app/components/sections/testimonial";
 import { ContactCTA } from "@/app/components/sections/contact-cta";
 import { NewsletterStrip } from "@/app/components/sections/newsletter-strip";
-import { getFeaturedBrands } from "@/app/lib/featured-brands";
 
 import { SITE_URL } from "@/app/lib/seo";
 
@@ -95,11 +94,10 @@ const HomePage = async ({ params }: HomePageProps) => {
     fetchPriority: "high",
   });
 
-  // featuredBrands comes from the small Brand Kit sheet (~73 rows) so it's
-  // cheap to await on the critical path. The catalog-depth band reads the
-  // 354k-row product sheet for a single number, so we stream it via
-  // <Suspense> below — the rest of the page renders without waiting.
-  const featuredBrands = await getFeaturedBrands().catch(() => []);
+  // featuredBrands and the catalog-depth band both read from Sheets/cache that
+  // can cold-start at ~500-1500ms on a fresh Lambda. Both are streamed via
+  // <Suspense> below so the rest of the page renders without waiting — TTFB
+  // stays fast and these sections paint as their data arrives.
 
   // AEO: FAQ structured data — answers common questions AI assistants surface
   const faqJsonLd = {
@@ -227,7 +225,9 @@ const HomePage = async ({ params }: HomePageProps) => {
           <CatalogDepthBandAsync locale={lang} />
         </Suspense>
         <ShopByRoom locale={lang} />
-        <FeaturedBrandsBand locale={lang} brands={featuredBrands} />
+        <Suspense fallback={null}>
+          <FeaturedBrandsBandAsync locale={lang} />
+        </Suspense>
         <HospitalityTeaser locale={lang} />
         <HowItWorksBand
           locale={lang}
