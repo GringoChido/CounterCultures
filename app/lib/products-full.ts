@@ -13,7 +13,7 @@
  * substring scoring (sku-prefix > sku-contains > name-prefix > name-contains
  * > brand-contains) is both faster and more correct.
  */
-import { cache } from "react";
+import { cache as reactCache } from "react";
 import { GoogleAuth } from "google-auth-library";
 import { sheets as sheetsApi } from "@googleapis/sheets";
 import { getGooglePrivateKey } from "./google-private-key";
@@ -522,7 +522,7 @@ export const getCategoryCounts = async (): Promise<
 // and the page render both look up the same product by id/slug — without
 // this, the cache lookup runs twice per render. Cache is request-scoped:
 // fresh between requests, deduped within.
-export const getProductById = cache(
+export const getProductById = reactCache(
   async (id: string): Promise<ProductFull | null> => {
     const c = await getCache();
     const p = c.products.find((x) => x.id === id);
@@ -810,7 +810,7 @@ const ensureSlugIndex = async (): Promise<Map<string, string>> => {
 
 // Wrapped in React.cache() — see comment on getProductById. The PDP page
 // calls this in generateMetadata AND in the page body for the same slug.
-export const getProductBySlug = cache(
+export const getProductBySlug = reactCache(
   async (slug: string): Promise<ProductFull | null> => {
     const idx = await ensureSlugIndex();
     const id = idx.get(slug);
@@ -848,7 +848,7 @@ export const getProductBySlug = cache(
 
 // Wrapped in React.cache() — same per-request dedup. Same (category,
 // excludeId, limit) tuple from the same PDP renders only once.
-export const getRelatedProducts = cache(
+export const getRelatedProducts = reactCache(
   async (
     category: ProductCategory,
     excludeId: string,
