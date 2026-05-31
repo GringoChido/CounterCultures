@@ -404,7 +404,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
 
       <div>
         <label className="block font-body text-[10px] font-semibold tracking-[0.18em] uppercase text-dash-text-secondary mb-2">
-          {t.brand} ({brandCounts.length})
+          {t.brand}
         </label>
         <input
           type="text"
@@ -413,7 +413,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
           placeholder={t.searchBrands}
           className="w-full px-3 py-2 text-sm border border-brand-stone/20 bg-dash-surface font-body focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper focus-visible:ring-offset-2 focus:border-brand-copper"
         />
-        <div className="mt-2 max-h-[520px] overflow-y-auto border border-brand-stone/15 bg-dash-surface">
+        <div className="mt-2 border border-brand-stone/15 bg-dash-surface">
           <button
             type="button"
             onClick={() => setBrand("")}
@@ -428,48 +428,35 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
               {totalProducts.toLocaleString()}
             </span>
           </button>
-          {filteredBrands.map((b) => {
-            const maxCount = brandCounts[0]?.count || 1;
-            const pct = Math.max(4, (b.count / maxCount) * 100);
-            const theme = brandTheme(b.brand);
+          {filteredBrands.slice(0, 10).map((b) => {
             const isActive = brand === b.brand;
             return (
               <button
                 key={b.brand}
                 type="button"
                 onClick={() => setBrand(b.brand)}
-                className={`group relative w-full text-left px-3 py-2.5 text-xs flex items-center justify-between border-b border-brand-stone/10 last:border-b-0 transition-all cursor-pointer overflow-hidden ${
+                className={`w-full text-left px-3 py-2 text-xs flex items-center justify-between border-b border-brand-stone/10 last:border-b-0 transition-colors cursor-pointer ${
                   isActive
-                    ? "font-medium text-brand-charcoal"
+                    ? "bg-brand-linen font-medium text-brand-copper"
                     : "text-brand-charcoal hover:text-brand-copper"
                 }`}
               >
-                {/* Proportional bar tinted by brand color — turns the list
-                    into a chromatic ranking. Light brands (Emtek, Blanco)
-                    show as faint warm tints; dark brands (Brizo, Kohler)
-                    show as deep smokes. */}
-                <div
-                  className="absolute inset-y-0 left-0 transition-all duration-300"
-                  style={{
-                    width: `${pct}%`,
-                    backgroundColor: theme.bg + (isActive ? "73" : "26"),
-                  }}
-                />
-                <span className="relative truncate pr-2 inline-flex items-center gap-2 min-w-0">
-                  <span
-                    aria-hidden
-                    className="w-1.5 h-1.5 rounded-full shrink-0 ring-1 ring-black/10"
-                    style={{ background: theme.bg }}
-                  />
-                  <span className="truncate">{b.brand || "(blank)"}</span>
-                </span>
-                <span className="relative font-mono text-[10px] text-dash-text-secondary shrink-0 tabular-nums">
+                <span className="truncate pr-2">{b.brand}</span>
+                <span className="font-mono text-[10px] text-dash-text-secondary tabular-nums">
                   {b.count.toLocaleString()}
                 </span>
               </button>
             );
           })}
         </div>
+        <a
+          href="#brands"
+          className="mt-3 inline-flex items-center gap-1 text-xs font-body text-brand-copper hover:underline"
+        >
+          {locale === "es"
+            ? `Ver las ${brandCounts.length} marcas →`
+            : `Show all ${brandCounts.length} brands →`}
+        </a>
       </div>
     </div>
   );

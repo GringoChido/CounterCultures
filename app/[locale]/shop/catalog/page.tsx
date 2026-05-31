@@ -20,6 +20,8 @@ import {
   getInShowroomCount,
 } from "@/app/lib/catalog-signals";
 import { BrowseByDiscipline } from "@/app/components/sections/browse-by-discipline";
+import { CatalogBrandWall } from "@/app/components/sections/catalog-brand-wall";
+import { HowItWorksBand } from "@/app/components/sections/how-it-works-band";
 import { CatalogView } from "./catalog-view";
 
 export const revalidate = 1800;
@@ -250,6 +252,12 @@ const CatalogPage = async ({ params, searchParams }: CatalogPageProps) => {
           initialQuery={urlQuery}
         />
         <ArtisanProfiles locale={locale as "en" | "es"} />
+        <CatalogBrandWall
+          locale={locale as "en" | "es"}
+          brandCounts={brandCounts}
+          brandImageMap={brandImageMap}
+        />
+        <HowItWorksBand locale={locale as "en" | "es"} variant="light" />
       </main>
       <Footer />
     </>
