@@ -1,23 +1,32 @@
 "use client";
 
+import Image from "next/image";
+import { Link } from "@/app/i18n/navigation";
 import { AnimatedSection } from "@/app/components/ui/animated-section";
 
 type Locale = "en" | "es";
 
-interface ArtisanProfile {
+export interface ArtisanProfile {
   name: string;
   craft: { en: string; es: string };
+  detail: { en: string; es: string };
   image: string;
+  href: string;
 }
 
-const artisans: ArtisanProfile[] = [
+export const artisans: ArtisanProfile[] = [
   {
     name: "Mistoa",
     craft: {
       en: "Ceramic and concrete basins",
       es: "Lavabos de cerámica y concreto",
     },
+    detail: {
+      en: "Concrete and ceramic basins poured by hand in Querétaro since 2012.",
+      es: "Lavabos de concreto y cerámica vaciados a mano en Querétaro desde 2012.",
+    },
     image: "/Assets/Mistoa Studio.webp",
+    href: "/brands?artisan=mistoa",
   },
   {
     name: "Castro",
@@ -25,7 +34,12 @@ const artisans: ArtisanProfile[] = [
       en: "Copper and brass",
       es: "Cobre y latón",
     },
+    detail: {
+      en: "Fourth-generation copper hammerers from Santa Clara del Cobre.",
+      es: "Martilladores de cobre de cuarta generación en Santa Clara del Cobre.",
+    },
     image: "/Assets/Santa Clara del Cobre.webp",
+    href: "/brands?artisan=castro",
   },
   {
     name: "Familia Meza",
@@ -33,7 +47,12 @@ const artisans: ArtisanProfile[] = [
       en: "Stone",
       es: "Piedra",
     },
+    detail: {
+      en: "Three generations carving volcanic stone basins in San Miguel.",
+      es: "Tres generaciones tallando lavabos de piedra volcánica en San Miguel.",
+    },
     image: "/Assets/Stone Artisans.webp",
+    href: "/brands?artisan=familia-meza",
   },
   {
     name: "Manriquez",
@@ -41,24 +60,29 @@ const artisans: ArtisanProfile[] = [
       en: "Cast bronze pulls and accessories",
       es: "Jaladeras y accesorios de bronce fundido",
     },
+    detail: {
+      en: "A bronze foundry whose lost-wax techniques predate the Mexican Republic.",
+      es: "Una fundición de bronce cuyas técnicas de cera perdida preceden a la República Mexicana.",
+    },
     image: "/products/odoo/2045767.jpg",
+    href: "/brands?artisan=manriquez",
   },
 ];
 
 const T = {
-  eyebrow: { en: "The Artisans", es: "Los Artesanos" },
+  eyebrow: { en: "The Makers", es: "Los Creadores" },
   title: {
-    en: "Masters of Their Craft",
-    es: "Maestros de Su Oficio",
+    en: "Four workshops behind the catalog",
+    es: "Cuatro talleres detrás del catálogo",
   },
   description: {
-    en: "Behind every artisanal piece is a maker with decades of tradition in their hands. These are some of the artisans who make Counter Cultures possible.",
-    es: "Detrás de cada pieza artesanal hay un creador con décadas de tradición en sus manos. Estos son algunos de los artesanos que hacen posible Counter Cultures.",
+    en: "These are the hands. The kilns, the foundries, the chisels, the hammers. Each piece in our artisanal collection passes through one of these workshops before it reaches a Counter Cultures project.",
+    es: "Estas son las manos. Los hornos, las fundiciones, los cinceles, los martillos. Cada pieza de nuestra colección artesanal pasa por uno de estos talleres antes de llegar a un proyecto Counter Cultures.",
   },
 };
 
 export const ArtisanProfiles = ({ locale }: { locale: Locale }) => (
-  <section className="py-12 md:py-24 bg-brand-sand/30">
+  <section id="artisans" className="scroll-mt-24 py-12 md:py-24 bg-brand-sand/30">
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <AnimatedSection>
         <span className="font-body font-semibold text-xs tracking-[0.2em] text-brand-terracotta uppercase">
@@ -75,15 +99,14 @@ export const ArtisanProfiles = ({ locale }: { locale: Locale }) => (
       <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
         {artisans.map((artisan) => (
           <AnimatedSection key={artisan.name}>
-            <div className="group">
-              <div className="aspect-[4/5] rounded-lg overflow-hidden bg-brand-stone/10">
-                <div
-                  className="w-full h-full transition-transform duration-500 group-hover:scale-105"
-                  style={{
-                    backgroundImage: `url('${artisan.image}')`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                  }}
+            <Link href={artisan.href} className="group block cursor-pointer transition-transform duration-300 hover:-translate-y-0.5">
+              <div className="relative aspect-[4/5] rounded-lg overflow-hidden bg-brand-stone/10">
+                <Image
+                  src={artisan.image}
+                  alt={`${artisan.name} — ${artisan.craft[locale]}`}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               </div>
               <h3 className="mt-4 font-display text-xl text-brand-charcoal">
@@ -92,7 +115,10 @@ export const ArtisanProfiles = ({ locale }: { locale: Locale }) => (
               <p className="mt-1 font-body font-semibold text-xs tracking-wider text-brand-terracotta uppercase">
                 {artisan.craft[locale]}
               </p>
-            </div>
+              <p className="mt-2 font-body text-sm leading-relaxed text-dash-text-secondary">
+                {artisan.detail[locale]}
+              </p>
+            </Link>
           </AnimatedSection>
         ))}
       </div>

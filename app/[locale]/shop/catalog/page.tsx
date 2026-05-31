@@ -249,8 +249,8 @@ const CatalogPage = async ({ params, searchParams }: CatalogPageProps) => {
           initialBrand={urlBrand}
           initialQuery={urlQuery}
         />
+        <ArtisanProfiles locale={locale as "en" | "es"} />
       </main>
-      <ArtisanProfiles locale={locale as "en" | "es"} />
       <Footer />
     </>
   );

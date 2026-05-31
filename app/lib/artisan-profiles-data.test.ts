@@ -1,7 +1,17 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { existsSync } from "node:fs";
 import path from "node:path";
-import { artisans, type ArtisanProfile } from "@/app/components/sections/artisan-profiles";
+
+vi.mock("@/app/i18n/navigation", () => ({
+  Link: "a",
+}));
+
+vi.mock("next/image", () => ({
+  default: "img",
+}));
+
+import { artisans } from "@/app/components/sections/artisan-profiles";
+import type { ArtisanProfile } from "@/app/components/sections/artisan-profiles";
 
 describe("Artisan profiles data", () => {
   it("contains exactly 4 artisans", () => {
