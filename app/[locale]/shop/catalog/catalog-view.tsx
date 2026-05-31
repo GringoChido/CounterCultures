@@ -211,7 +211,9 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
   const [inStockOnly, setInStockOnly] = useState(
     searchParams.get("inStock") === "true"
   );
+  const [finish, setFinish] = useState(searchParams.get("finish") ?? "");
   const [result, setResult] = useState<SearchResponse | null>(initialResult ?? null);
+  const [degradedSort, setDegradedSort] = useState(false);
   const [needsAccess, setNeedsAccess] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -240,6 +242,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
     }
     setOffset(Number(params.get("offset") ?? 0));
     setInStockOnly(params.get("inStock") === "true");
+    setFinish(params.get("finish") ?? "");
     setUrlReady(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -255,14 +258,15 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
     if (viewMode !== "grid") params.set("view", viewMode);
     if (offset > 0) params.set("offset", String(offset));
     if (inStockOnly) params.set("inStock", "true");
+    if (finish) params.set("finish", finish);
     const qs = params.toString();
     router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
-  }, [query, brand, category, sortKey, viewMode, offset, inStockOnly, router, pathname]);
+  }, [query, brand, category, sortKey, viewMode, offset, inStockOnly, finish, router, pathname]);
 
   // Reset pagination when filters change
   useEffect(() => {
     setOffset(0);
-  }, [query, brand, category, sortKey, inStockOnly]);
+  }, [query, brand, category, sortKey, inStockOnly, finish]);
 
   const [fetchError, setFetchError] = useState<string | null>(null);
   useEffect(() => {
@@ -274,7 +278,8 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
         (query.trim().length >= MIN_QUERY ? query.trim() : "") === (initialQuery || "") &&
         category === "all" &&
         offset === 0 &&
-        !inStockOnly;
+        !inStockOnly &&
+        !finish;
       if (ssrMatch) return;
     }
     const controller = new AbortController();
@@ -286,6 +291,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
         if (brand) p.set("brand", brand);
         if (category !== "all") p.set("category", category);
         if (inStockOnly) p.set("inStock", "true");
+        if (finish) p.set("finish", finish);
         p.set("sort", sortKey);
         p.set("limit", String(PAGE_SIZE));
         p.set("offset", String(offset));
@@ -304,6 +310,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
           }
           setNeedsAccess(false);
           setFetchError(null);
+          setDegradedSort(!!data.degradedSort);
           setResult(data as SearchResponse);
         } catch (e) {
           if (controller.signal.aborted) return;
@@ -323,7 +330,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
       clearTimeout(id);
       controller.abort();
     };
-  }, [urlReady, query, brand, category, sortKey, offset, inStockOnly]);
+  }, [urlReady, query, brand, category, sortKey, offset, inStockOnly, finish]);
 
   const filteredBrands = useMemo(() => {
     if (!brandFilter) return brandCounts;
@@ -335,12 +342,13 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
 
   const totalPages = result ? Math.ceil(result.total / PAGE_SIZE) : 0;
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
-  const hasFilters = query.trim().length >= MIN_QUERY || brand || category !== "all";
+  const hasFilters = query.trim().length >= MIN_QUERY || brand || category !== "all" || finish;
 
   const clearAll = useCallback(() => {
     setQuery("");
     setBrand("");
     setCategory("all");
+    setFinish("");
     setSortKey("most_specified");
     setOffset(0);
   }, []);
@@ -607,12 +615,12 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
                 {locale === "es" ? "Acabado" : "Finish"}
               </span>
               {FINISH_SWATCHES.map((f) => {
-                const isActive = query.trim().toUpperCase() === f.code;
+                const isActive = finish.toUpperCase() === f.code;
                 return (
                   <button
                     key={f.code}
                     type="button"
-                    onClick={() => setQuery(isActive ? "" : f.code)}
+                    onClick={() => setFinish(isActive ? "" : f.code)}
                     title={f.label[locale]}
                     aria-pressed={isActive}
                     className="group inline-flex items-center gap-1.5 cursor-pointer"
@@ -666,6 +674,21 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
                   {t.categoryFilterChip}: {category}
                   <X className="w-3 h-3" />
                 </button>
+              )}
+              {finish && (
+                <button
+                  type="button"
+                  onClick={() => setFinish("")}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-brand-copper/10 text-brand-copper border border-brand-copper/20 rounded text-[11px] font-medium cursor-pointer hover:bg-brand-copper/20 transition-colors"
+                >
+                  {locale === "es" ? "Acabado" : "Finish"}: {finish.toUpperCase()}
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+              {degradedSort && sortKey === "most_specified" && (
+                <span className="text-[12px] text-dash-text-secondary">
+                  {locale === "es" ? "cache · datos en vivo cargando" : "cached · live data resuming"}
+                </span>
               )}
               <button
                 type="button"
@@ -771,7 +794,7 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
                   </div>
                 )}
               </div>
-            ) : needsAccess ? (
+            ) : needsAccess || fetchError ? (
               <div className="space-y-6">
                 {/* Brand showcase — clickable tiles. Ghosted hero product
                     images sit behind a brand-themed color overlay so the
@@ -910,9 +933,18 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
                   </div>
                 </div>
               </div>
-            ) : !needsAccess ? (
+            ) : !urlReady || (isPending && !result) ? (
+              <div className="flex flex-col items-center justify-center py-24 gap-3">
+                <Loader2 className="w-6 h-6 text-dash-text-secondary animate-spin" />
+                <p className="font-body text-sm text-dash-text-secondary">
+                  {locale === "es"
+                    ? `Cargando ${totalProducts.toLocaleString("es-MX")} piezas…`
+                    : `Loading ${totalProducts.toLocaleString("en-US")} pieces…`}
+                </p>
+              </div>
+            ) : (
               <ProductGridSkeleton />
-            ) : null}
+            )}
 
             {/* Pagination */}
             {result && totalPages > 1 && (

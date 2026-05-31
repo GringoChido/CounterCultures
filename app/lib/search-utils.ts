@@ -195,3 +195,25 @@ export const scoreProduct = (query: string, p: ProductFields): number => {
   }
   return total;
 };
+
+/**
+ * Finish-code filter. Matches if:
+ * 1. Any token in `_finishes` equals or starts with `finishNorm`, OR
+ * 2. The SKU suffix after the last separator exactly equals `finishNorm`.
+ *
+ * The separator anchor prevents greedy substring matches (e.g. "mb" should
+ * NOT match SKU "emt-abmb" where "abmb" is not a finish code).
+ */
+export const matchesFinish = (
+  p: { _finishes: string; _sku: string },
+  finishNorm: string,
+): boolean => {
+  if (!finishNorm) return true;
+  if (p._finishes) {
+    const tokens = p._finishes.split(/\s+/);
+    if (tokens.some((t) => t === finishNorm || t.startsWith(finishNorm))) return true;
+  }
+  const m = p._sku.match(/[-_ ]([a-z0-9]{1,6})$/);
+  if (m && m[1] === finishNorm) return true;
+  return false;
+};

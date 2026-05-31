@@ -48,6 +48,12 @@ const makeTimeoutResponse = () =>
     message: TIMEOUT_MESSAGE,
   });
 
+// Pre-warm: kick off snapshot hydration at module-load time so the first
+// request doesn't pay the full cold-start cost sequentially. On warm
+// Lambdas this is a no-op (~0ms). On cold start the hydration runs in
+// parallel with the incoming request's own processing.
+void getCache();
+
 export const GET = async (req: NextRequest) => {
   const sp = req.nextUrl.searchParams;
   const q = sp.get("q") ?? "";
@@ -60,6 +66,7 @@ export const GET = async (req: NextRequest) => {
         ? "all"
         : undefined;
   const inStockOnly = sp.get("inStock") === "true";
+  const finish = sp.get("finish") || undefined;
   const limit = Math.min(Math.max(Number(sp.get("limit") ?? 60), 1), 200);
   const offset = Math.max(Number(sp.get("offset") ?? 0), 0);
   const rawSort = sp.get("sort") ?? "relevance";
@@ -100,6 +107,7 @@ export const GET = async (req: NextRequest) => {
         brand,
         category,
         inStockOnly,
+        finish,
         limit,
         offset,
         sort,
@@ -124,7 +132,11 @@ export const GET = async (req: NextRequest) => {
       return res;
     }
 
-    const res = NextResponse.json(resultOrTimeout);
+    const degradedSort = needSignals && sort === "most_specified" && !specScores;
+    const body = degradedSort
+      ? { ...resultOrTimeout, degradedSort: true }
+      : resultOrTimeout;
+    const res = NextResponse.json(body);
     res.headers.set("Cache-Control", "private, no-store");
     return res;
   } catch (err) {

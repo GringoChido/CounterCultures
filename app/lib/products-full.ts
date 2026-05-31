@@ -17,7 +17,7 @@ import { cache as reactCache } from "react";
 import { GoogleAuth } from "google-auth-library";
 import { sheets as sheetsApi } from "@googleapis/sheets";
 import { getGooglePrivateKey } from "./google-private-key";
-import { normalize, scoreProduct } from "./search-utils";
+import { normalize, scoreProduct, matchesFinish } from "./search-utils";
 import { toSlug } from "./slug";
 import {
   getOdooStockQuants,
@@ -355,6 +355,8 @@ export interface SearchOptions {
   saleOnly?: boolean;
   /** Filter to products with current internal-warehouse stock > 0. */
   inStockOnly?: boolean;
+  /** Filter to products whose SKU suffix or variant labels match this finish code. */
+  finish?: string;
   limit?: number;
   offset?: number;
   sort?: SearchSort;
@@ -426,6 +428,7 @@ export const searchProducts = async (
     activeOnly,
     saleOnly,
     inStockOnly,
+    finish,
     limit = 100,
     offset = 0,
     sort = "relevance",
@@ -435,6 +438,7 @@ export const searchProducts = async (
 
   const c = await getCache();
   const query = normalize(q);
+  const finishNorm = finish ? normalize(finish) : "";
 
   // Pick candidate pool: brand-filtered if a brand is specified.
   const pool =
@@ -459,6 +463,7 @@ export const searchProducts = async (
       if (activeOnly && !p.active) continue;
       if (saleOnly && !p.saleOk) continue;
       if (inStockOnly && !p.inStock) continue;
+      if (finishNorm && !matchesFinish(p, finishNorm)) continue;
       scored.push({ p, s });
     }
     if (sort === "most_specified" && specScores) {
@@ -487,6 +492,7 @@ export const searchProducts = async (
       if (activeOnly && !p.active) return false;
       if (saleOnly && !p.saleOk) return false;
       if (inStockOnly && !p.inStock) return false;
+      if (finishNorm && !matchesFinish(p, finishNorm)) return false;
       return true;
     });
     if (sort === "most_specified" && specScores) {

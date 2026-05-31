@@ -1,4 +1,4 @@
-import { normalize, scoreProduct } from "./search-utils";
+import { normalize, scoreProduct, matchesFinish } from "./search-utils";
 import type { IndexedProduct, Cache } from "./products-mapping";
 import type {
   SearchOptions,
@@ -275,6 +275,7 @@ export const searchProductsIndexed = async (
     activeOnly,
     saleOnly,
     inStockOnly,
+    finish,
     limit = 100,
     offset = 0,
     sort = "relevance",
@@ -284,6 +285,7 @@ export const searchProductsIndexed = async (
 
   const c = await getCache();
   const query = normalize(q);
+  const finishNorm = finish ? normalize(finish) : "";
 
   // Index not ready yet → legacy fallthrough
   if (!c.invertedIndex) return null;
@@ -372,6 +374,7 @@ export const searchProductsIndexed = async (
     if (activeOnly && !p.active) continue;
     if (saleOnly && !p.saleOk) continue;
     if (inStockOnly && !p.inStock) continue;
+    if (finishNorm && !matchesFinish(p, finishNorm)) continue;
     const s = scoreProduct(query, p);
     if (s > 0) scored.push({ p, s });
   }
@@ -399,6 +402,7 @@ export const searchProductsIndexed = async (
       if (activeOnly && !p.active) continue;
       if (saleOnly && !p.saleOk) continue;
       if (inStockOnly && !p.inStock) continue;
+      if (finishNorm && !matchesFinish(p, finishNorm)) continue;
       const s = scoreProduct(query, p);
       if (s > 0) {
         scored.push({ p, s });

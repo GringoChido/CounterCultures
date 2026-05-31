@@ -126,17 +126,18 @@ const CatalogPage = async ({ params, searchParams }: CatalogPageProps) => {
   let initialResult: SearchResult | null = null;
 
   try {
-    // Always render the shell immediately — CatalogView fetches products
-    // client-side. Server-side search was crashing Netlify functions because
-    // hydrating 354K products exceeds the Lambda memory/time budget.
-    {
-      const [bc, st] = await Promise.all([
-        raceWithFallback(getCatalogBrands(), 2000, []),
-        raceWithFallback(getCatalogStats(), 1000, STATS_FALLBACK),
-      ]);
-      brandCounts = bc;
-      stats = st;
-    }
+    const [bc, st, sr] = await Promise.all([
+      raceWithFallback(getCatalogBrands(), 2000, []),
+      raceWithFallback(getCatalogStats(), 1000, STATS_FALLBACK),
+      raceWithFallback(
+        searchProductsIndexed({ sort: ssrSort as "most_specified" | "relevance" | "alpha", limit: 24, brand: urlBrand, q: urlQuery }),
+        1500,
+        null,
+      ),
+    ]);
+    brandCounts = bc;
+    stats = st;
+    initialResult = sr;
   } catch (err) {
     console.error(
       JSON.stringify({
