@@ -36,6 +36,10 @@ export const NAV_LINKS = [
     ],
   },
   {
+    label: { en: "Brands", es: "Marcas" },
+    href: "/brands",
+  },
+  {
     label: { en: "Trade", es: "Trade" },
     href: "/trade",
   },
