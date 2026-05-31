@@ -34,15 +34,13 @@ describe("Catalog page section order", () => {
     expect(catalogPageSource).toContain("<ArtisanProfiles");
   });
 
-  it("the discovery page composition is BrowseByDiscipline → ArtisanProfiles → CatalogBrandWall → HowItWorksBand", () => {
+  it("the discovery page composition is BrowseByDiscipline → ArtisanProfiles → HowItWorksBand", () => {
     const browsePos = catalogPageSource.indexOf("<BrowseByDiscipline");
     const artisanPos = catalogPageSource.indexOf("<ArtisanProfiles");
-    const brandWallPos = catalogPageSource.indexOf("<CatalogBrandWall");
     const howItWorksPos = catalogPageSource.indexOf("<HowItWorksBand");
     expect(browsePos).toBeGreaterThan(-1);
     expect(artisanPos).toBeGreaterThan(browsePos);
-    expect(brandWallPos).toBeGreaterThan(artisanPos);
-    expect(howItWorksPos).toBeGreaterThan(brandWallPos);
+    expect(howItWorksPos).toBeGreaterThan(artisanPos);
   });
 
   it("no <CatalogView> remains (the legacy grid has been removed)", () => {

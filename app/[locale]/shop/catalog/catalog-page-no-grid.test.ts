@@ -46,15 +46,13 @@ describe("Catalog page — no grid, no sidebar, no sort, no pagination", () => {
     expect(pageSource).toMatch(/<BrowseByDiscipline/);
   });
 
-  it("renders ArtisanProfiles, CatalogBrandWall, HowItWorksBand in order after BrowseByDiscipline", () => {
+  it("renders ArtisanProfiles, HowItWorksBand in order after BrowseByDiscipline", () => {
     const browsePos = pageSource.indexOf("<BrowseByDiscipline");
     const artisanPos = pageSource.indexOf("<ArtisanProfiles");
-    const brandWallPos = pageSource.indexOf("<CatalogBrandWall");
     const howItWorksPos = pageSource.indexOf("<HowItWorksBand");
     expect(browsePos).toBeGreaterThan(-1);
     expect(artisanPos).toBeGreaterThan(browsePos);
-    expect(brandWallPos).toBeGreaterThan(artisanPos);
-    expect(howItWorksPos).toBeGreaterThan(brandWallPos);
+    expect(howItWorksPos).toBeGreaterThan(artisanPos);
   });
 
   it("catalog-view.tsx is deleted from the project", () => {

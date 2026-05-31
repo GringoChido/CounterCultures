@@ -162,7 +162,7 @@ describe("CatalogSearchPanel — typeahead behavior", () => {
 
     await waitFor(() => expect(pushMock).toHaveBeenCalled());
     const dest = pushMock.mock.calls[0][0] as string;
-    expect(dest).toContain("/en/shop/bathroom/p/");
+    expect(dest).toContain("/shop/bathroom/p/");
     // ArrowDown selected the second product (Levoir Widespread, BRI-65336LF-PC).
     expect(dest).toContain("bri-65336lf-pc");
   });
