@@ -2,15 +2,30 @@
 
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import {
+  ShoppingBag,
+  FolderOpen,
+  FileText,
+  Bookmark,
+  Settings,
+  Tag,
+  Loader2,
+} from "lucide-react";
+import { T } from "@/app/lib/customer-signin-copy";
+import {
+  safeCallbackUrl,
+  readClientLocale,
+  sendCustomerMagicLink,
+} from "@/app/lib/customer-signin-helpers";
 
 const CUSTOMER_AUTH_BASE = "/api/auth/customer";
 
-const ERROR_MESSAGES: Record<string, string> = {
-  OAuthSignin: "Couldn't start the Google sign-in flow. Try again.",
-  OAuthCallback: "Google sign-in failed. Try again.",
-  EmailSignin: "Couldn't send the sign-in email. Try again.",
-  Verification: "This link has expired or was already used. Request a new one.",
-  default: "Something went wrong. Please try again.",
+const INTENT_ICONS: Record<string, typeof ShoppingBag> = {
+  cart: ShoppingBag,
+  project: FolderOpen,
+  quote: FileText,
+  "save-cart": Bookmark,
+  settings: Settings,
 };
 
 const SignInInner = () => {
@@ -19,10 +34,18 @@ const SignInInner = () => {
   const [waOptIn, setWaOptIn] = useState(true);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [lang] = useState<"en" | "es">(() => readClientLocale());
+
+  const t = T[lang];
   const errorCode = params.get("error");
   const errorMessage = errorCode
-    ? ERROR_MESSAGES[errorCode] ?? ERROR_MESSAGES.default
+    ? (t.error as Record<string, string>)[errorCode] ?? t.error.default
     : null;
+  const intent = params.get("intent") ?? "";
+  const rawCallback = params.get("callbackUrl");
+  const callbackUrl = safeCallbackUrl(rawCallback) ?? "/account/welcome";
+  const intentCopy = t.intent[intent];
+  const IntentIcon = INTENT_ICONS[intent];
 
   const handleEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,13 +70,16 @@ const SignInInner = () => {
         body: new URLSearchParams({
           email: email.trim().toLowerCase(),
           csrfToken,
-          callbackUrl: "/account/welcome",
+          callbackUrl,
         }),
         redirect: "follow",
       });
 
       if (res.url?.includes("/account/check-email") || res.ok) {
-        window.location.href = "/account/check-email";
+        const checkUrl = new URL("/account/check-email", window.location.origin);
+        if (rawCallback) checkUrl.searchParams.set("callbackUrl", rawCallback);
+        if (intent) checkUrl.searchParams.set("intent", intent);
+        window.location.href = checkUrl.toString();
       } else {
         window.location.href = "/account/sign-in?error=EmailSignin";
       }
@@ -82,7 +108,7 @@ const SignInInner = () => {
       const callbackInput = document.createElement("input");
       callbackInput.type = "hidden";
       callbackInput.name = "callbackUrl";
-      callbackInput.value = "/account/welcome";
+      callbackInput.value = callbackUrl;
       form.appendChild(callbackInput);
 
       document.body.appendChild(form);
@@ -92,105 +118,183 @@ const SignInInner = () => {
     }
   };
 
+  const handleResendFromError = async () => {
+    if (!email.trim()) return;
+    setLoading(true);
+    const ok = await sendCustomerMagicLink(email, callbackUrl, waOptIn);
+    if (ok) {
+      const checkUrl = new URL("/account/check-email", window.location.origin);
+      if (rawCallback) checkUrl.searchParams.set("callbackUrl", rawCallback);
+      if (intent) checkUrl.searchParams.set("intent", intent);
+      window.location.href = checkUrl.toString();
+    } else {
+      setLoading(false);
+    }
+  };
+
+  const switchLocale = () => {
+    const next = lang === "en" ? "es" : "en";
+    document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000; SameSite=lax`;
+    window.location.reload();
+  };
+
   return (
-    <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center px-6">
+    <div className="min-h-screen bg-brand-linen flex items-center justify-center px-6">
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
-          <h1 className="font-display text-3xl font-light tracking-wider text-[#2C2C2C]">
-            Counter Cultures
+          <h1 className="font-display text-3xl font-light tracking-wider text-brand-charcoal">
+            {t.eyebrow}
           </h1>
-          <p className="font-body text-sm text-[#6B6B6B] mt-2">
-            Sign in to your account
+          <p className="font-body text-sm text-dash-text-secondary mt-2">
+            {t.title}
           </p>
         </div>
 
-        <div className="bg-white rounded-xl p-8 shadow-sm border border-[#E5E0DB]">
+        {intentCopy && IntentIcon && (
+          <div
+            role="status"
+            className="flex items-center gap-2.5 bg-brand-copper/8 border border-brand-copper/20 rounded-lg px-4 py-2.5 mb-4"
+          >
+            <IntentIcon className="w-4 h-4 text-brand-copper shrink-0" />
+            <p className="text-sm text-brand-charcoal">{intentCopy}</p>
+          </div>
+        )}
+
+        <div className="bg-dash-surface rounded-xl p-8 shadow-sm border border-dash-border">
           {errorMessage && (
-            <p className="text-sm text-red-700 bg-red-50 px-3 py-2 rounded-lg mb-4">
-              {errorMessage}
-            </p>
+            <div role="alert" className="text-sm text-dash-danger bg-dash-danger-soft px-3 py-2.5 rounded-lg mb-4">
+              <p>{errorMessage}</p>
+              {errorCode === "Verification" && (
+                <button
+                  type="button"
+                  onClick={handleResendFromError}
+                  disabled={loading || !email.trim()}
+                  className="mt-1.5 text-xs font-medium text-brand-copper hover:text-brand-copper-dark underline underline-offset-2 cursor-pointer disabled:opacity-50"
+                >
+                  {t.error.sendNewLink}
+                </button>
+              )}
+              {(errorCode === "OAuthSignin" || errorCode === "OAuthCallback") && (
+                <p className="mt-1.5 text-xs text-dash-text-muted">
+                  {lang === "en"
+                    ? "Try a different browser or check your popup blocker."
+                    : "Intenta con otro navegador o revisa el bloqueador de ventanas."}
+                </p>
+              )}
+            </div>
           )}
 
           <form onSubmit={handleEmail} className="space-y-4">
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-[#2C2C2C] mb-1"
+                className="block text-sm font-medium text-brand-charcoal mb-1"
               >
-                Email address
+                {t.emailLabel}
               </label>
               <input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder={t.emailPlaceholder}
                 required
-                className="w-full px-3 py-2.5 border border-[#E5E0DB] rounded-lg text-sm text-[#2C2C2C] placeholder:text-[#B0ACA7] focus:outline-none focus:ring-2 focus:ring-[#B87333]/40 focus:border-[#B87333]"
+                className="w-full px-3 py-2.5 border border-dash-border rounded-lg text-sm text-brand-charcoal placeholder:text-dash-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper/40 focus-visible:border-brand-copper"
               />
             </div>
-            <label className="flex items-start gap-2.5 cursor-pointer">
+            <label htmlFor="wa-optin" className="flex items-start gap-2.5 cursor-pointer">
               <input
+                id="wa-optin"
                 type="checkbox"
                 checked={waOptIn}
                 onChange={(e) => setWaOptIn(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-[#E5E0DB] text-[#B87333] focus:ring-[#B87333]/40 cursor-pointer"
+                className="mt-0.5 h-4 w-4 rounded border-dash-border text-brand-copper focus:ring-brand-copper/40 cursor-pointer"
               />
-              <span className="text-xs text-[#6B6B6B] leading-relaxed">
-                Receive order updates and important messages via WhatsApp.
-                Uncheck if you&apos;d prefer not to.
+              <span className="text-xs text-dash-text-secondary leading-relaxed">
+                {t.waOptIn}
               </span>
             </label>
             <button
               type="submit"
-              disabled={loading || !email.trim()}
-              className="w-full py-2.5 bg-[#B87333] text-white text-sm font-medium rounded-lg hover:bg-[#A0632D] disabled:opacity-50 transition-colors cursor-pointer"
+              disabled={loading || googleLoading || !email.trim()}
+              className="w-full flex items-center justify-center gap-2 py-2.5 bg-brand-copper text-white text-sm font-medium rounded-lg hover:bg-brand-copper-dark disabled:opacity-50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper/40 min-h-[44px]"
             >
-              {loading ? "Sending link..." : "Email me a sign-in link"}
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              {loading ? t.sending : t.sendLink}
             </button>
           </form>
 
           <div className="flex items-center gap-3 my-6">
-            <div className="flex-1 h-px bg-[#E5E0DB]" />
-            <span className="text-xs text-[#B0ACA7] uppercase tracking-wider">
-              or
+            <div className="flex-1 h-px bg-dash-border" />
+            <span className="text-xs text-dash-text-muted uppercase tracking-wider">
+              {t.or}
             </span>
-            <div className="flex-1 h-px bg-[#E5E0DB]" />
+            <div className="flex-1 h-px bg-dash-border" />
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-5">
+            <span className="inline-flex items-center gap-1.5 bg-brand-linen border border-brand-stone/15 rounded-full px-3 py-1.5 text-xs text-dash-text-secondary">
+              <Bookmark className="w-3 h-3 text-brand-copper" />
+              {t.benefitProjects}
+            </span>
+            <span className="inline-flex items-center gap-1.5 bg-brand-linen border border-brand-stone/15 rounded-full px-3 py-1.5 text-xs text-dash-text-secondary">
+              <ShoppingBag className="w-3 h-3 text-brand-copper" />
+              {t.benefitCart}
+            </span>
+            <span className="inline-flex items-center gap-1.5 bg-brand-linen border border-brand-stone/15 rounded-full px-3 py-1.5 text-xs text-dash-text-secondary">
+              <Tag className="w-3 h-3 text-brand-copper" />
+              {t.benefitQuotes}
+            </span>
           </div>
 
           <button
             type="button"
             onClick={handleGoogle}
-            disabled={googleLoading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 border border-[#E5E0DB] bg-white text-sm font-medium text-[#2C2C2C] rounded-lg hover:bg-[#FAF8F5] disabled:opacity-50 transition-colors cursor-pointer"
+            disabled={googleLoading || loading}
+            className="w-full flex items-center justify-center gap-3 px-4 py-2.5 border border-dash-border bg-dash-surface text-sm font-medium text-brand-charcoal rounded-lg hover:bg-brand-linen disabled:opacity-50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper/40 min-h-[44px]"
           >
-            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
-              <path
-                fill="#4285F4"
-                d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"
-              />
-              <path
-                fill="#34A853"
-                d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"
-              />
-              <path
-                fill="#FBBC05"
-                d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"
-              />
-              <path
-                fill="#EA4335"
-                d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"
-              />
-            </svg>
-            <span>
-              {googleLoading ? "Redirecting..." : "Continue with Google"}
-            </span>
+            {googleLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                <path
+                  fill="#4285F4"
+                  d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"
+                />
+              </svg>
+            )}
+            <span>{googleLoading ? t.redirecting : t.continueGoogle}</span>
           </button>
         </div>
 
-        <p className="text-center text-xs text-[#B0ACA7] mt-8">
-          Counter Cultures &middot; San Miguel de Allende, M&eacute;xico
+        <p className="text-center text-xs text-dash-text-muted mt-6">
+          {t.fromQuoteHint}
         </p>
+
+        <div className="flex items-center justify-between mt-4">
+          <p className="text-xs text-dash-text-muted">
+            {t.locationLabel}
+          </p>
+          <button
+            type="button"
+            onClick={switchLocale}
+            className="text-xs text-brand-copper hover:text-brand-copper-dark font-medium cursor-pointer"
+          >
+            {lang === "en" ? "ES" : "EN"}
+          </button>
+        </div>
       </div>
     </div>
   );
