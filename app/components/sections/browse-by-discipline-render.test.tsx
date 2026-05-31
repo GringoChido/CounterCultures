@@ -199,6 +199,23 @@ describe("DisciplineSpreadCard — render tests", () => {
     expect(img.getAttribute("alt")).toContain("Bathroom");
   });
 
+  it("workshops subcategories render as plain text, not links", () => {
+    const workshops = DISCIPLINE_SPREADS[3];
+    render(
+      <DisciplineSpreadCard
+        spread={workshops}
+        locale="en"
+        pieceCount={0}
+        imagePosition="left"
+        priorityImage={false}
+      />,
+    );
+    expect(screen.getByText("CERAMIC")).toBeInTheDocument();
+    expect(screen.getByText("CERAMIC").tagName).toBe("SPAN");
+    expect(screen.getByText("COPPER")).toBeInTheDocument();
+    expect(screen.getByText("COPPER").tagName).toBe("SPAN");
+  });
+
   it("renders all 4 disciplines without crashing", () => {
     for (let i = 0; i < DISCIPLINE_SPREADS.length; i++) {
       const s = DISCIPLINE_SPREADS[i];

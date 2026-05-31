@@ -116,16 +116,16 @@ const DisciplineSpreadCard = ({
             <div className="mt-8 font-body text-[11px] uppercase tracking-[0.2em] text-brand-copper leading-relaxed max-w-[50ch]">
               {subcategories.map((sub, i) => (
                 <Fragment key={sub.slug}>
-                  <Link
-                    href={
-                      isWorkshops
-                        ? "#artisans"
-                        : `/shop/${spread.key}/${sub.slug}`
-                    }
-                    className="hover:underline decoration-brand-copper decoration-1 underline-offset-4 transition-colors"
-                  >
-                    {sub.label[locale].toUpperCase()}
-                  </Link>
+                  {isWorkshops ? (
+                    <span>{sub.label[locale].toUpperCase()}</span>
+                  ) : (
+                    <Link
+                      href={`/shop/${spread.key}/${sub.slug}`}
+                      className="hover:underline decoration-brand-copper decoration-1 underline-offset-4 transition-colors"
+                    >
+                      {sub.label[locale].toUpperCase()}
+                    </Link>
+                  )}
                   {i < subcategories.length - 1 && (
                     <span className="mx-2 opacity-50">·</span>
                   )}
