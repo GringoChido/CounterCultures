@@ -18,7 +18,7 @@ export const artisans: ArtisanProfile[] = [
       es: "Lavabos de concreto y cerámica vaciados a mano en Querétaro desde 2012.",
     },
     image: "/Assets/Mistoa Studio.webp",
-    href: "/brands?artisan=mistoa",
+    href: "/brands/mistoa",
   },
   {
     name: "Castro",
@@ -31,7 +31,7 @@ export const artisans: ArtisanProfile[] = [
       es: "Martilladores de cobre de cuarta generación en Santa Clara del Cobre.",
     },
     image: "/Assets/Santa Clara del Cobre.webp",
-    href: "/brands?artisan=castro",
+    href: "/brands/castro",
   },
   {
     name: "Familia Meza",
@@ -44,7 +44,7 @@ export const artisans: ArtisanProfile[] = [
       es: "Tres generaciones tallando lavabos de piedra volcánica en San Miguel.",
     },
     image: "/Assets/Stone Artisans.webp",
-    href: "/brands?artisan=familia-meza",
+    href: "/brands/familia-meza",
   },
   {
     name: "Manriquez",
@@ -57,6 +57,6 @@ export const artisans: ArtisanProfile[] = [
       es: "Una fundición de bronce cuyas técnicas de cera perdida preceden a la República Mexicana.",
     },
     image: "/products/odoo/2045767.jpg",
-    href: "/brands?artisan=manriquez",
+    href: "/brands/manriquez",
   },
 ];
