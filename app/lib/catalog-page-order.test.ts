@@ -8,12 +8,12 @@ const catalogPageSource = readFileSync(
 );
 
 describe("Catalog page section order", () => {
-  it("ArtisanProfiles renders AFTER CatalogView in the JSX", () => {
-    const catalogViewPos = catalogPageSource.indexOf("<CatalogView");
+  it("BrowseByDiscipline renders BEFORE ArtisanProfiles", () => {
+    const browsePos = catalogPageSource.indexOf("<BrowseByDiscipline");
     const artisanPos = catalogPageSource.indexOf("<ArtisanProfiles");
-    expect(catalogViewPos, "CatalogView should exist in the page").toBeGreaterThan(-1);
+    expect(browsePos, "BrowseByDiscipline should exist in the page").toBeGreaterThan(-1);
     expect(artisanPos, "ArtisanProfiles should exist in the page").toBeGreaterThan(-1);
-    expect(artisanPos).toBeGreaterThan(catalogViewPos);
+    expect(artisanPos).toBeGreaterThan(browsePos);
   });
 
   it("ArtisanProfiles renders BEFORE the Footer", () => {
@@ -34,16 +34,18 @@ describe("Catalog page section order", () => {
     expect(catalogPageSource).toContain("<ArtisanProfiles");
   });
 
-  it("CatalogView section appears before ArtisanProfiles (no reversed order)", () => {
-    const lines = catalogPageSource.split("\n");
-    let catalogViewLine = -1;
-    let artisanLine = -1;
-    lines.forEach((line, i) => {
-      if (line.includes("<CatalogView")) catalogViewLine = i;
-      if (line.includes("<ArtisanProfiles")) artisanLine = i;
-    });
-    expect(catalogViewLine).toBeGreaterThan(-1);
-    expect(artisanLine).toBeGreaterThan(-1);
-    expect(artisanLine).toBeGreaterThan(catalogViewLine);
+  it("the discovery page composition is BrowseByDiscipline → ArtisanProfiles → CatalogBrandWall → HowItWorksBand", () => {
+    const browsePos = catalogPageSource.indexOf("<BrowseByDiscipline");
+    const artisanPos = catalogPageSource.indexOf("<ArtisanProfiles");
+    const brandWallPos = catalogPageSource.indexOf("<CatalogBrandWall");
+    const howItWorksPos = catalogPageSource.indexOf("<HowItWorksBand");
+    expect(browsePos).toBeGreaterThan(-1);
+    expect(artisanPos).toBeGreaterThan(browsePos);
+    expect(brandWallPos).toBeGreaterThan(artisanPos);
+    expect(howItWorksPos).toBeGreaterThan(brandWallPos);
+  });
+
+  it("no <CatalogView> remains (the legacy grid has been removed)", () => {
+    expect(catalogPageSource).not.toMatch(/<CatalogView[\s>]/);
   });
 });

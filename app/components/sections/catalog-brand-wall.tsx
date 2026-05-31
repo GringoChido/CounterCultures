@@ -12,6 +12,12 @@ interface CatalogBrandWallProps {
   locale: "en" | "es";
   brandCounts: BrandCount[];
   brandImageMap: Record<string, string>;
+  /**
+   * Explicit count for the section headline. Defaults to brandCounts.length
+   * when not provided. Pinned by page.tsx so the headline and BrowseByDiscipline
+   * report the same number when Sheets returns a partial set.
+   */
+  brandCount?: number;
 }
 
 interface Discipline {
@@ -63,9 +69,10 @@ const CatalogBrandWall = ({
   locale,
   brandCounts,
   brandImageMap,
+  brandCount,
 }: CatalogBrandWallProps) => {
   const counts = brandCountMap(brandCounts);
-  const totalBrands = brandCounts.length || 73;
+  const totalBrands = brandCount ?? brandCounts.length ?? 73;
 
   return (
     <section

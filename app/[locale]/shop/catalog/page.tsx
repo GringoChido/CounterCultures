@@ -7,22 +7,12 @@ import Image from "next/image";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
 import { ArtisanProfiles } from "@/app/components/sections/artisan-profiles";
-import {
-  getCatalogBrands,
-  getCatalogStats,
-  searchProductsIndexed,
-  type SearchResult,
-} from "@/app/lib/products-full";
+import { getCatalogBrands, getCatalogStats } from "@/app/lib/products-full";
 import { formatCatalogCount } from "@/app/lib/format-catalog-count";
-import {
-  getMostSpecifiedScores,
-  getInShowroomIds,
-  getInShowroomCount,
-} from "@/app/lib/catalog-signals";
+import { getInShowroomCount } from "@/app/lib/catalog-signals";
 import { BrowseByDiscipline } from "@/app/components/sections/browse-by-discipline";
 import { CatalogBrandWall } from "@/app/components/sections/catalog-brand-wall";
 import { HowItWorksBand } from "@/app/components/sections/how-it-works-band";
-import { CatalogView } from "./catalog-view";
 
 export const revalidate = 1800;
 
@@ -32,7 +22,6 @@ const BASE_URL = SITE_URL;
 
 interface CatalogPageProps {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export const generateMetadata = async ({
@@ -113,58 +102,31 @@ const buildBrandImageMap = (brandNames: string[]): Record<string, string> => {
   return result;
 };
 
-const CatalogPage = async ({ params, searchParams }: CatalogPageProps) => {
+const CatalogPage = async ({ params }: CatalogPageProps) => {
   const { locale } = await params;
-  const sp = await searchParams;
-  const urlBrand = typeof sp.brand === "string" ? sp.brand : undefined;
-  const urlQuery = typeof sp.q === "string" ? sp.q : undefined;
   const isEs = locale === "es";
-
-  const isFiltered = !!(urlBrand || urlQuery);
-  const ssrSort = isFiltered
-    ? (urlQuery ? "relevance" : "alpha")
-    : "most_specified";
 
   let brandCounts: Awaited<ReturnType<typeof getCatalogBrands>> = [];
   let stats = STATS_FALLBACK;
-  let initialResult: SearchResult | null = null;
   let inShowroomCount = 0;
 
   try {
-    const emptyScores = new Map<string, { weightedScore: number; projectCount: number }>();
-    const [bc, st, specScores, inShowroomIds] = await Promise.all([
+    const [bc, st, isc] = await Promise.all([
       raceWithFallback(getCatalogBrands(), 2000, []),
       raceWithFallback(getCatalogStats(), 1000, STATS_FALLBACK),
-      raceWithFallback(getMostSpecifiedScores(), 1500, emptyScores),
-      raceWithFallback(getInShowroomIds(), 1500, new Set<string>()),
+      raceWithFallback(getInShowroomCount(), 1500, 0),
     ]);
     brandCounts = bc;
     stats = st;
-    inShowroomCount = inShowroomIds.size;
-    initialResult = await raceWithFallback(
-      searchProductsIndexed({
-        sort: ssrSort as "most_specified" | "relevance" | "alpha",
-        limit: 24,
-        brand: urlBrand,
-        q: urlQuery,
-        specScores: specScores.size > 0 ? specScores : undefined,
-        inShowroomIds: inShowroomIds.size > 0 ? inShowroomIds : undefined,
-      }),
-      1500,
-      null,
-    );
+    inShowroomCount = isc;
   } catch (err) {
     console.error(
       JSON.stringify({
         where: "shop/catalog/page",
-        urlQuery,
-        urlBrand,
-        isFiltered,
         message: err instanceof Error ? err.message : String(err),
         stack: err instanceof Error ? err.stack : undefined,
       })
     );
-    // Fall through — CatalogView handles client-side fetch as fallback
   }
 
   const saleableBrandCount = brandCounts.length || STATS_FALLBACK.brandCount;
@@ -238,22 +200,15 @@ const CatalogPage = async ({ params, searchParams }: CatalogPageProps) => {
           </div>
         </section>
 
-        <BrowseByDiscipline locale={locale as "en" | "es"} brandCount={saleableBrandCount} />
-
-        <div id="catalog" className="scroll-mt-24" />
-        <CatalogView
+        <BrowseByDiscipline
           locale={locale as "en" | "es"}
+          brandCount={saleableBrandCount}
           brandCounts={brandCounts}
-          totalProducts={stats.total}
-          brandImageMap={brandImageMap}
-          initialResult={initialResult}
-          initialSort={ssrSort}
-          initialBrand={urlBrand}
-          initialQuery={urlQuery}
         />
         <ArtisanProfiles locale={locale as "en" | "es"} />
         <CatalogBrandWall
           locale={locale as "en" | "es"}
+          brandCount={saleableBrandCount}
           brandCounts={brandCounts}
           brandImageMap={brandImageMap}
         />

@@ -7,8 +7,9 @@ import {
   type DisciplineSpread,
   type CategoryKey,
 } from "@/app/lib/constants";
-import { getCategoryPieceCounts } from "@/app/lib/products-full";
+import { getCategoryPieceCounts, type BrandCount } from "@/app/lib/products-full";
 import { formatAnchorBrands } from "@/app/lib/format-anchor-brands";
+import { CatalogSearchPanel } from "@/app/components/catalog/catalog-search-panel";
 
 type Locale = "en" | "es";
 
@@ -160,9 +161,18 @@ export { DisciplineSpreadCard };
 interface BrowseByDisciplineProps {
   locale: Locale;
   brandCount?: number;
+  /**
+   * Passed through to <CatalogSearchPanel> for inline brand-typeahead.
+   * Optional so existing renderers / tests without brand data still work.
+   */
+  brandCounts?: BrandCount[];
 }
 
-const BrowseByDiscipline = async ({ locale, brandCount }: BrowseByDisciplineProps) => {
+const BrowseByDiscipline = async ({
+  locale,
+  brandCount,
+  brandCounts,
+}: BrowseByDisciplineProps) => {
   let counts: Record<string, number>;
   try {
     counts = await getCategoryPieceCounts();
@@ -173,17 +183,26 @@ const BrowseByDiscipline = async ({ locale, brandCount }: BrowseByDisciplineProp
   return (
     <section id="browse" className="scroll-mt-24 bg-brand-linen py-16 md:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <p className="font-body text-[11px] uppercase tracking-[0.25em] text-brand-terracotta mb-3">
-          {T.eyebrow[locale]}
-        </p>
-        <h2 className="font-display text-3xl md:text-4xl font-light tracking-wide text-brand-charcoal">
-          {locale === "es"
-            ? `Tres ambientes. ${brandCount ?? 73} marcas. Un catálogo.`
-            : `Three rooms. ${brandCount ?? 73} brands. One catalog.`}
-        </h2>
-        <p className="mt-6 font-body text-[17px] leading-[1.6] text-brand-charcoal/70 max-w-[65ch]">
-          {T.lede[locale]}
-        </p>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 lg:gap-12 items-start">
+          {/* LEFT — eyebrow, headline, lede */}
+          <div className="max-w-2xl">
+            <p className="font-body text-[11px] uppercase tracking-[0.25em] text-brand-terracotta mb-3">
+              {T.eyebrow[locale]}
+            </p>
+            <h2 className="font-display text-3xl md:text-4xl font-light tracking-wide text-brand-charcoal">
+              {locale === "es"
+                ? `Tres ambientes. ${brandCount ?? 73} marcas. Un catálogo.`
+                : `Three rooms. ${brandCount ?? 73} brands. One catalog.`}
+            </h2>
+            <p className="mt-6 font-body text-[17px] leading-[1.6] text-brand-charcoal/70 max-w-[65ch]">
+              {T.lede[locale]}
+            </p>
+          </div>
+          {/* RIGHT — inline catalog search panel (typeahead + finish swatches) */}
+          <div className="w-full lg:w-[420px]">
+            <CatalogSearchPanel locale={locale} brandCounts={brandCounts ?? []} />
+          </div>
+        </div>
       </div>
 
       <div className="mt-12 md:mt-20">
