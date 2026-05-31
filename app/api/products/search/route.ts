@@ -48,12 +48,6 @@ const makeTimeoutResponse = () =>
     message: TIMEOUT_MESSAGE,
   });
 
-// Pre-warm: kick off snapshot hydration at module-load time so the first
-// request doesn't pay the full cold-start cost sequentially. On warm
-// Lambdas this is a no-op (~0ms). On cold start the hydration runs in
-// parallel with the incoming request's own processing.
-void getCache();
-
 export const GET = async (req: NextRequest) => {
   const sp = req.nextUrl.searchParams;
   const q = sp.get("q") ?? "";
