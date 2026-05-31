@@ -155,7 +155,7 @@ const buildHtml = (p: SharePayload): string => {
         <td style="font-size: 12px; color: #999; line-height: 1.6;">
           <a href="https://wa.me/+524151548375" style="color: #B87333; text-decoration: none;">WhatsApp</a> ·
           Calle San Juan #11-A, Col. Providencia, San Miguel de Allende ·
-          <a href="${escapeHtml(p.shareUrl.split("/cart")[0] || "")}/account/sign-in" style="color: #B87333; text-decoration: none;">
+          <a href="${escapeHtml(p.shareUrl.split("/cart")[0] || "")}/account/sign-in?intent=save-cart" style="color: #B87333; text-decoration: none;">
             ${isEs ? "Iniciar sesión" : "Sign in"}
           </a>
         </td>

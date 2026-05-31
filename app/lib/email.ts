@@ -226,7 +226,7 @@ export const sendTradeWelcomeEmail = async (
           <p style="margin: 0 0 8px; font-size: 13px; color: #6B6B6B;">Your welcome code (one-time use):</p>
           <p style="margin: 0; font-size: 22px; font-weight: bold; letter-spacing: 0.15em; color: #B87333;">${escapeHtml(welcomeCode)}</p>
         </div>
-        <a href="${baseUrl}/account/sign-in" style="display: inline-block; background: #B87333; color: #fff; text-decoration: none; padding: 12px 28px; border-radius: 4px; font-size: 14px; font-weight: 600; letter-spacing: 0.04em;">Sign In to Your Account</a>
+        <a href="${baseUrl}/account/sign-in?intent=quote" style="display: inline-block; background: #B87333; color: #fff; text-decoration: none; padding: 12px 28px; border-radius: 4px; font-size: 14px; font-weight: 600; letter-spacing: 0.04em;">Sign In to Your Account</a>
         <hr style="border: none; border-top: 1px solid #E5E0DB; margin: 32px 0;" />
         <p style="font-size: 12px; color: #999;">Counter Cultures · San Miguel de Allende, México</p>
       </div>
