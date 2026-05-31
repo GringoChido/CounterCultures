@@ -564,6 +564,13 @@ export const getCategoryCounts = async (): Promise<
   return (await getCache()).categoryCounts;
 };
 
+export const getCategoryPieceCounts = async (): Promise<
+  Record<ProductCategory | "workshops", number>
+> => {
+  const counts = await getCategoryCounts();
+  return { ...counts, workshops: 0 };
+};
+
 // Wrapped in React.cache() for per-request dedup. The PDP's generateMetadata
 // and the page render both look up the same product by id/slug — without
 // this, the cache lookup runs twice per render. Cache is request-scoped:

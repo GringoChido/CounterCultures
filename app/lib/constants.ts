@@ -117,6 +117,72 @@ export const PRODUCT_CATEGORIES = {
 
 export type CategoryKey = keyof typeof PRODUCT_CATEGORIES;
 
+export interface DisciplineSpread {
+  number: string;
+  key: CategoryKey | "workshops";
+  label: { en: string; es: string };
+  copy: { en: string; es: string };
+  anchorBrands: string[];
+  heroImage: string;
+  href: string;
+  ctaLabel: { en: string; es: string };
+}
+
+export const DISCIPLINE_SPREADS: DisciplineSpread[] = [
+  {
+    number: "01",
+    key: "bathroom",
+    label: { en: "Bathroom", es: "Baño" },
+    copy: {
+      en: "The room a house gets judged on. Every TOTO WASHLET, every California Faucets widespread in thirty-plus artisan finishes, every Mistoa basin poured by hand in Querétaro.",
+      es: "El cuarto por el que se juzga una casa. Cada TOTO WASHLET, cada llave California Faucets widespread en más de treinta acabados artesanales, cada lavabo Mistoa vaciado a mano en Querétaro.",
+    },
+    anchorBrands: ["TOTO", "Brizo", "California Faucets", "Mistoa"],
+    heroImage: "/images/bathroom/bathroom-hero.webp",
+    href: "/shop/bathroom",
+    ctaLabel: { en: "Enter the Bathroom", es: "Entra al Baño" },
+  },
+  {
+    number: "02",
+    key: "kitchen",
+    label: { en: "Kitchen", es: "Cocina" },
+    copy: {
+      en: "Built for how you actually cook. BLANCO sinks deep enough for sheet pans. Brizo faucets that articulate into every corner of the prep zone. Bluestar ranges with the infrared salamander broiler most showrooms won't carry.",
+      es: "Pensada para cómo realmente cocinas. Tarjas BLANCO con profundidad de sobra para charolas enteras. Mezcladoras Brizo que se articulan hasta la última esquina de la zona de preparación. Estufas Bluestar con la salamandra infrarroja que la mayoría de los showrooms no se atreven a manejar.",
+    },
+    anchorBrands: ["BLANCO", "Brizo", "Bluestar", "SMEG"],
+    heroImage: "/images/kitchen/kitchen-hero.webp",
+    href: "/shop/kitchen",
+    ctaLabel: { en: "Step into the Kitchen", es: "Entra a la Cocina" },
+  },
+  {
+    number: "03",
+    key: "hardware",
+    label: { en: "Door Hardware", es: "Chapas y Herrajes" },
+    copy: {
+      en: "The first thing your guests touch and the last thing they forget. Hand-cast bronze from Sun Valley. Emtek precision. Baldwin heft. Three makers who treat a door handle like it matters.",
+      es: "Lo primero que tocan tus invitados y lo último que olvidan. Bronce fundido a mano de Sun Valley. La precisión de Emtek. El peso de Baldwin. Tres fabricantes que tratan una manija como algo que importa.",
+    },
+    anchorBrands: ["Sun Valley Bronze", "Emtek", "Baldwin"],
+    heroImage: "/images/hardware/hardware-hero.webp",
+    href: "/shop/hardware",
+    ctaLabel: { en: "Open the Door", es: "Abre la Puerta" },
+  },
+  {
+    number: "04",
+    key: "workshops",
+    label: { en: "The Workshops", es: "Los Talleres" },
+    copy: {
+      en: "The other half of the catalog. Mistoa pours concrete in Querétaro. Castro hammers copper in Santa Clara del Cobre. Familia Meza carves volcanic stone. The Manríquez foundry casts bronze by methods older than the Republic.",
+      es: "La otra mitad del catálogo. Mistoa vacía concreto en Querétaro. Castro martilla cobre en Santa Clara del Cobre. Familia Meza talla piedra volcánica. La fundición Manríquez funde bronce con métodos más viejos que la República.",
+    },
+    anchorBrands: ["Mistoa", "Castro", "Familia Meza", "Manríquez"],
+    heroImage: "/Assets/Santa Clara del Cobre.webp",
+    href: "#artisans",
+    ctaLabel: { en: "Meet the Makers", es: "Conoce a los Talleres" },
+  },
+];
+
 // Keywords used to deep-link subcategory pages into the full-catalog search
 // and to post-filter products on subcategory pages.
 // String = simple keyword. Object = include/exclude name-based filtering.
