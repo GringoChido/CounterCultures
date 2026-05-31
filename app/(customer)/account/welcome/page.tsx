@@ -16,6 +16,12 @@ const WelcomeInner = () => {
   const destination = safeCallbackUrl(rawCallback) ?? "/";
 
   useEffect(() => {
+    document.title = lang === "es"
+      ? `${T.es.welcome.title} · Counter Cultures`
+      : `${T.en.welcome.title} · Counter Cultures`;
+  }, [lang]);
+
+  useEffect(() => {
     const timer = setInterval(() => {
       setCountdown((c) => {
         if (c <= 1) {

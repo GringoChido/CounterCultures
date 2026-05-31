@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { Mail, Loader2 } from "lucide-react";
 import { T } from "@/app/lib/customer-signin-copy";
@@ -18,6 +18,13 @@ const CheckEmailInner = () => {
   const [resent, setResent] = useState(false);
 
   const t = T[lang].checkEmail;
+
+  useEffect(() => {
+    document.title = lang === "es"
+      ? `${T.es.checkEmail.title} · Counter Cultures`
+      : `${T.en.checkEmail.title} · Counter Cultures`;
+  }, [lang]);
+
   const rawCallback = params.get("callbackUrl");
   const intent = params.get("intent");
   const callbackUrl = safeCallbackUrl(rawCallback) ?? "/account/welcome";
