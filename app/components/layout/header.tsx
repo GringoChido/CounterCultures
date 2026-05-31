@@ -151,8 +151,13 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
         setSearchOpen((v) => !v);
       }
     };
+    const onOpenEvent = () => setSearchOpen(true);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("open-search-palette", onOpenEvent);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("open-search-palette", onOpenEvent);
+    };
   }, []);
 
   const categories = Object.entries(PRODUCT_CATEGORIES);
