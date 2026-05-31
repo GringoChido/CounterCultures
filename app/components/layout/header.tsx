@@ -172,7 +172,7 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
   const categories = Object.entries(PRODUCT_CATEGORIES);
   const isTransparent = transparent && !scrolled && !mobileOpen && !megaMenuOpen;
   const phoneRaw = SITE_CONFIG.showroom.phone;
-  const phoneHref = `tel:+52${phoneRaw.replace(/\./g, "")}`;
+  const phoneHref = `tel:+52${phoneRaw.replace(/\D/g, "")}`;
   const waHref = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(WA_GREETINGS[lang])}`;
 
   const intlPath = usePathname();
@@ -205,7 +205,7 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
                 aria-label={`${t("phoneLabel")} +52 ${phoneRaw}`}
               >
                 <Phone className="w-3.5 h-3.5" />
-                +52 {phoneRaw}
+                +52 {phoneRaw.replace(/\./g, " ")}
               </a>
               <span className={isTransparent ? "text-white/30" : "text-brand-stone/30"}>|</span>
               <a
@@ -533,7 +533,7 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
                   aria-label={`${t("phoneLabel")} +52 ${phoneRaw}`}
                 >
                   <Phone className="w-5 h-5" />
-                  {t("phoneLabel")} · +52 {phoneRaw}
+                  {t("phoneLabel")} · +52 {phoneRaw.replace(/\./g, " ")}
                 </a>
                 <a
                   href={waHref}
