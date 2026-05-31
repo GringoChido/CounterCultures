@@ -25,7 +25,7 @@ export default async function CheckoutPage({ params }: CheckoutPageProps) {
   return (
     <>
       <Header />
-      <main id="main" tabIndex={-1} className="pt-20">
+      <main id="main" tabIndex={-1} className="pt-20 lg:pt-[116px]">
         <CheckoutStepper locale={lang} isTradeCustomer={isTradeCustomer} />
       </main>
       <Footer />

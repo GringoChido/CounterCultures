@@ -1,5 +1,5 @@
 const Loading = () => (
-  <div className="pt-16 md:pt-20">
+  <div className="pt-16 md:pt-20 lg:pt-[116px]">
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumb skeleton */}
       <div className="animate-pulse mb-8">

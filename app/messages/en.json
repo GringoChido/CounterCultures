@@ -24,7 +24,10 @@
     "viewAll": "View All",
     "viewAllCategory": "View All {category}",
     "artisanalCollection": "All Brands & Makers",
-    "artisanalCollectionDesc": "73 brands · 4 artisan workshops"
+    "artisanalCollectionDesc": "73 brands · 4 artisan workshops",
+    "phoneLabel": "Call us",
+    "chatLabel": "Chat with us",
+    "logIn": "Log in"
   },
   "hero": {
     "visitShowroom": "Visit Our Showroom"

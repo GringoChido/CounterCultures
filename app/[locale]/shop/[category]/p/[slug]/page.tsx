@@ -273,7 +273,7 @@ const PDPPage = async ({ params }: PDPProps) => {
   return (
     <>
       <Header />
-      <main id="main" tabIndex={-1} className="pt-16 md:pt-20 bg-white">
+      <main id="main" tabIndex={-1} className="pt-16 md:pt-20 lg:pt-[116px] bg-white">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}

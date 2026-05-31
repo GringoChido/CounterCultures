@@ -24,7 +24,10 @@
     "viewAll": "Ver Todo",
     "viewAllCategory": "Ver Todo {category}",
     "artisanalCollection": "Todas las Marcas y Artesanos",
-    "artisanalCollectionDesc": "73 marcas · 4 talleres artesanales"
+    "artisanalCollectionDesc": "73 marcas · 4 talleres artesanales",
+    "phoneLabel": "Llámanos",
+    "chatLabel": "Chatea con nosotros",
+    "logIn": "Iniciar sesión"
   },
   "hero": {
     "visitShowroom": "Visitar Showroom"

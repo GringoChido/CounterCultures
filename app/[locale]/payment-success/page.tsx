@@ -43,7 +43,7 @@ const PaymentSuccessPage = async ({ params, searchParams }: PageProps) => {
   return (
     <>
       <Header />
-      <main id="main" tabIndex={-1} className="pt-20 bg-brand-linen min-h-screen">
+      <main id="main" tabIndex={-1} className="pt-20 lg:pt-[116px] bg-brand-linen min-h-screen">
         <div className="mx-auto max-w-2xl px-6 lg:px-8 py-24 md:py-32 text-center">
           <div className="w-16 h-16 rounded-full bg-brand-sage/20 flex items-center justify-center mx-auto mb-8">
             <svg className="w-8 h-8 text-brand-sage" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

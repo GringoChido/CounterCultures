@@ -177,7 +177,7 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
     return (
       <>
         <Header />
-        <main id="main" tabIndex={-1} className="pt-16 md:pt-20 bg-dash-surface">
+        <main id="main" tabIndex={-1} className="pt-16 md:pt-20 lg:pt-[116px] bg-dash-surface">
           <section className="bg-brand-linen border-b border-brand-stone/10">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 md:py-20">
               <nav
@@ -338,7 +338,7 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
       />
       <Header />
-      <main id="main" tabIndex={-1} className="pt-16 md:pt-20 bg-dash-surface">
+      <main id="main" tabIndex={-1} className="pt-16 md:pt-20 lg:pt-[116px] bg-dash-surface">
         {/* Editorial hero */}
         <section className="bg-brand-linen border-b border-brand-stone/10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 md:py-20">

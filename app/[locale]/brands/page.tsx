@@ -416,7 +416,7 @@ const BrandsPage = async ({ params }: BrandsPageProps) => {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <Header />
-      <main id="main" tabIndex={-1} className="pt-16 md:pt-20">
+      <main id="main" tabIndex={-1} className="pt-16 md:pt-20 lg:pt-[116px]">
 
         {/* ═══════════════════════════════════════════════════════════ */}
         {/*  HERO                                                      */}

@@ -1,5 +1,5 @@
 const Loading = () => (
-  <div className="pt-16 md:pt-20">
+  <div className="pt-16 md:pt-20 lg:pt-[116px]">
     <section className="py-10 md:py-20 bg-brand-linen border-b border-brand-stone/10">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="animate-pulse">

@@ -20,7 +20,7 @@ export default async function CartPage({ params }: CartPageProps) {
   return (
     <>
       <Header />
-      <main id="main" tabIndex={-1} className="pt-20">
+      <main id="main" tabIndex={-1} className="pt-20 lg:pt-[116px]">
         <CartPageClient locale={lang} />
       </main>
       <Footer />

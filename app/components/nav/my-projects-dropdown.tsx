@@ -52,7 +52,17 @@ export const MyProjectsDropdown = ({ locale }: { locale: "en" | "es" }) => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  if (projects.length === 0) return null;
+  if (projects.length === 0) {
+    return (
+      <Link
+        href="/account/projects"
+        className="hidden md:inline-flex items-center gap-1.5 font-body text-sm font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors py-2"
+      >
+        <FolderOpen className="w-4 h-4" />
+        <span>{t.myProjects}</span>
+      </Link>
+    );
+  }
 
   return (
     <div ref={ref} className="relative">

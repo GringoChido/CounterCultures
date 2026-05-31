@@ -35,7 +35,7 @@ export default async function SubmittedPage({ params, searchParams }: PageProps)
   return (
     <>
       <Header />
-      <main id="main" tabIndex={-1} className="pt-20 bg-brand-linen min-h-screen">
+      <main id="main" tabIndex={-1} className="pt-20 lg:pt-[116px] bg-brand-linen min-h-screen">
         <div className="mx-auto max-w-2xl px-6 lg:px-8 py-24 md:py-32 text-center">
           <div className="flex justify-center mb-6">
             <CartWordmark />
