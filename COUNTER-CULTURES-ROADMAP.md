@@ -121,6 +121,7 @@ For background and evidence behind any fix, see `docs/baseline/` (the read-mostl
 | P3.6 | **Customer accounts v2** — wishlists, order history UI, address book mgmt | [`docs/fixes/p3-customer-accounts-v2.md`](docs/fixes/p3-customer-accounts-v2.md) | 🔴 PENDING | 2-3 days |
 | P3.7 | **Admin portal access** — admin@ rejected silently, structured auth logging, better error UX | [`docs/fixes/p3-admin-portal-access.md`](docs/fixes/p3-admin-portal-access.md) | 🟢 DONE | 1 hr |
 | P3.8 | **Consolidate settings bilingual copy** — move inline `settingsT` from `app/(customer)/account/settings/page.tsx` into shared `app/lib/customer-signin-copy.ts` for single-source i18n parity | — | 🔴 PENDING | 15 min |
+| P3.9 | **Remove unused `Plus` import** from `app/components/nav/my-projects-dropdown.tsx`. Pre-existing lint warning, surfaced during 2026-05-31 sign-in staging-fixes audit. Batch with next small auth/nav session | — | 🔴 PENDING | 30 sec |
 
 ---
 
