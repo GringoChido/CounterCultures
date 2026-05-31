@@ -65,7 +65,7 @@ For background and evidence behind any fix, see `docs/baseline/` (the read-mostl
 | # | Fix | File | Status | Effort |
 |---|-----|------|--------|--------|
 | P1.1 | **Resend setup (staging-only sandbox mode)** — email infra for staging tests; production DNS verification is Phase 2 | [`docs/fixes/p1-resend-setup.md`](docs/fixes/p1-resend-setup.md) | 🟡 PARTIAL — env vars set in Netlify + debug route written; needs sandbox-mode rewrite (no `countercultures.com.mx` DNS) | 30 min |
-| P1.2 | **Customer accounts + storage** — magic-link + Google OAuth, Customers sheet | [`docs/fixes/p1-customer-accounts.md`](docs/fixes/p1-customer-accounts.md) | 🟢 DONE — PR [#40](https://github.com/GringoChido/CounterCultures/pull/40); Google OAuth client needs manual creation in GCP | 2 days |
+| P1.2 | **Customer accounts + storage** — magic-link + Google OAuth, Customers sheet | [`docs/fixes/p1-customer-accounts.md`](docs/fixes/p1-customer-accounts.md) | 🟢 DONE — PR [#40](https://github.com/GringoChido/CounterCultures/pull/40); Google OAuth client needs manual creation in GCP. **Sign-in UX revamp shipped 2026-05-31** (7 commits `0bc2ca6..09b230c`): brand tokens, bilingual EN/ES, callbackUrl + intent banners, inline resend on expired link, benefit chips, settings session-loss redirect, dashboard "Internal · Staff Only" badge | 2 days |
 | P1.3 | **Trade pricing spreadsheet + lookup engine** — separate Sheet, tier-ready schema | [`docs/fixes/p1-trade-pricing.md`](docs/fixes/p1-trade-pricing.md) | 🟢 DONE 2026-05-13 (PR #45 + adapter fix 5a155dc) — Trade Pricing sheet, tier-aware lookup engine, PDP trade price rendering | 1 day |
 | P1.4 | **Promo / F&F code on PAY page** — new scope; cart input + validation + Stripe re-quote | [`docs/fixes/p1-promo-code-checkout.md`](docs/fixes/p1-promo-code-checkout.md) | 🔴 PENDING | 1 day |
 | P1.5 | **Product detail pages** — 354K SKUs have no PDPs (biggest UX/SEO win) | [`docs/fixes/p1-product-detail-pages.md`](docs/fixes/p1-product-detail-pages.md) | 🟢 DONE 2026-05-13 (PR #46) — full 354K catalog now has PDPs with ISR + JSON-LD + bilingual + search palette navigation | 2-3 days |
@@ -120,6 +120,7 @@ For background and evidence behind any fix, see `docs/baseline/` (the read-mostl
 | P3.5 | **Sheets → Postgres migration plan** — main CRM is near 10M cell cap | [`docs/fixes/p3-database-migration.md`](docs/fixes/p3-database-migration.md) | 🔴 PENDING | RESEARCH |
 | P3.6 | **Customer accounts v2** — wishlists, order history UI, address book mgmt | [`docs/fixes/p3-customer-accounts-v2.md`](docs/fixes/p3-customer-accounts-v2.md) | 🔴 PENDING | 2-3 days |
 | P3.7 | **Admin portal access** — admin@ rejected silently, structured auth logging, better error UX | [`docs/fixes/p3-admin-portal-access.md`](docs/fixes/p3-admin-portal-access.md) | 🟢 DONE | 1 hr |
+| P3.8 | **Consolidate settings bilingual copy** — move inline `settingsT` from `app/(customer)/account/settings/page.tsx` into shared `app/lib/customer-signin-copy.ts` for single-source i18n parity | — | 🔴 PENDING | 15 min |
 
 ---
 

@@ -459,6 +459,29 @@ Production cutover from Squarespace → Netlify. Not in scope until Phase 1 (sta
 
 ---
 
+### Ad-hoc — Customer Sign-In Bulletproof (2026-05-31)
+
+**Shipped:**
+- `0bc2ca6` — `customer-signin-helpers.ts` + `customer-signin-copy.ts` (new shared helpers)
+- `e78dcc8` — sign-in page: brand tokens, bilingual, callbackUrl + intent, inline resend
+- `0ba2fee` — check-email + welcome pages: brand tokens, bilingual, callbackUrl-aware redirect
+- `4f78949` — header: dynamic signInHref with callbackUrl
+- `0586062` — email.ts and cart/share: intent params in transactional links
+- `d2029f2` — settings: intent=settings + callbackUrl on session-loss redirect, brand token swap, bilingual
+- `09b230c` — dashboard/login: Internal · Staff Only badge + loader polish
+
+**Sacred Surface items touched:** #4 (Customer accounts) — UI shell only. `customer-auth.ts` unchanged. Cookies unchanged. JWT contract unchanged (`isTrade`/`tradeTier` verified). Magic-link email send POST contract unchanged.
+
+**Smoke loop result:** Cart → PDP → cmd-K search → checkout → trade login → factura request: pass / pass / pass / pass / pass / pass
+
+**Deliberately left out:** 2FA/TOTP/passkey, phone-number sign-in, separate "create account" CTA (magic link IS account creation), `messages/*.json` keys (used lib-file route instead).
+
+**New follow-ups:** Consolidate `settingsT` inline copy into shared `customer-signin-copy.ts` (added as P3.8).
+
+**Build status:** `npx tsc --noEmit` pass, `npx eslint` pass · **Status:** ✅
+
+---
+
 ## Summary
 
 **Total sessions: 35** · **Total estimated effort: ~10–12 weeks** at 3 sessions/week.
