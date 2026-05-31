@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Camera, Loader2, Search, X } from "lucide-react";
 import { useRouter } from "@/app/i18n/navigation";
-import { pdpHref } from "@/app/lib/pdp-href";
+import { pdpPath } from "@/app/lib/pdp-href";
 import type { BrandCount, ProductFullWithSignals } from "@/app/lib/products-full";
 import { VisualSearchModal } from "@/app/components/visual-search-modal";
 
@@ -280,20 +280,19 @@ const CatalogSearchPanel = ({ locale, brandCounts }: CatalogSearchPanelProps) =>
       if (row.kind === "product") {
         const p = row.product;
         try {
-          const href = pdpHref(locale, {
+          const path = pdpPath({
             slug: p.slug,
             name: p.name,
             sku: p.sku,
             category: p.category,
           });
-          router.push(href);
+          router.push(path);
         } catch {
-          // slug failure — fall back to catalog
-          router.push(`/${locale}/shop/catalog?q=${encodeURIComponent(p.sku)}`);
+          router.push(`/shop/catalog?q=${encodeURIComponent(p.sku)}`);
         }
       } else {
         const slug = brandSlug(row.brand.brand);
-        router.push(`/${locale}/brands/${slug}`);
+        router.push(`/brands/${slug}`);
       }
       close();
     },
