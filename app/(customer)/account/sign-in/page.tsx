@@ -1,13 +1,10 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useRef, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   ShoppingBag,
-  FolderOpen,
-  FileText,
   Bookmark,
-  Settings,
   Tag,
   Loader2,
 } from "lucide-react";
@@ -20,14 +17,6 @@ import {
 
 const CUSTOMER_AUTH_BASE = "/api/auth/customer";
 
-const INTENT_ICONS: Record<string, typeof ShoppingBag> = {
-  cart: ShoppingBag,
-  project: FolderOpen,
-  quote: FileText,
-  "save-cart": Bookmark,
-  settings: Settings,
-};
-
 const SignInInner = () => {
   const params = useSearchParams();
   const [email, setEmail] = useState("");
@@ -35,17 +24,29 @@ const SignInInner = () => {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [lang] = useState<"en" | "es">(() => readClientLocale());
+  const emailInputRef = useRef<HTMLInputElement>(null);
 
   const t = T[lang];
   const errorCode = params.get("error");
   const errorMessage = errorCode
     ? (t.error as Record<string, string>)[errorCode] ?? t.error.default
     : null;
-  const intent = params.get("intent") ?? "";
+  const [intent, setIntent] = useState(() => params.get("intent") ?? "");
   const rawCallback = params.get("callbackUrl");
   const callbackUrl = safeCallbackUrl(rawCallback) ?? "/account/welcome";
-  const intentCopy = t.intent[intent];
-  const IntentIcon = INTENT_ICONS[intent];
+  useEffect(() => {
+    document.title = lang === "es"
+      ? `${T.es.title} · Counter Cultures`
+      : `${T.en.title} · Counter Cultures`;
+  }, [lang]);
+
+  const selectIntent = (next: string) => {
+    setIntent(next);
+    const url = new URL(window.location.href);
+    url.searchParams.set("intent", next);
+    window.history.replaceState({}, "", url.toString());
+    emailInputRef.current?.focus({ preventScroll: false });
+  };
 
   const handleEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,19 +147,9 @@ const SignInInner = () => {
             {t.eyebrow}
           </h1>
           <p className="font-body text-sm text-dash-text-secondary mt-2">
-            {t.title}
+            {t.subtitle[intent] ?? t.subtitle.default}
           </p>
         </div>
-
-        {intentCopy && IntentIcon && (
-          <div
-            role="status"
-            className="flex items-center gap-2.5 bg-brand-copper/8 border border-brand-copper/20 rounded-lg px-4 py-2.5 mb-4"
-          >
-            <IntentIcon className="w-4 h-4 text-brand-copper shrink-0" />
-            <p className="text-sm text-brand-charcoal">{intentCopy}</p>
-          </div>
-        )}
 
         <div className="bg-dash-surface rounded-xl p-8 shadow-sm border border-dash-border">
           {errorMessage && (
@@ -193,6 +184,7 @@ const SignInInner = () => {
                 {t.emailLabel}
               </label>
               <input
+                ref={emailInputRef}
                 id="email"
                 type="email"
                 value={email}
@@ -233,24 +225,52 @@ const SignInInner = () => {
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-2 mb-5">
-            <span className="inline-flex items-center gap-1.5 bg-brand-linen border border-brand-stone/15 rounded-full px-3 py-1.5 text-xs text-dash-text-secondary">
-              <Bookmark className="w-3 h-3 text-brand-copper" />
+            <button
+              type="button"
+              onClick={() => selectIntent("project")}
+              aria-pressed={intent === "project"}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs transition-colors cursor-pointer min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper/40 ${
+                intent === "project"
+                  ? "bg-brand-copper/15 border border-brand-copper/40 text-brand-charcoal"
+                  : "bg-brand-linen border border-brand-stone/15 text-dash-text-secondary hover:bg-brand-copper/8 hover:border-brand-copper/25"
+              }`}
+            >
+              <Bookmark className="w-3.5 h-3.5 text-brand-copper" />
               {t.benefitProjects}
-            </span>
-            <span className="inline-flex items-center gap-1.5 bg-brand-linen border border-brand-stone/15 rounded-full px-3 py-1.5 text-xs text-dash-text-secondary">
-              <ShoppingBag className="w-3 h-3 text-brand-copper" />
+            </button>
+            <button
+              type="button"
+              onClick={() => selectIntent("cart")}
+              aria-pressed={intent === "cart" || intent === "save-cart"}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs transition-colors cursor-pointer min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper/40 ${
+                intent === "cart" || intent === "save-cart"
+                  ? "bg-brand-copper/15 border border-brand-copper/40 text-brand-charcoal"
+                  : "bg-brand-linen border border-brand-stone/15 text-dash-text-secondary hover:bg-brand-copper/8 hover:border-brand-copper/25"
+              }`}
+            >
+              <ShoppingBag className="w-3.5 h-3.5 text-brand-copper" />
               {t.benefitCart}
-            </span>
-            <span className="inline-flex items-center gap-1.5 bg-brand-linen border border-brand-stone/15 rounded-full px-3 py-1.5 text-xs text-dash-text-secondary">
-              <Tag className="w-3 h-3 text-brand-copper" />
+            </button>
+            <button
+              type="button"
+              onClick={() => selectIntent("quote")}
+              aria-pressed={intent === "quote"}
+              className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs transition-colors cursor-pointer min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper/40 ${
+                intent === "quote"
+                  ? "bg-brand-copper/15 border border-brand-copper/40 text-brand-charcoal"
+                  : "bg-brand-linen border border-brand-stone/15 text-dash-text-secondary hover:bg-brand-copper/8 hover:border-brand-copper/25"
+              }`}
+            >
+              <Tag className="w-3.5 h-3.5 text-brand-copper" />
               {t.benefitQuotes}
-            </span>
+            </button>
           </div>
 
           <button
             type="button"
             onClick={handleGoogle}
             disabled={googleLoading || loading}
+            aria-label={t.continueGoogle}
             className="w-full flex items-center justify-center gap-3 px-4 py-2.5 border border-dash-border bg-dash-surface text-sm font-medium text-brand-charcoal rounded-lg hover:bg-brand-linen disabled:opacity-50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-copper/40 min-h-[44px]"
           >
             {googleLoading ? (

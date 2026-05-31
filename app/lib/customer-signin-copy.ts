@@ -1,6 +1,14 @@
 export const T = {
   en: {
     title: "Sign in to your account",
+    subtitle: {
+      default: "Sign in to your account",
+      cart: "Save your cart and request a quote",
+      "save-cart": "Save your cart and request a quote",
+      project: "Open your saved projects",
+      quote: "View your quote",
+      settings: "Continue to your settings",
+    } as Record<string, string>,
     eyebrow: "Counter Cultures",
     emailLabel: "Email address",
     emailPlaceholder: "you@example.com",
@@ -51,6 +59,14 @@ export const T = {
   },
   es: {
     title: "Inicia sesión en tu cuenta",
+    subtitle: {
+      default: "Inicia sesión en tu cuenta",
+      cart: "Guarda tu carrito y solicita una cotización",
+      "save-cart": "Guarda tu carrito y solicita una cotización",
+      project: "Abre tus proyectos guardados",
+      quote: "Ve tu cotización",
+      settings: "Continúa con tu configuración",
+    } as Record<string, string>,
     eyebrow: "Counter Cultures",
     emailLabel: "Correo electrónico",
     emailPlaceholder: "tu@correo.com",
