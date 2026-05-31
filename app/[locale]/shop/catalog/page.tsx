@@ -69,7 +69,7 @@ const buildBrandImageMap = (brandNames: string[]): Record<string, string> => {
     return {};
   }
 
-  const formatRank = [".webp", ".avif", ".jpg", ".jpeg", ".png"];
+  const formatRank = [".avif", ".webp", ".jpg", ".jpeg", ".png"];
   const slugToFile: Record<string, string> = {};
   for (const file of files) {
     const m = file.match(/^(.+?)-hero\.([^.]+)$/);
