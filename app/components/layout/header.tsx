@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import NextLink from "next/link";
 import { Link, usePathname } from "@/app/i18n/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -175,6 +175,12 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
   const phoneHref = `tel:+52${phoneRaw.replace(/\./g, "")}`;
   const waHref = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(WA_GREETINGS[lang])}`;
 
+  const intlPath = usePathname();
+  const signInHref = useMemo(() => {
+    const currentPath = `/${lang}${intlPath}`;
+    return `/account/sign-in?callbackUrl=${encodeURIComponent(currentPath)}`;
+  }, [lang, intlPath]);
+
   return (
     <>
       <header
@@ -308,7 +314,7 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
 
               {/* Log In — desktop */}
               <NextLink
-                href="/account/sign-in"
+                href={signInHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`hidden sm:inline-flex items-center gap-1.5 h-9 px-3 rounded-full text-xs font-body font-semibold tracking-wide transition-colors ${
@@ -323,7 +329,7 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
               </NextLink>
               {/* Log In — mobile icon */}
               <NextLink
-                href="/account/sign-in"
+                href={signInHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`sm:hidden flex items-center justify-center w-9 h-9 rounded-full transition-colors ${
@@ -550,7 +556,7 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
 
                 {/* Sign in — mobile */}
                 <NextLink
-                  href="/account/sign-in"
+                  href={signInHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setMobileOpen(false)}
