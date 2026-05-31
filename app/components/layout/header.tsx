@@ -317,7 +317,7 @@ const Header = ({ transparent = false }: { transparent?: boolean }) => {
                 href={signInHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`hidden sm:inline-flex items-center gap-1.5 h-9 px-3 rounded-full text-xs font-body font-semibold tracking-wide transition-colors ${
+                className={`hidden sm:inline-flex items-center gap-1.5 h-9 px-3 lg:px-3.5 rounded-full text-xs leading-none font-body font-semibold tracking-wide whitespace-nowrap transition-colors ${
                   isTransparent
                     ? "text-white border border-white/25 bg-white/10 hover:border-white/40"
                     : "text-brand-charcoal border border-brand-stone/30 hover:text-brand-terracotta hover:border-brand-terracotta/30"

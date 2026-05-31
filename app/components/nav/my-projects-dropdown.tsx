@@ -56,7 +56,7 @@ export const MyProjectsDropdown = ({ locale }: { locale: "en" | "es" }) => {
     return (
       <Link
         href="/account/projects"
-        className="hidden md:inline-flex items-center gap-1.5 font-body text-sm font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors py-2"
+        className="hidden md:inline-flex items-center gap-1.5 font-body text-sm font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors py-2 whitespace-nowrap"
       >
         <FolderOpen className="w-4 h-4" />
         <span>{t.myProjects}</span>
@@ -68,7 +68,7 @@ export const MyProjectsDropdown = ({ locale }: { locale: "en" | "es" }) => {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 font-body text-sm font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors py-2 cursor-pointer"
+        className="flex items-center gap-1.5 font-body text-sm font-medium text-brand-charcoal hover:text-brand-terracotta transition-colors py-2 cursor-pointer whitespace-nowrap"
       >
         <FolderOpen className="w-4 h-4" />
         <span className="hidden md:inline">{t.myProjects}</span>
