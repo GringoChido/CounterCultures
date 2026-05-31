@@ -1,8 +1,6 @@
 export const runtime = "nodejs";
 
 import type { Metadata } from "next";
-import { readdirSync } from "node:fs";
-import path from "node:path";
 import Image from "next/image";
 import { Header } from "@/app/components/layout/header";
 import { Footer } from "@/app/components/layout/footer";
@@ -11,7 +9,6 @@ import { getCatalogBrands, getCatalogStats } from "@/app/lib/products-full";
 import { formatCatalogCount } from "@/app/lib/format-catalog-count";
 import { getInShowroomCount } from "@/app/lib/catalog-signals";
 import { BrowseByDiscipline } from "@/app/components/sections/browse-by-discipline";
-import { CatalogBrandWall } from "@/app/components/sections/catalog-brand-wall";
 import { HowItWorksBand } from "@/app/components/sections/how-it-works-band";
 
 export const revalidate = 1800;
@@ -56,51 +53,6 @@ const raceWithFallback = <T,>(p: Promise<T>, ms: number, fallback: T): Promise<T
     new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
   ]);
 
-// Map brand display names to their hero image in /public/Assets/BRANDS/.
-// Files follow the pattern `{slug}-hero.{webp|avif|jpg|jpeg|png}`. Prefer
-// modern formats. Brands without a matching hero image just won't get one
-// (the brand tile falls back to its solid theme color).
-const buildBrandImageMap = (brandNames: string[]): Record<string, string> => {
-  let files: string[] = [];
-  try {
-    const dir = path.join(process.cwd(), "public", "Assets", "BRANDS");
-    files = readdirSync(dir);
-  } catch {
-    return {};
-  }
-
-  const formatRank = [".avif", ".webp", ".jpg", ".jpeg", ".png"];
-  const slugToFile: Record<string, string> = {};
-  for (const file of files) {
-    const m = file.match(/^(.+?)-hero\.([^.]+)$/);
-    if (!m) continue;
-    const [, slug, ext] = m;
-    const newRank = formatRank.indexOf(`.${ext.toLowerCase()}`);
-    if (newRank === -1) continue;
-    const existing = slugToFile[slug];
-    const existingRank = existing
-      ? formatRank.indexOf(path.extname(existing).toLowerCase())
-      : 999;
-    if (newRank < existingRank) {
-      slugToFile[slug] = `/Assets/BRANDS/${file}`;
-    }
-  }
-
-  const result: Record<string, string> = {};
-  for (const name of brandNames) {
-    const slug = name
-      .toLowerCase()
-      .replace(/&/g, "and")
-      .replace(/\+/g, " and ")
-      .replace(/'/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
-    if (slugToFile[slug]) {
-      result[name] = slugToFile[slug];
-    }
-  }
-  return result;
-};
 
 const CatalogPage = async ({ params }: CatalogPageProps) => {
   const { locale } = await params;
@@ -130,7 +82,6 @@ const CatalogPage = async ({ params }: CatalogPageProps) => {
   }
 
   const saleableBrandCount = brandCounts.length || STATS_FALLBACK.brandCount;
-  const brandImageMap = buildBrandImageMap(brandCounts.map((b) => b.brand));
 
   return (
     <>
@@ -206,12 +157,6 @@ const CatalogPage = async ({ params }: CatalogPageProps) => {
           brandCounts={brandCounts}
         />
         <ArtisanProfiles locale={locale as "en" | "es"} />
-        <CatalogBrandWall
-          locale={locale as "en" | "es"}
-          brandCount={saleableBrandCount}
-          brandCounts={brandCounts}
-          brandImageMap={brandImageMap}
-        />
         <HowItWorksBand locale={locale as "en" | "es"} variant="light" />
       </main>
       <Footer />
