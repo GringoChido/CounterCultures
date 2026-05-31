@@ -18,6 +18,7 @@ import {
   getMostSpecifiedScores,
   getInShowroomIds,
 } from "@/app/lib/catalog-signals";
+import { BrowseByDiscipline } from "@/app/components/sections/browse-by-discipline";
 import { CatalogView } from "./catalog-view";
 
 export const revalidate = 1800;
@@ -208,6 +209,8 @@ const CatalogPage = async ({ params, searchParams }: CatalogPageProps) => {
             </p>
           </div>
         </section>
+
+        <BrowseByDiscipline locale={locale as "en" | "es"} />
 
         <div id="catalog" className="scroll-mt-24" />
         <CatalogView

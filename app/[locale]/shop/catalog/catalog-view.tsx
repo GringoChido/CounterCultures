@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import type { ProductFull, ProductFullWithSignals, BrandCount } from "@/app/lib/products-full";
 import { pdpHref } from "@/app/lib/pdp-href";
+import { getSectionEyebrow, getSectionHeadline } from "@/app/lib/catalog-headline";
 import { ProductVisual } from "@/app/components/product-visual";
 import { VisualSearchModal } from "@/app/components/visual-search-modal";
 import { brandTheme } from "@/app/lib/product-visuals";
@@ -472,32 +473,8 @@ const CatalogView = ({ locale, brandCounts, totalProducts, brandImageMap = {}, i
     </div>
   );
 
-  // Editorial section header that adapts based on what filters are active.
-  const sectionEyebrow =
-    query.trim().length >= MIN_QUERY
-      ? locale === "es" ? "Resultados" : "Results"
-      : brand
-        ? locale === "es" ? "Marca" : "Brand"
-        : category !== "all"
-          ? locale === "es" ? "Categoría" : "Category"
-          : sortKey === "most_specified"
-            ? locale === "es" ? "Más especificados" : "Most Specified"
-            : locale === "es" ? "Catálogo" : "Catalog";
-
-  const sectionHeadline =
-    query.trim().length >= MIN_QUERY
-      ? `"${query.trim()}"`
-      : brand
-        ? brand
-        : category === "bathroom"
-          ? locale === "es" ? "Baño" : "Bathroom"
-          : category === "kitchen"
-            ? locale === "es" ? "Cocina" : "Kitchen"
-            : category === "hardware"
-              ? locale === "es" ? "Chapas y Herrajes" : "Door Hardware"
-              : locale === "es"
-                ? "Lo que arquitectos están pidiendo"
-                : "What architects are specifying";
+  const sectionEyebrow = getSectionEyebrow(query, brand, category, sortKey, locale);
+  const sectionHeadline = getSectionHeadline(query, brand, category, locale);
 
   return (
     <section className="py-12 md:py-16 bg-brand-linen">
