@@ -159,9 +159,10 @@ export { DisciplineSpreadCard };
 
 interface BrowseByDisciplineProps {
   locale: Locale;
+  brandCount?: number;
 }
 
-const BrowseByDiscipline = async ({ locale }: BrowseByDisciplineProps) => {
+const BrowseByDiscipline = async ({ locale, brandCount }: BrowseByDisciplineProps) => {
   let counts: Record<string, number>;
   try {
     counts = await getCategoryPieceCounts();
@@ -176,7 +177,9 @@ const BrowseByDiscipline = async ({ locale }: BrowseByDisciplineProps) => {
           {T.eyebrow[locale]}
         </p>
         <h2 className="font-display text-3xl md:text-4xl font-light tracking-wide text-brand-charcoal">
-          {T.headline[locale]}
+          {locale === "es"
+            ? `Tres ambientes. ${brandCount ?? 73} marcas. Un catálogo.`
+            : `Three rooms. ${brandCount ?? 73} brands. One catalog.`}
         </h2>
         <p className="mt-6 font-body text-[17px] leading-[1.6] text-brand-charcoal/70 max-w-[65ch]">
           {T.lede[locale]}

@@ -238,7 +238,7 @@ const CatalogPage = async ({ params, searchParams }: CatalogPageProps) => {
           </div>
         </section>
 
-        <BrowseByDiscipline locale={locale as "en" | "es"} />
+        <BrowseByDiscipline locale={locale as "en" | "es"} brandCount={saleableBrandCount} />
 
         <div id="catalog" className="scroll-mt-24" />
         <CatalogView

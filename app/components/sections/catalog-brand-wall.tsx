@@ -83,13 +83,13 @@ const CatalogBrandWall = ({
           <h2 className="mt-4 font-display text-3xl md:text-5xl font-light tracking-wide text-brand-charcoal leading-[1.05]">
             {locale === "es" ? (
               <>
-                Setenta y tres nombres.{" "}
+                <span className="tabular-nums">{totalBrands}</span> nombres.{" "}
                 <span className="italic text-brand-copper">Tres disciplinas.</span>{" "}
                 Un catálogo.
               </>
             ) : (
               <>
-                Seventy-three names.{" "}
+                <span className="tabular-nums">{totalBrands}</span> names.{" "}
                 <span className="italic text-brand-copper">Three rooms.</span>{" "}
                 One catalog.
               </>
