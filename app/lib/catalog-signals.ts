@@ -114,6 +114,9 @@ export const getInShowroomIds = async (): Promise<Set<string>> => {
   return set;
 };
 
+export const getInShowroomCount = async (): Promise<number> =>
+  (await getInShowroomIds()).size;
+
 // ── Also specified with ─────────────────────────────────────────────────
 // Co-occurrence: for a seed product, rank other products that appear on the
 // same sale orders. Recency-weighted like the spec score so recent projects

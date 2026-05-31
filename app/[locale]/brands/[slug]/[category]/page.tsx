@@ -15,7 +15,8 @@ import {
   getMostSpecifiedScores,
   getInShowroomIds,
 } from "@/app/lib/catalog-signals";
-import { MapPin, TrendingUp, ArrowUpRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
+import { SpecifiedBadge, ShowroomBadge } from "@/app/components/catalog/spec-badge";
 
 import { SITE_URL } from "@/app/lib/seo";
 
@@ -465,20 +466,6 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
                       hasImage={p.hasImage}
                       imageSrc={p.imageSrc}
                     />
-                    {p.inShowroom && (
-                      <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-1 bg-brand-charcoal/90 text-white font-body text-[10px] tracking-[0.1em] uppercase backdrop-blur-sm">
-                        <MapPin className="w-3 h-3" />
-                        {isEs ? "En showroom" : "In Showroom"}
-                      </span>
-                    )}
-                    {p.projectCount && p.projectCount > 1 ? (
-                      <span className="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-1 bg-brand-copper/95 text-white font-body text-[10px] tracking-[0.1em] uppercase backdrop-blur-sm">
-                        <TrendingUp className="w-3 h-3" />
-                        {isEs
-                          ? `${p.projectCount} proyectos`
-                          : `${p.projectCount} projects`}
-                      </span>
-                    ) : null}
                   </div>
                   <div className="p-4 flex flex-col flex-1">
                     <span className="font-body text-[10px] tracking-[0.15em] text-brand-copper uppercase">
@@ -490,6 +477,14 @@ const BrandCategoryPage = async ({ params }: PageProps) => {
                     <p className="mt-1 font-mono text-[10px] text-dash-text-secondary truncate">
                       {p.sku || "—"}
                     </p>
+                    {(p.inShowroom || (p.projectCount ?? 0) >= 2) && (
+                      <div className="flex flex-wrap gap-1.5 mt-1.5">
+                        {p.inShowroom && <ShowroomBadge locale={isEs ? "es" : "en"} />}
+                        {(p.projectCount ?? 0) >= 2 && (
+                          <SpecifiedBadge count={p.projectCount!} locale={isEs ? "es" : "en"} />
+                        )}
+                      </div>
+                    )}
                     <div className="mt-3 pt-3 border-t border-brand-stone/10 font-body text-xs text-brand-charcoal">
                       {p.listPrice > 0 ? (
                         <>

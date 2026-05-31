@@ -17,6 +17,7 @@ import { formatCatalogCount } from "@/app/lib/format-catalog-count";
 import {
   getMostSpecifiedScores,
   getInShowroomIds,
+  getInShowroomCount,
 } from "@/app/lib/catalog-signals";
 import { BrowseByDiscipline } from "@/app/components/sections/browse-by-discipline";
 import { CatalogView } from "./catalog-view";
@@ -125,20 +126,31 @@ const CatalogPage = async ({ params, searchParams }: CatalogPageProps) => {
   let brandCounts: Awaited<ReturnType<typeof getCatalogBrands>> = [];
   let stats = STATS_FALLBACK;
   let initialResult: SearchResult | null = null;
+  let inShowroomCount = 0;
 
   try {
-    const [bc, st, sr] = await Promise.all([
+    const emptyScores = new Map<string, { weightedScore: number; projectCount: number }>();
+    const [bc, st, specScores, inShowroomIds] = await Promise.all([
       raceWithFallback(getCatalogBrands(), 2000, []),
       raceWithFallback(getCatalogStats(), 1000, STATS_FALLBACK),
-      raceWithFallback(
-        searchProductsIndexed({ sort: ssrSort as "most_specified" | "relevance" | "alpha", limit: 24, brand: urlBrand, q: urlQuery }),
-        1500,
-        null,
-      ),
+      raceWithFallback(getMostSpecifiedScores(), 1500, emptyScores),
+      raceWithFallback(getInShowroomIds(), 1500, new Set<string>()),
     ]);
     brandCounts = bc;
     stats = st;
-    initialResult = sr;
+    inShowroomCount = inShowroomIds.size;
+    initialResult = await raceWithFallback(
+      searchProductsIndexed({
+        sort: ssrSort as "most_specified" | "relevance" | "alpha",
+        limit: 24,
+        brand: urlBrand,
+        q: urlQuery,
+        specScores: specScores.size > 0 ? specScores : undefined,
+        inShowroomIds: inShowroomIds.size > 0 ? inShowroomIds : undefined,
+      }),
+      1500,
+      null,
+    );
   } catch (err) {
     console.error(
       JSON.stringify({
@@ -189,6 +201,13 @@ const CatalogPage = async ({ params, searchParams }: CatalogPageProps) => {
                   <span className="text-white/40"> · </span>
                   <span className="tabular-nums">{saleableBrandCount}</span>{" "}
                   marcas
+                  {inShowroomCount > 0 && (
+                    <>
+                      <span className="text-white/40"> · </span>
+                      <span className="tabular-nums">{inShowroomCount}</span>{" "}
+                      en showroom
+                    </>
+                  )}
                 </>
               ) : (
                 <>
@@ -199,6 +218,13 @@ const CatalogPage = async ({ params, searchParams }: CatalogPageProps) => {
                   <span className="text-white/40"> · </span>
                   <span className="tabular-nums">{saleableBrandCount}</span>{" "}
                   brands
+                  {inShowroomCount > 0 && (
+                    <>
+                      <span className="text-white/40"> · </span>
+                      <span className="tabular-nums">{inShowroomCount}</span>{" "}
+                      in showroom
+                    </>
+                  )}
                 </>
               )}
             </h1>

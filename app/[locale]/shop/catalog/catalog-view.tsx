@@ -20,6 +20,7 @@ import { getSectionEyebrow, getSectionHeadline } from "@/app/lib/catalog-headlin
 import { ProductVisual } from "@/app/components/product-visual";
 import { VisualSearchModal } from "@/app/components/visual-search-modal";
 import { brandTheme } from "@/app/lib/product-visuals";
+import { SpecifiedBadge, ShowroomBadge } from "@/app/components/catalog/spec-badge";
 
 
 // Color-coded finish swatches — architects scan finish codes (MB/PC/BG/etc.)
@@ -1080,6 +1081,14 @@ const ProductCard = ({ product, locale, onOpen, t, eager }: ProductCardProps) =>
             {product.sku || "—"}
           </p>
         </button>
+        {(product.inShowroom || (product.projectCount ?? 0) >= 2) && (
+          <div className="flex flex-wrap gap-1.5 mt-1.5">
+            {product.inShowroom && <ShowroomBadge locale={locale} />}
+            {(product.projectCount ?? 0) >= 2 && (
+              <SpecifiedBadge count={product.projectCount!} locale={locale} />
+            )}
+          </div>
+        )}
         <div className="mt-2 pt-2 sm:mt-3 sm:pt-3 border-t border-brand-stone/10">
           <span className="font-body text-[11px] sm:text-xs text-brand-charcoal">
             {product.listPrice > 10 ? (
@@ -1152,6 +1161,14 @@ const ProductTable = ({ items, locale, onOpen, t }: ProductTableProps) => (
                 <div className="font-mono text-[10px] text-dash-text-secondary mt-0.5 truncate">
                   {p.sku || "—"}
                 </div>
+                {(p.inShowroom || (p.projectCount ?? 0) >= 2) && (
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {p.inShowroom && <ShowroomBadge locale={locale} />}
+                    {(p.projectCount ?? 0) >= 2 && (
+                      <SpecifiedBadge count={p.projectCount!} locale={locale} />
+                    )}
+                  </div>
+                )}
               </td>
               <td className="px-4 py-3 hidden md:table-cell font-body text-sm text-dash-text-secondary">
                 {p.brand || "—"}
