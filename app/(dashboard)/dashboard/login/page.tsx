@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 const ERROR_MESSAGES: Record<string, string> = {
   AccessDenied:
@@ -38,6 +39,9 @@ const LoginInner = () => {
           </h1>
           <p className="font-body font-semibold text-[11px] tracking-[0.2em] text-brand-copper uppercase mt-1">
             Counter Portal
+          </p>
+          <p className="font-mono text-[10px] text-dash-text-secondary mt-2">
+            Internal · Staff Only
           </p>
         </div>
 
@@ -90,6 +94,7 @@ const LoginInner = () => {
                 d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"
               />
             </svg>
+            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             <span>{loading ? "Redirecting…" : "Sign in with Google"}</span>
           </button>
 
