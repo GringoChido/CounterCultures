@@ -131,7 +131,22 @@ export const GET = async (req: NextRequest) => {
       ? { ...resultOrTimeout, degradedSort: true }
       : resultOrTimeout;
     const res = NextResponse.json(body);
-    res.headers.set("Cache-Control", "private, no-store");
+    if (degradedSort) {
+      // Spec signals timed out — don't pin a degraded sort into the CDN.
+      res.headers.set("Cache-Control", "private, no-store");
+    } else {
+      // Storefront search results are non-personalized (query-params only;
+      // no auth/cookies) and the 354K-product catalog itself revalidates
+      // every 30 min. Let Netlify's durable CDN answer repeat queries
+      // (keepalive probes, popular brand searches) instead of re-invoking
+      // the heavy Lambda on every hit. Browser still revalidates, so an
+      // in-tab user never serves stale stock from local cache.
+      res.headers.set("Cache-Control", "public, max-age=0, must-revalidate");
+      res.headers.set(
+        "Netlify-CDN-Cache-Control",
+        "public, durable, s-maxage=300, stale-while-revalidate=3600",
+      );
+    }
     return res;
   } catch (err) {
     console.error(
