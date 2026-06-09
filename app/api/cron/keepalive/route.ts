@@ -1,14 +1,17 @@
 /**
- * GET /api/cron/keepalive — pings internal endpoints on a short cadence
- * to keep server-side caches (`products-full.ts`) and the Lambda warm.
+ * GET /api/cron/keepalive — pings the search API on a short cadence to
+ * keep the products-full in-memory cache and the Lambda warm.
  * No user-visible side effects; observable only via response time.
  *
- * Targets:
- *   1. Search API — warms the products-full in-memory cache.
- *   2. PDP pages — warms the SSR render path and seeds ISR edge cache
- *      for 2 representative PDPs (both /en and /es). PDP slugs are
- *      resolved dynamically from the search response so they stay
- *      correct even when catalog data changes.
+ * Target: the search API, which hydrates the 354K-product cache. The
+ * probe URL carries a per-run cache-buster so it always reaches the
+ * Lambda and re-warms it — the search route now sets a durable Netlify
+ * CDN cache, so an un-busted probe would be answered from the edge
+ * without ever executing (and therefore warming) the function.
+ *
+ * (PDP warm-probes were removed: PDPs are ISR-cached after first hit, so
+ * re-rendering two of them every 3 min was the bulk of this cron's
+ * serverless compute for negligible benefit.)
  *
  * Auth: requires `x-cron-probe-key` header matching the CRON_PROBE_KEY
  * env var. Netlify scheduled functions send this header via the
@@ -63,40 +66,6 @@ const probe = async (baseUrl: string, path: string): Promise<ProbeResult> => {
   }
 };
 
-interface SearchItem {
-  slug?: string;
-  category?: string;
-  imageSrc?: string;
-}
-
-const resolvePdpPaths = async (baseUrl: string): Promise<string[]> => {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
-  try {
-    const res = await fetch(
-      `${baseUrl}/api/products/search?q=&limit=10&sort=relevance`,
-      { signal: ctrl.signal },
-    );
-    if (!res.ok) return [];
-    const data = (await res.json()) as { items?: SearchItem[] };
-    const items = data.items ?? [];
-    return items
-      .filter(
-        (p): p is SearchItem & { slug: string; category: string } =>
-          !!p.slug && !!p.category && !!p.imageSrc,
-      )
-      .slice(0, 2)
-      .flatMap((p) => [
-        `/en/shop/${p.category}/p/${p.slug}`,
-        `/es/shop/${p.category}/p/${p.slug}`,
-      ]);
-  } catch {
-    return [];
-  } finally {
-    clearTimeout(timer);
-  }
-};
-
 export const GET = async (req: NextRequest): Promise<Response> => {
   if (!isAuthorized(req)) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
@@ -107,34 +76,17 @@ export const GET = async (req: NextRequest): Promise<Response> => {
 
   const results: ProbeResult[] = [];
 
-  // Step 1: warm the products-full in-memory cache via search API
+  // Warm the products-full in-memory cache via the search API. The per-run
+  // cache-buster bypasses the search route's durable CDN cache so this
+  // probe actually executes the Lambda (and warms it) rather than being
+  // served from the edge.
+  const warmTarget = `${SEARCH_TARGET}&warm=${Date.now()}`;
   try {
-    results.push(await probe(baseUrl, SEARCH_TARGET));
+    results.push(await probe(baseUrl, warmTarget));
   } catch (err) {
     const msg = err instanceof Error ? err.message : "probe_threw";
-    console.error("[cron/keepalive]", SEARCH_TARGET, msg);
-    results.push({ path: SEARCH_TARGET, status: null, ms: 0, error: msg });
-  }
-
-  // Step 2: resolve 2 PDP slugs from the now-warm catalog, then probe
-  // both /en and /es variants in parallel to warm the SSR path + ISR cache
-  try {
-    const pdpPaths = await resolvePdpPaths(baseUrl);
-    if (pdpPaths.length > 0) {
-      const pdpResults = await Promise.all(
-        pdpPaths.map((path) =>
-          probe(baseUrl, path).catch((err) => {
-            const msg = err instanceof Error ? err.message : "probe_threw";
-            console.error("[cron/keepalive]", path, msg);
-            return { path, status: null, ms: 0, error: msg } as ProbeResult;
-          }),
-        ),
-      );
-      results.push(...pdpResults);
-    }
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : "pdp_resolve_failed";
-    console.error("[cron/keepalive] PDP target resolution failed:", msg);
+    console.error("[cron/keepalive]", warmTarget, msg);
+    results.push({ path: warmTarget, status: null, ms: 0, error: msg });
   }
 
   return NextResponse.json({ ok: true, results });
