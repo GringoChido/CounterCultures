@@ -145,7 +145,6 @@ describe("no raw /p/${...} patterns outside pdp-href.ts and PDP page", () => {
       "app/[locale]/shop/[category]/p/[slug]/page.tsx",
       "app/[locale]/shop/[category]/p/[slug]/pdp-client.tsx",
       "app/[locale]/p/[slug]/page.tsx",
-      "app/api/cron/keepalive/route.ts",
     ];
 
     const raw = execSync(
